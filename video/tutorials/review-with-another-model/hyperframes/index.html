@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Review with the other model before you ship</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 400 900; src: url(assets/fonts/schibsted-grotesk-latin.woff2) format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; src: url(assets/fonts/jetbrains-mono-latin.woff2) format("woff2"); }
+      :root {
+        --canvas: #f8f7f9; --panel: #ffffff; --sunken: #efedf2; --ink: #241523; --muted: #675d69; --line: #dedae5;
+        --iris: #6d4fb5; --iris-strong: #4a3678; --iris-tint: #ece6f8; --pass: #1d7348; --fail: #b4232c;
+        --sans: "Schibsted Grotesk", sans-serif; --mono: "JetBrains Mono", monospace;
+        --shadow-window: 0 1px 2px rgba(36, 21, 35, 0.06), 0 12px 32px rgba(36, 21, 35, 0.08);
+      }
+      code, .row, .dl { font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; }
+      body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--sans); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--canvas); }
+      .clip { position: absolute; }
+      .card, .stage { inset: 0; background: var(--canvas); }
+      .card-inner { position: absolute; inset: 120px 160px 230px; }
+      .wordmark { font: 700 34px/1 var(--sans); color: var(--ink); letter-spacing: -0.01em; }
+      .title { margin: 170px 0 0; max-width: 1400px; font: 600 92px/1.04 var(--sans); letter-spacing: -0.025em; color: var(--ink); text-wrap: balance; }
+      .thread { height: 4px; width: 0; background: var(--iris); margin-top: 44px; border-radius: 2px; }
+      .subtitle { margin: 40px 0 0; font: 400 36px/1.35 var(--sans); color: var(--muted); }
+      .footer { position: absolute; left: 0; bottom: 0; font: 500 26px/1.2 var(--sans); color: var(--muted); }
+      .outro-l1 { margin-top: 190px; font: 600 72px/1.1 var(--sans); letter-spacing: -0.02em; color: var(--ink); }
+      .outro-l1 code { font: 500 0.86em var(--mono); color: var(--ink); white-space: nowrap; }
+      .outro-l2 { margin: 44px 0 0; max-width: 1300px; font: 400 32px/1.45 var(--sans); color: var(--muted); }
+      .tool-label { position: absolute; right: 140px; top: 60px; font: 600 28px/1.2 var(--sans); color: var(--ink); }
+      .tool-label code { font: 400 22px var(--mono); color: var(--muted); background: var(--sunken); border-radius: 4px; padding: 3px 8px; margin-left: 14px; vertical-align: 2px; }
+      .tool-label .dot { display: inline-block; width: 12px; height: 12px; border-radius: 6px; background: var(--iris); margin-right: 12px; vertical-align: 3px; }
+      .window { position: absolute; left: 140px; right: 140px; top: 136px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-window); padding: 18px; }
+      .viewport { background: var(--sunken); border-radius: 8px; padding: 22px 30px; }
+      .clipbox { height: 42px; overflow: hidden; margin: 0 -14px; padding: 0 14px; }
+      .rows { will-change: transform; }
+      .row { font: 400 28px/42px var(--mono); height: 42px; white-space: pre; color: var(--ink); border-radius: 4px; margin: 0 -10px; padding: 0 10px; opacity: 0; background-color: rgba(109,79,181,0); box-shadow: inset 4px 0 0 0 rgba(109,79,181,0); }
+      .row.cmd { font-weight: 500; }
+      .row .cut { opacity: 0.5; }
+      .row .add { color: var(--pass); } .row .del { color: var(--fail); }
+      .prompt { color: var(--muted); font-weight: 400; }
+      .chip { left: 140px; top: 48px; z-index: 10; }
+      .chip-inner { display: inline-block; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 20px; font: 600 30px/1.25 var(--sans); color: var(--ink); white-space: nowrap; }
+      .chip-inner code { font: 500 0.86em var(--mono); color: var(--iris-strong); }
+      .diffpanel { left: 0; right: 0; top: 300px; z-index: 12; text-align: center; }
+      .diff-inner { display: inline-block; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 2px 6px rgba(36,21,35,0.08), 0 24px 60px rgba(36,21,35,0.16); padding: 24px 32px; }
+      .diff-head { font: 600 30px/1.3 var(--sans); color: var(--ink); margin-bottom: 16px; }
+      .diff-head code { font: 500 0.86em var(--mono); }
+      .diff-body { background: var(--sunken); border-radius: 8px; padding: 16px 24px; }
+      .dl { font: 400 30px/45px var(--mono); white-space: pre; color: var(--ink); }
+      .dl.add { color: var(--pass); } .dl.del { color: var(--fail); }
+      .caption { left: 0; right: 0; bottom: 56px; z-index: 20; text-align: center; }
+      .caption .pill { display: inline-block; white-space: nowrap; background: rgba(255, 255, 255, 0.96); border: 1px solid var(--line); color: var(--ink);
+        padding: 12px 26px; border-radius: 8px; font: 600 40px/1.3 var(--sans); }
+      .caption code { font: 500 0.86em var(--mono); background: var(--sunken); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="92.93">
+
+      <section id="scr-claude-1" class="clip stage" data-start="4.28" data-duration="30.06" data-track-index="1">
+        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-1" data-layout-allow-overflow><div class="rows" id="rows-claude-1" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row cmd" id="r1"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row elide" id="r2">…</div>
+          <div class="row out" id="r3">Written by: claude (claude 1 finished tasks)</div>
+          <div class="row elide" id="r4">…</div>
+          <div class="row out" id="r5">## Acceptance criteria</div>
+          <div class="row out" id="r6">&#8203;</div>
+          <div class="row out" id="r7">- AC-01: greet(&quot;Ada&quot;) returns &quot;Hello, Ada!&quot; and greet() still returns &quot;Hello, world!&quot;</div>
+          <div class="row out" id="r8">- AC-02: a blank or whitespace-only name falls back to &quot;Hello, world!&quot;</div>
+          <div class="row elide" id="r9">…</div>
+          <div class="row out" id="r10">@@ -1 +1,3 @@</div>
+          <div class="row out" id="r11"><span class="del">-export function greet() { return &quot;Hello, world!&quot;; }</span></div>
+          <div class="row out" id="r12"><span class="add">+export function greet(name) {</span></div>
+          <div class="row out" id="r13"><span class="add">+  return `Hello, ${name ?? &quot;world&quot;}!`;</span></div>
+          <div class="row out" id="r14"><span class="add">+}</span></div>
+          <div class="row elide" id="r15">…</div>
+          <div class="row cmd" id="r16"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row out" id="r17">Reviewer: codex (openai; another family than the author (claude)). Author: claude.</div>
+          <div class="row out" id="r18">  2 path(s) since 067bfbf1dc26 · timeout 30 min</div>
+          <div class="row out" id="r19">Verdict: fix first → <span class="cut">…</span>/reports/review-codex.md</div>
+          <div class="row out" id="r20">Fix every critical and high finding (or add a task for it), then verify and review again.</div>
+          <div class="row out" id="r21">exit 3</div>
+        </div></div></div></div>
+      </section>
+
+      <section id="scr-claude-2" class="clip stage" data-start="34.34" data-duration="13" data-track-index="1">
+        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-2" data-layout-allow-overflow><div class="rows" id="rows-claude-2" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row cmd" id="r22"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row elide" id="r23">…</div>
+          <div class="row out" id="r24"># Review: 0001-personal-greeting Personal greeting</div>
+          <div class="row out" id="r25">Verdict: fix first · risk: high · 2 files · 1 finding (1 high)</div>
+          <div class="row out" id="r26">&#8203;</div>
+          <div class="row out" id="r27">## [high] src/greeting.js:2 blank names bypass the required fallback</div>
+          <div class="row out" id="r28">`greet(&quot;&quot;)` returns `&quot;Hello, !&quot;` and `greet(&quot;   &quot;)` returns `&quot;Hello,    !&quot;`, violating</div>
+          <div class="row out" id="r29">AC-02. `??` only handles null and undefined. Names also remain untrimmed: `greet(&quot; Ada &quot;)`</div>
+          <div class="row out" id="r30">returns `&quot;Hello,  Ada !&quot;`, contrary to the Approach. Reproduced with failing assertions;</div>
+          <div class="row out" id="r31">existing `npm test` passes because these cases are absent. Fix: trim the name, fall back</div>
+          <div class="row out" id="r32">to `&quot;world&quot;` when empty, and cover these inputs.</div>
+          <div class="row out" id="r33">&#8203;</div>
+          <div class="row out" id="r34">Nits: none.</div>
+        </div></div></div></div>
+      </section>
+
+      <section id="scr-claude-3" class="clip stage" data-start="47.34" data-duration="10.15" data-track-index="1">
+        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-3" data-layout-allow-overflow><div class="rows" id="rows-claude-3" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row cmd" id="r35"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row elide" id="r36">…</div>
+          <div class="row out" id="r37"><span class="del">-  return `Hello, ${name ?? &quot;world&quot;}!`;</span></div>
+          <div class="row out" id="r38"><span class="add">+  const trimmed = typeof name =‌=‌= &quot;string&quot; ? name.trim() : &quot;&quot;;</span></div>
+          <div class="row out" id="r39"><span class="add">+  return `Hello, ${trimmed |‌| &quot;world&quot;}!`;</span></div>
+          <div class="row elide" id="r40">…</div>
+          <div class="row out" id="r41"><span class="add">+</span></div>
+          <div class="row out" id="r42"><span class="add">+test(&quot;a blank name falls back to the world&quot;, () =‌&gt; {</span></div>
+          <div class="row out" id="r43"><span class="add">+  assert.equal(greet(&quot;&quot;), &quot;Hello, world!&quot;);</span></div>
+          <div class="row out" id="r44"><span class="add">+  assert.equal(greet(&quot;   &quot;), &quot;Hello, world!&quot;);</span></div>
+          <div class="row out" id="r45"><span class="add">+});</span></div>
+          <div class="row cmd" id="r46"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row out" id="r47"># tests 3</div>
+          <div class="row out" id="r48"># pass 3</div>
+          <div class="row out" id="r49"># fail 0</div>
+        </div></div></div></div>
+      </section>
+
+      <section id="scr-claude-4" class="clip stage" data-start="57.49" data-duration="26.39" data-track-index="1">
+        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-4" data-layout-allow-overflow><div class="rows" id="rows-claude-4" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row cmd" id="r50"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row out" id="r51">Reviewer: codex (openai; another family than the author (claude)). Author: claude.</div>
+          <div class="row out" id="r52">  2 path(s) since 067bfbf1dc26 · timeout 30 min</div>
+          <div class="row out" id="r53">Verdict: ship → <span class="cut">…</span>/reports/review-codex.md</div>
+          <div class="row out" id="r54">exit 0</div>
+          <div class="row cmd" id="r55"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row cmd" id="r56"><span class="cmd"></span></div>
+          <div class="row out" id="r57">review by codex (openai): fix first · reports/review-codex.md</div>
+          <div class="row out" id="r58">review by codex (openai): ship · reports/review-codex.md</div>
+          <div class="row cmd" id="r59"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row cmd" id="r60"><span class="cmd"></span></div>
+          <div class="row out" id="r61">Verdict: ship · risk: low · 2 files · 0 findings</div>
+        </div></div></div></div>
+      </section>
+      <audio id="vo-01-intro" src="assets/media/01-intro.wav" data-start="1.1" data-duration="2.88" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-02-review" src="assets/media/02-review.wav" data-start="4.33" data-duration="13.44" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-02-review" class="clip chip" data-start="4.28" data-duration="13.59" data-track-index="2"><span class="chip-inner" id="chipi-02-review">What a reviewer gets: <code>specweave review --brief</code></span></div>
+      <audio id="vo-03-verdict" src="assets/media/03-verdict.wav" data-start="17.92" data-duration="16.32" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-03-verdict" class="clip chip" data-start="17.87" data-duration="16.47" data-track-index="2"><span class="chip-inner" id="chipi-03-verdict">Before you ship: <code>specweave review</code></span></div>
+      <audio id="vo-04-report" src="assets/media/04-report.wav" data-start="34.39" data-duration="12.8" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-04-report" class="clip chip" data-start="34.34" data-duration="13" data-track-index="2"><span class="chip-inner" id="chipi-04-report">Read <code>reports/review-codex.md</code></span></div>
+      <audio id="vo-05-fix" src="assets/media/05-fix.wav" data-start="47.39" data-duration="10" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-05-fix" class="clip chip" data-start="47.34" data-duration="10.15" data-track-index="2"><span class="chip-inner" id="chipi-05-fix">Fix the finding, run the tests</span></div>
+      <audio id="vo-06-again" src="assets/media/06-again.wav" data-start="57.54" data-duration="9.68" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-06-again" class="clip chip" data-start="57.49" data-duration="9.83" data-track-index="2"><span class="chip-inner" id="chipi-06-again">Review again: <code>specweave review</code></span></div>
+      <audio id="vo-07-ledger" src="assets/media/07-ledger.wav" data-start="67.37" data-duration="16.16" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-07-ledger" class="clip chip" data-start="67.32" data-duration="16.56" data-track-index="2"><span class="chip-inner" id="chipi-07-ledger">Each verdict in <code>ledger.jsonl</code></span></div>
+      <audio id="vo-08-outro" src="assets/media/08-outro.wav" data-start="83.93" data-duration="6" data-track-index="6" data-volume="1"></audio>
+
+      <section id="intro" class="clip card" data-start="0" data-duration="4.28" data-track-index="1">
+        <div class="card-inner">
+          <div class="wordmark rise">SpecWeave</div>
+          <h1 class="title rise">Review with the other model before you ship</h1>
+          <div class="thread" id="intro-thread"></div>
+          <p class="subtitle rise">A real run of the SpecWeave 3.1.0 CLI in a sample repo.</p>
+          <div class="footer rise">spec-weave.com/tutorials</div>
+        </div>
+      </section>
+
+      <section id="outro" class="clip card" data-start="83.88" data-duration="9.05" data-track-index="1">
+        <div class="card-inner">
+          <div class="wordmark rise">SpecWeave</div>
+          <div class="outro-l1 rise">Next: <code>specweave verify</code>, then <code>specweave complete</code></div>
+          <div class="thread" id="outro-thread"></div>
+          <p class="outro-l2 rise">Agent sessions are not shown: Claude Code's change, its fix and the new test were scripted off camera and committed under the claude tool id. Every command and output is real, the reviewer was the real Codex CLI, and the narration is an AI voice.</p>
+          <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
+        </div>
+      </section>
+      <div id="cap-1" class="clip caption" data-start="1.1" data-duration="3.18" data-track-index="5"><span class="pill">Review with the other<br>model before you ship.</span></div>
+      <div id="cap-2" class="clip caption" data-start="4.33" data-duration="3.22" data-track-index="5"><span class="pill">Claude Code finished<br>this task on a branch.</span></div>
+      <div id="cap-3" class="clip caption" data-start="7.55" data-duration="4.422" data-track-index="5"><span class="pill"><code>specweave review --brief</code><br>shows what a reviewer gets:</span></div>
+      <div id="cap-4" class="clip caption" data-start="11.972" data-duration="2.158" data-track-index="5"><span class="pill">who wrote the code, from the ledger,</span></div>
+      <div id="cap-5" class="clip caption" data-start="14.13" data-duration="3.74" data-track-index="5"><span class="pill">the acceptance criteria, and<br>the diff since the branch began.</span></div>
+      <div id="cap-6" class="clip caption" data-start="17.92" data-duration="3.11" data-track-index="5"><span class="pill">Before you ship, run <code>specweave review</code>.</span></div>
+      <div id="cap-7" class="clip caption" data-start="21.03" data-duration="3.777" data-track-index="5"><span class="pill">Claude wrote the code, so it<br>picks Codex, from another family.</span></div>
+      <div id="cap-8" class="clip caption" data-start="24.807" data-duration="3.251" data-track-index="5"><span class="pill">Codex gets the brief<br>in a read-only sandbox.</span></div>
+      <div id="cap-9" class="clip caption" data-start="28.058" data-duration="2.287" data-track-index="5"><span class="pill">This run took about 30 seconds.</span></div>
+      <div id="cap-10" class="clip caption" data-start="30.345" data-duration="3.995" data-track-index="5"><span class="pill">Its verdict is fix first,<br>so the command exits 3.</span></div>
+      <div id="cap-11" class="clip caption" data-start="34.39" data-duration="4.193" data-track-index="5"><span class="pill">The review is saved in<br><code>reports/review-codex.md</code>.</span></div>
+      <div id="cap-12" class="clip caption" data-start="38.583" data-duration="3.921" data-track-index="5"><span class="pill">Each finding cites a file<br>and line, and how to fix it.</span></div>
+      <div id="cap-13" class="clip caption" data-start="42.504" data-duration="4.836" data-track-index="5"><span class="pill">Here, a blank name gets no<br>fallback, which breaks <code>AC-02</code>.</span></div>
+      <div id="cap-14" class="clip caption" data-start="47.39" data-duration="4.449" data-track-index="5"><span class="pill">Claude's fix trims the name, and<br>falls back to world when it's empty.</span></div>
+      <div id="cap-15" class="clip caption" data-start="51.839" data-duration="3.094" data-track-index="5"><span class="pill">It also adds a test for blank names.</span></div>
+      <div id="cap-16" class="clip caption" data-start="54.933" data-duration="2.557" data-track-index="5"><span class="pill">Run the tests: all three pass.</span></div>
+      <div id="cap-17" class="clip caption" data-start="57.54" data-duration="3.509" data-track-index="5"><span class="pill">Then run <code>specweave review</code><br>again, on the fixed code.</span></div>
+      <div id="cap-18" class="clip caption" data-start="61.049" data-duration="4.442" data-track-index="5"><span class="pill">No critical or high finding is<br>left, so the verdict is ship,</span></div>
+      <div id="cap-19" class="clip caption" data-start="65.491" data-duration="1.829" data-track-index="5"><span class="pill">and the exit code is 0.</span></div>
+      <div id="cap-20" class="clip caption" data-start="67.37" data-duration="4.356" data-track-index="5"><span class="pill">Each run adds a note to the ledger,<br>with the reviewer and its verdict.</span></div>
+      <div id="cap-21" class="clip caption" data-start="71.726" data-duration="4.179" data-track-index="5"><span class="pill">Both notes name the same file,<br>and the second run overwrote it:</span></div>
+      <div id="cap-22" class="clip caption" data-start="75.905" data-duration="3.815" data-track-index="5"><span class="pill">the fix-first report is gone,<br>so keep a copy if you need it.</span></div>
+      <div id="cap-23" class="clip caption" data-start="79.72" data-duration="4.16" data-track-index="5"><span class="pill"><code>specweave pickup</code> shows the latest<br>notes to whoever comes next.</span></div>
+      <div id="cap-24" class="clip caption" data-start="83.93" data-duration="2.823" data-track-index="5"><span class="pill">Next, run <code>specweave verify</code>,</span></div>
+      <div id="cap-25" class="clip caption" data-start="86.753" data-duration="3.577" data-track-index="5"><span class="pill">then close the increment<br>with <code>specweave complete</code>.</span></div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // Types a command across its wrapped rows; segs are the row texts after the prompt.
+      function typeCmd(ids, segs, start, dur) {
+        const o = { n: 0 };
+        const els = ids.map((id) => document.querySelector("#" + id + " .cmd"));
+        const total = segs.reduce((a, s) => a + s.length, 0);
+        tl.to(o, { n: total, duration: dur, ease: "none", onUpdate: () => {
+          let left = Math.round(o.n);
+          segs.forEach((s, i) => { els[i].textContent = s.slice(0, Math.max(0, left)); left -= s.length; });
+        } }, start);
+      }
+      typeCmd(["r1"], ["specweave review --brief"], 7.61, 0.4);
+      typeCmd(["r16"], ["specweave review; echo \"exit $?\""], 19.2, 0.533);
+      tl.set("#r1", { opacity: 1 }, 4.28);
+      tl.fromTo("#r2", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 8.26);
+      tl.fromTo("#r3", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 8.3);
+      tl.fromTo("#r4", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 8.34);
+      tl.fromTo("#r5", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 8.38);
+      tl.fromTo("#r6", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 8.42);
+      tl.fromTo("#r7", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 8.46);
+      tl.fromTo("#r8", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 8.5);
+      tl.fromTo("#r9", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 8.54);
+      tl.fromTo("#r10", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 8.58);
+      tl.fromTo("#r11", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 8.62);
+      tl.fromTo("#r12", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 8.66);
+      tl.fromTo("#r13", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 8.7);
+      tl.fromTo("#r14", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 8.74);
+      tl.fromTo("#r15", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 8.78);
+      tl.set("#r16", { opacity: 1 }, 19.2);
+      tl.fromTo("#r17", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 19.983);
+      tl.fromTo("#r18", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 20.023);
+      tl.fromTo("#r19", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 29.97);
+      tl.fromTo("#r20", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 30.01);
+      tl.fromTo("#r21", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 30.05);
+      tl.to("#clip-claude-1", { height: 630, duration: 0.2, ease: "power2.out" }, 8.26);
+      tl.to("#rows-claude-1", { y: -42, duration: 0.3, ease: "power2.inOut" }, 19.2);
+      tl.to("#rows-claude-1", { y: -126, duration: 0.3, ease: "power2.inOut" }, 19.983);
+      tl.to("#rows-claude-1", { y: -252, duration: 0.3, ease: "power2.inOut" }, 29.97);
+      tl.to("#r3", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 12.01);
+      tl.to("#r3", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 14.17);
+      tl.to("#r7,#r8", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 14.37);
+      tl.to("#r7,#r8", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 15.89);
+      tl.to("#r11,#r12,#r13,#r14", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 16.09);
+      tl.to("#r11,#r12,#r13,#r14", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 19);
+      tl.to("#r17", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 21.04);
+      tl.to("#r17", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 24.84);
+      tl.to("#r18", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 26);
+      tl.to("#r18", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 29.77);
+      tl.to("#r19", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 30.56);
+      tl.to("#r19", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 33.16);
+      tl.to("#r21", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 33.36);
+      tl.to("#r21", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 34.14);
+      typeCmd(["r22"], ["cat .specweave/increments/0001-personal-greeting/reports/review-codex.md"], 34.44, 1);
+      tl.set("#r22", { opacity: 1 }, 34.34);
+      tl.fromTo("#r23", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 35.69);
+      tl.fromTo("#r24", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.73);
+      tl.fromTo("#r25", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.77);
+      tl.fromTo("#r26", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.81);
+      tl.fromTo("#r27", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.85);
+      tl.fromTo("#r28", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.89);
+      tl.fromTo("#r29", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.89);
+      tl.fromTo("#r30", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.89);
+      tl.fromTo("#r31", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.89);
+      tl.fromTo("#r32", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.89);
+      tl.fromTo("#r33", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.93);
+      tl.fromTo("#r34", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 35.97);
+      tl.to("#clip-claude-2", { height: 546, duration: 0.2, ease: "power2.out" }, 35.69);
+      tl.to("#r25", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 35.87);
+      tl.to("#r25", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 38.59);
+      tl.to("#r27", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 39.59);
+      tl.to("#r27", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 42.43);
+      tl.to("#r28,#r29,#r30,#r31,#r32", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 43.27);
+      tl.to("#r28,#r29,#r30,#r31,#r32", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 47.14);
+      typeCmd(["r35"], ["git --no-pager show --format=%s HEAD -- src test"], 47.54, 0.8);
+      typeCmd(["r46"], ["npm test 2>&1 | grep -E '^# (tests|pass|fail)'"], 54.91, 0.767);
+      tl.set("#r35", { opacity: 1 }, 47.34);
+      tl.fromTo("#r36", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 48.59);
+      tl.fromTo("#r37", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 48.63);
+      tl.fromTo("#r38", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 48.67);
+      tl.fromTo("#r39", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 48.71);
+      tl.fromTo("#r40", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 48.75);
+      tl.fromTo("#r41", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 48.79);
+      tl.fromTo("#r42", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 48.83);
+      tl.fromTo("#r43", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 48.87);
+      tl.fromTo("#r44", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 48.91);
+      tl.fromTo("#r45", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 48.95);
+      tl.set("#r46", { opacity: 1 }, 54.91);
+      tl.fromTo("#r47", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 55.927);
+      tl.fromTo("#r48", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 55.967);
+      tl.fromTo("#r49", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 56.007);
+      tl.to("#clip-claude-3", { height: 462, duration: 0.2, ease: "power2.out" }, 48.59);
+      tl.to("#clip-claude-3", { height: 504, duration: 0.2, ease: "power2.out" }, 54.91);
+      tl.to("#clip-claude-3", { height: 630, duration: 0.2, ease: "power2.out" }, 55.927);
+      tl.to("#r38,#r39", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 48.81);
+      tl.to("#r38,#r39", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 52.99);
+      tl.to("#r42,#r43,#r44,#r45", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 53.19);
+      tl.to("#r42,#r43,#r44,#r45", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 56.11);
+      tl.to("#r47,#r48", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 56.31);
+      tl.to("#r47,#r48", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 57.29);
+      typeCmd(["r50"], ["specweave review; echo \"exit $?\""], 58.02, 0.533);
+      typeCmd(["r55","r56"], ["grep '\"e\":\"note\"' .specweave/increments/0001-personal-greeting/ledger.jsonl |","jq -r .note"], 68.49, 1);
+      typeCmd(["r59","r60"], ["grep -m1 '^Verdict' .specweave/increments/0001-personal-greeting/reports/","review-codex.md"], 73.17, 1);
+      tl.set("#r50", { opacity: 1 }, 57.49);
+      tl.fromTo("#r51", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 58.803);
+      tl.fromTo("#r52", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 58.843);
+      tl.fromTo("#r53", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 61.3);
+      tl.fromTo("#r54", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 61.34);
+      tl.set("#r55", { opacity: 1 }, 68.49);
+      tl.set("#r56", { opacity: 1 }, 68.49);
+      tl.fromTo("#r57", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 69.74);
+      tl.fromTo("#r58", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 69.78);
+      tl.set("#r59", { opacity: 1 }, 73.17);
+      tl.set("#r60", { opacity: 1 }, 73.17);
+      tl.fromTo("#r61", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 74.42);
+      tl.to("#clip-claude-4", { height: 126, duration: 0.2, ease: "power2.out" }, 58.803);
+      tl.to("#clip-claude-4", { height: 210, duration: 0.2, ease: "power2.out" }, 61.3);
+      tl.to("#clip-claude-4", { height: 294, duration: 0.2, ease: "power2.out" }, 68.49);
+      tl.to("#clip-claude-4", { height: 378, duration: 0.2, ease: "power2.out" }, 69.74);
+      tl.to("#clip-claude-4", { height: 462, duration: 0.2, ease: "power2.out" }, 73.17);
+      tl.to("#clip-claude-4", { height: 504, duration: 0.2, ease: "power2.out" }, 74.42);
+      tl.to("#r53", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 64.26);
+      tl.to("#r53", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 65.58);
+      tl.to("#r54", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 65.78);
+      tl.to("#r54", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 67.12);
+      tl.to("#r57,#r58", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 70.05);
+      tl.to("#r57,#r58", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 72.97);
+      tl.to("#r57", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 77.37);
+      tl.to("#r57", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 79.89);
+      tl.to("#r57,#r58", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 81.85);
+      tl.to("#r57,#r58", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 83.68);
+      tl.to("#r61", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 75.05);
+      tl.to("#r61", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 77.17);
+      tl.fromTo("#chipi-02-review", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 4.38);
+      tl.fromTo("#chipi-03-verdict", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 17.97);
+      tl.fromTo("#chipi-04-report", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 34.44);
+      tl.fromTo("#chipi-05-fix", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 47.44);
+      tl.fromTo("#chipi-06-again", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 57.59);
+      tl.fromTo("#chipi-07-ledger", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 67.42);
+      tl.fromTo("#intro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, 0);
+      tl.fromTo("#intro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, 0.2);
+      tl.to("#intro .card-inner", { opacity: 0, duration: 0.25, ease: "none" }, 4.03);
+      tl.fromTo("#outro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, 83.88);
+      tl.fromTo("#outro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, 84.18);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,83 @@
+{
+  "specweave": "3.1.0",
+  "capturedAt": "2026-10-18T09:00:13.802Z",
+  "shots": [
+    {
+      "beat": "02-claim",
+      "tool": "claude",
+      "cmd": "specweave task claim T-01",
+      "out": "Claimed T-01 as claude@demo\nT-01 Greet by name\n  AC-01: greet(\"Ada\") returns \"Hello, Ada!\"\n  AC-02: greet() with no name still returns \"Hello, world!\"\n  Files: src/greeting.js, test/greeting.test.js | Test: npm test\n  state: claimed by claude@demo since 2026-10-18T08:59:12.802Z\n  when done: specweave task done T-01 0001-personal-greeting --run \"npm test\"",
+      "exit": 0
+    },
+    {
+      "beat": "03-done",
+      "tool": "claude",
+      "cmd": "specweave task done T-01 --run \"npm test\"",
+      "out": "Done T-01 (1/1) — evidence: npm test → exit 0\nAll tasks done. Next: specweave verify 0001-personal-greeting",
+      "exit": 0
+    },
+    {
+      "beat": "04-evidence",
+      "tool": "claude",
+      "cmd": "cat .specweave/increments/0001-personal-greeting/reports/task-T-01.txt",
+      "out": "$ npm test\n# exit 0 — 2026-10-18T08:59:58.265Z\n\n\n> greet-app@0.1.0 test\n> node --test\n\nTAP version 13\n# Subtest: greet() says hello to the world\nok 1 - greet() says hello to the world\n  ---\n  duration_ms: 0.360167\n  type: 'test'\n  ...\n# Subtest: greet(name) says hello by name\nok 2 - greet(name) says hello by name\n  ---\n  duration_ms: 0.054125\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 37.449291",
+      "exit": 0
+    },
+    {
+      "beat": "05-blocked",
+      "tool": "claude",
+      "cmd": "specweave complete 0001",
+      "out": "\n✅ Completing increment 0001-personal-greeting...\n\n❌ Increment 0001-personal-greeting failed quality gates:\n\n   • reports/verify.json missing — run `specweave verify 0001-personal-greeting` first, or pass --reason \"<why closing without it>\"\n\n⚠️  Warnings:\n\n   • no reports/review.md or review-<reviewer>.md — run sw-review (or `specweave review` for another model) before shipping user-facing work\n   • Test coverage below target (0.0% < 80%)\n    Coverage data not found. Run tests with --coverage flag.\n    File: not found\n[completeIncrement] 0001-personal-greeting failed quality gates: reports/verify.json missing — run `specweave verify 0001-personal-greeting` first, or pass --reason \"<why closing without it>\"",
+      "exit": 1
+    },
+    {
+      "beat": "06-verify",
+      "tool": "claude",
+      "cmd": "specweave verify",
+      "out": "▶ npm run test\nok   npm run test (exit 0)\nACs 2/2 · tasks 1/1 done (0 skipped)\nPASS → /Users/Shared/specwithcode-demo/tut03-claim-prove-verify-complete/final/home/greet-app/.specweave/increments/0001-personal-greeting/reports/verify.md\nNext: specweave complete 0001-personal-greeting",
+      "exit": 0
+    },
+    {
+      "beat": "07-report",
+      "tool": "claude",
+      "cmd": "cat .specweave/increments/0001-personal-greeting/reports/verify.md",
+      "out": "# Verify — 0001-personal-greeting\n\nPASS · 2026-10-18T09:00:13.659Z · commands from package.json scripts\n\n## Commands\n\n### `npm run test` → exit 0 (0s)\n\n```\n\n> greet-app@0.1.0 test\n> node --test\n\nTAP version 13\n# Subtest: greet() says hello to the world\nok 1 - greet() says hello to the world\n  ---\n  duration_ms: 0.33175\n  type: 'test'\n  ...\n# Subtest: greet(name) says hello by name\nok 2 - greet(name) says hello by name\n  ---\n  duration_ms: 0.051\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 38.787083\n```\n\n## Acceptance criteria\n\n2/2 met\n\n| AC | Met | Text |\n|---|---|---|\n| AC-01 | x (tasks) | greet(\"Ada\") returns \"Hello, Ada!\" |\n| AC-02 | x (tasks) | greet() with no name still returns \"Hello, world!\" |\n\n## Tasks (ledger)\n\n| Task | State | By | Evidence | Note |\n|---|---|---|---|---|\n| T-01 | done | claude@demo | npm test → exit 0 log: .specweave/increments/0001-personal-… |  |\n\n1/1 done · 0 skipped · 0 claimed · 0 blocked · 0 stale · 0 open",
+      "exit": 0
+    },
+    {
+      "beat": "07-report",
+      "tool": "claude",
+      "cmd": "ls .specweave/increments/0001-personal-greeting/reports",
+      "out": "task-T-01.txt\nverify.json\nverify.md",
+      "exit": 0
+    },
+    {
+      "beat": "08-complete",
+      "tool": "claude",
+      "cmd": "specweave complete 0001",
+      "out": "\n✅ Completing increment 0001-personal-greeting...\n\n\nℹ️  Checks:\n\n   • verify ok (2026-10-18T09:00:13.659Z; 1 command(s); ACs 2/2)\n\n⚠️  Warnings (non-blocking):\n\n   • no reports/review.md or review-<reviewer>.md — run sw-review (or `specweave review` for another model) before shipping user-facing work\n   • Test coverage below target (0.0% < 80%)\n    Coverage data not found. Run tests with --coverage flag.\n    File: not found\n   Transitioning: active → ready_for_review\n\n✅ Increment 0001-personal-greeting completed!\n📦 Status changed to: completed",
+      "exit": 0
+    },
+    {
+      "beat": "08-complete",
+      "tool": "claude",
+      "cmd": "jq -r .status .specweave/increments/0001-personal-greeting/metadata.json",
+      "out": "completed",
+      "exit": 0
+    }
+  ],
+  "offCameraDiff": "diff --git a/src/greeting.js b/src/greeting.js\nindex 83ca416..6686db1 100644\n--- a/src/greeting.js\n+++ b/src/greeting.js\n@@ -1 +1,3 @@\n-export function greet() { return \"Hello, world!\"; }\n+export function greet(name = \"world\") {\n+  return `Hello, ${name}!`;\n+}",
+  "offCameraTestDiff": "diff --git a/test/greeting.test.js b/test/greeting.test.js\nindex 8e43f78..0f2176f 100644\n--- a/test/greeting.test.js\n+++ b/test/greeting.test.js\n@@ -5,3 +5,7 @@ import { greet } from \"../src/greeting.js\";\n test(\"greet() says hello to the world\", () => {\n   assert.equal(greet(), \"Hello, world!\");\n });\n+\n+test(\"greet(name) says hello by name\", () => {\n+  assert.equal(greet(\"Ada\"), \"Hello, Ada!\");\n+});",
+  "ledger": [
+    {
+      "t": "T-01",
+      "e": "claim",
+      "by": "claude@demo"
+    },
+    {
+      "t": "T-01",
+      "e": "done",
+      "by": "claude@demo"
+    }
+  ]
+}

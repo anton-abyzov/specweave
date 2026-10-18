@@ -1,0 +1,7 @@
+# Footage and VO live outside the repo (see ../../PIPELINE.md); this is a symlink to them.
+assets/media
+renders/
+snapshots/
+node_modules/
+AGENTS.md
+CLAUDE.md

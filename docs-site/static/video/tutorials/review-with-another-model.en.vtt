@@ -1,0 +1,101 @@
+WEBVTT
+
+1
+00:00:01.100 --> 00:00:04.280
+Review with the other model before you ship.
+
+2
+00:00:04.330 --> 00:00:07.550
+Claude Code finished this task on a branch.
+
+3
+00:00:07.550 --> 00:00:11.972
+specweave review --brief shows what a reviewer gets:
+
+4
+00:00:11.972 --> 00:00:14.130
+who wrote the code, from the ledger,
+
+5
+00:00:14.130 --> 00:00:17.870
+the acceptance criteria, and the diff since the branch began.
+
+6
+00:00:17.920 --> 00:00:21.030
+Before you ship, run specweave review.
+
+7
+00:00:21.030 --> 00:00:24.807
+Claude wrote the code, so it picks Codex, from another family.
+
+8
+00:00:24.807 --> 00:00:28.058
+Codex gets the brief in a read-only sandbox.
+
+9
+00:00:28.058 --> 00:00:30.345
+This run took about 30 seconds.
+
+10
+00:00:30.345 --> 00:00:34.340
+Its verdict is fix first, so the command exits 3.
+
+11
+00:00:34.390 --> 00:00:38.583
+The review is saved in reports/review-codex.md.
+
+12
+00:00:38.583 --> 00:00:42.504
+Each finding cites a file and line, and how to fix it.
+
+13
+00:00:42.504 --> 00:00:47.340
+Here, a blank name gets no fallback, which breaks AC-02.
+
+14
+00:00:47.390 --> 00:00:51.839
+Claude's fix trims the name, and falls back to world when it's empty.
+
+15
+00:00:51.839 --> 00:00:54.933
+It also adds a test for blank names.
+
+16
+00:00:54.933 --> 00:00:57.490
+Run the tests: all three pass.
+
+17
+00:00:57.540 --> 00:01:01.049
+Then run specweave review again, on the fixed code.
+
+18
+00:01:01.049 --> 00:01:05.491
+No critical or high finding is left, so the verdict is ship,
+
+19
+00:01:05.491 --> 00:01:07.320
+and the exit code is 0.
+
+20
+00:01:07.370 --> 00:01:11.726
+Each run adds a note to the ledger, with the reviewer and its verdict.
+
+21
+00:01:11.726 --> 00:01:15.905
+Both notes name the same file, and the second run overwrote it:
+
+22
+00:01:15.905 --> 00:01:19.720
+the fix-first report is gone, so keep a copy if you need it.
+
+23
+00:01:19.720 --> 00:01:23.880
+specweave pickup shows the latest notes to whoever comes next.
+
+24
+00:01:23.930 --> 00:01:26.753
+Next, run specweave verify,
+
+25
+00:01:26.753 --> 00:01:30.330
+then close the increment with specweave complete.

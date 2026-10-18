@@ -1,0 +1,584 @@
+{
+  "comment": "Anchors: [beat, cue|null, offset] or [beat, cue, spokenWord, offset]. Screen item `lines` are output line ranges to show (the rest is one … row), `hl.lines` output line indices to highlight.",
+  "title": "Review with the other model before you ship",
+  "outro": {
+    "next": "Next: `specweave verify`, then `specweave complete`",
+    "note": "Agent sessions are not shown: Claude Code's change, its fix and the new test were scripted off camera and committed under the claude tool id. Every command and output is real, the reviewer was the real Codex CLI, and the narration is an AI voice."
+  },
+  "voOffset": 0.05,
+  "tailAfterVo": 0.1,
+  "termCols": 90,
+  "visibleRows": 15,
+  "posterAt": 1.0,
+  "beats": [
+    {
+      "id": "01-intro",
+      "kind": "card",
+      "chapter": "What you will do",
+      "voOffset": 1.1,
+      "tail": 0.3
+    },
+    {
+      "id": "02-review",
+      "kind": "term",
+      "screen": "claude-1",
+      "chapter": "What a reviewer gets",
+      "stepChip": "What a reviewer gets: `specweave review --brief`"
+    },
+    {
+      "id": "03-verdict",
+      "kind": "term",
+      "screen": "claude-1",
+      "chapter": "Codex reviews: fix first, exit 3",
+      "stepChip": "Before you ship: `specweave review`"
+    },
+    {
+      "id": "04-report",
+      "kind": "term",
+      "screen": "claude-2",
+      "chapter": "What reports/review-codex.md says",
+      "stepChip": "Read `reports/review-codex.md`",
+      "tail": 0.15
+    },
+    {
+      "id": "05-fix",
+      "kind": "term",
+      "screen": "claude-3",
+      "chapter": "Fix the finding",
+      "stepChip": "Fix the finding, run the tests"
+    },
+    {
+      "id": "06-again",
+      "kind": "term",
+      "screen": "claude-4",
+      "chapter": "Review again: ship, exit 0",
+      "stepChip": "Review again: `specweave review`"
+    },
+    {
+      "id": "07-ledger",
+      "kind": "term",
+      "screen": "claude-4",
+      "chapter": "Each verdict in the ledger",
+      "stepChip": "Each verdict in `ledger.jsonl`",
+      "tail": 0.35
+    },
+    {
+      "id": "08-outro",
+      "kind": "card",
+      "chapter": "Next: verify and complete",
+      "tail": 3.0
+    }
+  ],
+  "screens": {
+    "claude-1": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 5,
+          "at": [
+            "02-review",
+            1,
+            "spec",
+            0
+          ],
+          "lines": [
+            [
+              9,
+              9
+            ],
+            [
+              16,
+              19
+            ],
+            [
+              44,
+              48
+            ]
+          ],
+          "diff": [
+            [
+              44,
+              48
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                9
+              ],
+              "from": [
+                "02-review",
+                2,
+                "who",
+                0
+              ],
+              "to": [
+                "02-review",
+                3,
+                "acceptance",
+                0
+              ]
+            },
+            {
+              "lines": [
+                18,
+                19
+              ],
+              "from": [
+                "02-review",
+                3,
+                "acceptance",
+                0
+              ],
+              "to": [
+                "02-review",
+                3,
+                "diff",
+                0
+              ]
+            },
+            {
+              "lines": [
+                45,
+                46,
+                47,
+                48
+              ],
+              "from": [
+                "02-review",
+                3,
+                "diff",
+                0
+              ],
+              "to": [
+                "03-verdict",
+                0,
+                "run",
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "shot": 0,
+          "at": [
+            "03-verdict",
+            0,
+            "run",
+            0
+          ],
+          "holdFrom": {
+            "line": 2,
+            "at": [
+              "03-verdict",
+              3,
+              "seconds",
+              0.45
+            ]
+          },
+          "trim": [
+            {
+              "line": 2,
+              "pattern": "/Users/Shared/\\S+/0001-personal-greeting/",
+              "with": "…/"
+            }
+          ],
+          "hl": [
+            {
+              "lines": [
+                0
+              ],
+              "from": [
+                "03-verdict",
+                1,
+                "claude",
+                0
+              ],
+              "to": [
+                "03-verdict",
+                2,
+                "codex",
+                0
+              ]
+            },
+            {
+              "lines": [
+                1
+              ],
+              "from": [
+                "03-verdict",
+                2,
+                "brief",
+                0
+              ],
+              "to": [
+                "03-verdict",
+                3,
+                "seconds",
+                0.45
+              ]
+            },
+            {
+              "lines": [
+                2
+              ],
+              "from": [
+                "03-verdict",
+                4,
+                "verdict",
+                0
+              ],
+              "to": [
+                "03-verdict",
+                4,
+                "exits",
+                0
+              ]
+            },
+            {
+              "lines": [
+                4
+              ],
+              "from": [
+                "03-verdict",
+                4,
+                "exits",
+                0
+              ],
+              "to": [
+                "04-report",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "claude-2": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 1,
+          "at": [
+            "04-report",
+            null,
+            0.1
+          ],
+          "keepTop": true,
+          "lines": [
+            [
+              1,
+              7
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                2
+              ],
+              "from": [
+                "04-report",
+                0,
+                "saved",
+                0
+              ],
+              "to": [
+                "04-report",
+                1,
+                "each",
+                0
+              ]
+            },
+            {
+              "lines": [
+                4
+              ],
+              "from": [
+                "04-report",
+                1,
+                "cites",
+                0
+              ],
+              "to": [
+                "04-report",
+                2,
+                "here",
+                0
+              ]
+            },
+            {
+              "lines": [
+                5
+              ],
+              "from": [
+                "04-report",
+                2,
+                "blank",
+                0
+              ],
+              "to": [
+                "05-fix",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "claude-3": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 6,
+          "at": [
+            "05-fix",
+            null,
+            0.2
+          ],
+          "lines": [
+            [
+              8,
+              10
+            ],
+            [
+              20,
+              24
+            ]
+          ],
+          "diff": [
+            [
+              7,
+              24
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                9,
+                10
+              ],
+              "from": [
+                "05-fix",
+                0,
+                "trims",
+                0
+              ],
+              "to": [
+                "05-fix",
+                1,
+                "test",
+                0
+              ]
+            },
+            {
+              "lines": [
+                21,
+                22,
+                23,
+                24
+              ],
+              "from": [
+                "05-fix",
+                1,
+                "test",
+                0
+              ],
+              "to": [
+                "05-fix",
+                2,
+                "all",
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "shot": 2,
+          "at": [
+            "05-fix",
+            2,
+            "run",
+            0
+          ],
+          "hl": [
+            {
+              "lines": [
+                0,
+                1
+              ],
+              "from": [
+                "05-fix",
+                2,
+                "all",
+                0
+              ],
+              "to": [
+                "06-again",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "claude-4": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 3,
+          "at": [
+            "06-again",
+            0,
+            "run",
+            0
+          ],
+          "holdFrom": {
+            "line": 2,
+            "at": [
+              "06-again",
+              1,
+              "no",
+              0
+            ]
+          },
+          "trim": [
+            {
+              "line": 2,
+              "pattern": "/Users/Shared/\\S+/0001-personal-greeting/",
+              "with": "…/"
+            }
+          ],
+          "hl": [
+            {
+              "lines": [
+                2
+              ],
+              "from": [
+                "06-again",
+                1,
+                "verdict",
+                0
+              ],
+              "to": [
+                "06-again",
+                2,
+                "exit",
+                0
+              ]
+            },
+            {
+              "lines": [
+                3
+              ],
+              "from": [
+                "06-again",
+                2,
+                "exit",
+                0
+              ],
+              "to": [
+                "07-ledger",
+                null,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "shot": 4,
+          "at": [
+            "07-ledger",
+            0,
+            "note",
+            0
+          ],
+          "hl": [
+            {
+              "lines": [
+                0,
+                1
+              ],
+              "from": [
+                "07-ledger",
+                0,
+                "reviewer",
+                0
+              ],
+              "to": [
+                "07-ledger",
+                1,
+                "same",
+                0
+              ]
+            },
+            {
+              "lines": [
+                0
+              ],
+              "from": [
+                "07-ledger",
+                2,
+                "gone",
+                0
+              ],
+              "to": [
+                "07-ledger",
+                3,
+                "spec",
+                0
+              ]
+            },
+            {
+              "lines": [
+                0,
+                1
+              ],
+              "from": [
+                "07-ledger",
+                3,
+                "notes",
+                0
+              ],
+              "to": [
+                "08-outro",
+                null,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "shot": 7,
+          "at": [
+            "07-ledger",
+            1,
+            "same",
+            0
+          ],
+          "hl": [
+            {
+              "lines": [
+                0
+              ],
+              "from": [
+                "07-ledger",
+                1,
+                "overwrote",
+                0
+              ],
+              "to": [
+                "07-ledger",
+                2,
+                "gone",
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
