@@ -90,7 +90,7 @@ export async function pickupCommand(opts: PickupCommandOptions = {}): Promise<nu
   const head: string[] = [];
   if (chosen) {
     const which = !target && others.length ? `the newest of ${pending.length} pending handoffs` : 'handoff';
-    head.push(`Picking up ${which}: ${handoffLine(chosen)}`);
+    head.push(`Picking up ${which}: ${handoffLine(chosen, ' ')}`);
   }
 
   // 3. A session handoff: its work is still in its own checkout on this machine.

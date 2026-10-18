@@ -1,0 +1,136 @@
+{
+  "voiceId": "0Ki1af67ybTaTu4TNmO8",
+  "modelId": "eleven_v4",
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "lines": [
+    {
+      "id": "01-intro",
+      "chunks": [
+        [
+          "Hand off from Claude Code to Codex at a usage limit.",
+          "Hand off from Claude Code to Codex, at a usage limit."
+        ]
+      ]
+    },
+    {
+      "id": "02-limit",
+      "chunks": [
+        [
+          "With `specweave auto-handoff on`, Claude Code sends its usage to SpecWeave.",
+          "With spec weave auto handoff on, Claude Code sends its usage to spec weave."
+        ],
+        [
+          "Here we pass in a sample reading of 95% of the 5-hour limit.",
+          " Here we pass in a sample reading of ninety-five percent of the five-hour limit."
+        ],
+        [
+          "The guard says a handoff is available, and work continues.",
+          " The guard says a handoff is available, and work continues."
+        ]
+      ]
+    },
+    {
+      "id": "03-handoff",
+      "chunks": [
+        [
+          "When you are ready, tell Claude to hand off.",
+          "When you are ready, tell Claude to hand off."
+        ],
+        [
+          "It runs `specweave handoff` with a reason,",
+          " It runs spec weave handoff with a reason,"
+        ],
+        [
+          "releases its claim on `T-02`, and writes `handoff.md`.",
+          " releases its claim on T zero two, and writes handoff dot M D."
+        ]
+      ]
+    },
+    {
+      "id": "04-doc",
+      "chunks": [
+        [
+          "`handoff.md` says who stopped and why, and which tasks are done.",
+          "Handoff dot M D says who stopped and why, and which tasks are done."
+        ],
+        [
+          "It lists the uncommitted files, with the full diff beside it,",
+          " It lists the uncommitted files, with the full diff beside it,"
+        ],
+        [
+          "and the exact next step.",
+          " and the exact next step."
+        ]
+      ]
+    },
+    {
+      "id": "05-pickup",
+      "chunks": [
+        [
+          "Now open Codex in the same repo and say \"pick up\".",
+          "Now open Codex in the same repo, and say: pick up."
+        ],
+        [
+          "It runs `specweave pickup`, which reads the handoff",
+          " It runs spec weave pickup, which reads the handoff,"
+        ],
+        [
+          "and records the pickup in the ledger as `codex@demo`.",
+          " and records the pickup in the ledger, as codex at demo."
+        ]
+      ]
+    },
+    {
+      "id": "06-next",
+      "chunks": [
+        [
+          "Pickup names the next task, `T-02`,",
+          "Pickup names the next task, T zero two,"
+        ],
+        [
+          "with its acceptance criterion, its files and its test.",
+          " with its acceptance criterion, its files, and its test."
+        ],
+        [
+          "Codex claims it.",
+          " Codex claims it."
+        ]
+      ]
+    },
+    {
+      "id": "07-done",
+      "chunks": [
+        [
+          "With the change in place,",
+          "With the change in place,"
+        ],
+        [
+          "`task done --run` runs the test again.",
+          " task done, dash dash run, runs the test again."
+        ],
+        [
+          "Only a passing test marks the task done,",
+          " Only a passing test marks the task done,"
+        ],
+        [
+          "and the ledger shows that Codex finished it.",
+          " and the ledger shows that Codex finished it."
+        ]
+      ]
+    },
+    {
+      "id": "08-outro",
+      "chunks": [
+        [
+          "Next, `specweave verify` checks the increment before you close it.",
+          "Next, spec weave verify checks the increment before you close it."
+        ]
+      ]
+    }
+  ]
+}

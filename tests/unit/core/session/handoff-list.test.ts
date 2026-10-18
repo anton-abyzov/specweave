@@ -156,14 +156,14 @@ describe('specweave pickup with several pending handoffs', () => {
     writeIncrement('0880-memory-import', 'Memory import', [handoff(30)]);
     const first = await capture(() => pickupCommand({ cwd: root, agent: 'codex@m4', home }));
     expect(first.code).toBe(0);
-    expect(first.out).toContain('Picking up the newest of 2 pending handoffs: 0880  Memory import');
+    expect(first.out).toContain('Picking up the newest of 2 pending handoffs: 0880 Memory import');
     expect(first.out).toContain('Also pending (1), for another session:');
     expect(first.out).toContain('  0874  Studio release');
     expect(readIncrementEvents(path.join(root, '.specweave/increments/0880-memory-import/ledger.jsonl'), ['pickup'])).toHaveLength(1);
 
     // The next session's plain "pick up" gets the one left.
     const second = await capture(() => pickupCommand({ cwd: root, agent: 'claude@m4', home }));
-    expect(second.out).toContain('Picking up handoff: 0874  Studio release');
+    expect(second.out).toContain('Picking up handoff: 0874 Studio release');
     expect(second.out).not.toContain('Also pending');
     expect(listPendingHandoffs(root, { home })).toEqual([]);
   });
@@ -172,7 +172,7 @@ describe('specweave pickup with several pending handoffs', () => {
     writeIncrement('0874-studio-release', 'Studio release', [handoff(60)]);
     writeIncrement('0880-memory-import', 'Memory import', [handoff(30)]);
     const r = await capture(() => pickupCommand({ cwd: root, incrementId: 'studio release', agent: 'codex@m4', home }));
-    expect(r.out).toContain('Picking up handoff: 0874  Studio release');
+    expect(r.out).toContain('Picking up handoff: 0874 Studio release');
     expect(r.out).toContain('Increment 0874-studio-release');
     expect(listPendingHandoffs(root, { home }).map((h) => h.id)).toEqual(['0880']);
   });
@@ -191,7 +191,7 @@ describe('specweave pickup with several pending handoffs', () => {
     const wt = writeWorktree('studio-coordinator-routing', 'codex/studio-routing');
     writeSessionHandoff('s-1', wt, { min: 5, title: 'Coordinator-only flow' });
     const r = await capture(() => pickupCommand({ cwd: root, incrementId: 'studio-coordinator-routing', agent: 'codex@m4', home }));
-    expect(r.out).toContain('Picking up handoff: studio-coordinator-routing  Coordinator-only flow');
+    expect(r.out).toContain('Picking up handoff: studio-coordinator-routing Coordinator-only flow');
     expect(r.out).toContain('Continue in .claude/worktrees/studio-coordinator-routing (branch codex/studio-routing)');
     expect(r.out).toContain('Read the handoff first:');
     expect(listPendingHandoffs(root, { home }).map((h) => h.id)).toEqual(['0874']);
