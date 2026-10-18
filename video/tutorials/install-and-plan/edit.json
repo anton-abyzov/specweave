@@ -1,0 +1,599 @@
+{
+  "comment": "Anchors: [beat, cue|null, offset] or [beat, cue, spokenWord, offset]. Screen item `lines` are output line ranges to show (the rest is one \u2026 row), `hl.lines` output line indices to highlight.",
+  "title": "Install SpecWeave and plan your first increment",
+  "outro": {
+    "next": "Next: claim `T-01` and prove it with `task done --run`",
+    "note": "Agent sessions are not shown. Each command ran in a terminal as Claude Code, and every output is real. spec.md was filled in from a sample. The narration is an AI voice."
+  },
+  "voOffset": 0.05,
+  "tailAfterVo": 0.1,
+  "termCols": 90,
+  "visibleRows": 15,
+  "posterAt": 1.0,
+  "snapDb": -45,
+  "beats": [
+    {
+      "id": "01-intro",
+      "kind": "card",
+      "chapter": "What you will do",
+      "voOffset": 1.1,
+      "tail": 0.3
+    },
+    {
+      "id": "02-install",
+      "kind": "term",
+      "screen": "install",
+      "chapter": "Install the CLI",
+      "stepChip": "Install: `npm i -g specweave`"
+    },
+    {
+      "id": "03-init",
+      "kind": "term",
+      "screen": "init",
+      "chapter": "specweave init",
+      "stepChip": "Set up the repo: `specweave init`"
+    },
+    {
+      "id": "04-create",
+      "kind": "term",
+      "screen": "plan",
+      "chapter": "Create the increment",
+      "stepChip": "Plan: `specweave create-increment`"
+    },
+    {
+      "id": "05-decide",
+      "kind": "term",
+      "screen": "plan",
+      "chapter": "The Decide step",
+      "stepChip": "Decide: only the critical decisions"
+    },
+    {
+      "id": "06-spec",
+      "kind": "term",
+      "screen": "spec",
+      "chapter": "Problem and acceptance criteria",
+      "stepChip": "Fill in `spec.md`"
+    },
+    {
+      "id": "07-tasks",
+      "kind": "term",
+      "screen": "spec",
+      "chapter": "Decisions and tasks",
+      "stepChip": "Decisions and tasks in `spec.md`",
+      "tail": 0.3
+    },
+    {
+      "id": "08-pickup",
+      "kind": "term",
+      "screen": "pickup",
+      "chapter": "specweave pickup",
+      "stepChip": "Next task: `specweave pickup`",
+      "tail": 0.35
+    },
+    {
+      "id": "09-outro",
+      "kind": "card",
+      "chapter": "Next: claim and prove the task",
+      "tail": 1.5
+    }
+  ],
+  "screens": {
+    "install": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 0,
+          "at": [
+            "02-install",
+            1,
+            "npm",
+            0
+          ],
+          "lines": [
+            [
+              0,
+              1
+            ]
+          ]
+        },
+        {
+          "shot": 1,
+          "at": [
+            "02-install",
+            2,
+            "node",
+            0
+          ],
+          "hl": [
+            {
+              "lines": [
+                0
+              ],
+              "from": [
+                "02-install",
+                2,
+                "twenty",
+                0
+              ],
+              "to": [
+                "02-install",
+                3,
+                "spec",
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "shot": 2,
+          "at": [
+            "02-install",
+            3,
+            "spec",
+            0
+          ],
+          "hl": [
+            {
+              "lines": [
+                0
+              ],
+              "from": [
+                "02-install",
+                3,
+                "prints",
+                0
+              ],
+              "to": [
+                "03-init",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "init": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 3,
+          "at": [
+            "03-init",
+            0,
+            "run",
+            0
+          ],
+          "lines": [
+            [
+              6,
+              7
+            ],
+            [
+              12,
+              12
+            ],
+            [
+              16,
+              16
+            ],
+            [
+              20,
+              21
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                20
+              ],
+              "from": [
+                "03-init",
+                0,
+                "claude",
+                0
+              ],
+              "to": [
+                "03-init",
+                1,
+                "writes",
+                0
+              ]
+            },
+            {
+              "lines": [
+                6,
+                7
+              ],
+              "from": [
+                "03-init",
+                1,
+                "writes",
+                0
+              ],
+              "to": [
+                "03-init",
+                2,
+                "installs",
+                0
+              ]
+            },
+            {
+              "lines": [
+                12
+              ],
+              "from": [
+                "03-init",
+                2,
+                "installs",
+                0
+              ],
+              "to": [
+                "03-init",
+                3,
+                "and",
+                0
+              ]
+            },
+            {
+              "lines": [
+                21
+              ],
+              "from": [
+                "03-init",
+                3,
+                "settings",
+                0
+              ],
+              "to": [
+                "04-create",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 4,
+          "at": [
+            "04-create",
+            0,
+            "give",
+            0
+          ],
+          "lines": [
+            [
+              1,
+              1
+            ],
+            [
+              3,
+              8
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                1
+              ],
+              "from": [
+                "04-create",
+                1,
+                "makes",
+                0
+              ],
+              "to": [
+                "04-create",
+                2,
+                "with",
+                0
+              ]
+            },
+            {
+              "lines": [
+                3
+              ],
+              "from": [
+                "04-create",
+                2,
+                "spec",
+                0
+              ],
+              "to": [
+                "05-decide",
+                null,
+                0
+              ]
+            },
+            {
+              "lines": [
+                4
+              ],
+              "from": [
+                "05-decide",
+                0,
+                "decide",
+                0
+              ],
+              "to": [
+                "05-decide",
+                1,
+                "your",
+                0
+              ]
+            },
+            {
+              "lines": [
+                7
+              ],
+              "from": [
+                "05-decide",
+                1,
+                "your",
+                0
+              ],
+              "to": [
+                "06-spec",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "spec": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 5,
+          "at": [
+            "06-spec",
+            0,
+            "fill",
+            0
+          ],
+          "keepTop": true,
+          "lines": [
+            [
+              0,
+              4
+            ],
+            [
+              10,
+              13
+            ],
+            [
+              19,
+              26
+            ],
+            [
+              28,
+              34
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                2,
+                4
+              ],
+              "from": [
+                "06-spec",
+                2,
+                "problem",
+                0
+              ],
+              "to": [
+                "06-spec",
+                2,
+                "numbered",
+                0
+              ]
+            },
+            {
+              "lines": [
+                12,
+                13
+              ],
+              "from": [
+                "06-spec",
+                2,
+                "numbered",
+                0
+              ],
+              "to": [
+                "07-tasks",
+                null,
+                0
+              ]
+            },
+            {
+              "lines": [
+                21,
+                22
+              ],
+              "from": [
+                "07-tasks",
+                0,
+                "asked",
+                0
+              ],
+              "to": [
+                "07-tasks",
+                0,
+                "defaulted",
+                0
+              ]
+            },
+            {
+              "lines": [
+                23,
+                24
+              ],
+              "from": [
+                "07-tasks",
+                0,
+                "defaulted",
+                0
+              ],
+              "to": [
+                "07-tasks",
+                0,
+                "open",
+                0
+              ]
+            },
+            {
+              "lines": [
+                25,
+                26
+              ],
+              "from": [
+                "07-tasks",
+                0,
+                "open",
+                0
+              ],
+              "to": [
+                "07-tasks",
+                1,
+                "each",
+                0
+              ]
+            },
+            {
+              "lines": [
+                30,
+                31,
+                33,
+                34
+              ],
+              "from": [
+                "07-tasks",
+                1,
+                "each",
+                0
+              ],
+              "to": [
+                "08-pickup",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "pickup": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 6,
+          "at": [
+            "08-pickup",
+            0,
+            "commit",
+            0
+          ],
+          "lines": [
+            [
+              0,
+              1
+            ]
+          ]
+        },
+        {
+          "shot": 7,
+          "at": [
+            "08-pickup",
+            0,
+            "pickup",
+            0
+          ],
+          "lines": [
+            [
+              0,
+              7
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                1
+              ],
+              "from": [
+                "08-pickup",
+                1,
+                "increment",
+                0
+              ],
+              "to": [
+                "08-pickup",
+                1,
+                "next",
+                0
+              ]
+            },
+            {
+              "lines": [
+                2
+              ],
+              "from": [
+                "08-pickup",
+                1,
+                "next",
+                0
+              ],
+              "to": [
+                "08-pickup",
+                2,
+                "with",
+                0
+              ]
+            },
+            {
+              "lines": [
+                3,
+                4
+              ],
+              "from": [
+                "08-pickup",
+                2,
+                "with",
+                0
+              ],
+              "to": [
+                "08-pickup",
+                3,
+                "command",
+                0
+              ]
+            },
+            {
+              "lines": [
+                5
+              ],
+              "from": [
+                "08-pickup",
+                3,
+                "command",
+                0
+              ],
+              "to": [
+                "09-outro",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
