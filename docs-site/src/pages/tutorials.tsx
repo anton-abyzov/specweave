@@ -126,8 +126,7 @@ export default function Tutorials() {
       <main className={clsx(base.page, styles.tutorials)}>
         <header className={styles.hero}>
           <div className={styles.heroText}>
-            <span className={base.eyebrow}><span className={base.orangeDot} />Tutorials / SpecWithCode and the specweave CLI</span>
-            <h1>Short videos.<br /><em>Real recordings.</em></h1>
+            <h1>Short videos of the real apps.</h1>
             <p className={base.lead}>Every walkthrough is actual application footage with synthetic projects, hosted on this site, with captions and chapters you can jump between.</p>
           </div>
           <dl className={styles.stats}>
@@ -147,7 +146,7 @@ export default function Tutorials() {
               <h2 id="player-title" ref={headingRef} tabIndex={-1} className={styles.playerTitle}>{selected.title}</h2>
               <p className={styles.playerSummary}>{selected.summary}</p>
             </div>
-            {selected.guide && <Link className={styles.guideLink} to={selected.guide}>Read the written guide <span aria-hidden="true">→</span></Link>}
+            {selected.guide && <Link className={styles.guideLink} to={selected.guide}>Read the written guide</Link>}
           </div>
           <TutorialVideo
             key={selected.slug}
@@ -171,8 +170,7 @@ export default function Tutorials() {
         <section className={styles.gallery} aria-labelledby="gallery-title">
           <div className={styles.galleryHeading}>
             <div>
-              <span className={base.eyebrow}>All tutorials</span>
-              <h2 id="gallery-title">Pick a walkthrough.<br /><em>Or pick your agent.</em></h2>
+              <h2 id="gallery-title">Pick a walkthrough or your agent</h2>
             </div>
             <p>Each agent gets one tutorial: setup, one real task through a project, and the result, in 60 to 90 seconds.</p>
           </div>

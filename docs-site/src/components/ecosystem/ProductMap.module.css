@@ -1,0 +1,61 @@
+/* ProductMap on Weave: a hairline list of the three products. Only --wv-* tokens. */
+.products {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--wv-space-8);
+  list-style: none;
+  margin: 0 0 var(--wv-space-6);
+  padding: 0;
+  font-family: var(--wv-font-sans);
+  color: var(--wv-ink);
+}
+
+.products > li {
+  min-width: 0;
+  margin: 0;
+  padding-top: var(--wv-space-6);
+  border-top: 1px solid var(--wv-line);
+}
+
+.products h3 {
+  margin: 0 !important;
+  font: 600 21px/28px var(--wv-font-sans);
+  letter-spacing: -0.008em;
+  color: var(--wv-ink);
+}
+
+.products p {
+  margin: var(--wv-space-3) 0 var(--wv-space-4) !important;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--wv-muted);
+}
+
+.products .role {
+  margin: var(--wv-space-1) 0 0 !important;
+  color: var(--wv-ink);
+  font-weight: 500;
+}
+
+.products a {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--wv-ink) !important;
+  text-decoration: underline !important;
+  text-decoration-color: var(--wv-iris) !important;
+  text-decoration-thickness: var(--wv-thread-width) !important;
+  text-underline-offset: 0.22em;
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+}
+
+.products a:hover {
+  color: var(--wv-iris-strong) !important;
+}
+
+@media (max-width: 760px) {
+  .products {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--wv-space-6);
+  }
+}

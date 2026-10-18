@@ -8,8 +8,8 @@
 
 .groupLabel {
   font-size: var(--sw-font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  text-transform: none;
+  letter-spacing: normal;
   color: inherit;
   opacity: 0.4;
   font-weight: var(--sw-font-weight-semibold);
