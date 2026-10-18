@@ -1,15 +1,15 @@
-/* Shared tutorial player. Colors, type and radius come only from src/styles/brand-tokens.css,
-   which flips light and dark on its own. */
+/* Shared tutorial player. Weave tokens (--wv-*), with legacy --sw-brand-* bridged onto them
+   in src/css/weave-bridge.css; both follow data-theme. */
 .root {
   margin: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   border: 1px solid var(--sw-brand-line);
-  border-radius: calc(var(--sw-brand-radius) * 1.5);
+  border-radius: var(--wv-radius-lg);
   overflow: hidden;
-  background: var(--sw-brand-surface);
-  color: var(--sw-brand-ink);
-  font-family: var(--sw-brand-sans);
+  background: var(--wv-panel);
+  color: var(--wv-ink);
+  font-family: var(--wv-font-sans);
 }
 
 .frame {
@@ -54,16 +54,14 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 9px;
-  border: 1px solid var(--sw-brand-line);
-  border-radius: 999px;
-  background: var(--sw-brand-card);
+  padding: 2px 8px;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-panel);
 }
 
 .metaKey {
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--wv-muted);
 }
 
 .chapters ol {
@@ -96,7 +94,7 @@
   line-height: 1.35;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 .chapter:hover {
@@ -116,8 +114,7 @@
 .time {
   flex-shrink: 0;
   min-width: 3.4em;
-  font-family: var(--sw-brand-mono);
-  font-size: 12px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   color: var(--sw-brand-muted);
 }
@@ -155,35 +152,20 @@
   gap: 12px;
   aspect-ratio: 16 / 9;
   padding: clamp(22px, 6%, 56px);
-  background-color: var(--sw-brand-soft);
-  background-image: repeating-linear-gradient(
-    135deg,
-    transparent 0 22px,
-    color-mix(in srgb, var(--sw-brand-line) 60%, transparent) 22px 23px
-  );
-  color: var(--sw-brand-ink);
-}
-
-.placeholder::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: var(--sw-brand-accent);
+  background: var(--wv-sunken);
+  color: var(--wv-ink);
 }
 
 .placeholderEyebrow {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--sw-brand-muted);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--wv-muted);
 }
 
 .placeholderAgent {
-  font-family: var(--sw-brand-display);
+  font-family: var(--wv-font-sans);
   font-size: clamp(32px, 4.6vw, 64px);
-  font-weight: 450;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: -0.035em;
 }
@@ -191,14 +173,13 @@
 .soon {
   display: inline-flex;
   align-items: center;
-  padding: 4px 11px;
-  border: 1px solid var(--sw-brand-accent);
-  border-radius: 999px;
-  background: var(--sw-brand-card);
-  color: var(--sw-brand-accent);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  padding: 2px 8px;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-panel);
+  color: var(--wv-muted);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .outline {
@@ -235,6 +216,27 @@
 
   .split .caption {
     grid-column: 1 / -1;
+  }
+}
+
+/* Phones: chapters become one row that scrolls sideways instead of a tall stack. */
+@media (max-width: 760px) {
+  .chapters ol {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: minmax(200px, 72%);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding-bottom: var(--wv-space-2);
+  }
+
+  .chapters ol > li {
+    scroll-snap-align: start;
+  }
+
+  .chapter {
+    border-color: var(--wv-line);
   }
 }
 

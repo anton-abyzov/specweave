@@ -1,8 +1,8 @@
 /**
- * SpecWeave legacy token layer, remapped onto the shared brand contract.
- * Every color and font here resolves from src/styles/brand-tokens.css
- * (paper, ink, muted, hairline, accent #bd481f; Newsreader + IBM Plex Sans).
+ * SpecWeave legacy token layer, repointed onto Weave (src/css/weave.css, --wv-*).
  * Older components still read these names; none of them decides a brand value.
+ * Ramps are color-mix() of Weave tokens, so they follow data-theme on their own.
+ * --sw-brand-* themselves are redefined onto --wv-* in weave-bridge.css.
  * Spacing, sizing, motion and z-index scales are unchanged.
  */
 
@@ -10,80 +10,80 @@
    COLOR PALETTE (aliases of brand tokens)
    ============================================ */
 :root {
-  /* Primary = brand accent ramp (paper -> accent -> ink) */
-  --sw-color-primary-50: #f2e8e0;
-  --sw-color-primary-100: #eedcd1;
-  --sw-color-primary-200: #e5c0b0;
-  --sw-color-primary-300: #da9e87;
-  --sw-color-primary-400: #cb7353;
-  --sw-color-primary-500: var(--sw-brand-accent);
-  --sw-color-primary-600: #a6431f;
-  --sw-color-primary-700: #8c3e1f;
-  --sw-color-primary-800: #713820;
-  --sw-color-primary-900: #563220;
+  /* Primary = iris ramp (canvas -> iris -> ink) */
+  --sw-color-primary-50: color-mix(in srgb, var(--wv-iris) 8%, var(--wv-canvas));
+  --sw-color-primary-100: color-mix(in srgb, var(--wv-iris) 14%, var(--wv-canvas));
+  --sw-color-primary-200: color-mix(in srgb, var(--wv-iris) 28%, var(--wv-canvas));
+  --sw-color-primary-300: color-mix(in srgb, var(--wv-iris) 48%, var(--wv-canvas));
+  --sw-color-primary-400: color-mix(in srgb, var(--wv-iris) 74%, var(--wv-canvas));
+  --sw-color-primary-500: var(--wv-iris);
+  --sw-color-primary-600: color-mix(in srgb, var(--wv-iris) 82%, var(--wv-ink));
+  --sw-color-primary-700: color-mix(in srgb, var(--wv-iris) 66%, var(--wv-ink));
+  --sw-color-primary-800: color-mix(in srgb, var(--wv-iris) 52%, var(--wv-ink));
+  --sw-color-primary-900: color-mix(in srgb, var(--wv-iris) 38%, var(--wv-ink));
 
-  /* Secondary = brand success (olive green) ramp */
-  --sw-color-accent-50: #ebebe3;
-  --sw-color-accent-100: #dfe2d8;
-  --sw-color-accent-200: #c5cebf;
-  --sw-color-accent-300: #a5b4a0;
-  --sw-color-accent-400: #7d9478;
-  --sw-color-accent-500: var(--sw-brand-success);
-  --sw-color-accent-600: #4d694a;
-  --sw-color-accent-700: #455c41;
-  --sw-color-accent-800: #3d4e39;
-  --sw-color-accent-900: #344030;
+  /* Secondary = pass ramp (canvas -> pass -> ink) */
+  --sw-color-accent-50: color-mix(in srgb, var(--wv-pass) 8%, var(--wv-canvas));
+  --sw-color-accent-100: color-mix(in srgb, var(--wv-pass) 14%, var(--wv-canvas));
+  --sw-color-accent-200: color-mix(in srgb, var(--wv-pass) 28%, var(--wv-canvas));
+  --sw-color-accent-300: color-mix(in srgb, var(--wv-pass) 48%, var(--wv-canvas));
+  --sw-color-accent-400: color-mix(in srgb, var(--wv-pass) 74%, var(--wv-canvas));
+  --sw-color-accent-500: var(--wv-pass);
+  --sw-color-accent-600: color-mix(in srgb, var(--wv-pass) 82%, var(--wv-ink));
+  --sw-color-accent-700: color-mix(in srgb, var(--wv-pass) 66%, var(--wv-ink));
+  --sw-color-accent-800: color-mix(in srgb, var(--wv-pass) 52%, var(--wv-ink));
+  --sw-color-accent-900: color-mix(in srgb, var(--wv-pass) 38%, var(--wv-ink));
 
   /* Semantic colors from brand review / success / warning / danger */
   --sw-color-info: var(--sw-brand-review);
   --sw-color-info-light: color-mix(in srgb, var(--sw-brand-review) 9%, var(--sw-brand-paper));
-  --sw-color-info-dark: #4b5679;
+  --sw-color-info-dark: var(--wv-iris-strong);
   --sw-color-info-50: color-mix(in srgb, var(--sw-brand-review) 9%, var(--sw-brand-paper));
   --sw-color-info-100: color-mix(in srgb, var(--sw-brand-review) 18%, var(--sw-brand-paper));
   --sw-color-info-500: var(--sw-brand-review);
-  --sw-color-info-700: #4b5679;
-  --sw-color-info-900: #2f3650;
+  --sw-color-info-700: var(--wv-iris-strong);
+  --sw-color-info-900: var(--wv-ink);
   --sw-color-success: var(--sw-brand-success);
   --sw-color-success-light: color-mix(in srgb, var(--sw-brand-success) 10%, var(--sw-brand-paper));
-  --sw-color-success-dark: #455c41;
+  --sw-color-success-dark: var(--wv-pass);
   --sw-color-success-50: color-mix(in srgb, var(--sw-brand-success) 10%, var(--sw-brand-paper));
   --sw-color-success-100: color-mix(in srgb, var(--sw-brand-success) 20%, var(--sw-brand-paper));
   --sw-color-success-500: var(--sw-brand-success);
-  --sw-color-success-700: #455c41;
-  --sw-color-success-900: #344030;
+  --sw-color-success-700: var(--wv-pass);
+  --sw-color-success-900: var(--wv-ink);
   --sw-color-warning: var(--sw-brand-warning);
   --sw-color-warning-light: color-mix(in srgb, var(--sw-brand-warning) 10%, var(--sw-brand-paper));
-  --sw-color-warning-dark: #6f4117;
+  --sw-color-warning-dark: var(--wv-warn);
   --sw-color-warning-50: color-mix(in srgb, var(--sw-brand-warning) 10%, var(--sw-brand-paper));
   --sw-color-warning-100: color-mix(in srgb, var(--sw-brand-warning) 20%, var(--sw-brand-paper));
   --sw-color-warning-500: var(--sw-brand-warning);
-  --sw-color-warning-700: #6f4117;
-  --sw-color-warning-900: #4a2b0f;
+  --sw-color-warning-700: var(--wv-warn);
+  --sw-color-warning-900: var(--wv-ink);
   --sw-color-danger: var(--sw-brand-danger);
   --sw-color-danger-light: var(--sw-brand-danger-soft);
-  --sw-color-danger-dark: #7f2c21;
+  --sw-color-danger-dark: var(--wv-fail);
   --sw-color-danger-50: var(--sw-brand-danger-soft);
   --sw-color-danger-100: color-mix(in srgb, var(--sw-brand-danger) 20%, var(--sw-brand-paper));
   --sw-color-danger-500: var(--sw-brand-danger);
-  --sw-color-danger-700: #7f2c21;
-  --sw-color-danger-900: #521c15;
-  --sw-color-tip: var(--sw-brand-accent);
-  --sw-color-tip-light: color-mix(in srgb, var(--sw-brand-accent) 8%, var(--sw-brand-paper));
-  --sw-color-tip-dark: #8c3e1f;
+  --sw-color-danger-700: var(--wv-fail);
+  --sw-color-danger-900: var(--wv-ink);
+  --sw-color-tip: var(--wv-pass);
+  --sw-color-tip-light: var(--wv-pass-tint);
+  --sw-color-tip-dark: var(--wv-pass);
 
-  /* Fixed warm neutral scale (paper -> ink); does not flip in dark mode,
-     because sections use 900/950 as deliberately dark bands. */
-  --sw-gray-50: #fbfcf8;
-  --sw-gray-100: #eff2e8;
-  --sw-gray-200: #d9dcd0;
-  --sw-gray-300: #c2c7b8;
-  --sw-gray-400: #8f9584;
-  --sw-gray-500: #65695e;
-  --sw-gray-600: #4f5348;
-  --sw-gray-700: #3a3d34;
-  --sw-gray-800: #2b2e26;
-  --sw-gray-900: #252820;
-  --sw-gray-950: #171814;
+  /* Neutral scale on Weave neutrals; follows the theme (50 = canvas side, 900 = ink side).
+     Dark "bands" built on gray-900/950 are retired in Weave. */
+  --sw-gray-50: var(--wv-canvas);
+  --sw-gray-100: var(--wv-sunken);
+  --sw-gray-200: var(--wv-line);
+  --sw-gray-300: color-mix(in srgb, var(--wv-line) 50%, var(--wv-control));
+  --sw-gray-400: var(--wv-control);
+  --sw-gray-500: var(--wv-muted);
+  --sw-gray-600: color-mix(in srgb, var(--wv-muted) 70%, var(--wv-ink));
+  --sw-gray-700: color-mix(in srgb, var(--wv-muted) 45%, var(--wv-ink));
+  --sw-gray-800: color-mix(in srgb, var(--wv-muted) 20%, var(--wv-ink));
+  --sw-gray-900: var(--wv-ink);
+  --sw-gray-950: var(--wv-ink);
 
   /* Surface colors */
   --sw-surface-primary: var(--sw-brand-card);
@@ -91,9 +91,9 @@
   --sw-surface-tertiary: var(--sw-brand-soft);
   --sw-surface-elevated: var(--sw-brand-card);
   --sw-surface-card: var(--sw-brand-card);
-  --sw-surface-dark: #252820;
-  --sw-surface-dark-secondary: #2b2e26;
-  --sw-surface-dark-tertiary: #3a3d34;
+  --sw-surface-dark: var(--wv-sunken);
+  --sw-surface-dark-secondary: var(--wv-panel);
+  --sw-surface-dark-tertiary: var(--wv-line);
   --sw-surface-overlay: var(--sw-brand-overlay);
 
   /* Surface glass */
@@ -105,25 +105,25 @@
   --sw-text-primary: var(--sw-brand-ink);
   --sw-text-secondary: var(--sw-brand-muted);
   --sw-text-tertiary: var(--sw-brand-muted);
-  --sw-text-inverse: #ffffff;
+  --sw-text-inverse: var(--wv-ink); /* former dark bands now sit on Weave surfaces */
   --sw-text-link: var(--sw-brand-accent);
-  --sw-text-link-hover: var(--sw-color-primary-600);
-  --sw-text-on-dark: #f6f4ee;
-  --sw-text-on-primary: #ffffff;
-  --sw-text-disabled: var(--sw-gray-300);
-  --sw-text-placeholder: var(--sw-gray-400);
-  --sw-color-text-on-dark: #d9dcd0;
-  --sw-color-text-inverse: #f6f4ee;
-  --sw-color-text-subtle-on-dark: #d9dcd0;
-  --sw-color-text-muted-on-dark: #c2c7b8;
-  --sw-color-text-faint-on-dark: #8f9584;
+  --sw-text-link-hover: var(--wv-iris-strong);
+  --sw-text-on-dark: var(--wv-ink);
+  --sw-text-on-primary: var(--wv-on-iris);
+  --sw-text-disabled: var(--wv-control);
+  --sw-text-placeholder: var(--wv-muted);
+  --sw-color-text-on-dark: var(--wv-ink);
+  --sw-color-text-inverse: var(--wv-ink);
+  --sw-color-text-subtle-on-dark: var(--wv-muted);
+  --sw-color-text-muted-on-dark: var(--wv-muted);
+  --sw-color-text-faint-on-dark: var(--wv-muted);
 
   /* Border colors */
   --sw-border-light: var(--sw-brand-line);
   --sw-border-default: var(--sw-brand-line);
   --sw-border-subtle: var(--sw-brand-line-soft);
   --sw-border-strong: var(--sw-brand-line-strong);
-  --sw-border-focus-ring: var(--sw-brand-accent);
+  --sw-border-focus-ring: var(--wv-iris);
   --sw-border-interactive: var(--sw-brand-control-border);
   --sw-border-error: var(--sw-brand-danger);
 
@@ -250,8 +250,8 @@
   --sw-radius-none: 0;
   --sw-radius-xs: 4px;
   --sw-radius-sm: 6px;
-  --sw-radius-md: 8px;
-  --sw-radius-lg: 12px;
+  --sw-radius-md: 10px;
+  --sw-radius-lg: 14px;
   --sw-radius-xl: 16px;
   --sw-radius-2xl: 20px;
   --sw-radius-3xl: 24px;
@@ -268,9 +268,9 @@
   --sw-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
   --sw-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --sw-shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
-  --sw-shadow-glow: 0 0 80px color-mix(in srgb, var(--sw-brand-accent) 12%, transparent);
-  --sw-shadow-glow-sm: 0 0 40px color-mix(in srgb, var(--sw-brand-accent) 8%, transparent);
-  --sw-shadow-glow-lg: 0 0 120px color-mix(in srgb, var(--sw-brand-accent) 16%, transparent);
+  --sw-shadow-glow: none;
+  --sw-shadow-glow-sm: none;
+  --sw-shadow-glow-lg: none;
 
   /* Elevation shadows */
   --sw-shadow-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -280,9 +280,9 @@
   --sw-shadow-elevation-5: 0 24px 48px rgba(0, 0, 0, 0.18);
 
   /* Glass morphism shadows */
-  --sw-shadow-glass-sm: 0 2px 8px #2528200d;
-  --sw-shadow-glass-md: 0 8px 24px #25282014;
-  --sw-shadow-glass-lg: 0 16px 48px #2528201f;
+  --sw-shadow-glass-sm: none;
+  --sw-shadow-glass-md: none;
+  --sw-shadow-glass-lg: var(--wv-shadow-overlay);
 
   /* ============================================
      OPACITY
@@ -307,7 +307,7 @@
      TRANSITIONS
      ============================================ */
   --sw-transition-none: none;
-  --sw-transition-fast: 150ms ease;
+  --sw-transition-fast: 120ms ease;
   --sw-transition-base: 200ms ease;
   --sw-transition-slow: 300ms ease;
   --sw-transition-colors: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
@@ -336,12 +336,12 @@
   /* ============================================
      GRADIENTS
      ============================================ */
-  --sw-gradient-primary: linear-gradient(135deg, var(--sw-color-primary-400) 0%, var(--sw-color-primary-600) 100%);
-  --sw-gradient-hero: linear-gradient(135deg, #171814 0%, #252820 60%, #2b2e26 100%);
-  --sw-gradient-cta: linear-gradient(135deg, var(--sw-brand-accent) 0%, var(--sw-color-primary-700) 100%);
-  --sw-gradient-dark: linear-gradient(180deg, #171814 0%, #252820 100%);
-  --sw-gradient-accent: linear-gradient(135deg, var(--sw-color-accent-300) 0%, var(--sw-color-accent-500) 100%);
-  --sw-gradient-text: linear-gradient(135deg, var(--sw-brand-accent) 0%, var(--sw-color-primary-700) 100%);
+  --sw-gradient-primary: linear-gradient(var(--wv-sunken), var(--wv-sunken));
+  --sw-gradient-hero: linear-gradient(var(--wv-canvas), var(--wv-canvas));
+  --sw-gradient-cta: linear-gradient(var(--wv-sunken), var(--wv-sunken));
+  --sw-gradient-dark: linear-gradient(var(--wv-sunken), var(--wv-sunken));
+  --sw-gradient-accent: linear-gradient(var(--wv-pass), var(--wv-pass));
+  --sw-gradient-text: linear-gradient(var(--wv-ink), var(--wv-ink));
 
   /* ============================================
      Z-INDEX SCALE
@@ -446,19 +446,19 @@
   --sw-input-placeholder-color: var(--sw-text-placeholder);
 
   /* ============================================
-     INFIMA MAPPINGS (primary shades derived from the brand accent)
+     INFIMA MAPPINGS (primary shades derived from Weave iris)
      ============================================ */
-  --ifm-color-primary: var(--sw-brand-accent);
-  --ifm-color-primary-dark: #aa411c;
-  --ifm-color-primary-darker: #a13d1a;
-  --ifm-color-primary-darkest: #843216;
-  --ifm-color-primary-light: #d65123;
-  --ifm-color-primary-lighter: #dc592b;
-  --ifm-color-primary-lightest: #e27651;
+  --ifm-color-primary: var(--wv-iris);
+  --ifm-color-primary-dark: color-mix(in srgb, var(--wv-iris) 80%, var(--wv-iris-strong));
+  --ifm-color-primary-darker: color-mix(in srgb, var(--wv-iris) 55%, var(--wv-iris-strong));
+  --ifm-color-primary-darkest: var(--wv-iris-strong);
+  --ifm-color-primary-light: color-mix(in srgb, var(--wv-iris) 88%, var(--wv-canvas));
+  --ifm-color-primary-lighter: color-mix(in srgb, var(--wv-iris) 76%, var(--wv-canvas));
+  --ifm-color-primary-lightest: color-mix(in srgb, var(--wv-iris) 60%, var(--wv-canvas));
 
   --ifm-font-family-base: var(--sw-brand-sans);
   --ifm-font-family-monospace: var(--sw-brand-mono);
-  --ifm-heading-font-weight: var(--sw-font-weight-medium);
+  --ifm-heading-font-weight: var(--sw-font-weight-bold);
   --ifm-font-weight-semibold: var(--sw-font-weight-semibold);
   --ifm-font-weight-bold: var(--sw-font-weight-bold);
   --ifm-font-weight-normal: var(--sw-font-weight-normal);
@@ -470,70 +470,26 @@
   --ifm-spacing-horizontal: var(--sw-space-4);
   --ifm-spacing-vertical: var(--sw-space-4);
 
-  --ifm-global-radius: var(--sw-brand-radius);
-  --ifm-global-shadow-lw: var(--sw-shadow-sm);
-  --ifm-global-shadow-md: var(--sw-shadow-md);
-  --ifm-global-shadow-tl: var(--sw-shadow-xl);
+  --ifm-global-radius: var(--wv-radius-sm);
+  --ifm-global-shadow-lw: none;
+  --ifm-global-shadow-md: none;
+  --ifm-global-shadow-tl: var(--wv-shadow-overlay);
 
   --ifm-transition-fast: var(--sw-transition-fast);
   --ifm-transition-slow: var(--sw-transition-slow);
 
-  --ifm-container-width: var(--sw-grid-max-width);
+  --ifm-container-width: var(--wv-page-max);
   --ifm-container-width-xl: var(--sw-content-7xl);
 
-  --docusaurus-highlighted-code-line-bg: color-mix(in srgb, var(--sw-brand-accent) 10%, transparent);
+  --docusaurus-highlighted-code-line-bg: var(--wv-iris-tint);
 }
 
 /* ============================================
-   DARK MODE: the ramps invert around the dark accent; brand aliases
-   above flip on their own through brand-tokens.css.
+   DARK MODE: every ramp above is built from --wv-* tokens, which weave.css
+   flips on [data-theme='dark']. Only theme-specific non-color values live here.
    ============================================ */
 :root[data-theme='dark'] {
-  --sw-color-primary-50: #262018;
-  --sw-color-primary-100: #35261c;
-  --sw-color-primary-200: #563625;
-  --sw-color-primary-300: #7f4930;
-  --sw-color-primary-400: #b2613e;
-  --sw-color-primary-600: #e68a62;
-  --sw-color-primary-700: #e79d7a;
-  --sw-color-primary-800: #e9b194;
-  --sw-color-primary-900: #eac4ae;
-
-  --sw-color-accent-50: #20241c;
-  --sw-color-accent-100: #292f25;
-  --sw-color-accent-200: #3c4837;
-  --sw-color-accent-300: #54674f;
-  --sw-color-accent-400: #718e6d;
-  --sw-color-accent-600: #9dbd96;
-  --sw-color-accent-700: #adc5a4;
-  --sw-color-accent-800: #becfb3;
-  --sw-color-accent-900: #ced8c2;
-
-  --sw-color-info-dark: #c3cbe8;
-  --sw-color-info-700: #c3cbe8;
-  --sw-color-success-dark: #adc5a4;
-  --sw-color-success-700: #adc5a4;
-  --sw-color-warning-dark: #e9bf8f;
-  --sw-color-warning-700: #e9bf8f;
-  --sw-color-danger-dark: #f0a594;
-  --sw-color-danger-700: #f0a594;
-  --sw-color-tip-dark: #e79d7a;
-
-  --sw-surface-dark: #0f100c;
-  --sw-surface-dark-secondary: #1e201a;
-  --sw-surface-dark-tertiary: #2c2f26;
-  --sw-text-disabled: var(--sw-gray-600);
-  --sw-text-placeholder: var(--sw-gray-500);
-
-  --sw-shadow-glass-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --sw-shadow-glass-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --sw-shadow-glass-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
-
-  --ifm-color-primary: var(--sw-brand-accent);
-  --ifm-color-primary-dark: #e16531;
-  --ifm-color-primary-darker: #df5b24;
-  --ifm-color-primary-darkest: #ba4a1b;
-  --ifm-color-primary-light: #e8865e;
-  --ifm-color-primary-lighter: #e98d67;
-  --ifm-color-primary-lightest: #eda182;
+  --sw-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sw-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --sw-shadow-md: 0 4px 8px -2px rgba(0, 0, 0, 0.45);
 }

@@ -72,7 +72,7 @@ describe('tutorial catalogue', () => {
     expect(data['@graph']).toHaveLength(published.length);
     const tour = data['@graph'].find(v => v.name === 'SpecWithCode in 60 seconds')!;
     expect(tour.contentUrl).toBe('https://spec-weave.com/video/studio-tutorial.mp4');
-    expect(tour.thumbnailUrl).toEqual(['https://spec-weave.com/img/studio/studio-tutorial-cover.jpg']);
+    expect(tour.thumbnailUrl).toEqual(['https://spec-weave.com/img/studio/poster-tour-20261015.jpg']);
     expect(tour.duration).toBe('PT1M1S');
     expect(tour.hasPart[1]).toMatchObject({'@type': 'Clip', startOffset: 4, endOffset: 15, url: 'https://spec-weave.com/tutorials/?v=specwithcode-tour&t=4'});
     expect(tour.uploadDate).toBe('2026-10-10T05:08:31Z');

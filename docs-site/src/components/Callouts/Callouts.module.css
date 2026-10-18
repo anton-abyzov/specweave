@@ -23,8 +23,8 @@
 .title {
   font-weight: var(--sw-font-weight-semibold);
   font-size: var(--sw-font-size-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .content {

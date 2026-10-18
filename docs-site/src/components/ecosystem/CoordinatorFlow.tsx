@@ -1,11 +1,12 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
+import clsx from 'clsx';
 import styles from './CoordinatorFlow.module.css';
 
-type Edge = 'goal' | 'codex' | 'claude';
+type Shot = {src: string; w: number; h: number; alt: string};
 
 // Every line of copy below is taken from the recorded tip-calculator run
 // (docs-site/static/video/code-run-20261015.mp4, SpecWithCode 1.0.21, 15 October 2026).
-const beats = [
+const beats: {label: string; title: string; body: string; shot: Shot; back?: Shot; caption: string}[] = [
   {
     label: 'Goal shared',
     title: 'Give the project one goal.',
@@ -40,7 +41,7 @@ const beats = [
 const status = {
   you: ['Build a tip calculator', 'Goal sent', 'Following along', 'Review the result'],
   coord: ['Reading the goal', 'Starting 2 threads', 'Watching 2 workers', 'Both tasks finished'],
-  codex: ['Idle', 'Write tip.py CLI', 'Command approved, writing tip.py', 'Tip: $9.00 · Total: $59.00'],
+  codex: ['Idle', 'Write tip.py CLI', 'Command approved, writing tip.py', 'Tip: $9.00, Total: $59.00'],
   claude: ['Idle', 'README usage for tip.py', 'Message received from coordinator', 'Usage example uses the real output'],
 };
 
@@ -48,211 +49,117 @@ const log: {phase: number; from: string; to?: string; text: string}[] = [
   {phase: 0, from: 'You', to: 'Coordinator', text: 'Codex writes tip.py, Claude Code adds a README Usage section. Don’t commit.'},
   {phase: 1, from: 'Coordinator', to: 'Codex', text: 'Write tip.py and run python3 tip.py 50 18 once.'},
   {phase: 1, from: 'Coordinator', to: 'Claude Code', text: 'Add a short Usage section to README.md.'},
-  {phase: 2, from: 'Codex', text: 'Command approval requested · approved'},
+  {phase: 2, from: 'Codex', text: 'Command approval requested, then approved.'},
   {phase: 2, from: 'Claude Code', text: 'Editing README.md only.'},
-  {phase: 3, from: 'Codex', to: 'Coordinator', text: 'Tip: $9.00 · Total: $59.00, exited 0.'},
+  {phase: 3, from: 'Codex', to: 'Coordinator', text: 'Tip: $9.00, Total: $59.00, exited 0.'},
   {phase: 3, from: 'Claude Code', to: 'Coordinator', text: 'Usage example now shows the exact output.'},
   {phase: 3, from: 'Coordinator', to: 'You', text: 'Only README.md changed, and nothing is committed.'},
 ];
 
-// Which edges carry messages in each phase, and in which direction.
-const traffic: Record<number, {edge: Edge; reverse?: boolean}[]> = {
-  0: [{edge: 'goal'}],
-  1: [{edge: 'codex'}, {edge: 'claude'}],
-  2: [],
-  3: [{edge: 'codex', reverse: true}, {edge: 'claude', reverse: true}, {edge: 'goal', reverse: true}],
-};
+const workerState = ['Idle', 'Assigned', 'Working', 'Reported'];
+const workerChip = ['', '', 'wv-chip--iris', 'wv-chip--pass'];
 
-const layouts = {
-  wide: {
-    vb: [640, 340],
-    goal: 'M118 170 H178',
-    codex: 'M342 158 C 392 158, 392 78, 432 78',
-    claude: 'M342 182 C 392 182, 392 262, 432 262',
-  },
-  narrow: {
-    vb: [340, 350],
-    goal: 'M170 52 V92',
-    codex: 'M138 152 C 138 196, 88 192, 88 226',
-    claude: 'M202 152 C 202 196, 252 192, 252 226',
-  },
-};
-
-function edgeState(edge: Edge, phase: number) {
-  const live = traffic[phase].some(t => t.edge === edge);
-  const done = edge === 'goal' ? phase >= 1 : phase >= 2;
-  return live ? 'live' : done ? 'done' : 'idle';
-}
-
-function Network({layout, phase}: {layout: 'wide' | 'narrow'; phase: number}) {
-  const l = layouts[layout];
-  return <svg className={styles[layout]} data-layout={layout} viewBox={`0 0 ${l.vb[0]} ${l.vb[1]}`} preserveAspectRatio="none" aria-hidden="true">
-    {(['goal', 'codex', 'claude'] as Edge[]).map(edge => <g key={edge} data-state={edgeState(edge, phase)} className={styles.edge}>
-      <path d={l[edge]} className={styles.edgeBase} vectorEffect="non-scaling-stroke" />
-      <path d={l[edge]} data-edge={edge} className={styles.edgeFlow} vectorEffect="non-scaling-stroke" />
-    </g>)}
-  </svg>;
+function Frame({shot}: {shot: Shot}) {
+  return <div className={clsx('wv-window', styles.frame)}>
+    <img src={shot.src} width={shot.w} height={shot.h} alt={shot.alt} loading="lazy" decoding="async" />
+  </div>;
 }
 
 export default function CoordinatorFlow() {
-  const section = useRef<HTMLElement>(null);
-  const canvas = useRef<HTMLDivElement>(null);
-  const packets = useRef<(HTMLSpanElement | null)[]>([]);
+  const story = useRef<HTMLDivElement>(null);
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  // The final step is the resting state: no-JS, screenshots and first paint show the finished run.
   const [active, setActive] = useState(3);
-  const [hydrated, setHydrated] = useState(false);
-  const phaseRef = useRef(3);
-  phaseRef.current = active;
 
-  // Scroll drives the phase on wide screens; on narrow screens (no sticky stage)
-  // the diagram cycles on its own while visible. Reduced motion keeps the final state.
-  useEffect(() => {
-    const root = section.current;
-    if (!root) return;
-    setHydrated(true);
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const wide = window.matchMedia('(min-width: 961px)');
-    if (reduce.matches) return;
-    setActive(0);
-    let frame = 0;
-    let timer = 0;
-    let visible = false;
-    const update = () => {
-      frame = 0;
-      if (!wide.matches) return;
-      const center = window.innerHeight * 0.5;
-      let best = -1, bestDistance = Infinity;
-      root.querySelectorAll<HTMLElement>('[data-beat]').forEach(el => {
-        const r = el.getBoundingClientRect();
-        const d = Math.abs((r.top + r.bottom) / 2 - center);
-        if (d < bestDistance) { bestDistance = d; best = Number(el.dataset.beat); }
-      });
-      if (best >= 0) setActive(best);
-    };
-    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
-    const cycle = () => {
-      window.clearInterval(timer);
-      if (wide.matches || !visible) return;
-      timer = window.setInterval(() => setActive(p => (p + 1) % beats.length), 3200);
-    };
-    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; cycle(); }, {threshold: 0.25});
-    io.observe(canvas.current!);
-    window.addEventListener('scroll', schedule, {passive: true});
-    window.addEventListener('resize', schedule);
-    wide.addEventListener('change', cycle);
-    update();
-    return () => {
-      cancelAnimationFrame(frame); window.clearInterval(timer); io.disconnect();
-      window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule);
-      wide.removeEventListener('change', cycle);
-    };
-  }, []);
 
-  // Message packets travel along the live edges (motion-graphics style), drawn with rAF.
-  useEffect(() => {
-    if (!hydrated || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    let raf = 0;
-    let running = false;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const box = canvas.current;
-      if (!box) return;
-      const svg = Array.from(box.querySelectorAll<SVGSVGElement>('svg[data-layout]')).find(s => s.getBoundingClientRect().width > 0);
-      const lanes = traffic[phaseRef.current];
-      packets.current.forEach((p, i) => {
-        if (!p) return;
-        const lane = lanes[Math.floor(i / 2)];
-        if (!svg || !lane) { p.style.opacity = '0'; return; }
-        const path = svg.querySelector<SVGPathElement>(`[data-edge="${lane.edge}"]`);
-        if (!path) return;
-        const vb = svg.viewBox.baseVal;
-        const len = path.getTotalLength();
-        let t = (((now - start) / 1500) + (i % 2) * 0.5) % 1;
-        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        const pt = path.getPointAtLength((lane.reverse ? 1 - eased : eased) * len);
-        p.style.left = `${(pt.x / vb.width) * 100}%`;
-        p.style.top = `${(pt.y / vb.height) * 100}%`;
-        p.style.opacity = String(Math.min(1, Math.sin(Math.PI * t) * 1.6));
-      });
-      raf = running ? requestAnimationFrame(tick) : 0;
-    };
-    const io = new IntersectionObserver(([e]) => {
-      running = e.isIntersecting;
-      if (running && !raf) raf = requestAnimationFrame(tick);
-    });
-    io.observe(canvas.current!);
-    return () => { running = false; cancelAnimationFrame(raf); io.disconnect(); };
-  }, [hydrated]);
-
-  function jump(index: number) {
+  function select(index: number, focus = false) {
     setActive(index);
-    if (window.matchMedia('(min-width: 961px)').matches) {
-      section.current?.querySelector(`[data-beat="${index}"]`)?.scrollIntoView({block: 'center'});
+    if (focus) tabs.current[index]?.focus();
+    // The tabs stay pinned while a tall screenshot scrolls past; after a switch,
+    // bring the start of the new step back into view instead of leaving the reader mid-image.
+    const box = story.current;
+    if (box && box.getBoundingClientRect().top < 0) {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      box.scrollIntoView({block: 'start', behavior: reduce ? 'auto' : 'smooth'});
     }
   }
 
-  const progress = (n: number) => (active > n ? 'done' : active === n ? 'now' : 'next');
+  function onKeyDown(e: React.KeyboardEvent) {
+    const last = beats.length - 1;
+    const next = e.key === 'ArrowRight' ? Math.min(active + 1, last)
+      : e.key === 'ArrowLeft' ? Math.max(active - 1, 0)
+      : e.key === 'Home' ? 0 : e.key === 'End' ? last : -1;
+    if (next < 0) return;
+    e.preventDefault();
+    select(next, true);
+  }
 
-  return <section ref={section} className={styles.flow} data-hydrated={hydrated} id="workflow" aria-labelledby="workflow-title">
+  const people = [
+    {name: 'You', status: status.you[active]},
+    {name: 'Coordinator', status: status.coord[active]},
+    {name: 'Codex', model: 'gpt-6.1-sol', status: status.codex[active], worker: true},
+    {name: 'Claude Code', model: 'claude-opus-5-5', status: status.claude[active], worker: true},
+  ];
+
+  return <section className={styles.flow} id="workflow" aria-labelledby="workflow-title">
     <div className={styles.intro}>
-      <p className={styles.kicker}>From one request to reviewed work</p>
-      <h2 id="workflow-title">One conversation.<br />A coordinated team.</h2>
-      <p>A coordinator hands parts of the job to workers on different models, then brings their results back to you. Scroll to follow a real run.</p>
+      <h2 id="workflow-title">One conversation, a coordinated team</h2>
+      <p>A coordinator hands parts of the job to workers on different models, then brings their results back to you. Step through a real run.</p>
     </div>
-    <div className={styles.story}>
-      <div className={styles.sticky}>
-        <div className={styles.stage} data-phase={active}>
-          <div className={styles.stageTop}>
-            <span className={styles.live}><i aria-hidden="true" />Illustration of a recorded run</span>
-            <ol className={styles.rail} aria-hidden="true">{beats.map((b, i) => <li key={b.label} data-state={progress(i)} />)}</ol>
-          </div>
-          <div ref={canvas} className={styles.canvas} role="img" aria-label="Animated workflow: your goal reaches the project coordinator, which assigns tip.py to a Codex worker and the README usage section to a Claude Code worker; both report results back to the coordinator for your review.">
-            <Network layout="wide" phase={active} />
-            <Network layout="narrow" phase={active} />
-            {[0, 1, 2, 3, 4, 5].map(i => <span key={i} ref={el => { packets.current[i] = el; }} className={styles.packet} aria-hidden="true" />)}
-            <div className={`${styles.node} ${styles.you}`} data-on={active === 0 || active === 3}>
-              <span className={styles.avatar}>You</span>
-              <small>{status.you[active]}</small>
-            </div>
-            <div className={`${styles.node} ${styles.coord}`} data-on="true">
-              <span className={styles.mark}>S</span>
-              <div><strong>Coordinator</strong><small key={`c${active}`}>{status.coord[active]}</small></div>
-              <span className={styles.pulse} aria-hidden="true" />
-            </div>
-            {(['codex', 'claude'] as const).map(w => <div key={w} className={`${styles.node} ${styles.worker} ${styles[w]}`} data-on={active >= 1}>
-              <div className={styles.workerHead}>
-                <span className={styles.glyph}>{w === 'codex' ? '◎' : '✳'}</span>
-                <strong>{w === 'codex' ? 'Codex' : 'Claude Code'}</strong>
-                <em>{w === 'codex' ? 'gpt-6.1-sol' : 'claude-opus-5-5'}</em>
-              </div>
-              <small key={`${w}${active}`}>{status[w][active]}</small>
-              <span className={styles.meter} data-phase={active}><i /></span>
-              <span className={styles.badge} data-phase={active}>{active >= 3 ? 'Reported ✓' : active === 2 ? 'Working' : active === 1 ? 'Assigned' : 'Idle'}</span>
-            </div>)}
-          </div>
-          <ol className={styles.log} aria-label="Messages in this run">
-            {log.map((line, i) => <li key={`${i}-${line.phase === active ? active : 'k'}`} data-shown={line.phase <= active} data-new={line.phase === active} style={{animationDelay: `${(i - log.findIndex(l => l.phase === line.phase)) * 260}ms`}}>
-              <b>{line.from}{line.to && <> <span aria-hidden="true">→</span><span className={styles.sr}> to </span> {line.to}</>}</b>
-              <span>{line.text}</span>
-            </li>)}
-          </ol>
-        </div>
-        <div className={styles.steps} role="group" aria-label="Show a step of the workflow">
-          {beats.map((beat, index) => <button key={beat.label} type="button" onClick={() => jump(index)} aria-pressed={active === index}><span>{index + 1}</span>{beat.label}</button>)}
-        </div>
-      </div>
-      <div className={styles.beats}>
-        {beats.map((beat, index) => <article key={beat.title} data-beat={index} data-active={active === index} className={styles.beat}>
-          <span className={styles.number}>{String(index + 1).padStart(2, '0')} <i>/ {beat.label}</i></span>
+
+    <div className={styles.tabs} role="tablist" aria-label="Steps of the recorded run" onKeyDown={onKeyDown}>
+      {beats.map((beat, index) => <button
+        key={beat.label}
+        ref={el => { tabs.current[index] = el; }}
+        type="button"
+        role="tab"
+        id={`flow-tab-${index}`}
+        aria-selected={active === index}
+        aria-controls={`flow-panel-${index}`}
+        tabIndex={active === index ? 0 : -1}
+        onClick={() => select(index)}>
+        <span className={styles.tabNum}>{index + 1}</span>{beat.label}
+      </button>)}
+    </div>
+
+    <div ref={story} className={styles.story}>
+      <div className={styles.panels}>
+        {beats.map((beat, index) => <article
+          key={beat.title}
+          id={`flow-panel-${index}`}
+          role="tabpanel"
+          aria-labelledby={`flow-tab-${index}`}
+          className={styles.beat}
+          hidden={active !== index}>
           <h3>{beat.title}</h3>
           <p>{beat.body}</p>
-          <figure className={styles.shot} data-stack={beat.back ? 'true' : undefined}>
-            {beat.back && <img className={styles.shotBack} src={beat.back.src} width={beat.back.w} height={beat.back.h} alt={beat.back.alt} loading="lazy" decoding="async" />}
-            <img className={styles.shotFront} src={beat.shot.src} width={beat.shot.w} height={beat.shot.h} alt={beat.shot.alt} loading="lazy" decoding="async" />
+          <figure className={clsx(styles.shot, beat.back && styles.pair)}>
+            <Frame shot={beat.shot} />
+            {beat.back && <Frame shot={beat.back} />}
             <figcaption>{beat.caption}</figcaption>
           </figure>
         </article>)}
       </div>
+
+      <aside className={styles.state} aria-label={`Run state after step ${active + 1}, ${beats[active].label}`}>
+        <p className={styles.stateTitle}>Run state after step {active + 1}</p>
+        <ul className={clsx('wv-evidence', styles.people)}>
+          {people.map(p => <li key={p.name}>
+            <span className="wv-evidence__name">{p.name}{p.model && <> <code className={styles.model}>{p.model}</code></>}</span>
+            {p.worker ? <span className={clsx('wv-chip', workerChip[active])}>{workerState[active]}</span> : <span />}
+            <span className="wv-evidence__detail">{p.status}</span>
+          </li>)}
+        </ul>
+        <p className={styles.stateTitle}>Messages</p>
+        <ol className={styles.log}>
+          {log.filter(line => line.phase <= active).map((line, i) => <li key={i} data-current={line.phase === active}>
+            <b>{line.from}{line.to && <> to {line.to}</>}</b>
+            <span>{line.text}</span>
+          </li>)}
+        </ol>
+      </aside>
     </div>
-    <p className={styles.caption}>The animated diagram illustrates the recorded run above; screenshots are actual app captures. Your providers, models and permissions determine what runs.</p>
+
+    <p className={styles.caption}>The run state summarizes the recorded run; screenshots are actual app captures. Your providers, models and permissions determine what runs.</p>
   </section>;
 }

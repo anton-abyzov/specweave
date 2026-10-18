@@ -8,7 +8,7 @@
 
 .label {
   display: block;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: var(--sw-letter-spacing-widest);
   color: inherit;
   opacity: 0.6;

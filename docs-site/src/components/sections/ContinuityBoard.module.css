@@ -1,0 +1,65 @@
+/* Hairline table of one increment's record (product page). Weave tokens only. */
+.wrap {
+  overflow-x: auto;
+}
+
+.table {
+  display: table;
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  border-top: 1px solid var(--wv-line);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.table tr,
+.table tr:nth-child(2n) {
+  border: 0;
+  background: transparent;
+}
+
+.table th,
+.table td {
+  padding: var(--wv-space-3) var(--wv-space-4) var(--wv-space-3) 0;
+  border: 0;
+  border-bottom: 1px solid var(--wv-line);
+  background: transparent;
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.table th {
+  width: 160px;
+  font-weight: 500;
+  color: var(--wv-muted);
+}
+
+.table td {
+  color: var(--wv-ink);
+}
+
+.table code {
+  padding: 1px var(--wv-space-1);
+  border: 0;
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-sunken);
+  font-family: var(--wv-font-mono);
+  font-size: 13px;
+  color: var(--wv-ink);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .table th {
+    width: 110px;
+  }
+}

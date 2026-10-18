@@ -1,6 +1,23 @@
-import {themes as prismThemes} from 'prism-react-renderer';
+import type {PrismTheme} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+
+// Prism theme built from Weave tokens (src/css/weave.css). CSS variables resolve per
+// data-theme, so the same object serves light and dark: calm, low-chroma, iris used sparingly.
+const weavePrismTheme: PrismTheme = {
+  plain: {color: 'var(--wv-ink)', backgroundColor: 'var(--wv-sunken)'},
+  styles: [
+    {types: ['comment', 'prolog', 'doctype', 'cdata'], style: {color: 'var(--wv-muted)', fontStyle: 'italic'}},
+    {types: ['punctuation', 'operator'], style: {color: 'var(--wv-muted)'}},
+    {types: ['keyword', 'selector', 'important', 'atrule', 'builtin'], style: {color: 'var(--wv-iris)'}},
+    {types: ['string', 'char', 'attr-value', 'regex', 'inserted'], style: {color: 'var(--wv-pass)'}},
+    {types: ['number', 'boolean', 'constant', 'symbol', 'entity', 'url'], style: {color: 'var(--wv-warn)'}},
+    {types: ['function', 'class-name', 'tag', 'property', 'attr-name', 'variable'], style: {color: 'var(--wv-ink)', fontWeight: '500'}},
+    {types: ['deleted'], style: {color: 'var(--wv-fail)'}},
+    {types: ['italic'], style: {fontStyle: 'italic'}},
+    {types: ['bold'], style: {fontWeight: '600'}},
+  ],
+};
 
 const config: Config = {
   title: 'SpecWeave',
@@ -104,7 +121,7 @@ const config: Config = {
       tagName: 'link',
       attributes: {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,450;0,500;1,400&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap',
       },
     },
     // Additional favicon links for broad compatibility (Apple, Android, etc.)
@@ -284,7 +301,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/v3/og.jpg',
+    image: 'img/og-weave.jpg',
 
     // themeConfig.image already emits og:image and twitter:image for every page
     metadata: [
@@ -307,25 +324,24 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
 
-    // Navbar configuration (inspired by react-native.dev)
+    // Navbar: SpecWeave is a wordmark (no image); the indigo tile belongs to SpecWithCode.
+    // The Weave family bar above it lives in src/theme/Navbar/index.tsx.
     navbar: {
       title: 'SpecWeave',
-      logo: {
-        alt: 'SpecWeave Logo',
-        src: 'img/logo.svg?v=079fbdd1',
-        srcDark: 'img/logo-dark.svg?v=079fbdd1',
-      },
       items: [
         {to: '/code/', label: 'SpecWithCode', position: 'left'},
         {to: '/product', label: 'CLI', position: 'left'},
         {type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Docs'},
-        {to: '/docs/guides/cross-tool-handoff', label: 'Handoff', position: 'left'},
-        {to: '/integrations', label: 'Integrations', position: 'left'},
-        {href: 'https://verified-skill.com', label: 'Verified Skills', position: 'left'},
-        {to: '/tutorials', label: 'Tutorials', position: 'right'},
+        {to: '/tutorials', label: 'Tutorials', position: 'left'},
+        {href: 'https://verified-skill.com', label: 'Verified Skill', position: 'right'},
         {to: '/pricing', label: 'Pricing', position: 'right'},
+        {
+          href: 'https://github.com/anton-abyzov/specweave',
+          position: 'right',
+          className: 'header-github-link',
+          'aria-label': 'SpecWeave on GitHub',
+        },
         {type: 'search', position: 'right'},
-        {href: 'https://github.com/anton-abyzov/specweave', label: 'GitHub', position: 'right'},
       ],
     },
 
@@ -336,32 +352,24 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} SpecWeave.`,
     },
 
-    // Mermaid diagrams in the site's paper and burnt-orange palette
+    // Mermaid: calm built-in bases per theme; custom.css tints nodes and lines with Weave tokens,
+    // which flip with data-theme. No hex values here, because options apply to both themes.
     mermaid: {
-      theme: {light: 'base', dark: 'dark'},
+      theme: {light: 'neutral', dark: 'dark'},
       options: {
-        fontFamily: 'IBM Plex Sans, system-ui, sans-serif',
+        fontFamily: '"Schibsted Grotesk", ui-sans-serif, -apple-system, "Segoe UI", sans-serif',
         themeVariables: {
-          primaryColor: '#fbfcf8',
-          primaryBorderColor: '#bd481f',
-          primaryTextColor: '#252820',
-          secondaryColor: '#eceee4',
-          tertiaryColor: '#f6f4ee',
-          lineColor: '#8a8f7c',
-          noteBkgColor: '#f6f4ee',
-          noteBorderColor: '#bd481f',
-          actorBkg: '#fbfcf8',
-          actorBorder: '#bd481f',
-          signalColor: '#252820',
-          signalTextColor: '#252820',
+          fontFamily: '"Schibsted Grotesk", ui-sans-serif, -apple-system, "Segoe UI", sans-serif',
+          fontSize: '15px',
         },
       },
     },
 
     // Prism syntax highlighting
     prism: {
-      theme: prismThemes.github,
-      darkTheme: prismThemes.dracula,
+      // One theme for both modes: every color is a Weave token, so it follows data-theme.
+      theme: weavePrismTheme,
+      darkTheme: weavePrismTheme,
       additionalLanguages: [
         'bash',
         'typescript',

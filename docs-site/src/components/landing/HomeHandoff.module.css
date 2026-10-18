@@ -1,0 +1,138 @@
+/*
+  #how on the homepage: three offset planes and one iris thread.
+  The only scroll-driven motion on spec-weave.com. Static layout first; the animation
+  only runs inside @supports (animation-timeline: view()) and prefers-reduced-motion:
+  no-preference, and ends on the static layout, so screenshots and reduced motion
+  show the complete picture. Transform and opacity only.
+*/
+
+.stage {
+  display: grid;
+  gap: var(--wv-space-12);
+  /* Planes slide in from the right; never let that widen the page. */
+  overflow-x: clip;
+}
+
+.plane {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--wv-space-4);
+  min-width: 0;
+}
+
+.label {
+  min-width: 0;
+}
+
+.plane .label p {
+  margin-top: var(--wv-space-1);
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--wv-muted);
+}
+
+.label code {
+  display: inline-block;
+  padding: 0 var(--wv-space-1);
+  border: 0;
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-sunken);
+  font-family: var(--wv-font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--wv-ink);
+}
+
+.plane .code {
+  font-size: 13px;
+  line-height: 21px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.record .code {
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+.thread code {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--wv-font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wv-ink);
+}
+
+.thread :global(.wv-thread__body) {
+  margin-top: var(--wv-space-1);
+}
+
+.chip {
+  margin-top: var(--wv-space-3);
+}
+
+@media (min-width: 900px) {
+  .plane {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: var(--wv-space-8);
+    align-items: start;
+  }
+
+  /* Offset planes: each layer sits one step further in. */
+  .record { margin-left: var(--wv-space-12); }
+  .agents { margin-left: var(--wv-space-24); }
+}
+
+@keyframes planeIn {
+  from { transform: translateX(var(--plane-from, 0)); opacity: 0.35; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes drawDown {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes drawAcross {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .stage { view-timeline: --wv-handoff block; }
+
+    /* Fill forwards only: before the range starts (stage still below the fold, or a
+       full-page capture) the planes keep their static, final layout. */
+    .plane {
+      animation: planeIn linear forwards;
+      animation-timeline: --wv-handoff;
+      animation-range: entry 0% cover 45%;
+    }
+
+    .plan { animation: none; }
+    .record { --plane-from: 16px; }
+    .agents { --plane-from: 32px; }
+
+    .thread::before {
+      animation: drawDown linear forwards;
+      animation-timeline: --wv-handoff;
+      animation-range: entry 0% cover 60%;
+    }
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
+    .record { --plane-from: 24px; }
+    .agents { --plane-from: 48px; }
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
+    .thread::before { animation-name: drawAcross; }
+  }
+}

@@ -43,8 +43,8 @@
 .stats dt {
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--sw-brand-muted);
 }
 
@@ -84,13 +84,13 @@
   gap: 8px;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--sw-brand-muted);
 }
 
 .playerAgent span:first-child {
-  color: var(--sw-brand-accent);
+  color: var(--wv-ink);
 }
 
 .playerAgent span + span::before {
@@ -155,7 +155,8 @@
 }
 
 .tutorials .galleryHeading h2 {
-  font-size: clamp(38px, 3.8vw, 58px);
+  font-size: 32px;
+  line-height: 38px;
 }
 
 .tutorials .galleryHeading p {
@@ -175,8 +176,8 @@
   margin-right: 6px;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--sw-brand-muted);
 }
 
@@ -187,12 +188,12 @@
   min-height: 44px;
   padding: 8px 14px;
   border: 1px solid var(--sw-brand-line);
-  border-radius: 999px;
+  border-radius: var(--wv-radius-sm);
   background: var(--sw-brand-card);
   color: var(--sw-brand-ink);
   font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 .tutorials .filter:hover {
@@ -209,7 +210,7 @@
 .count {
   min-width: 22px;
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--wv-radius-xs);
   background: var(--sw-brand-soft);
   color: var(--sw-brand-muted);
   font-size: 12px;
@@ -248,16 +249,14 @@
   flex-direction: column;
   width: 100%;
   border: 1px solid var(--sw-brand-line);
-  border-radius: calc(var(--sw-brand-radius) * 1.5);
+  border-radius: var(--wv-radius-md);
   overflow: hidden;
-  background: var(--sw-brand-card);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  background: var(--wv-panel);
+  transition: border-color 120ms ease;
 }
 
 .card:hover {
-  border-color: var(--sw-brand-control-border);
-  box-shadow: var(--sw-brand-shadow);
-  transform: translateY(-2px);
+  border-color: var(--wv-control);
 }
 
 .card:has(.cardButton:focus-visible) {
@@ -290,21 +289,16 @@
   display: flex;
   align-items: center;
   padding: 0 22px;
-  background-color: var(--sw-brand-soft);
-  background-image: repeating-linear-gradient(
-    135deg,
-    transparent 0 16px,
-    color-mix(in srgb, var(--sw-brand-line) 60%, transparent) 16px 17px
-  );
-  border-left: 4px solid var(--sw-brand-accent);
+  background: var(--wv-sunken);
 }
 
 .thumbAgent {
-  font-family: var(--sw-brand-display);
-  font-size: 32px;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--sw-brand-ink);
+  font-family: var(--wv-font-sans);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--wv-ink);
 }
 
 .badge {
@@ -312,19 +306,19 @@
   right: 10px;
   bottom: 10px;
   padding: 3px 8px;
-  border-radius: var(--sw-brand-radius);
+  border-radius: var(--wv-radius-xs);
   background: var(--sw-brand-term-bg);
   color: var(--sw-brand-term-ink);
-  font-family: var(--sw-brand-mono);
+  font-family: var(--wv-font-sans);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
 .badgeSoon {
-  background: var(--sw-brand-card);
-  color: var(--sw-brand-accent);
-  border: 1px solid var(--sw-brand-accent);
-  font-family: var(--sw-brand-sans);
+  background: var(--wv-panel);
+  color: var(--wv-muted);
+  border: 1px solid var(--wv-line);
+  font-family: var(--wv-font-sans);
   font-weight: 600;
 }
 
@@ -339,9 +333,9 @@
 .tutorials .cardAgent {
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--sw-brand-accent);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--wv-muted);
 }
 
 .tutorials .cardTitle {
@@ -513,9 +507,5 @@
   .card,
   .tutorials .filter {
     transition: none;
-  }
-
-  .card:hover {
-    transform: none;
   }
 }

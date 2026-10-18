@@ -42,7 +42,7 @@ const COLUMNS = [
       {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave'},
       {label: 'npm', href: 'https://www.npmjs.com/package/specweave'},
       {label: 'Pricing', to: '/pricing'},
-      {label: 'Verified Skills', href: 'https://verified-skill.com'},
+      {label: 'Verified Skill', href: 'https://verified-skill.com'},
       {label: 'Blog', to: '/blog'},
       {label: 'Privacy', to: '/privacy'},
     ],
