@@ -1,0 +1,247 @@
+{
+  "episode": "agents-use-a-browser",
+  "title": "Let agents use a browser",
+  "app": "SpecWithCode 1.0.47 (release b806fc7f3daf85c7d601, copied), disposable server on 127.0.0.1:8349",
+  "startPath": "/",
+  "offCamera": [
+    "seed.sh: greet-app with a one-page demo (public/index.html, serve.js), specweave init . --quick, committed",
+    "codex-auth.sh: short-lived Codex login in the demo HOME (no refresh token, mode 600)",
+    "serve.sh: the 1.0.47 server under env -i plus greet-app's page on 127.0.0.1:5173 (node serve.js in the demo folder)",
+    "record.mjs --prepare: welcome wizard, add ~/greet-app as a Local folder, project permissions Full access, Settings > Integrations > Agent browser access off"
+  ],
+  "comment": "One continuous headless take. Beat ids match edit.json and vo-lines.json. The shared browser tab is a canvas streamed from the server's headless shell, so clicks inside it use fixed coordinates (clickAt). Before the take-over the app page is reloaded and the thread reopened (cut in the edit): in three takes, clicks in the tab right after Dock landed off target, while after a reload they land where the pointer is.",
+  "shots": [
+    {
+      "id": "02-settings",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Account: Demo Mac"
+        },
+        {
+          "do": "click",
+          "role": "menuitem",
+          "name": "Settings",
+          "after": 1500
+        },
+        {
+          "do": "click",
+          "text": "Integrations",
+          "exact": true,
+          "after": 1500
+        },
+        {
+          "do": "hover",
+          "text": "Allow agents to use the shared browser. Projects can override it.",
+          "ms": 2200
+        },
+        {
+          "do": "click",
+          "role": "switch",
+          "name": "Agent browser access",
+          "after": 1800
+        },
+        {
+          "do": "press",
+          "key": "Escape",
+          "after": 1200
+        }
+      ]
+    },
+    {
+      "id": "03-ask",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "click",
+          "text": "greet-app",
+          "exact": true,
+          "after": 2500
+        },
+        {
+          "do": "type",
+          "placeholder": "Describe a task or ask a question",
+          "delay": 28,
+          "text": "Check the greeting page in the browser beside the thread so I can watch: open http://127.0.0.1:5173, type Ada, press Greet, and tell me what it shows."
+        },
+        {
+          "do": "pause",
+          "ms": 600
+        },
+        {
+          "do": "press",
+          "key": "Enter",
+          "after": 1000
+        },
+        {
+          "do": "expect",
+          "textRegex": "^[A-Z][^.:]{0,40}[Gg]reeting[^.:]{0,30}$",
+          "timeout": 120000
+        },
+        {
+          "do": "pause",
+          "ms": 400
+        }
+      ]
+    },
+    {
+      "id": "04-watch",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "click",
+          "textRegex": "^[A-Z][^.:]{0,40}[Gg]reeting[^.:]{0,30}$",
+          "last": true,
+          "after": 1000
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Expand panel",
+          "after": 800
+        },
+        {
+          "do": "expect",
+          "role": "button",
+          "nameRegex": "^Dock",
+          "timeout": 180000
+        },
+        {
+          "do": "pause",
+          "ms": 1500
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "nameRegex": "^Dock",
+          "after": 1500
+        },
+        {
+          "do": "expect",
+          "textRegex": "Hello, Ada",
+          "timeout": 240000
+        },
+        {
+          "do": "pause",
+          "ms": 2500
+        }
+      ]
+    },
+    {
+      "id": "05-takeover",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "reload",
+          "after": 3500
+        },
+        {
+          "do": "click",
+          "text": "greet-app",
+          "exact": true,
+          "after": 2000
+        },
+        {
+          "do": "click",
+          "textRegex": "^[A-Z][^.:]{0,40}[Gg]reeting[^.:]{0,30}$",
+          "last": true,
+          "after": 2000
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Expand panel",
+          "optional": true,
+          "after": 1500
+        },
+        {
+          "do": "clickAt",
+          "x": 1710,
+          "y": 21,
+          "after": 3500,
+          "unlessButton": "Take over"
+        },
+        {
+          "do": "expect",
+          "role": "button",
+          "name": "Take over",
+          "timeout": 20000
+        },
+        {
+          "do": "pause",
+          "ms": 800
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Take over",
+          "after": 1500
+        },
+        {
+          "do": "clickAt",
+          "x": 1600,
+          "y": 640,
+          "after": 800
+        },
+        {
+          "do": "press",
+          "key": "Meta+a",
+          "after": 300
+        },
+        {
+          "do": "type",
+          "text": "Grace",
+          "delay": 110
+        },
+        {
+          "do": "press",
+          "key": "Enter",
+          "after": 2500
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Hand back",
+          "after": 1500
+        }
+      ]
+    },
+    {
+      "id": "06-screenshot",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "click",
+          "css": "[contenteditable=\"true\"]",
+          "last": true,
+          "after": 400
+        },
+        {
+          "do": "type",
+          "text": "Take a screenshot of the browser tab and show it here.",
+          "delay": 30
+        },
+        {
+          "do": "pause",
+          "ms": 500
+        },
+        {
+          "do": "press",
+          "key": "Enter",
+          "after": 1000
+        },
+        {
+          "do": "waitCss",
+          "css": "img[src*='/api/assets/']",
+          "timeout": 180000
+        },
+        {
+          "do": "pause",
+          "ms": 4500
+        }
+      ]
+    }
+  ]
+}
