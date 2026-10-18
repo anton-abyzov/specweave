@@ -1,0 +1,109 @@
+WEBVTT
+
+1
+00:00:01.100 --> 00:00:04.840
+Install SpecWeave and plan your first increment.
+
+2
+00:00:04.890 --> 00:00:08.113
+Install the CLI from npm
+
+3
+00:00:08.113 --> 00:00:11.419
+with npm i -g specweave.
+
+4
+00:00:11.419 --> 00:00:14.421
+It needs Node 20.12 or later.
+
+5
+00:00:14.421 --> 00:00:18.670
+specweave --version prints 3.1.0.
+
+6
+00:00:18.720 --> 00:00:23.528
+In your repo, run specweave init with the Claude Code adapter.
+
+7
+00:00:23.528 --> 00:00:26.800
+It writes CLAUDE.md and AGENTS.md,
+
+8
+00:00:26.800 --> 00:00:28.840
+installs six SpecWeave skills,
+
+9
+00:00:28.840 --> 00:00:32.820
+and keeps its settings in .specweave/config.json.
+
+10
+00:00:32.870 --> 00:00:37.761
+Now plan the work. Give specweave create-increment a title.
+
+11
+00:00:37.761 --> 00:00:41.990
+It makes the folder 0001-personal-greeting,
+
+12
+00:00:41.990 --> 00:00:44.330
+with a spec.md to fill in.
+
+13
+00:00:44.380 --> 00:00:49.020
+Step one is Decide. At the default level, critical,
+
+14
+00:00:49.020 --> 00:00:52.226
+your agent asks only the decisions that are yours,
+
+15
+00:00:52.226 --> 00:00:54.880
+one at a time with a recommended answer.
+
+16
+00:00:54.930 --> 00:00:57.605
+Then fill in spec.md,
+
+17
+00:00:57.605 --> 00:01:00.922
+yourself or with the sw-increment skill:
+
+18
+00:01:00.922 --> 00:01:05.190
+the problem, and numbered acceptance criteria that a test can check.
+
+19
+00:01:05.240 --> 00:01:10.581
+Decisions records what was asked, what was defaulted, and what is open.
+
+20
+00:01:10.581 --> 00:01:14.640
+Each task names its acceptance criterion, its files,
+
+21
+00:01:14.640 --> 00:01:16.580
+and the test that proves it.
+
+22
+00:01:16.630 --> 00:01:19.722
+Commit the plan, then run specweave pickup.
+
+23
+00:01:19.722 --> 00:01:23.590
+It shows the increment, the next task, T-01,
+
+24
+00:01:23.590 --> 00:01:27.150
+with its acceptance criterion, files and test,
+
+25
+00:01:27.150 --> 00:01:29.060
+and the command that claims it.
+
+26
+00:01:29.110 --> 00:01:31.830
+Next, claim T-01
+
+27
+00:01:31.830 --> 00:01:35.510
+and prove it with task done --run.

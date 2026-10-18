@@ -83,6 +83,173 @@
       ]
     },
     {
+      "slug": "install-and-plan",
+      "product": "cli",
+      "title": "Install SpecWeave and plan your first increment",
+      "seoTitle": "Install the SpecWeave CLI and plan your first increment",
+      "summary": "A real SpecWeave 3.1.0 run in a sample repo: npm i -g specweave, specweave init, specweave create-increment with a title, a filled-in spec.md with acceptance criteria, decisions and tasks, and specweave pickup naming the first task.",
+      "outcome": "You end with an increment whose spec.md lists numbered acceptance criteria and tasks with their files and test, and specweave pickup tells you which task to claim first.",
+      "prerequisites": [
+        "Node.js 20.12 or later and git",
+        "a git repository to plan work in"
+      ],
+      "testedOn": "SpecWeave 3.1.0, 18 October 2026",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/install-and-plan.mp4",
+        "poster": "/video/tutorials/install-and-plan.jpg",
+        "captionsVtt": "/video/tutorials/install-and-plan.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 96.7,
+        "uploadDate": "2026-10-18",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will do"
+          },
+          {
+            "start": 4.8,
+            "title": "Install the CLI"
+          },
+          {
+            "start": 18.7,
+            "title": "specweave init"
+          },
+          {
+            "start": 32.8,
+            "title": "Create the increment"
+          },
+          {
+            "start": 44.3,
+            "title": "The Decide step"
+          },
+          {
+            "start": 54.9,
+            "title": "Problem and acceptance criteria"
+          },
+          {
+            "start": 65.2,
+            "title": "Decisions and tasks"
+          },
+          {
+            "start": 76.6,
+            "title": "specweave pickup"
+          },
+          {
+            "start": 89.1,
+            "title": "Next: claim and prove the task"
+          }
+        ]
+      },
+      "steps": [
+        "Install the CLI with `npm i -g specweave`. It needs Node.js 20.12 or later; `specweave --version` prints the installed version.",
+        "In your repo, run `specweave init`. Add `--adapter claude` (or another tool) to name your coding agent, and `--quick` to accept the defaults. It writes CLAUDE.md and AGENTS.md, installs six SpecWeave skills in .claude/skills/ and .agents/skills/, and keeps its settings in .specweave/config.json.",
+        "Run `specweave create-increment \"Personal greeting\"`. It creates .specweave/increments/0001-personal-greeting/ with a scaffolded spec.md and metadata.json.",
+        "Decide first: at the default level (`planning.deepInterview: critical`) your agent's sw-increment skill asks only the decisions that are yours, one at a time with a recommended answer, and records them under ## Decisions as Asked, Defaulted and Open.",
+        "Fill in spec.md, yourself or with the sw-increment skill: Problem, Scope, numbered acceptance criteria (`- [ ] AC-01: …`), Approach, Decisions, and tasks written as `### T-01 Title` followed by `- AC: AC-01 | Files: … | Test: …`.",
+        "Commit the plan and run `specweave pickup`. It prints the increment, the next task with its acceptance criterion, files and test, and the command that claims it.",
+        "Then claim the task with `specweave task claim T-01` and prove it with `specweave task done T-01 --run \"npm test\"`."
+      ],
+      "transcript": "captions",
+      "note": "Real output of the SpecWeave 3.1.0 CLI in a sample repo inside a disposable home, recorded headlessly. `npm i -g specweave` installed 3.1.0 from the npm registry into that home, and every later command ran the installed copy. No agent session is shown: the commands ran in a terminal with SPECWEAVE_TOOL=claude, which is why pickup reads claude@demo. The filled-in spec.md is a sample written in advance and swapped in for the scaffold off camera; no agent wrote it and no decisions were asked live. `--adapter claude` names the adapter so detection does not look at the recording machine's own tools. Nothing was pushed. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Plan your first increment",
+        "to": "/docs/getting-started/first-increment"
+      },
+      "guide": "/docs/getting-started/first-increment",
+      "related": [
+        "specweave-workflow",
+        "handoff-claude-to-codex"
+      ]
+    },
+    {
+      "slug": "claim-prove-verify-complete",
+      "product": "cli",
+      "title": "Claim, prove, verify and complete a task",
+      "seoTitle": "Claim, prove, verify and complete a task with the SpecWeave CLI",
+      "summary": "A real SpecWeave 3.1.0 run in a sample repo: claim a task, prove it with task done --run and its evidence file, watch specweave complete refuse to close without a verify report, then run specweave verify and close the increment.",
+      "outcome": "You end with a completed increment that has its test evidence and a passing verify report.",
+      "prerequisites": [
+        "Node.js 20.12 or later and git",
+        "SpecWeave installed with `npm i -g specweave` and a repo set up with `specweave init`",
+        "an increment whose spec.md lists a task with its acceptance criteria, Files and Test"
+      ],
+      "testedOn": "SpecWeave 3.1.0, 18 October 2026",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/claim-prove-verify-complete.mp4",
+        "poster": "/video/tutorials/claim-prove-verify-complete.jpg",
+        "captionsVtt": "/video/tutorials/claim-prove-verify-complete.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 90.2,
+        "uploadDate": "2026-10-18",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will do"
+          },
+          {
+            "start": 7.2,
+            "title": "specweave task claim"
+          },
+          {
+            "start": 20.4,
+            "title": "task done --run"
+          },
+          {
+            "start": 31.2,
+            "title": "The evidence file"
+          },
+          {
+            "start": 41.7,
+            "title": "complete is blocked"
+          },
+          {
+            "start": 53.6,
+            "title": "specweave verify"
+          },
+          {
+            "start": 66.1,
+            "title": "The verify report"
+          },
+          {
+            "start": 78.5,
+            "title": "complete passes"
+          },
+          {
+            "start": 84.4,
+            "title": "Next: hand off"
+          }
+        ]
+      },
+      "steps": [
+        "Claim the task with `specweave task claim T-01`. The claim goes into ledger.jsonl under your agent id (claude@demo in the recording), and the command prints the task's acceptance criteria, files and test. Another agent trying to claim it is refused while your claim is live.",
+        "Make the change and its test, and commit as `0001: <what changed>`.",
+        "Run `specweave task done T-01 --run \"npm test\"`. The test runs again; the task is marked done only when it exits 0, and the output is kept as evidence. A failing test exits 5 and the task is not marked done (the log is still saved).",
+        "Read the evidence file, reports/task-T-01.txt in the increment folder: the command, its exit code and the time, then the full test output.",
+        "`specweave complete 0001` refuses to close while reports/verify.json is missing, and tells you to run `specweave verify` first. Use `--reason` only if you must close without it.",
+        "Run `specweave verify`. It runs the verification commands (testing.commands in .specweave/config.json, otherwise the test, lint and build scripts from package.json) and counts an acceptance criterion as met when the tasks that cover it are done. It writes reports/verify.md and, beside it, reports/verify.json, which `specweave complete` reads.",
+        "Run `specweave complete 0001` again. The verify check passes and the increment's status becomes completed."
+      ],
+      "transcript": "captions",
+      "note": "Real output of the SpecWeave 3.1.0 CLI in a sample repo inside a disposable home, recorded headlessly. No agent session is shown: every command ran in a terminal with SPECWEAVE_TOOL=claude, which is how the ledger reads claude@demo. The change to src/greeting.js and its test were written off camera by the producer between the claim and task done, not by an agent; the change is shown as its real diff, and the video says so on the diff panel and the end card. The repo, spec and task are samples. Left out of the video: the 'Completing increment' line the blocked specweave complete prints before its error, the warnings both complete runs print (no review on file, no coverage data), and the empty Note cell of the verify report's task row. Nothing was pushed. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Read the workflow guide",
+        "to": "/docs/workflows/overview"
+      },
+      "guide": "/docs/workflows/overview",
+      "related": [
+        "specweave-workflow",
+        "handoff-claude-to-codex"
+      ]
+    },
+    {
       "slug": "handoff-claude-to-codex",
       "product": "cli",
       "title": "Hand off from Claude Code to Codex at a usage limit",
@@ -163,6 +330,91 @@
       "related": [
         "specweave-workflow",
         "how-specwithcode-works"
+      ]
+    },
+    {
+      "slug": "review-with-another-model",
+      "product": "cli",
+      "title": "Review with the other model before you ship",
+      "seoTitle": "Review Claude Code's diff with Codex before you ship, with specweave review",
+      "summary": "A real SpecWeave 3.1.0 run in a sample repo: specweave review --brief shows what a reviewer gets, then specweave review sees in the ledger that Claude Code finished the task and has Codex, a model from another family, review the diff. Codex saves reports/review-codex.md with a high finding and the command exits 3. After the fix, a second review says ship and exits 0, and overwrites the first report.",
+      "outcome": "You end with a review report from a model of another family and a clean second run.",
+      "prerequisites": [
+        "Node.js 20.12 or later and git",
+        "SpecWeave installed with `npm i -g specweave` and a repo set up with `specweave init`",
+        "the Codex CLI installed and signed in (`codex login`)",
+        "an increment whose tasks are done on a branch, so there is a diff against main"
+      ],
+      "testedOn": "SpecWeave 3.1.0 and codex-cli 0.162.1, 18 October 2026",
+      "agent": "multi",
+      "agentsShown": [
+        "claude-code",
+        "codex"
+      ],
+      "video": {
+        "src": "/video/tutorials/review-with-another-model.mp4",
+        "poster": "/video/tutorials/review-with-another-model.jpg",
+        "captionsVtt": "/video/tutorials/review-with-another-model.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 93.0,
+        "uploadDate": "2026-10-18",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will do"
+          },
+          {
+            "start": 4.3,
+            "title": "What a reviewer gets"
+          },
+          {
+            "start": 17.9,
+            "title": "Codex reviews: fix first, exit 3"
+          },
+          {
+            "start": 34.3,
+            "title": "What reports/review-codex.md says"
+          },
+          {
+            "start": 47.3,
+            "title": "Fix the finding"
+          },
+          {
+            "start": 57.5,
+            "title": "Review again: ship, exit 0"
+          },
+          {
+            "start": 67.3,
+            "title": "Each verdict in the ledger"
+          },
+          {
+            "start": 83.9,
+            "title": "Next: verify and complete"
+          }
+        ]
+      },
+      "steps": [
+        "Finish the increment's tasks on a branch. The ledger records who finished each one (claude@demo in the recording).",
+        "Run `specweave review --brief` to see what the reviewer gets without running it: who wrote the code (counted from the ledger's done events), the acceptance criteria, the Approach, the tasks and the diff of the task files since the merge-base with main.",
+        "Run `specweave review`. It picks the first installed reviewer from another model family (Codex for code Claude wrote, Claude for code an OpenAI model wrote) and sends it that brief; Codex reviews it with `codex exec` in a read-only sandbox, using its own sign-in.",
+        "Read `reports/review-codex.md` in the increment folder. Every finding names a severity and a `path:line`. With any critical or high finding the verdict is `fix first` and `specweave review` exits 3.",
+        "Fix every critical and high finding (or add a task for it), run the tests, and commit.",
+        "Run `specweave review` again. With no critical or high finding left the verdict is `ship` and the exit code is 0. Each run appends a note to ledger.jsonl with the reviewer and its verdict, and `specweave pickup` shows the latest notes.",
+        "Each run writes the same `reports/review-<reviewer>.md`, so the second review replaces the first report while both ledger notes still name that file. Copy a report you want to keep before you review again.",
+        "Then run `specweave verify` and close the increment with `specweave complete`."
+      ],
+      "transcript": "captions",
+      "note": "Real output of the SpecWeave 3.1.0 CLI in a sample repo inside a disposable home, recorded headlessly. The review is a real Codex run: `specweave review` started codex-cli 0.162.1 with its built-in command (GPT-6.1-Sol, high reasoning, read-only sandbox); each review took about 30 seconds, and that wait is cut, with the verdict shown when it arrived. Agent sessions are not shown: the commands ran in a terminal as Claude Code (SPECWEAVE_TOOL=claude), which is how the ledger reads claude@demo. Claude Code's original change, its fix and the new test were scripted off camera for the demo and committed under the claude tool id; the video shows the fix commit with `git show`, and the end card says so. The brief, the fix commit and the overwritten report's verdict line were captured afterwards from the same disposable home, without running the reviewer. Some output is shortened on screen, marked with a dimmed …: the brief shows only its author, acceptance criteria and first diff hunk; the report's first line, an HTML comment with the reviewer, base and head commits and the time, is cut; the fix commit's file headers are cut; and the verdict lines show …/reports/review-codex.md instead of the absolute path into the disposable home. As the video says, the second review overwrote reports/review-codex.md, so the fix-first report the first ledger note names no longer exists (a known SpecWeave 3.1.0 limitation). Nothing was pushed. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Read the cross-model review guide",
+        "to": "/docs/guides/cross-model-review"
+      },
+      "guide": "/docs/guides/cross-model-review",
+      "related": [
+        "handoff-claude-to-codex",
+        "specweave-workflow"
       ]
     },
     {
@@ -1080,33 +1332,6 @@
   ],
   "planned": [
     {
-      "slug": "install-and-plan",
-      "product": "cli",
-      "title": "Install SpecWeave and plan your first increment",
-      "outcome": "You end with an increment whose problem, acceptance criteria and tasks are written down.",
-      "beats": [
-        "npm i -g specweave",
-        "specweave init",
-        "create-increment \"title\"",
-        "Problem, acceptance criteria and tasks",
-        "specweave pickup"
-      ],
-      "targetSeconds": 100
-    },
-    {
-      "slug": "claim-prove-verify-complete",
-      "product": "cli",
-      "title": "Claim, prove, verify and complete a task",
-      "outcome": "You end with a completed increment that has its test evidence and a passing verify report.",
-      "beats": [
-        "task claim T-01",
-        "task done --run with its evidence file",
-        "specweave verify",
-        "complete blocked, then passing"
-      ],
-      "targetSeconds": 100
-    },
-    {
       "slug": "start-specwithcode",
       "product": "specwithcode",
       "title": "Start SpecWithCode with a coordinator and two workers",
@@ -1120,19 +1345,6 @@
       ],
       "targetSeconds": 110,
       "replaces": "how-specwithcode-works"
-    },
-    {
-      "slug": "review-with-another-model",
-      "product": "cli",
-      "title": "Review with the other model before you ship",
-      "outcome": "You end with a review report from a model of another family and a clean second run.",
-      "beats": [
-        "specweave review",
-        "Codex reviews a Claude diff",
-        "reports/review-codex.md",
-        "Exit 3, fix, exit 0"
-      ],
-      "targetSeconds": 75
     },
     {
       "slug": "provider-runs-out",

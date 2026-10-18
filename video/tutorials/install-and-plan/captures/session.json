@@ -1,0 +1,55 @@
+{
+  "specweave": "3.1.0",
+  "capturedAt": "2026-10-18T08:48:53.124Z",
+  "shots": [
+    {
+      "beat": "02-install",
+      "tool": "claude",
+      "cmd": "npm i -g specweave",
+      "out": "\nadded 142 packages in 3s\n\n45 packages are looking for funding\n  run `npm fund` for details"
+    },
+    {
+      "beat": "02-install",
+      "tool": "claude",
+      "cmd": "node --version",
+      "out": "v22.20.0"
+    },
+    {
+      "beat": "02-install",
+      "tool": "claude",
+      "cmd": "specweave --version",
+      "out": "3.1.0"
+    },
+    {
+      "beat": "03-init",
+      "tool": "claude",
+      "cmd": "specweave init . --quick --adapter claude",
+      "out": "\n⚡ Quick mode: Using sensible defaults\n\n🚀 SpecWeave Initialization\n\n- Creating SpecWeave project...\n   ✓ CLAUDE.md created\n   ✓ AGENTS.md created\n   ✓ .gitignore created (1 tech patterns detected)\n\n✨ Claude Code native installation complete!\n✔ SpecWeave project created successfully!\n   ✓ 6 skills installed as sw-* in .claude/skills/ and .agents/skills/\n     Optional: grill-me (interview), glossary (shared language). Turn on with `specweave skills enable grill-me glossary`.\n   ✓ Claude Code compacts at 400K tokens in this project (.claude/settings.json); `specweave autocompact off --project` undoes it\n\n✅ SpecWeave initialized for greet-app!\n\n  Provider:  Local\n  Structure: Single repo\n  Adapter:   Claude Code\n  Config:    .specweave/config.json\n\n  Enabled by default:\n    • Skills sw-* in .claude/skills/ and .agents/skills/\n    • LSP code intelligence\n\n  Quick reference:\n    specweave help              Full command reference\n    specweave doctor            Verify project health\n    specweave config <section>  Customize settings\n\n\n🎯 Next steps:\n\n   1. ✔ All plugins ready\n\n   2. specweave sync setup          Connect GitHub Issues, JIRA, or ADO\n   3. specweave create-increment     Start your first feature\n   4. specweave get owner/repo        Add a repository to your workspace\n      specweave get \"org/*\"          Add all repos from an org\n\n   Tip: AutoVerify is on by default in Claude Code Desktop — changes are verified automatically\n\n🚀 Ready to build with SpecWeave!\n\nDocumentation: https://spec-weave.com\nGitHub: https://github.com/anton-abyzov/specweave\n"
+    },
+    {
+      "beat": "04-create",
+      "tool": "claude",
+      "cmd": "specweave create-increment \"Personal greeting\"",
+      "out": "\nIncrement created: 0001-personal-greeting (active)\n  Path: /Users/Shared/specwithcode-demo/tut02-install-and-plan/final/home/greet-app/.specweave/increments/0001-personal-greeting\n  Files: metadata.json, spec.md\n  Decide: critical (planning.deepInterview; sw-grill-me interviews in full)\n\nNext steps:\n  1. Decide: ask the user only their critical decisions, one at a time with a recommended answer; record them under ## Decisions (sw-increment; sw-grill-me for a full interview)\n  2. Fill in spec.md — Problem, Scope, ACs (- [ ] AC-01 …), Approach and Tasks (### T-01 … + \"- AC: … | Files: … | Test: …\")\n  3. Work it: specweave task next → task claim T-01 → task done T-01 --run \"<test>\"\n  4. Close it: specweave verify 0001-personal-greeting → specweave complete 0001-personal-greeting"
+    },
+    {
+      "beat": "06-spec",
+      "tool": "claude",
+      "cmd": "cat .specweave/increments/0001-personal-greeting/spec.md",
+      "out": "# Personal greeting\n\n## Problem\n\ngreet() always says \"Hello, world!\". The welcome screen needs to greet people by name.\n\n## Scope\n\nIn: an optional name argument to greet(). Out: translations.\n\n## Acceptance Criteria\n\n- [ ] AC-01: greet(\"Ada\") returns \"Hello, Ada!\" and greet() still returns \"Hello, world!\"\n- [ ] AC-02: a blank or whitespace-only name falls back to \"Hello, world!\"\n\n## Approach\n\nChange src/greeting.js and its test only. Trim the name before using it.\n\n## Decisions\n\n### Asked\n- D-01 Keep greet() with no name as \"Hello, world!\"? → yes (user)\n### Defaulted (change any before sw-do)\n- D-02 A blank name counts as no name → falls back to \"world\"\n### Open\n- none\n\n## Tasks\n\n### T-01 Greet by name\n- AC: AC-01 | Files: src/greeting.js, test/greeting.test.js | Test: npm test\n\n### T-02 Fall back on a blank name\n- AC: AC-02 | Files: src/greeting.js, test/greeting.test.js | Test: npm test"
+    },
+    {
+      "beat": "08-pickup",
+      "tool": "claude",
+      "cmd": "git add -A && git commit -m \"0001: plan personal greeting\"",
+      "out": "[main b38f524] 0001: plan personal greeting\n 2 files changed, 47 insertions(+)\n create mode 100644 .specweave/increments/0001-personal-greeting/metadata.json\n create mode 100644 .specweave/increments/0001-personal-greeting/spec.md"
+    },
+    {
+      "beat": "08-pickup",
+      "tool": "claude",
+      "cmd": "specweave pickup",
+      "out": "SpecWeave pickup · you are claude@demo\nIncrement 0001-personal-greeting \"Personal greeting\" (active) · tasks 0/2 done · ACs 0/2 met\nNext: T-01 Greet by name\n  AC-01: greet(\"Ada\") returns \"Hello, Ada!\" and greet() still returns \"Hello, world!\"\n  Files: src/greeting.js, test/greeting.test.js | Test: npm test\n  claim: specweave task claim T-01 0001-personal-greeting\nSpec: .specweave/increments/0001-personal-greeting/spec.md\nBranch: main @ b38f524 · not pushed\nMemory (.specweave/memory/MEMORY.md):\n  # Project memory index\n  Committed and read by every tool and account: one file per durable fact in this folder, one line per file here (see AGENTS.md)."
+    }
+  ],
+  "specTemplate": "# Personal greeting\n\n## Problem\n\nPersonal greeting\n\n[What is wrong today, for whom, and the evidence. Not the solution.]\n\n## Scope\n\nIn: [what this increment ships]. Out: [what it does not include].\n\n## Acceptance Criteria\n\n- [ ] AC-01: [Specific, testable criterion]\n- [ ] AC-02: [Specific, testable criterion]\n\n## Approach\n\n[Files that change, in order; key decisions; rejected alternatives; risks.]\n\n## Decisions\n\n### Asked\n- [D-01 question → answer (user), or \"none\"]\n### Defaulted (change any before sw-do)\n- [D-02 decision → default (reversible), or \"none\"]\n### Open\n- none\n\n## Tasks\n\n### T-01 [First task]\n- AC: AC-01 | Files: [src/file.ts, tests/e2e/file.test.ts] | Test: [command that checks AC-01 as a user would]\n\n### T-02 [Second task]\n- AC: AC-02 | Files: [src/other.ts] | Test: [command]\n"
+}

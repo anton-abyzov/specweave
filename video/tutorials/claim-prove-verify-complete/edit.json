@@ -1,0 +1,571 @@
+{
+  "comment": "Anchors: [beat, cue|null, offset] or [beat, cue, spokenWord, offset]. Screen item `lines` are output line ranges to show (the rest is one \u2026 row), `hl.lines` output line indices to highlight.",
+  "title": "Claim, prove, verify and complete a task",
+  "outro": {
+    "next": "Next: hand off to another agent with `specweave handoff`",
+    "note": "Agent sessions are not shown. Each command ran in a terminal as Claude Code (SPECWEAVE_TOOL=claude), and every output is real. The change to src/greeting.js and its test were written off camera. The narration is an AI voice."
+  },
+  "voOffset": 0.05,
+  "tailAfterVo": 0.1,
+  "termCols": 90,
+  "visibleRows": 15,
+  "posterAt": 1.0,
+  "beats": [
+    {
+      "id": "01-intro",
+      "kind": "card",
+      "chapter": "What you will do",
+      "voOffset": 1.1,
+      "tail": 0.2
+    },
+    {
+      "id": "02-claim",
+      "kind": "term",
+      "screen": "claim",
+      "chapter": "specweave task claim",
+      "stepChip": "Claim: `specweave task claim T-01`"
+    },
+    {
+      "id": "03-done",
+      "kind": "term",
+      "screen": "claim",
+      "chapter": "task done --run",
+      "stepChip": "Prove it: `task done --run \"npm test\"`",
+      "voOffset": 0.25,
+      "diffPanel": {
+        "from": [
+          "03-done",
+          null,
+          0
+        ],
+        "to": [
+          "03-done",
+          1,
+          "task",
+          0.35
+        ],
+        "head": "Written off camera: the change for `T-01` in `src/greeting.js`"
+      }
+    },
+    {
+      "id": "04-evidence",
+      "kind": "term",
+      "screen": "evidence",
+      "chapter": "The evidence file",
+      "stepChip": "Evidence: `reports/task-T-01.txt`",
+      "tail": 0.3
+    },
+    {
+      "id": "05-blocked",
+      "kind": "term",
+      "screen": "verify",
+      "chapter": "complete is blocked",
+      "stepChip": "Close too early: `specweave complete`"
+    },
+    {
+      "id": "06-verify",
+      "kind": "term",
+      "screen": "verify",
+      "chapter": "specweave verify",
+      "stepChip": "Check: `specweave verify`"
+    },
+    {
+      "id": "07-report",
+      "kind": "term",
+      "screen": "report",
+      "chapter": "The verify report",
+      "stepChip": "Read `reports/verify.md`",
+      "tail": 0.3
+    },
+    {
+      "id": "08-complete",
+      "kind": "term",
+      "screen": "complete",
+      "chapter": "complete passes",
+      "stepChip": "Close: `specweave complete`",
+      "tail": 0.3
+    },
+    {
+      "id": "09-outro",
+      "kind": "card",
+      "chapter": "Next: hand off",
+      "tail": 1.5
+    }
+  ],
+  "screens": {
+    "claim": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 0,
+          "at": [
+            "02-claim",
+            0,
+            "spec",
+            0
+          ],
+          "hl": [
+            {
+              "lines": [
+                0
+              ],
+              "from": [
+                "02-claim",
+                1,
+                "ledger",
+                0
+              ],
+              "to": [
+                "02-claim",
+                3,
+                "it",
+                0
+              ]
+            },
+            {
+              "lines": [
+                2,
+                3,
+                4
+              ],
+              "from": [
+                "02-claim",
+                3,
+                "acceptance",
+                0
+              ],
+              "to": [
+                "03-done",
+                null,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "shot": 1,
+          "at": [
+            "03-done",
+            1,
+            "task",
+            0.35
+          ],
+          "hl": [
+            {
+              "lines": [
+                0
+              ],
+              "from": [
+                "03-done",
+                2,
+                "only",
+                0
+              ],
+              "to": [
+                "04-evidence",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "evidence": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 2,
+          "at": [
+            "04-evidence",
+            null,
+            0.1
+          ],
+          "keepTop": true,
+          "lines": [
+            [
+              0,
+              1
+            ],
+            [
+              9,
+              9
+            ],
+            [
+              15,
+              15
+            ],
+            [
+              21,
+              24
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                0,
+                1
+              ],
+              "from": [
+                "04-evidence",
+                1,
+                "command",
+                0
+              ],
+              "to": [
+                "04-evidence",
+                1,
+                "then",
+                0
+              ]
+            },
+            {
+              "lines": [
+                9,
+                15,
+                23,
+                24
+              ],
+              "from": [
+                "04-evidence",
+                1,
+                "test",
+                0
+              ],
+              "to": [
+                "05-blocked",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "verify": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 3,
+          "at": [
+            "05-blocked",
+            0,
+            "spec",
+            0
+          ],
+          "lines": [
+            [
+              3,
+              5
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                5
+              ],
+              "from": [
+                "05-blocked",
+                1,
+                "refuses",
+                0
+              ],
+              "to": [
+                "06-verify",
+                null,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "shot": 4,
+          "at": [
+            "06-verify",
+            0,
+            "spec",
+            0
+          ],
+          "lines": [
+            [
+              0,
+              2
+            ],
+            [
+              4,
+              4
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                0
+              ],
+              "from": [
+                "06-verify",
+                0,
+                "test",
+                0
+              ],
+              "to": [
+                "06-verify",
+                1,
+                "here",
+                0
+              ]
+            },
+            {
+              "lines": [
+                1
+              ],
+              "from": [
+                "06-verify",
+                1,
+                "here",
+                0
+              ],
+              "to": [
+                "06-verify",
+                2,
+                "both",
+                0
+              ]
+            },
+            {
+              "lines": [
+                2
+              ],
+              "from": [
+                "06-verify",
+                2,
+                "both",
+                0
+              ],
+              "to": [
+                "07-report",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "report": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 5,
+          "at": [
+            "07-report",
+            null,
+            0.1
+          ],
+          "keepTop": true,
+          "lines": [
+            [
+              0,
+              0
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              15,
+              15
+            ],
+            [
+              43,
+              44
+            ],
+            [
+              50,
+              50
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                6,
+                15
+              ],
+              "from": [
+                "07-report",
+                0,
+                "test",
+                0
+              ],
+              "to": [
+                "07-report",
+                1,
+                "the",
+                0
+              ]
+            },
+            {
+              "lines": [
+                43,
+                44
+              ],
+              "from": [
+                "07-report",
+                1,
+                "criteria",
+                0
+              ],
+              "to": [
+                "07-report",
+                1,
+                "and",
+                0
+              ]
+            },
+            {
+              "lines": [
+                50
+              ],
+              "from": [
+                "07-report",
+                1,
+                "task",
+                0
+              ],
+              "to": [
+                "07-report",
+                2,
+                "verify",
+                0
+              ]
+            }
+          ],
+          "firstRowOnly": [
+            50
+          ]
+        },
+        {
+          "shot": 6,
+          "at": [
+            "07-report",
+            2,
+            "verify",
+            0
+          ],
+          "hl": [
+            {
+              "lines": [
+                1
+              ],
+              "from": [
+                "07-report",
+                2,
+                "complete",
+                0
+              ],
+              "to": [
+                "08-complete",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "complete": {
+      "tool": "claude",
+      "items": [
+        {
+          "shot": 7,
+          "at": [
+            "08-complete",
+            0,
+            "spec",
+            0
+          ],
+          "lines": [
+            [
+              0,
+              6
+            ],
+            [
+              16,
+              17
+            ]
+          ],
+          "hl": [
+            {
+              "lines": [
+                6
+              ],
+              "from": [
+                "08-complete",
+                1,
+                "verify",
+                0
+              ],
+              "to": [
+                "09-outro",
+                null,
+                0
+              ]
+            },
+            {
+              "lines": [
+                16,
+                17
+              ],
+              "from": [
+                "08-complete",
+                1,
+                "completed",
+                0
+              ],
+              "to": [
+                "09-outro",
+                null,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "shot": 8,
+          "at": [
+            "08-complete",
+            1,
+            "passes",
+            0
+          ],
+          "hl": [
+            {
+              "lines": [
+                0
+              ],
+              "from": [
+                "08-complete",
+                1,
+                "completed",
+                0
+              ],
+              "to": [
+                "09-outro",
+                null,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "cueNudge": {
+    "06-verify": {
+      "1": -0.1
+    }
+  }
+}

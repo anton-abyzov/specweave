@@ -1,0 +1,152 @@
+{
+  "voiceId": "0Ki1af67ybTaTu4TNmO8",
+  "modelId": "eleven_v4",
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "lines": [
+    {
+      "id": "01-intro",
+      "chunks": [
+        [
+          "Review with the other model before you ship.",
+          "Review with the other model, before you ship."
+        ]
+      ]
+    },
+    {
+      "id": "02-review",
+      "chunks": [
+        [
+          "Claude Code finished this task on a branch.",
+          "Claude Code finished this task on a branch."
+        ],
+        [
+          "`specweave review --brief` shows what a reviewer gets:",
+          " Spec weave review dash dash brief shows what a reviewer gets:"
+        ],
+        [
+          "who wrote the code, from the ledger,",
+          " who wrote the code, from the ledger,"
+        ],
+        [
+          "the acceptance criteria, and the diff since the branch began.",
+          " the acceptance criteria, and the diff since the branch began."
+        ]
+      ]
+    },
+    {
+      "id": "03-verdict",
+      "chunks": [
+        [
+          "Before you ship, run `specweave review`.",
+          "Before you ship, run spec weave review."
+        ],
+        [
+          "Claude wrote the code, so it picks Codex, from another family.",
+          " Claude wrote the code, so it picks Codex, from another family."
+        ],
+        [
+          "Codex gets the brief in a read-only sandbox.",
+          " Codex gets the brief in a read-only sandbox."
+        ],
+        [
+          "This run took about 30 seconds.",
+          " This run took about thirty seconds."
+        ],
+        [
+          "Its verdict is fix first, so the command exits 3.",
+          " Its verdict is fix first, so the command exits three."
+        ]
+      ]
+    },
+    {
+      "id": "04-report",
+      "chunks": [
+        [
+          "The review is saved in `reports/review-codex.md`.",
+          "The review is saved in reports, review codex dot M D."
+        ],
+        [
+          "Each finding cites a file and line, and how to fix it.",
+          " Each finding cites a file and line, and how to fix it."
+        ],
+        [
+          "Here, a blank name gets no fallback, which breaks `AC-02`.",
+          " Here, a blank name gets no fallback, which breaks A C zero two."
+        ]
+      ]
+    },
+    {
+      "id": "05-fix",
+      "chunks": [
+        [
+          "Claude's fix trims the name, and falls back to world when it's empty.",
+          "Claude's fix trims the name, and falls back to world when it's empty."
+        ],
+        [
+          "It also adds a test for blank names.",
+          " It also adds a test for blank names."
+        ],
+        [
+          "Run the tests: all three pass.",
+          " Run the tests: all three pass."
+        ]
+      ]
+    },
+    {
+      "id": "06-again",
+      "chunks": [
+        [
+          "Then run `specweave review` again, on the fixed code.",
+          "Then run spec weave review again, on the fixed code."
+        ],
+        [
+          "No critical or high finding is left, so the verdict is ship,",
+          " No critical or high finding is left, so the verdict is ship,"
+        ],
+        [
+          "and the exit code is 0.",
+          " and the exit code is zero."
+        ]
+      ]
+    },
+    {
+      "id": "07-ledger",
+      "chunks": [
+        [
+          "Each run adds a note to the ledger, with the reviewer and its verdict.",
+          "Each run adds a note to the ledger, with the reviewer and its verdict."
+        ],
+        [
+          "Both notes name the same file, and the second run overwrote it:",
+          " Both notes name the same file, and the second run overwrote it:"
+        ],
+        [
+          "the fix-first report is gone, so keep a copy if you need it.",
+          " the fix-first report is gone, so keep a copy if you need it."
+        ],
+        [
+          "`specweave pickup` shows the latest notes to whoever comes next.",
+          " Spec weave pickup shows the latest notes to whoever comes next."
+        ]
+      ]
+    },
+    {
+      "id": "08-outro",
+      "chunks": [
+        [
+          "Next, run `specweave verify`,",
+          "Next, run spec weave verify,"
+        ],
+        [
+          "then close the increment with `specweave complete`.",
+          " then close the increment with spec weave complete."
+        ]
+      ]
+    }
+  ]
+}
