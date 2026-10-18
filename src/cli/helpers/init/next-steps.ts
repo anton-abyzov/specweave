@@ -159,17 +159,18 @@ export function showNextSteps(
     stepNumber++;
   }
 
-  // Plugin status (Claude only)
+  // Plugin status (Claude only). A ✔ status is not a step, so only the
+  // warning (which asks for a command) takes a number.
   if (adapterName === 'claude') {
     if (opts.marketplaceOnly) {
-      console.log(`   ${stepNumber}. ${chalk.green('✔')} ${chalk.white(strings.marketplaceReady)}`);
+      console.log(`   ${chalk.green('✔')} ${chalk.white(strings.marketplaceReady)}`);
     } else if (!opts.pluginAutoInstalled) {
       console.log(`   ${stepNumber}. ${chalk.yellow.bold('⚠️  ' + strings.pluginWarning)}`);
+      stepNumber++;
     } else {
-      console.log(`   ${stepNumber}. ${chalk.green('✔')} ${chalk.white(strings.pluginsReady)}`);
+      console.log(`   ${chalk.green('✔')} ${chalk.white(strings.pluginsReady)}`);
     }
     console.log('');
-    stepNumber++;
   } else if (isSkillBasedAdapter(adapterName)) {
     // Skills-aware messaging for non-Claude tools that support skills
     const displayName = getAdapterDisplayName(adapterName);
@@ -204,8 +205,8 @@ export function showNextSteps(
   console.log(`   ${stepNumber + 2}. ${chalk.white('specweave get owner/repo')}        ${chalk.gray('Add a repository to your workspace')}`);
   console.log(`      ${chalk.white('specweave get "org/*"')}          ${chalk.gray('Add all repos from an org')}`);
 
-  // AutoVerify tip (Claude Code Desktop only)
-  if (adapterName === 'claude') {
+  // AutoVerify tip: only when init runs inside Claude Code Desktop
+  if (adapterName === 'claude' && process.env.CLAUDE_CODE_ENTRYPOINT === 'claude-desktop') {
     console.log('');
     console.log(`   ${chalk.cyan('Tip:')} ${chalk.white('AutoVerify is on by default in Claude Code Desktop — changes are verified automatically')}`);
   }

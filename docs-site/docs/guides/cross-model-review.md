@@ -31,7 +31,7 @@ specweave review 0042       # a specific one
    | `claude` | `claude -p --model opus` in plan mode | Code written by an OpenAI model |
 
    SpecWeave holds no model keys. Each reviewer CLI uses the sign-in already on your machine.
-4. **It saves the review.** The answer goes to `reports/review-<reviewer>.md` in the increment folder, with a header naming the reviewer, the author family, the base and head commits and the time. A note in `ledger.jsonl` records the verdict, so `pickup` shows it to whoever comes next.
+4. **It saves the review.** The answer goes to `reports/review-<reviewer>.md` in the increment folder, with a header naming the reviewer, the author family, the base and head commits and the time. Each run is also kept as `reports/reviews/review-<reviewer>-<n>.md`, so a second review does not erase the first. A note in `ledger.jsonl` records the verdict and the file of that run, so `pickup` shows it to whoever comes next.
 5. **It exits with the verdict.**
 
    | Exit | Meaning |
