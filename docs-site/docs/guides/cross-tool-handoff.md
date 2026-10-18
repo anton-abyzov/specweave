@@ -171,7 +171,7 @@ Notes:
 
 Codex then claimed T-02, finished it with `specweave task done T-02 --run "npm test"`, and `specweave verify` reported both acceptance criteria met. `specweave report` wrote an HTML timeline of the whole run from the ledger: [open the recorded report](pathname:///evidence/handoff-demo.html).
 
-{/* Evidence slot: when the recorded report of a real handoff between accounts lands at static/evidence/handoff-3.0.html, link it here and set handoffEvidence in src/components/landing/content.tsx. */}
+{/* Evidence slot: when the recorded report of a real handoff between accounts lands at static/evidence/handoff-3.0.html, link it here. */}
 
 ---
 

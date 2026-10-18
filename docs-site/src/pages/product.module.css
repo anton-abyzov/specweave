@@ -1,0 +1,324 @@
+/*
+  /product page parts on Weave. Shared page kit: continuity.module.css.
+  Only --wv-* tokens. Terminals are wv-code; the window is wv-window.
+*/
+
+.hero {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: start;
+}
+
+.inlineLink {
+  color: var(--wv-ink) !important;
+  text-decoration: underline !important;
+  text-decoration-color: var(--wv-iris) !important;
+  text-decoration-thickness: var(--wv-thread-width) !important;
+  text-underline-offset: 0.22em;
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+}
+
+.inlineLink:hover {
+  color: var(--wv-iris-strong) !important;
+}
+
+.heroCode {
+  margin: 0;
+  min-width: 0;
+}
+
+/* Terminal output wraps instead of scrolling sideways. */
+.terminal {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.caption {
+  margin-top: var(--wv-space-3) !important;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wv-muted);
+}
+
+/* Hairline aligned with the content column (the section box carries side padding). */
+.ruled {
+  position: relative;
+}
+
+.ruled::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--wv-space-8);
+  right: var(--wv-space-8);
+  border-top: 1px solid var(--wv-line);
+}
+
+/* The section before the closing call to action: no extra band of space. */
+.last {
+  padding-bottom: var(--wv-space-16) !important;
+}
+
+@media (max-width: 760px) {
+  .ruled::before {
+    left: var(--wv-space-4);
+    right: var(--wv-space-4);
+  }
+}
+
+/* Three records: hairline list, file name on the left. */
+.records {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--wv-line);
+}
+
+.records > li {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: var(--wv-space-8);
+  padding: var(--wv-space-8) 0;
+  border-bottom: 1px solid var(--wv-line);
+}
+
+.file {
+  align-self: start;
+  justify-self: start;
+  padding: 2px var(--wv-space-2);
+  border: 0;
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-sunken);
+  font-family: var(--wv-font-mono);
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--wv-ink);
+}
+
+.records p {
+  max-width: var(--wv-measure);
+  margin: var(--wv-space-2) 0 var(--wv-space-3) !important;
+  color: var(--wv-muted);
+}
+
+.recordNote {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--wv-ink);
+}
+
+/* Handoff: two terminals joined by one iris thread (static). */
+.handoff {
+  min-width: 0;
+}
+
+.machine {
+  min-width: 0;
+}
+
+.machineLabel {
+  margin-bottom: var(--wv-space-2) !important;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--wv-ink);
+}
+
+.connector {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  padding: var(--wv-space-3) 0 var(--wv-space-3) var(--wv-space-8);
+}
+
+.connectorLine {
+  position: absolute;
+  left: var(--wv-space-4);
+  top: 0;
+  bottom: 0;
+  width: var(--wv-thread-width);
+  background: var(--wv-iris);
+}
+
+.connectorLine::before,
+.connectorLine::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  box-sizing: border-box;
+  border: var(--wv-thread-width) solid var(--wv-iris);
+  border-radius: 50%;
+  background: var(--wv-canvas);
+  transform: translateX(-50%);
+}
+
+.connectorLine::before {
+  top: -4px;
+}
+
+.connectorLine::after {
+  bottom: -4px;
+  background: var(--wv-iris);
+}
+
+.connector p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--wv-muted);
+}
+
+.connector code {
+  padding: 1px var(--wv-space-1);
+  border: 0;
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-sunken);
+  font-family: var(--wv-font-mono);
+  font-size: 13px;
+  color: var(--wv-ink);
+}
+
+/* Real capture in a window frame. */
+.window {
+  align-self: start;
+  max-width: 520px;
+  justify-self: end;
+}
+
+/* Less to carry: a table, not three cards. */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  display: table;
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.table thead th {
+  padding: 0 var(--wv-space-4) var(--wv-space-3) 0;
+  border: 0;
+  border-bottom: 1px solid var(--wv-control);
+  background: transparent;
+  text-align: left;
+  font-weight: 600;
+  color: var(--wv-muted);
+}
+
+.table tr,
+.table tr:nth-child(2n) {
+  border: 0;
+  background: transparent;
+}
+
+.table tbody th,
+.table td {
+  padding: var(--wv-space-4) var(--wv-space-4) var(--wv-space-4) 0;
+  border: 0;
+  border-bottom: 1px solid var(--wv-line);
+  background: transparent;
+  text-align: left;
+  vertical-align: top;
+}
+
+.table tbody th {
+  font-weight: 600;
+  color: var(--wv-ink);
+  white-space: nowrap;
+}
+
+.table td:nth-child(2) {
+  font-weight: 500;
+  color: var(--wv-ink);
+  white-space: nowrap;
+}
+
+.table td:last-child {
+  max-width: 60ch;
+  color: var(--wv-muted);
+}
+
+.table code {
+  padding: 0 var(--wv-space-1);
+  border: 0;
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-sunken);
+  font-family: var(--wv-font-mono);
+  font-size: 13px;
+  color: var(--wv-ink);
+}
+
+@media (max-width: 1100px) {
+  .window {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .records > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--wv-space-3);
+    padding: var(--wv-space-6) 0;
+  }
+
+  .terminal {
+    font-size: 12px;
+    line-height: 19px;
+    padding: var(--wv-space-3);
+  }
+
+  .table,
+  .table thead,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tr,
+  .table tr:nth-child(2n) {
+    padding: var(--wv-space-4) 0;
+    border-bottom: 1px solid var(--wv-line);
+  }
+
+  .table tbody th,
+  .table td {
+    padding: 0;
+    border: 0;
+    white-space: normal !important;
+  }
+
+  .table td:nth-child(2) {
+    margin-top: var(--wv-space-1);
+  }
+
+  .table td:last-child {
+    margin-top: var(--wv-space-2);
+  }
+}
+
+.records > li:last-child {
+  border-bottom: 0;
+}
+
+.connector + .machine {
+  margin-top: var(--wv-space-2);
+}

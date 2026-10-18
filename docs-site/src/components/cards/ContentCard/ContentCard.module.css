@@ -50,7 +50,7 @@
   font-size: var(--sw-font-size-xs);
   color: var(--sw-color-primary-500);
   font-weight: var(--sw-font-weight-semibold);
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: var(--sw-letter-spacing-wider);
 }
 

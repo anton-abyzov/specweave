@@ -5,7 +5,7 @@ import styles from './continuity.module.css';
 
 export default function Integrations() {
   return <Layout title="AI coding agents and issue tracker integrations" description="SpecWeave works with every coding agent that reads AGENTS.md, and pushes progress to GitHub, Jira or Azure DevOps only when you ask."><main className={styles.page}>
-    <header className={styles.articleHero}><span className={styles.eyebrow}>Product / Integrations</span><h1>Every agent reads it.<br /><em>Trackers only when you ask.</em></h1><p>SpecWeave needs no service and no account. Coding agents read the files in your repository. Issue trackers are optional, and in 3.0 nothing reaches them unless you run <code>specweave sync push</code>.</p></header>
+    <header className={styles.articleHero}><h1>Every agent reads it. Trackers only when you ask.</h1><p>SpecWeave needs no service and no account. Coding agents read the files in your repository. Issue trackers are optional, and in 3.0 nothing reaches them unless you run <code>specweave sync push</code>.</p></header>
     <div className={styles.articleBody}>
       <h2>Coding agents</h2>
       <table><thead><tr><th>Tool</th><th>Reads</th><th>Skills</th></tr></thead><tbody>
@@ -22,7 +22,7 @@ export default function Integrations() {
         <tr><td>Jira</td><td>Product and engineering share an existing delivery process.</td><td><Link to="/docs/guides/jira-ado-sync">Jira and Azure DevOps</Link></td></tr>
         <tr><td>Azure DevOps</td><td>Your organization plans with work items and boards.</td><td><Link to="/docs/guides/jira-ado-sync">Jira and Azure DevOps</Link></td></tr>
       </tbody></table>
-      <pre>{'specweave sync setup           # connect a tracker\nspecweave sync status          # credentials, health, what would change\nspecweave sync push 0042       # publish progress, when you choose\nspecweave sync pull            # report changes made in the tracker'}</pre>
+      <pre className="wv-code">{'specweave sync setup           # connect a tracker\nspecweave sync status          # credentials, health, what would change\nspecweave sync push 0042       # publish progress, when you choose\nspecweave sync pull            # report changes made in the tracker'}</pre>
       <p>A push is an external write, so it happens only when you run it. Starting, pausing or resuming an increment never touches a tracker, and nothing creates issues except a push. Completing an increment closes the issue a push linked only when the close-on-complete setting is on; <code>sync setup</code> turns it on, and you can turn it off. <code>sync pull</code> reports what changed in the tracker for you to review; it does not rewrite your local files.</p>
 
       <h2>Who owns what</h2>

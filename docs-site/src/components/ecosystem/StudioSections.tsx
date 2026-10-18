@@ -34,13 +34,12 @@ export function UmbrellaMap() {
           <span>{row.job}</span>
           <div className={styles.uChips} aria-label={`Compared with ${row.instead.join(', ')}`}>{row.instead.map(name => <i key={name}>{name}</i>)}</div>
         </div>
-        <b className={styles.uArrow} aria-hidden="true">→</b>
         <div className={styles.uStudio}>
           <h3>{row.title}</h3>
           <p>{row.body}</p>
-          {row.gap && <p className={styles.uGap}>{row.gap}</p>}
+          {row.gap && <p className={styles.uGap}><strong>Limits:</strong> {row.gap}</p>}
         </div>
-        <strong className={styles.uStatus} data-status={row.status}>{statusLabel[row.status]}</strong>
+        <span className={`${styles.uStatus} ${row.status === 'app' ? 'wv-chip wv-chip--pass' : 'wv-chip'}`}>{statusLabel[row.status]}</span>
       </article>)}
     </div>
     <p className={styles.compareNote}>Other products as described on their public pages and in launch coverage, October 2026; they change quickly. Status is SpecWithCode’s own: In the app means it is in the current build.</p>

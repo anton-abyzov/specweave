@@ -4,7 +4,7 @@
   font-weight: var(--sw-font-weight-medium);
   color: var(--sw-text-secondary);
   letter-spacing: var(--sw-letter-spacing-wider);
-  text-transform: uppercase;
+  text-transform: none;
   margin-bottom: var(--sw-space-6);
 }
 

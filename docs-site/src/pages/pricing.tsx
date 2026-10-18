@@ -17,13 +17,14 @@ const ENTERPRISE_MAILTO =
 const WAITLIST_URL = 'https://verified-skill.com/pricing';
 
 const WHY = [
-  {big: 'Limit hit?', title: 'Another agent finishes the task', body: 'When Claude Code nears its usage limit, the spec and progress hand off to Codex or the next tool you use.'},
-  {big: '0%', title: 'Markup on your AI', body: 'Agents run on the Claude, Codex, Gemini or Cursor plans you already pay for. We never resell tokens.'},
-  {big: '$0', title: 'Per seat, per run, per machine', body: 'Add the whole team. Nothing counts agents, seats or hours.'},
+  {title: 'Another agent finishes the task', body: 'Limit hit? When Claude Code nears its usage limit, the spec and progress hand off to Codex or the next tool you use.'},
+  {title: 'No markup on your AI plans', body: 'Agents run on the Claude, Codex, Gemini or Cursor plans you already pay for. We never resell tokens.'},
+  {title: 'No per-seat or per-run fees', body: 'Add the whole team. Nothing counts agents, seats, machines or hours.'},
 ];
 
 type Plan = {
-  tag: string;
+  /** Shown as a neutral chip after the price when the plan is not open yet. */
+  tag?: string;
   name: string;
   price: string;
   unit: string;
@@ -35,10 +36,9 @@ type Plan = {
 
 const PLANS: Plan[] = [
   {
-    tag: 'Free forever',
     name: 'SpecWithCode + SpecWeave',
     price: '$0',
-    unit: 'for every developer and team',
+    unit: 'free forever, for every developer and team',
     who: 'The desktop workspace and the CLI. No account with us.',
     features: [
       'All your coding agents in one workspace',
@@ -64,7 +64,6 @@ const PLANS: Plan[] = [
     cta: {label: 'Join the waitlist', href: WAITLIST_URL},
   },
   {
-    tag: 'Enterprise',
     name: 'For your company',
     price: 'Custom',
     unit: 'annual contract',
@@ -97,57 +96,57 @@ const FAQ = [
 
 function Cta({cta, className}: {cta: Plan['cta']; className: string}) {
   return cta.to
-    ? <Link className={className} to={cta.to}>{cta.label} <span aria-hidden="true">→</span></Link>
-    : <a className={className} href={cta.href}>{cta.label} <span aria-hidden="true">↗</span></a>;
+    ? <Link className={className} to={cta.to}>{cta.label}</Link>
+    : <a className={className} href={cta.href}>{cta.label}</a>;
 }
 
 export default function Pricing() {
   return <Layout title="Pricing" description="SpecWithCode and the SpecWeave CLI are free for every developer and team, with no markup on your AI subscriptions. Companies pay for hosted private skills, enterprise rollout and support.">
     <main className={`${styles.page} ${p.page}`}>
       <header className={p.hero}>
-        <span className={styles.eyebrow}><span className={styles.orangeDot} />Pricing</span>
-        <h1>Every coding agent in one workspace.<br /><em>Free.</em></h1>
+        <h1>Every coding agent in one workspace, free.</h1>
         <p className={p.sub}>SpecWithCode runs Claude Code, Codex, Cursor and more side by side, and hands the task to the next one when a usage limit hits. You keep your own subscriptions.</p>
         <div className={p.heroActions}>
-          <Link className={styles.primary} to="/code/">Download SpecWithCode <span aria-hidden="true">→</span></Link>
+          <Link className={styles.primary} to="/code/">Download SpecWithCode</Link>
           <a className={styles.textLink} href="#plans">See plans</a>
         </div>
       </header>
 
       <section className={p.why} aria-label="Why it is free">
-        {WHY.map((w) => (
-          <div key={w.title} className={p.whyItem}>
-            <b>{w.big}</b>
-            <h3>{w.title}</h3>
-            <p>{w.body}</p>
-          </div>
-        ))}
+        <ul className={p.whyList}>
+          {WHY.map((w) => (
+            <li key={w.title}>
+              <h3>{w.title}</h3>
+              <p>{w.body}</p>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <section id="plans" className={p.plans}>
+      <section id="plans" className={p.plans} aria-label="Plans">
         {PLANS.map((plan) => (
-          <article key={plan.tag} className={plan.featured ? `${p.plan} ${p.featured}` : p.plan}>
-            <span className={p.tag}>{plan.tag}</span>
+          <article key={plan.name} className={plan.featured ? `${p.plan} ${p.featured}` : p.plan}>
             <h2 className={p.name}>{plan.name}</h2>
-            <p className={p.price}><b>{plan.price}</b><span>{plan.unit}</span></p>
+            <p className={p.price}><b>{plan.price}</b><span>{plan.unit}</span>{plan.tag && <span className="wv-chip">{plan.tag}</span>}</p>
             <p className={p.who}>{plan.who}</p>
             <ul className={p.features}>
               {plan.features.map((f) => <li key={f}>{f}</li>)}
             </ul>
-            <Cta cta={plan.cta} className={plan.featured ? p.ctaFeatured : `${styles.secondary} ${p.cta}`} />
+            <Cta cta={plan.cta} className={plan.featured ? `${styles.primary} ${p.cta}` : `${styles.secondary} ${p.cta}`} />
           </article>
         ))}
       </section>
 
       <section className={p.pilot}>
         <div className={p.pilotHead}>
-          <span className={p.tag}>Founding team pilot</span>
-          <h2>$990 to move your whole team onto it in two weeks.</h2>
-          <p>Up to 10 engineers. Five places. If the handoff drill fails in your repo, you do not pay.</p>
-          <a className={styles.primary} href={PILOT_MAILTO}>Apply for a pilot <span aria-hidden="true">↗</span></a>
+          <div>
+            <h2>Founding team pilot: $990 to move your whole team onto it in two weeks</h2>
+            <p>Up to 10 engineers. Five places. If the handoff drill fails in your repo, you do not pay.</p>
+          </div>
+          <a className={styles.primary} href={PILOT_MAILTO}>Apply for a pilot</a>
         </div>
-        <ol className={p.steps}>
-          {PILOT_STEPS.map((s) => <li key={s.when}><b>{s.when}</b><span>{s.what}</span></li>)}
+        <ol className={`wv-thread wv-thread--across ${p.steps}`}>
+          {PILOT_STEPS.map((s, i) => <li key={s.when} aria-current={i === 0 ? 'step' : undefined}><p className="wv-thread__title">{s.when}</p><p className="wv-thread__body">{s.what}</p></li>)}
         </ol>
       </section>
 
@@ -159,8 +158,8 @@ export default function Pricing() {
       </section>
 
       <section className={styles.finalCta}>
-        <h2>Free for every developer.<br /><em>Talk to us when the company needs it.</em></h2>
-        <Link className={styles.primary} to="/code/">Download SpecWithCode <span aria-hidden="true">→</span></Link>
+        <h2>Free for every developer, with help when your company needs it</h2>
+        <Link className={styles.primary} to="/code/">Download SpecWithCode</Link>
         <a className={styles.textLink} href={ENTERPRISE_MAILTO}>Talk to us about your company</a>
       </section>
     </main>

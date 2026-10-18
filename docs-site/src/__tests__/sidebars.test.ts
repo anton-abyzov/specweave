@@ -93,41 +93,36 @@ describe('Docusaurus sidebars (3.0 structure)', () => {
   });
 });
 
-describe('Docusaurus navbar items (T-017)', () => {
+describe('Docusaurus navbar items (Weave)', () => {
   const themeConfig = (config as any).themeConfig;
-  const navItems = themeConfig.navbar.items.filter(
-    (item: any) => item.position === 'left'
-  );
+  const items = themeConfig.navbar.items;
+  const navItems = items.filter((item: any) => item.position === 'left');
+  const rightItems = items.filter((item: any) => item.position === 'right');
 
-  it('has 6 or fewer left-positioned nav items', () => {
-    expect(navItems.length).toBeLessThanOrEqual(6);
+  it('shows at most 7 items besides search', () => {
+    expect(items.filter((item: any) => item.type !== 'search').length).toBeLessThanOrEqual(7);
   });
 
-  it('links Handoff straight to the handoff guide', () => {
-    expect(navItems).toEqual(expect.arrayContaining([
-      expect.objectContaining({label: 'Handoff', to: '/docs/guides/cross-tool-handoff'}),
+  it('leads with SpecWithCode, then the CLI, Docs and Tutorials', () => {
+    expect(navItems.map((item: any) => item.label)).toEqual(['SpecWithCode', 'CLI', 'Docs', 'Tutorials']);
+    expect(navItems[0]).toEqual(expect.objectContaining({to: '/code/'}));
+    expect(navItems[1]).toEqual(expect.objectContaining({to: '/product'}));
+    expect(navItems[2]).toEqual(expect.objectContaining({sidebarId: 'docsSidebar'}));
+    expect(navItems[3]).toEqual(expect.objectContaining({to: '/tutorials'}));
+  });
+
+  it('keeps Verified Skill, Pricing, GitHub and search on the right', () => {
+    expect(rightItems).toEqual(expect.arrayContaining([
+      expect.objectContaining({label: 'Verified Skill', href: 'https://verified-skill.com'}),
+      expect.objectContaining({label: 'Pricing', to: '/pricing'}),
+      expect.objectContaining({href: 'https://github.com/anton-abyzov/specweave', className: 'header-github-link'}),
+      expect.objectContaining({type: 'search'}),
     ]));
   });
 
-  it('leads with SpecWithCode, then the CLI and Integrations', () => {
-    expect(navItems[0]).toEqual(expect.objectContaining({label: 'SpecWithCode', to: '/code/'}));
-    expect(navItems).toEqual(expect.arrayContaining([
-      expect.objectContaining({label: 'CLI', to: '/product'}),
-      expect.objectContaining({label: 'Integrations', to: '/integrations'}),
-    ]));
-  });
-
-  it('keeps Docs and Verified Skills available in primary navigation', () => {
-    expect(navItems).toEqual(expect.arrayContaining([
-      expect.objectContaining({label: 'Docs', sidebarId: 'docsSidebar'}),
-      expect.objectContaining({label: 'Verified Skills', href: 'https://verified-skill.com'}),
-    ]));
-  });
-
-  it('links Tutorials from the navbar', () => {
-    expect(themeConfig.navbar.items).toEqual(expect.arrayContaining([
-      expect.objectContaining({label: 'Tutorials', to: '/tutorials'}),
-    ]));
+  it('uses a wordmark, not the SpecWithCode app icon', () => {
+    expect(themeConfig.navbar.title).toBe('SpecWeave');
+    expect(themeConfig.navbar.logo).toBeUndefined();
   });
 
   it('does not include Skills or Reference as separate nav items', () => {
