@@ -21,7 +21,8 @@ export const CARDS_DIR = path.join('.specweave', 'cards');
 /** Current branch name, or undefined (detached HEAD, not a Git checkout). */
 export function currentBranch(cwd: string): string | undefined {
   try {
-    const b = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 1500 }).trim();
+    // symbolic-ref also names an unborn branch (a repository with no commit yet).
+    const b = execFileSync('git', ['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 1500 }).trim();
     return b && b !== 'HEAD' ? b : undefined;
   } catch {
     return undefined;
