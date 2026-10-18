@@ -1,6 +1,6 @@
 # DORA Metrics Report
 
-**Generated**: Oct 17, 2026 at 6:02:58 PM
+**Generated**: Oct 18, 2026 at 6:04:26 AM
 **Period**: Last 30 days
 
 ---
@@ -10,7 +10,7 @@
 | Metric | Value | Tier | Status |
 |--------|-------|------|--------|
 | **Deployment Frequency** | 100 deploys/month | 🏆 Elite | ✅ |
-| **Lead Time for Changes** | 14.8 hours | ⭐ High | ✅ |
+| **Lead Time for Changes** | 13.1 hours | ⭐ High | ✅ |
 | **Change Failure Rate** | 0% | 🏆 Elite | ✅ |
 | **Mean Time to Recovery** | 0 minutes | ⚪ N/A | ℹ️ |
 
@@ -37,8 +37,8 @@
 
 ## ⚡ Lead Time for Changes
 
-**Current**: 14.8 hours (⭐ High)
-**Percentiles**: P50 = 1.6h, P90 = 48.9h
+**Current**: 13.1 hours (⭐ High)
+**Percentiles**: P50 = 1.3h, P90 = 43.7h
 
 **Industry Benchmarks**:
 - 🏆 Elite: Less than 1 hour
@@ -49,7 +49,7 @@
 ### Insights
 
 - ✅ **Strong Performance**: Lead time under 1 week is competitive
-- 📊 **Distribution**: 50% of changes deploy in 1.6h, 90% in 48.9h
+- 📊 **Distribution**: 50% of changes deploy in 1.3h, 90% in 43.7h
 - 📈 **Next Level**: Focus on reducing p90 to reach elite tier
 - 💡 **Tip**: Identify bottlenecks in slowest 10% of deployments
 
@@ -132,4 +132,4 @@ _...and 24 more releases_
 ---
 
 _This report was generated automatically by SpecWeave DORA Metrics Calculator_
-_Last updated: Oct 17, 2026_
+_Last updated: Oct 18, 2026_
