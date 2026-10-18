@@ -1,0 +1,172 @@
+{
+  "voiceId": "0Ki1af67ybTaTu4TNmO8",
+  "modelId": "eleven_v4",
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "lines": [
+    {
+      "id": "01-intro",
+      "chunks": [
+        [
+          "Start SpecWithCode with a project, a coordinator and two workers.",
+          "Start spec with code, with a project, a coordinator, and two workers."
+        ]
+      ]
+    },
+    {
+      "id": "02-version",
+      "chunks": [
+        [
+          "This run uses SpecWithCode 1.0.45.",
+          "This run uses spec with code, one point oh point forty-five."
+        ],
+        [
+          "Settings, General, About shows the version on your Mac.",
+          " Settings, General, About, shows the version on your Mac."
+        ]
+      ]
+    },
+    {
+      "id": "03-project",
+      "chunks": [
+        [
+          "Click the plus next to Projects.",
+          "Click the plus next to Projects."
+        ],
+        [
+          "New project starts one from a name. Local folder adopts a repo you already have.",
+          " New project starts one from a name. Local folder adopts a repo you already have."
+        ],
+        [
+          "Here it's greet-app, with SpecWeave and one increment of two tasks.",
+          " Here it's greet app, with spec weave, and one increment of two tasks."
+        ],
+        [
+          "The project opens on its coordinator.",
+          " The project opens on its coordinator."
+        ]
+      ]
+    },
+    {
+      "id": "04-ask",
+      "chunks": [
+        [
+          "Choose Full access for this demo.",
+          "Choose full access for this demo."
+        ],
+        [
+          "It applies to every chat in this project.",
+          " It applies to every chat in this project."
+        ],
+        [
+          "Then ask the coordinator for a two-part change:",
+          " Then ask the coordinator for a two-part change:"
+        ],
+        [
+          "one worker per task, with titles and a short report.",
+          " one worker per task, with titles, and a short report."
+        ]
+      ]
+    },
+    {
+      "id": "05-workers",
+      "chunks": [
+        [
+          "The coordinator does none of the work itself.",
+          "The coordinator does none of the work itself."
+        ],
+        [
+          "It starts two worker threads,",
+          " It starts two worker threads,"
+        ],
+        [
+          "and they appear in the right panel under Working.",
+          " and they appear in the right panel, under Working."
+        ],
+        [
+          "Each one gets a brief: claim, implement, test, close and report.",
+          " Each one gets a brief: claim, implement, test, close, and report."
+        ],
+        [
+          "The workers share one checkout, so each works on its own files.",
+          " The workers share one checkout, so each works on its own files."
+        ],
+        [
+          "Each plan chip counts the increment's tasks done,",
+          " Each plan chip counts the increment's tasks done,"
+        ],
+        [
+          "from zero to two of two.",
+          " from zero to two of two."
+        ],
+        [
+          "The whole run took under a minute; it's sped up here.",
+          " The whole run took under a minute. It's sped up here."
+        ]
+      ]
+    },
+    {
+      "id": "06-report",
+      "chunks": [
+        [
+          "Open a worker. Its result stays in its own thread.",
+          "Open a worker. Its result stays in its own thread."
+        ],
+        [
+          "Its first message is the coordinator's brief, with your words.",
+          " Its first message is the coordinator's brief, with your words."
+        ],
+        [
+          "A final message with three headed sections becomes a report card,",
+          " A final message with three headed sections becomes a report card,"
+        ],
+        [
+          "saved in the increment's reports folder.",
+          " saved in the increment's reports folder."
+        ],
+        [
+          "Open report reads it in full.",
+          " Open report reads it in full."
+        ]
+      ]
+    },
+    {
+      "id": "07-plan",
+      "chunks": [
+        [
+          "Click the plan chip: both tasks are done,",
+          "Click the plan chip. Both tasks are done,"
+        ],
+        [
+          "and both acceptance criteria are met.",
+          " and both acceptance criteria are met."
+        ],
+        [
+          "Open spec and Open increment go to its files.",
+          " Open spec and open increment go to its files."
+        ],
+        [
+          "This chip matched increment 0001 by the thread's title,",
+          " This chip matched increment zero zero zero one by the thread's title,"
+        ],
+        [
+          "so put the increment number in each worker's title.",
+          " so put the increment number in each worker's title."
+        ]
+      ]
+    },
+    {
+      "id": "08-outro",
+      "chunks": [
+        [
+          "Next: keep working when a provider runs out.",
+          "Next: keep working when a provider runs out."
+        ]
+      ]
+    }
+  ]
+}

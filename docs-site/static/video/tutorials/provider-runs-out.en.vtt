@@ -1,0 +1,109 @@
+WEBVTT
+
+1
+00:00:01.100 --> 00:00:03.900
+Keep working when a provider runs out.
+
+2
+00:00:03.950 --> 00:00:06.871
+This greet-app thread runs on Claude Code.
+
+3
+00:00:06.871 --> 00:00:11.220
+It finished T-01 of the increment, and one task is left.
+
+4
+00:00:11.270 --> 00:00:15.811
+Ask for T-02, and Claude Code stops on its usage limit.
+
+5
+00:00:15.811 --> 00:00:19.782
+Here the limit is simulated with SpecWithCode's test switch.
+
+6
+00:00:19.782 --> 00:00:24.710
+The banner shows the reset time, and that the project rule continues with Codex.
+
+7
+00:00:25.110 --> 00:00:28.244
+Under the default rule, Switch automatically,
+
+8
+00:00:28.244 --> 00:00:31.559
+SpecWithCode hands the stopped turn to Codex,
+
+9
+00:00:31.559 --> 00:00:34.143
+with its context, in the same worktree.
+
+10
+00:00:34.143 --> 00:00:39.056
+The row saying Usage limit resolved only means this chat continued.
+
+11
+00:00:39.056 --> 00:00:41.980
+Claude Code stays limited until the reset.
+
+12
+00:00:42.030 --> 00:00:45.659
+Codex runs npm test and commits the change.
+
+13
+00:00:45.659 --> 00:00:49.105
+Then, unasked, it runs specweave handoff.
+
+14
+00:00:49.105 --> 00:00:54.021
+Its summary: T-02 is done on main, and all four tests pass.
+
+15
+00:00:54.021 --> 00:00:56.459
+The plan shows both tasks done.
+
+16
+00:00:56.459 --> 00:01:00.580
+One catch in this build: the picker then flips back to Claude Code,
+
+17
+00:01:00.580 --> 00:01:02.740
+so check it before your next message.
+
+18
+00:01:02.790 --> 00:01:06.585
+In a terminal, specweave task list reads the ledger:
+
+19
+00:01:06.585 --> 00:01:08.630
+Claude finished T-01,
+
+20
+00:01:08.630 --> 00:01:11.110
+and Codex finished T-02,
+
+21
+00:01:11.110 --> 00:01:13.155
+each with the test run that proved it.
+
+22
+00:01:13.155 --> 00:01:15.910
+Both agents' commits are on the branch.
+
+23
+00:01:16.260 --> 00:01:19.628
+Set the rule per project, under Usage limits:
+
+24
+00:01:19.628 --> 00:01:24.089
+switch automatically, offer the fallback, or wait for the reset.
+
+25
+00:01:24.089 --> 00:01:29.143
+With Offer the fallback, nothing moves until you choose Continue with Codex.
+
+26
+00:01:29.143 --> 00:01:33.380
+An idle thread can also move early, at 5% left.
+
+27
+00:01:33.780 --> 00:01:38.580
+Next, sw-done verifies and closes the increment.

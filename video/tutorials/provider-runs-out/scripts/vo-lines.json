@@ -1,0 +1,160 @@
+{
+ "voiceId": "0Ki1af67ybTaTu4TNmO8",
+ "modelId": "eleven_v4",
+ "voiceSettings": {
+  "stability": 0.5,
+  "similarity_boost": 0.75,
+  "use_speaker_boost": true,
+  "speed": 1.0
+ },
+ "lines": [
+  {
+   "id": "01-intro",
+   "chunks": [
+    [
+     "Keep working when a provider runs out.",
+     "Keep working when a provider runs out."
+    ]
+   ]
+  },
+  {
+   "id": "02-thread",
+   "chunks": [
+    [
+     "This greet-app thread runs on Claude Code.",
+     "This greet app thread runs on Claude Code."
+    ],
+    [
+     "It finished `T-01` of the increment, and one task is left.",
+     " It finished T zero one of the increment, and one task is left."
+    ]
+   ]
+  },
+  {
+   "id": "03-limit",
+   "chunks": [
+    [
+     "Ask for `T-02`, and Claude Code stops on its usage limit.",
+     "Ask for T zero two, and Claude Code stops on its usage limit."
+    ],
+    [
+     "Here the limit is simulated with SpecWithCode's test switch.",
+     " Here, the limit is simulated with spec with code's test switch."
+    ],
+    [
+     "The banner shows the reset time, and that the project rule continues with Codex.",
+     " The banner shows the reset time, and that the project rule continues with Codex."
+    ]
+   ]
+  },
+  {
+   "id": "04-switch",
+   "chunks": [
+    [
+     "Under the default rule, Switch automatically,",
+     "Under the default rule, switch automatically,"
+    ],
+    [
+     "SpecWithCode hands the stopped turn to Codex,",
+     " spec with code hands the stopped turn to Codex,"
+    ],
+    [
+     "with its context, in the same worktree.",
+     " with its context, in the same worktree."
+    ],
+    [
+     "The row saying Usage limit resolved only means this chat continued.",
+     " The row saying, usage limit resolved, only means this chat continued."
+    ],
+    [
+     "Claude Code stays limited until the reset.",
+     " Claude Code stays limited until the reset."
+    ]
+   ]
+  },
+  {
+   "id": "05-codex",
+   "chunks": [
+    [
+     "Codex runs `npm test` and commits the change.",
+     "Codex runs N P M test, and commits the change."
+    ],
+    [
+     "Then, unasked, it runs `specweave handoff`.",
+     " Then, unasked, it runs spec weave handoff."
+    ],
+    [
+     "Its summary: `T-02` is done on main, and all four tests pass.",
+     " Its summary: T zero two is done on main, and all four tests pass."
+    ],
+    [
+     "The plan shows both tasks done.",
+     " The plan shows both tasks done."
+    ],
+    [
+     "One catch in this build: the picker then flips back to Claude Code,",
+     " One catch in this build: the picker then flips back to Claude Code,"
+    ],
+    [
+     "so check it before your next message.",
+     " so check it before your next message."
+    ]
+   ]
+  },
+  {
+   "id": "06-ledger",
+   "chunks": [
+    [
+     "In a terminal, `specweave task list` reads the ledger:",
+     "In a terminal, spec weave task list reads the ledger:"
+    ],
+    [
+     "Claude finished `T-01`,",
+     " Claude finished T zero one,"
+    ],
+    [
+     "and Codex finished `T-02`,",
+     " and Codex finished T zero two,"
+    ],
+    [
+     "each with the test run that proved it.",
+     " each with the test run that proved it."
+    ],
+    [
+     "Both agents' commits are on the branch.",
+     " Both agents' commits are on the branch."
+    ]
+   ]
+  },
+  {
+   "id": "07-settings",
+   "chunks": [
+    [
+     "Set the rule per project, under Usage limits:",
+     "Set the rule per project, under usage limits:"
+    ],
+    [
+     "switch automatically, offer the fallback, or wait for the reset.",
+     " switch automatically, offer the fallback, or wait for the reset."
+    ],
+    [
+     "With Offer the fallback, nothing moves until you choose Continue with Codex.",
+     " With offer the fallback, nothing moves until you choose, continue with Codex."
+    ],
+    [
+     "An idle thread can also move early, at 5% left.",
+     " An idle thread can also move early, at five percent left."
+    ]
+   ]
+  },
+  {
+   "id": "08-outro",
+   "chunks": [
+    [
+     "Next, `sw-done` verifies and closes the increment.",
+     "Next, S W done verifies and closes the increment."
+    ]
+   ]
+  }
+ ]
+}

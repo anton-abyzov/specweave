@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Start SpecWithCode with a coordinator and two workers</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 400 900; src: url(assets/fonts/schibsted-grotesk-latin.woff2) format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; src: url(assets/fonts/jetbrains-mono-latin.woff2) format("woff2"); }
+      :root {
+        --canvas: #f8f7f9; --panel: #ffffff; --sunken: #efedf2; --ink: #241523; --muted: #675d69; --line: #dedae5;
+        --iris: #6d4fb5; --iris-strong: #4a3678; --iris-tint: #ece6f8; --sans: "Schibsted Grotesk", sans-serif; --mono: "JetBrains Mono", monospace;
+        --shadow-window: 0 1px 2px rgba(36, 21, 35, 0.06), 0 12px 32px rgba(36, 21, 35, 0.08);
+      }
+      code { font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; }
+      body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--sans); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--canvas); }
+      .clip { position: absolute; }
+      .win { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-window); box-sizing: border-box; }
+      .footage { left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; transform-origin: 0 0; z-index: 2; }
+      .card { inset: 0; background: var(--canvas); }
+      .card-inner { position: absolute; inset: 120px 160px 150px; }
+      .wordmark { font: 700 34px/1 var(--sans); color: var(--ink); letter-spacing: -0.01em; }
+      .title { margin: 120px 0 0; max-width: 1400px; font: 600 88px/1.04 var(--sans); letter-spacing: -0.025em; color: var(--ink); text-wrap: balance; }
+      .thread { height: 4px; width: 0; background: var(--iris); margin-top: 40px; border-radius: 2px; }
+      .subtitle { margin: 34px 0 0; font: 400 34px/1.35 var(--sans); color: var(--muted); }
+      .steps { list-style: none; margin: 40px 0 0; padding: 0; display: flex; gap: 28px; }
+      .step { opacity: 0; display: flex; align-items: center; gap: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 24px 14px 16px; font: 600 30px/1.2 var(--sans); color: var(--ink); }
+      .step .num { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 20px; background: var(--iris-tint); color: var(--iris-strong); font: 700 24px/1 var(--sans); }
+      .footer { position: absolute; left: 0; bottom: 0; font: 500 26px/1.2 var(--sans); color: var(--muted); }
+      .outro-l1 { margin-top: 120px; font: 600 72px/1.1 var(--sans); letter-spacing: -0.02em; color: var(--ink); }
+      .outro-l1 code { font: 500 0.86em var(--mono); color: var(--ink); white-space: nowrap; }
+      .disclose { list-style: none; margin: 40px 0 0; padding: 0; max-width: 1500px; }
+      .disclose li { opacity: 0; position: relative; padding-left: 28px; margin: 0 0 14px; font: 400 30px/1.38 var(--sans); color: var(--muted); }
+      .disclose li::before { content: ""; position: absolute; left: 0; top: 16px; width: 10px; height: 10px; border-radius: 5px; background: var(--iris); }
+      .chip { left: 320px; top: 36px; z-index: 10; }
+      .chip-inner { display: inline-block; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 20px; font: 600 30px/1.25 var(--sans); color: var(--ink); white-space: nowrap; }
+      .chip-inner code { font: 500 0.86em var(--mono); color: var(--iris-strong); }
+      .speed { right: 320px; top: 36px; z-index: 10; }
+      .speed-inner { display: inline-block; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 18px; font: 600 28px/1.25 var(--sans); color: var(--muted); }
+      .note { left: 0; right: 0; top: 850px; z-index: 12; text-align: center; }
+      .note-inner { display: inline-block; background: var(--iris-tint); border-left: 4px solid var(--iris); border-radius: 6px; padding: 6px 18px; font: 400 26px/1.3 var(--sans); color: var(--ink); white-space: nowrap; }
+      .note-inner b { font-weight: 700; color: var(--iris-strong); }
+      .caption { left: 0; right: 0; bottom: 30px; z-index: 20; text-align: center; }
+      .caption .pill { display: inline-block; white-space: nowrap; background: rgba(255, 255, 255, 0.96); border: 1px solid var(--line); color: var(--ink);
+        padding: 10px 26px; border-radius: 8px; font: 600 38px/1.28 var(--sans); }
+      .caption code { font: 500 0.86em var(--mono); background: var(--sunken); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="108.59">
+      <div id="win-02-version-0" class="clip win" data-start="6.96" data-duration="2.05" data-track-index="1" style="left:308px;top:100px;width:1304px;height:744px"></div>
+      <video id="v-02-version-0-0" class="clip footage cam-02-version-0" src="assets/media/take.mp4" muted playsinline data-start="6.96" data-duration="2.05" data-media-start="5.34" data-playback-rate="1" data-track-index="0"></video>
+      <div id="win-02-version-1" class="clip win" data-start="9.01" data-duration="6.981" data-track-index="1" style="left:308px;top:100px;width:1304px;height:744px"></div>
+      <video id="v-02-version-1-0" class="clip footage cam-02-version-1" src="assets/media/take.mp4" muted playsinline data-start="9.01" data-duration="3" data-media-start="7.39" data-playback-rate="1" data-track-index="0"></video>
+      <video id="v-02-version-1-1" class="clip footage cam-02-version-1" src="assets/media/take.mp4" muted playsinline data-start="12.01" data-duration="3.981" data-media-start="11.59" data-playback-rate="0.829" data-track-index="0"></video>
+      <div id="chip-02-version-0" class="clip chip" data-start="6.96" data-duration="2.05" data-track-index="2"><span class="chip-inner" id="chip-02-version-0-i">Account menu → Settings</span></div>
+      <div id="chip-02-version-1" class="clip chip" data-start="9.01" data-duration="6.98" data-track-index="2"><span class="chip-inner" id="chip-02-version-1-i">Settings → General → About</span></div>
+      <div id="win-03-project-0" class="clip win" data-start="15.99" data-duration="15.111" data-track-index="1" style="left:308px;top:100px;width:1304px;height:744px"></div>
+      <video id="v-03-project-0-0" class="clip footage cam-03-project-0" src="assets/media/take.mp4" muted playsinline data-start="15.99" data-duration="10.5" data-media-start="15.69" data-playback-rate="1" data-track-index="0"></video>
+      <video id="v-03-project-0-1" class="clip footage cam-03-project-0" src="assets/media/take.mp4" muted playsinline data-start="26.49" data-duration="4.611" data-media-start="26.19" data-playback-rate="1.041" data-track-index="0"></video>
+      <div id="chip-03-project-0" class="clip chip" data-start="15.99" data-duration="15.11" data-track-index="2"><span class="chip-inner" id="chip-03-project-0-i">Projects + → Local folder → <code>~/greet-app</code></span></div>
+      <div id="win-04-ask-0" class="clip win" data-start="31.1" data-duration="1.9" data-track-index="1" style="left:308px;top:283.59px;width:1304px;height:376.821px"></div>
+      <video id="v-04-ask-0-0" class="clip footage cam-04-ask-0" src="assets/media/take.mp4" muted playsinline data-start="31.1" data-duration="0.8" data-media-start="33.19" data-playback-rate="1" data-track-index="0"></video>
+      <video id="v-04-ask-0-1" class="clip footage cam-04-ask-0" src="assets/media/take.mp4" muted playsinline data-start="31.9" data-duration="1.1" data-media-start="33.99" data-playback-rate="0.5" data-track-index="0"></video>
+      <div id="win-04-ask-1" class="clip win" data-start="33" data-duration="6.45" data-track-index="1" style="left:308px;top:283.59px;width:1304px;height:376.821px"></div>
+      <video id="v-04-ask-1-0" class="clip footage cam-04-ask-1" src="assets/media/take.mp4" muted playsinline data-start="33" data-duration="6.45" data-media-start="34.54" data-playback-rate="1" data-track-index="0"></video>
+      <div id="win-04-ask-2" class="clip win" data-start="39.45" data-duration="3.96" data-track-index="1" style="left:308px;top:185.949px;width:1304px;height:572.103px"></div>
+      <video id="v-04-ask-2-0" class="clip footage cam-04-ask-2" src="assets/media/take.mp4" muted playsinline data-start="39.45" data-duration="3.96" data-media-start="40.99" data-playback-rate="0.808" data-track-index="0"></video>
+      <div id="chip-04-ask-0" class="clip chip" data-start="31.1" data-duration="1.9" data-track-index="2"><span class="chip-inner" id="chip-04-ask-0-i">Composer → Full access</span></div>
+      <div id="chip-04-ask-1" class="clip chip" data-start="33" data-duration="10.41" data-track-index="2"><span class="chip-inner" id="chip-04-ask-1-i">Ask the coordinator</span></div>
+      <div id="win-05-workers-0" class="clip win" data-start="43.41" data-duration="2.933" data-track-index="1" style="left:308px;top:185.949px;width:1304px;height:572.103px"></div>
+      <video id="v-05-workers-0-0" class="clip footage cam-05-workers-0" src="assets/media/take.mp4" muted playsinline data-start="43.41" data-duration="2.933" data-media-start="44.19" data-playback-rate="3" data-track-index="0"></video>
+      <div id="win-05-workers-1" class="clip win" data-start="46.343" data-duration="4.9" data-track-index="1" style="left:619.68px;top:100px;width:680.64px;height:744px"></div>
+      <video id="v-05-workers-1-0" class="clip footage cam-05-workers-1" src="assets/media/take.mp4" muted playsinline data-start="46.343" data-duration="4.9" data-media-start="52.99" data-playback-rate="1" data-track-index="0"></video>
+      <div id="win-05-workers-2" class="clip win" data-start="51.243" data-duration="3.5" data-track-index="1" style="left:308px;top:185.949px;width:1304px;height:572.103px"></div>
+      <video id="v-05-workers-2-0" class="clip footage cam-05-workers-2" src="assets/media/take.mp4" muted playsinline data-start="51.243" data-duration="3.5" data-media-start="57.89" data-playback-rate="1" data-track-index="0"></video>
+      <div id="win-05-workers-3" class="clip win" data-start="54.743" data-duration="14.576" data-track-index="1" style="left:619.68px;top:100px;width:680.64px;height:744px"></div>
+      <video id="v-05-workers-3-0" class="clip footage cam-05-workers-3" src="assets/media/take.mp4" muted playsinline data-start="54.743" data-duration="14.576" data-media-start="61.39" data-playback-rate="1.722" data-track-index="0"></video>
+      <div id="note-05-workers-3" class="clip note" data-start="54.743" data-duration="14.576" data-track-index="4"><span class="note-inner" id="note-05-workers-3-i"><b>Known issue in 1.0.45:</b> the coordinator's worker cards can lag or name the wrong task; the right panel is current.</span></div>
+      <div id="chip-05-workers-0" class="clip chip" data-start="43.41" data-duration="2.933" data-track-index="2"><span class="chip-inner" id="chip-05-workers-0-i">The coordinator starts the workers</span></div>
+      <div id="chip-05-workers-1" class="clip chip" data-start="46.343" data-duration="4.9" data-track-index="2"><span class="chip-inner" id="chip-05-workers-1-i">Right panel → Working</span></div>
+      <div id="chip-05-workers-2" class="clip chip" data-start="51.243" data-duration="3.5" data-track-index="2"><span class="chip-inner" id="chip-05-workers-2-i">Each worker gets a brief</span></div>
+      <div id="chip-05-workers-3" class="clip chip" data-start="54.743" data-duration="14.577" data-track-index="2"><span class="chip-inner" id="chip-05-workers-3-i">Right panel → plan chips</span></div>
+      <div id="win-06-report-0" class="clip win" data-start="69.32" data-duration="11.2" data-track-index="1" style="left:695.446px;top:100px;width:529.108px;height:744px"></div>
+      <video id="v-06-report-0-0" class="clip footage cam-06-report-0" src="assets/media/take.mp4" muted playsinline data-start="69.32" data-duration="11.2" data-media-start="89.39" data-playback-rate="1" data-track-index="0"></video>
+      <div id="win-06-report-1" class="clip win" data-start="80.52" data-duration="5.273" data-track-index="1" style="left:564px;top:100px;width:792px;height:744px"></div>
+      <video id="v-06-report-1-0" class="clip footage cam-06-report-1" src="assets/media/take.mp4" muted playsinline data-start="80.52" data-duration="5.273" data-media-start="102.19" data-playback-rate="0.806" data-track-index="0"></video>
+      <div id="chip-06-report-0" class="clip chip" data-start="69.32" data-duration="11.2" data-track-index="2"><span class="chip-inner" id="chip-06-report-0-i">Right panel → open <code>0001 T-01</code></span></div>
+      <div id="chip-06-report-1" class="clip chip" data-start="80.52" data-duration="5.27" data-track-index="2"><span class="chip-inner" id="chip-06-report-1-i">Open report</span></div>
+      <div id="win-07-plan-0" class="clip win" data-start="85.79" data-duration="16.304" data-track-index="1" style="left:490.73px;top:100px;width:938.54px;height:744px"></div>
+      <video id="v-07-plan-0-0" class="clip footage cam-07-plan-0" src="assets/media/take.mp4" muted playsinline data-start="85.79" data-duration="4.9" data-media-start="106.69" data-playback-rate="1" data-track-index="0"></video>
+      <video id="v-07-plan-0-1" class="clip footage cam-07-plan-0" src="assets/media/take.mp4" muted playsinline data-start="90.69" data-duration="11.404" data-media-start="111.59" data-playback-rate="0.798" data-track-index="0"></video>
+      <div id="note-07-plan-0" class="clip note" data-start="95.953" data-duration="6.141" data-track-index="4"><span class="note-inner" id="note-07-plan-0-i"><b>Known issue in 1.0.45:</b> a worker's own SpecWeave claim does not bind its chip yet, so only the title match works.</span></div>
+      <div id="chip-07-plan-0" class="clip chip" data-start="85.79" data-duration="16.31" data-track-index="2"><span class="chip-inner" id="chip-07-plan-0-i">Plan chip → tasks and acceptance criteria</span></div>
+      <audio id="vo-01-intro" src="assets/media/01-intro.wav" data-start="1.1" data-duration="4.96" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-02-version" src="assets/media/02-version.wav" data-start="7.01" data-duration="8.88" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-03-project" src="assets/media/03-project.wav" data-start="16.04" data-duration="14.96" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-04-ask" src="assets/media/04-ask.wav" data-start="31.15" data-duration="12.16" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-05-workers" src="assets/media/05-workers.wav" data-start="43.46" data-duration="25.76" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-06-report" src="assets/media/06-report.wav" data-start="69.37" data-duration="16.32" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-07-plan" src="assets/media/07-plan.wav" data-start="85.84" data-duration="16.16" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-08-outro" src="assets/media/08-outro.wav" data-start="102.15" data-duration="3.44" data-track-index="6" data-volume="1"></audio>
+      <div id="speed-0" class="clip speed" data-start="31.9" data-duration="1.1" data-track-index="3"><span class="speed-inner">Slowed to 0.5×</span></div>
+      <div id="speed-1" class="clip speed" data-start="43.41" data-duration="2.933" data-track-index="3"><span class="speed-inner">Sped up 3×</span></div>
+      <div id="speed-2" class="clip speed" data-start="54.743" data-duration="14.576" data-track-index="3"><span class="speed-inner">Sped up 1.7×</span></div>
+
+      <section id="intro" class="clip card" data-start="0" data-duration="6.96" data-track-index="1">
+        <div class="card-inner">
+          <div class="wordmark rise">SpecWithCode</div>
+          <h1 class="title rise">Start SpecWithCode with a coordinator and two workers</h1>
+          <div class="thread" id="intro-thread"></div>
+          <p class="subtitle rise">A real run of SpecWithCode 1.0.45 on a sample repo, with Codex as coordinator and workers.</p>
+          <ol class="steps"><li class="step" id="step-0"><span class="num">1</span>Add a project</li><li class="step" id="step-1"><span class="num">2</span>Ask the coordinator</li><li class="step" id="step-2"><span class="num">3</span>Read the workers' reports</li></ol>
+          <div class="footer rise">spec-weave.com/tutorials</div>
+        </div>
+      </section>
+
+      <section id="outro" class="clip card" data-start="102.1" data-duration="6.49" data-track-index="1">
+        <div class="card-inner">
+          <div class="wordmark rise">SpecWithCode</div>
+          <div class="outro-l1 rise">Next: keep working when a provider runs out</div>
+          <div class="thread" id="outro-thread"></div>
+          <ul class="disclose"><li id="disc-0">Recorded in one take on a private SpecWithCode 1.0.45 server with a disposable home.</li><li id="disc-1">Off camera: increment 0001 was planned, and the welcome wizard and a Codex update notice were dismissed.</li><li id="disc-2">The permissions menu does not render in headless capture; only its label change is shown.</li><li id="disc-3">Agent work is sped up where marked. The narration is an AI voice.</li></ul>
+          <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
+        </div>
+      </section>
+      <div id="cap-1" class="clip caption" data-start="1.1" data-duration="5.36" data-track-index="5"><span class="pill">Start SpecWithCode with a project,<br>a coordinator and two workers.</span></div>
+      <div id="cap-2" class="clip caption" data-start="7.01" data-duration="4.731" data-track-index="5"><span class="pill">This run uses SpecWithCode 1.0.45.</span></div>
+      <div id="cap-3" class="clip caption" data-start="11.741" data-duration="4.249" data-track-index="5"><span class="pill">Settings, General, About<br>shows the version on your Mac.</span></div>
+      <div id="cap-4" class="clip caption" data-start="16.04" data-duration="2.367" data-track-index="5"><span class="pill">Click the plus next to Projects.</span></div>
+      <div id="cap-5" class="clip caption" data-start="18.407" data-duration="5.542" data-track-index="5"><span class="pill">New project starts one from a name. Local<br>folder adopts a repo you already have.</span></div>
+      <div id="cap-6" class="clip caption" data-start="23.949" data-duration="4.746" data-track-index="5"><span class="pill">Here it's greet-app, with SpecWeave<br>and one increment of two tasks.</span></div>
+      <div id="cap-7" class="clip caption" data-start="28.695" data-duration="2.405" data-track-index="5"><span class="pill">The project opens on its coordinator.</span></div>
+      <div id="cap-8" class="clip caption" data-start="31.15" data-duration="2.266" data-track-index="5"><span class="pill">Choose Full access for this demo.</span></div>
+      <div id="cap-9" class="clip caption" data-start="33.416" data-duration="2.706" data-track-index="5"><span class="pill">It applies to every chat in this project.</span></div>
+      <div id="cap-10" class="clip caption" data-start="36.122" data-duration="3.35" data-track-index="5"><span class="pill">Then ask the coordinator<br>for a two-part change:</span></div>
+      <div id="cap-11" class="clip caption" data-start="39.472" data-duration="3.938" data-track-index="5"><span class="pill">one worker per task, with<br>titles and a short report.</span></div>
+      <div id="cap-12" class="clip caption" data-start="43.46" data-duration="2.898" data-track-index="5"><span class="pill">The coordinator does<br>none of the work itself.</span></div>
+      <div id="cap-13" class="clip caption" data-start="46.358" data-duration="1.862" data-track-index="5"><span class="pill">It starts two worker threads,</span></div>
+      <div id="cap-14" class="clip caption" data-start="48.22" data-duration="2.814" data-track-index="5"><span class="pill">and they appear in the<br>right panel under Working.</span></div>
+      <div id="cap-15" class="clip caption" data-start="51.034" data-duration="5.629" data-track-index="5"><span class="pill">Each one gets a brief: claim,<br>implement, test, close and report.</span></div>
+      <div id="cap-16" class="clip caption" data-start="56.663" data-duration="4.358" data-track-index="5"><span class="pill">The workers share one checkout,<br>so each works on its own files.</span></div>
+      <div id="cap-17" class="clip caption" data-start="61.021" data-duration="3.114" data-track-index="5"><span class="pill">Each plan chip counts the<br>increment's tasks done,</span></div>
+      <div id="cap-18" class="clip caption" data-start="64.135" data-duration="1.902" data-track-index="5"><span class="pill">from zero to two of two.</span></div>
+      <div id="cap-19" class="clip caption" data-start="66.037" data-duration="3.283" data-track-index="5"><span class="pill">The whole run took under a<br>minute; it's sped up here.</span></div>
+      <div id="cap-20" class="clip caption" data-start="69.37" data-duration="3.816" data-track-index="5"><span class="pill">Open a worker. Its result<br>stays in its own thread.</span></div>
+      <div id="cap-21" class="clip caption" data-start="73.186" data-duration="3.946" data-track-index="5"><span class="pill">Its first message is the<br>coordinator's brief, with your words.</span></div>
+      <div id="cap-22" class="clip caption" data-start="77.132" data-duration="3.887" data-track-index="5"><span class="pill">A final message with three headed<br>sections becomes a report card,</span></div>
+      <div id="cap-23" class="clip caption" data-start="81.019" data-duration="2.527" data-track-index="5"><span class="pill">saved in the increment's reports folder.</span></div>
+      <div id="cap-24" class="clip caption" data-start="83.546" data-duration="2.244" data-track-index="5"><span class="pill">Open report reads it in full.</span></div>
+      <div id="cap-25" class="clip caption" data-start="85.84" data-duration="3.08" data-track-index="5"><span class="pill">Click the plan chip: both tasks are done,</span></div>
+      <div id="cap-26" class="clip caption" data-start="88.92" data-duration="2.518" data-track-index="5"><span class="pill">and both acceptance criteria are met.</span></div>
+      <div id="cap-27" class="clip caption" data-start="91.438" data-duration="3.246" data-track-index="5"><span class="pill">Open spec and Open<br>increment go to its files.</span></div>
+      <div id="cap-28" class="clip caption" data-start="94.684" data-duration="4.516" data-track-index="5"><span class="pill">This chip matched increment<br>0001 by the thread's title,</span></div>
+      <div id="cap-29" class="clip caption" data-start="99.2" data-duration="2.9" data-track-index="5"><span class="pill">so put the increment number<br>in each worker's title.</span></div>
+      <div id="cap-30" class="clip caption" data-start="102.15" data-duration="3.84" data-track-index="5"><span class="pill">Next: keep working when<br>a provider runs out.</span></div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.set(".cam-02-version-0", { scale: 1.333, x: 320, y: -608, clipPath: "inset(540px 960px 0px 0px round 4.5px)", transformOrigin: "0 0" }, 6.96);
+      tl.set(".cam-02-version-1", { scale: 1.085, x: -81.356, y: 3.525, clipPath: "inset(100px 370px 316.25px 370px round 5.531px)", transformOrigin: "0 0" }, 9.01);
+      tl.to(".cam-02-version-1", { ...{ scale: 1.385, x: -547.186, y: -442.113, clipPath: "inset(400px 370px 160.25px 626px round 4.331px)" }, duration: 0.6, ease: "power2.inOut" }, 11.51);
+      tl.fromTo("#chip-02-version-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 7.01);
+      tl.fromTo("#chip-02-version-1-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 9.06);
+      tl.set(".cam-03-project-0", { scale: 0.667, x: 320, y: 112, clipPath: "inset(0px 0px 0px 0px round 9px)", transformOrigin: "0 0" }, 15.99);
+      tl.to(".cam-03-project-0", { ...{ scale: 1.714, x: -682.41, y: -7.946, clipPath: "inset(70px 588px 589.813px 585px round 3.502px)" }, duration: 0.6, ease: "power2.inOut" }, 16.79);
+      tl.to(".cam-03-project-0", { ...{ scale: 0.769, x: 123.077, y: 112, clipPath: "inset(0px 0px 144px 256px round 7.8px)" }, duration: 0.6, ease: "power2.inOut" }, 26.586);
+      tl.to(".cam-03-project-0", { ...{ scale: 1.391, x: -1071.304, y: 112, clipPath: "inset(0px 0px 562.5px 1000px round 4.313px)" }, duration: 0.6, ease: "power2.inOut" }, 27.835);
+      tl.fromTo("#chip-03-project-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 16.04);
+      tl.set(".cam-04-ask-0", { scale: 1.641, x: -451.282, y: -1115.692, clipPath: "inset(860px 670px 5px 470px round 3.656px)", transformOrigin: "0 0" }, 31.1);
+      tl.set(".cam-04-ask-1", { scale: 1.641, x: -451.282, y: -1115.692, clipPath: "inset(860px 670px 5px 470px round 3.656px)", transformOrigin: "0 0" }, 33);
+      tl.set(".cam-04-ask-2", { scale: 1.641, x: -451.282, y: 40.41, clipPath: "inset(96px 670px 650px 470px round 3.656px)", transformOrigin: "0 0" }, 39.45);
+      tl.fromTo("#chip-04-ask-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 31.15);
+      tl.fromTo("#chip-04-ask-1-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 33.05);
+      tl.set(".cam-05-workers-0", { scale: 1.641, x: -451.282, y: 40.41, clipPath: "inset(96px 670px 650px 470px round 3.656px)", transformOrigin: "0 0" }, 43.41);
+      tl.set(".cam-05-workers-1", { scale: 1.44, x: -1473.6, y: 112, clipPath: "inset(0px 2px 580px 1462px round 4.167px)", transformOrigin: "0 0" }, 46.343);
+      tl.set(".cam-05-workers-2", { scale: 1.641, x: -451.282, y: 40.41, clipPath: "inset(96px 670px 650px 470px round 3.656px)", transformOrigin: "0 0" }, 51.243);
+      tl.set(".cam-05-workers-3", { scale: 1.44, x: -1473.6, y: 112, clipPath: "inset(0px 2px 580px 1462px round 4.167px)", transformOrigin: "0 0" }, 54.743);
+      tl.fromTo("#note-05-workers-3-i", { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25, ease: "power2.out" }, 54.793);
+      tl.fromTo("#chip-05-workers-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 43.46);
+      tl.fromTo("#chip-05-workers-1-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 46.393);
+      tl.fromTo("#chip-05-workers-2-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 51.293);
+      tl.fromTo("#chip-05-workers-3-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 54.793);
+      tl.set(".cam-06-report-0", { scale: 1.108, x: -912, y: 112, clipPath: "inset(0px 2px 430px 1462px round 5.417px)", transformOrigin: "0 0" }, 69.32);
+      tl.to(".cam-06-report-0", { ...{ scale: 1.203, x: -1077.268, y: 44.652, clipPath: "inset(56px 16px 425.316px 1484px round 4.989px)" }, duration: 0.6, ease: "power2.inOut" }, 72.02);
+      tl.to(".cam-06-report-0", { ...{ scale: 1.108, x: -912, y: 112, clipPath: "inset(0px 2px 430px 1462px round 5.417px)" }, duration: 0.6, ease: "power2.inOut" }, 78.32);
+      tl.set(".cam-06-report-1", { scale: 1.2, x: 96, y: -8, clipPath: "inset(100px 880px 380px 400px round 5px)", transformOrigin: "0 0" }, 80.52);
+      tl.to(".cam-06-report-1", { ...{ scale: 1.2, x: 96, y: -236, clipPath: "inset(290px 880px 190px 400px round 5px)" }, duration: 0.6, ease: "power2.inOut" }, 82.505);
+      tl.fromTo("#chip-06-report-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 69.37);
+      tl.fromTo("#chip-06-report-1-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 80.57);
+      tl.set(".cam-07-plan-0", { scale: 2.006, x: -2429.415, y: 112, clipPath: "inset(0px 2px 721px 1462px round 2.992px)", transformOrigin: "0 0" }, 85.79);
+      tl.to(".cam-07-plan-0", { ...{ scale: 2.231, x: -2798.538, y: 4.932, clipPath: "inset(48px 30px 709.215px 1480px round 2.69px)" }, duration: 0.6, ease: "power2.inOut" }, 94.073);
+      tl.to(".cam-07-plan-0", { ...{ scale: 2.006, x: -2429.415, y: 112, clipPath: "inset(0px 2px 721px 1462px round 2.992px)" }, duration: 0.6, ease: "power2.inOut" }, 96.956);
+      tl.to(".cam-07-plan-0", { ...{ scale: 2.177, x: -2698.162, y: 112, clipPath: "inset(0px 30px 749.342px 1470px round 2.755px)" }, duration: 0.6, ease: "power2.inOut" }, 99.963);
+      tl.fromTo("#note-07-plan-0-i", { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25, ease: "power2.out" }, 96.003);
+      tl.fromTo("#chip-07-plan-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 85.84);
+      tl.fromTo("#intro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, 0);
+      tl.fromTo("#intro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, 0.2);
+      tl.fromTo("#step-0", { x: -16, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 2);
+      tl.fromTo("#step-1", { x: -16, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 2.9);
+      tl.fromTo("#step-2", { x: -16, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 3.8);
+      tl.to("#intro .card-inner", { opacity: 0, duration: 0.25, ease: "none" }, 6.71);
+      tl.fromTo("#outro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, 102.1);
+      tl.fromTo("#outro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, 102.4);
+      tl.fromTo("#disc-0", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 102.6);
+      tl.fromTo("#disc-1", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 103.4);
+      tl.fromTo("#disc-2", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 104.2);
+      tl.fromTo("#disc-3", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 105);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

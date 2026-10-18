@@ -1,0 +1,427 @@
+{
+  "comment": "App tutorial edit, framed-window layout. Each app beat is a list of shots; segments are [sourceStart, sourceEnd, rate] in take.mp4 (cue time minus syncOffset = video time); 'fit' sets the beat's last rate so it fills the beat. aspect is crop width/height; cam keyframes are crop rectangles {src, x, y, w} in source seconds and 1920x1080 pixels (h = w / aspect). Crops end on panel edges so no word is cut; worker shots stay on the right panel and the coordinator text above its worker cards, which show 1.0.45 bugs (SCRIPT.md).",
+  "title": "Start SpecWithCode with a coordinator and two workers",
+  "subtitle": "A real run of SpecWithCode 1.0.45 on a sample repo, with Codex as coordinator and workers.",
+  "intro": {
+    "steps": [
+      "Add a project",
+      "Ask the coordinator",
+      "Read the workers' reports"
+    ],
+    "stepAt": [
+      2.0,
+      2.9,
+      3.8
+    ]
+  },
+  "outro": {
+    "next": "Next: keep working when a provider runs out",
+    "notes": [
+      "Recorded in one take on a private SpecWithCode 1.0.45 server with a disposable home.",
+      "Off camera: increment 0001 was planned, and the welcome wizard and a Codex update notice were dismissed.",
+      "The permissions menu does not render in headless capture; only its label change is shown.",
+      "Agent work is sped up where marked. The narration is an AI voice."
+    ],
+    "noteAt": [
+      0.5,
+      1.3,
+      2.1,
+      2.9
+    ]
+  },
+  "take": "assets/media/take.mp4",
+  "syncOffset": -0.01,
+  "voOffset": 0.05,
+  "tailAfterVo": 0.1,
+  "posterAt": 1.0,
+  "beats": [
+    {
+      "id": "01-intro",
+      "kind": "card",
+      "chapter": "What you will do",
+      "voOffset": 1.1,
+      "tail": 0.3,
+      "extra": 0.6
+    },
+    {
+      "id": "02-version",
+      "kind": "app",
+      "chapter": "SpecWithCode 1.0.45",
+      "shots": [
+        {
+          "chip": "Account menu → Settings",
+          "segments": [
+            [
+              5.35,
+              7.4,
+              1.0
+            ]
+          ],
+          "cam": [
+            {
+              "src": 5.35,
+              "x": 0,
+              "y": 540,
+              "w": 960
+            }
+          ]
+        },
+        {
+          "chip": "Settings → General → About",
+          "segments": [
+            [
+              7.4,
+              10.4,
+              1.0
+            ],
+            [
+              11.6,
+              14.9,
+              "fit"
+            ]
+          ],
+          "cam": [
+            {
+              "src": 7.4,
+              "x": 370,
+              "y": 100,
+              "w": 1180
+            },
+            {
+              "src": 9.9,
+              "x": 626,
+              "y": 400,
+              "w": 924
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "03-project",
+      "kind": "app",
+      "chapter": "Add a project",
+      "shots": [
+        {
+          "chip": "Projects + → Local folder → `~/greet-app`",
+          "chipAt": 15.7,
+          "segments": [
+            [
+              15.7,
+              26.2,
+              1.0
+            ],
+            [
+              26.2,
+              31.0,
+              "fit"
+            ]
+          ],
+          "cam": [
+            {
+              "src": 15.7,
+              "x": 0,
+              "y": 0,
+              "w": 1920
+            },
+            {
+              "src": 16.5,
+              "x": 585,
+              "y": 70,
+              "w": 747
+            },
+            {
+              "src": 26.3,
+              "x": 256,
+              "y": 0,
+              "w": 1664
+            },
+            {
+              "src": 27.6,
+              "x": 1000,
+              "y": 0,
+              "w": 920
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "04-ask",
+      "kind": "app",
+      "chapter": "Ask the coordinator",
+      "minRate": 0.5,
+      "shots": [
+        {
+          "chip": "Composer → Full access",
+          "aspect": 3.627906976744186,
+          "segments": [
+            [
+              33.2,
+              34.0,
+              1.0
+            ],
+            [
+              34.0,
+              34.55,
+              0.5
+            ]
+          ],
+          "cam": [
+            {
+              "src": 33.2,
+              "x": 470,
+              "y": 860,
+              "w": 780
+            }
+          ]
+        },
+        {
+          "chip": "Ask the coordinator",
+          "aspect": 3.627906976744186,
+          "segments": [
+            [
+              34.55,
+              41.0,
+              1.0
+            ]
+          ],
+          "cam": [
+            {
+              "src": 34.55,
+              "x": 470,
+              "y": 860,
+              "w": 780
+            }
+          ]
+        },
+        {
+          "aspect": 2.3353293413173652,
+          "segments": [
+            [
+              41.0,
+              44.2,
+              "fit"
+            ]
+          ],
+          "cam": [
+            {
+              "src": 41.0,
+              "x": 470,
+              "y": 96,
+              "w": 780
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "05-workers",
+      "kind": "app",
+      "chapter": "Two workers in the right panel",
+      "shots": [
+        {
+          "chip": "The coordinator starts the workers",
+          "aspect": 2.3353293413173652,
+          "segments": [
+            [
+              44.2,
+              53.0,
+              3.0
+            ]
+          ],
+          "cam": [
+            {
+              "src": 44.2,
+              "x": 470,
+              "y": 96,
+              "w": 780
+            }
+          ]
+        },
+        {
+          "chip": "Right panel → Working",
+          "aspect": 0.912,
+          "segments": [
+            [
+              53.0,
+              57.9,
+              1.0
+            ]
+          ],
+          "cam": [
+            {
+              "src": 53.0,
+              "x": 1462,
+              "y": 0,
+              "w": 456
+            }
+          ]
+        },
+        {
+          "chip": "Each worker gets a brief",
+          "aspect": 2.3353293413173652,
+          "segments": [
+            [
+              57.9,
+              61.4,
+              1.0
+            ]
+          ],
+          "cam": [
+            {
+              "src": 57.9,
+              "x": 470,
+              "y": 96,
+              "w": 780
+            }
+          ]
+        },
+        {
+          "chip": "Right panel → plan chips",
+          "aspect": 0.912,
+          "segments": [
+            [
+              61.4,
+              86.5,
+              "fit"
+            ]
+          ],
+          "cam": [
+            {
+              "src": 61.4,
+              "x": 1462,
+              "y": 0,
+              "w": 456
+            }
+          ],
+          "note": {
+            "text": "the coordinator's worker cards can lag or name the wrong task; the right panel is current."
+          }
+        }
+      ]
+    },
+    {
+      "id": "06-report",
+      "kind": "app",
+      "chapter": "The worker's report card",
+      "shots": [
+        {
+          "chip": "Right panel → open `0001 T-01`",
+          "aspect": 0.7015384615384616,
+          "segments": [
+            [
+              89.4,
+              100.6,
+              1.0
+            ]
+          ],
+          "cam": [
+            {
+              "src": 89.4,
+              "x": 1462,
+              "y": 0,
+              "w": 456
+            },
+            {
+              "src": 92.1,
+              "x": 1484,
+              "y": 56,
+              "w": 420
+            },
+            {
+              "src": 98.4,
+              "x": 1462,
+              "y": 0,
+              "w": 456
+            }
+          ]
+        },
+        {
+          "chip": "Open report",
+          "aspect": 1.0666666666666667,
+          "segments": [
+            [
+              102.2,
+              106.45,
+              "fit"
+            ]
+          ],
+          "cam": [
+            {
+              "src": 102.2,
+              "x": 400,
+              "y": 100,
+              "w": 640
+            },
+            {
+              "src": 103.8,
+              "x": 400,
+              "y": 290,
+              "w": 640
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "07-plan",
+      "kind": "app",
+      "chapter": "Plan chip and acceptance criteria",
+      "shots": [
+        {
+          "chip": "Plan chip → tasks and acceptance criteria",
+          "aspect": 1.2701949860724233,
+          "segments": [
+            [
+              106.7,
+              111.6,
+              1.0
+            ],
+            [
+              111.6,
+              120.7,
+              "fit"
+            ]
+          ],
+          "cam": [
+            {
+              "src": 106.7,
+              "x": 1462,
+              "y": 0,
+              "w": 456
+            },
+            {
+              "src": 114.3,
+              "x": 1480,
+              "y": 48,
+              "w": 410
+            },
+            {
+              "src": 116.6,
+              "x": 1462,
+              "y": 0,
+              "w": 456
+            },
+            {
+              "src": 119.0,
+              "x": 1470,
+              "y": 0,
+              "w": 420
+            }
+          ],
+          "note": {
+            "text": "a worker's own SpecWeave claim does not bind its chip yet, so only the title match works.",
+            "from": 115.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "08-outro",
+      "kind": "card",
+      "chapter": "Next",
+      "tail": 3.0
+    }
+  ]
+}
