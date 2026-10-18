@@ -16,11 +16,13 @@ import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { getAgentId, ledgerPath, readIncrementEvents, type LedgerEvent } from '../tasks/ledger.js';
+import { getAgentId, ledgerPath, readIncrementEvents, readLedger, type LedgerEvent } from '../tasks/ledger.js';
 import { loadTaskBoard, nextTask, type TaskBoard } from '../tasks/task-board.js';
 import { hasTasksFile } from '../tasks/tasks-source.js';
 import { incrementsDir, listActiveIncrementIds, listStartableIncrementIds, readLeaseHours } from '../tasks/resolve-increment.js';
 import { readSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
+import { foldCards, readOriginUrl, renderChecklist } from '../tasks/cards.js';
+import { branchCards, branchCardsPath, currentBranch } from '../tasks/branch-cards.js';
 import { readIntentContext } from '../intent/portable-context.js';
 import { resolveHandoffPointer } from './handoff-pointer.js';
 import { latestCheckpointFor } from './session-checkpoint.js';
@@ -99,6 +101,11 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
   if (opts.compact && L.length && ids.length) {
     L.push('Run `specweave pickup` for the next task\'s acceptance criteria, claims and branch state.');
   }
+  if (!opts.compact && ids.length === 0) {
+    const branch = currentBranch(projectRoot);
+    const cards = branchCards(branchCardsPath(projectRoot, branch), { origin: readOriginUrl(projectRoot) });
+    if (cards.length) L.push(...renderChecklist(cards, `Cards on ${branch ?? 'no branch'}`).split('\n'));
+  }
   if (!opts.compact && ids.length === 0 && !intents) {
     L.push('No open increment. Start one with `specweave create-increment "<title>"`.');
   }
@@ -117,9 +124,14 @@ function describeFocus(projectRoot: string, dir: string, id: string, agent: stri
   const counts = board?.counts;
   const taskBit = counts ? ` · tasks ${counts.done + counts.skipped}/${counts.total} done` : '';
   const acBit = acs.length ? ` · ACs ${metAcs}/${acs.length} met` : '';
-  L.push(`Increment ${id}${title ? ` "${title}"` : ''} (${status})${taskBit}${acBit}`);
+  const header = `Increment ${id}${title ? ` "${title}"` : ''} (${status})${taskBit}${acBit}`;
 
+  if (!board) L.push(header);
   if (board) {
+    // The card checklist comes first: one line per task, in the right tense, with its link.
+    const events = readLedger(ledgerPath(dir)).events;
+    const cards = foldCards(board.tasks.map((t) => ({ id: t.id, title: t.title, state: t.state })), events, { leaseHours, origin: readOriginUrl(projectRoot) });
+    L.push(...renderChecklist(cards, header).split('\n'), '');
     const mine = board.tasks.filter((t) => (t.state.status === 'claimed' || t.state.status === 'blocked') && t.state.by === agent);
     for (const t of mine) L.push(`Yours: ${t.id} ${t.title} (${t.state.status} ${age(t.state.since)})`);
     const next = nextTask(board, agent);
