@@ -142,10 +142,39 @@ program
   .option('--reason <text>', 'Reason (required for skip / block)')
   .option('--all-mine', 'With `release`: release every task claimed by this agent')
   .option('--write', 'With `render`: refresh a legacy tasks.md from the ledger')
+  .option('--line <text>', 'Card text for claim/done/block (max 100 chars, longer text is truncated)')
+  .option('--link <url>', 'Card link for claim/done/block (PR URL, report path, artifact URL)')
   .option('--json', 'Machine-readable output')
   .action(async (action, taskOrIncrement, increment, options) => {
     const { taskCommand } = await import('../dist/src/cli/commands/task.js');
     process.exitCode = await taskCommand(action, taskOrIncrement, increment, options);
+  });
+
+// Card command - one-line checklist cards on the ledger (T-NN aliases task; C-NN is branch-keyed)
+program
+  .command('card <action> [idOrText] [increment]')
+  .description('Cards: add "<text>" | start <id> | done <id> | wait <id> | list. T-NN ids alias `task`; C-NN cards live in .specweave/cards/<branch>.jsonl')
+  .option('--line <text>', 'Card text (max 100 chars)')
+  .option('--link <url>', 'Card link (PR URL, report path, artifact URL)')
+  .option('-e, --evidence <text>', 'Evidence for `done`')
+  .option('--run <cmd>', 'With `done` on a T-NN card: run <cmd>, exit 0 required')
+  .option('--reason <text>', 'Why the card waits (`wait`)')
+  .option('-f, --force', 'Override a live claim (T-NN cards)')
+  .option('--json', 'Machine-readable output')
+  .action(async (action, idOrText, increment, options) => {
+    const { cardCommand } = await import('../dist/src/cli/commands/card.js');
+    process.exitCode = await cardCommand(action, idOrText, increment, options);
+  });
+
+// Cards command - print the card checklist for an increment (or the branch)
+program
+  .command('cards [incrementId]')
+  .description('Print the card checklist: a header, a blank line, then one ✓ / ✱ / ○ line per card with its link')
+  .option('--md', 'Markdown checklist (the default output)')
+  .option('--json', 'Machine-readable output')
+  .action(async (incrementId, options) => {
+    const { cardsCommand } = await import('../dist/src/cli/commands/card.js');
+    process.exitCode = await cardsCommand(incrementId, options);
   });
 
 // Verify command - run the project's verification commands, write reports/verify.{md,json}
