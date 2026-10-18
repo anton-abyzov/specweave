@@ -1,0 +1,84 @@
+{
+  "series": "SpecWithCode tutorials",
+  "slug": "provider-runs-out",
+  "title": "Keep working when a provider runs out",
+  "resolution": "1920x1080",
+  "fps": 30,
+  "demoRepo": "greet-app",
+  "labelsCheckedAt": "SpecWithCode 1.0.43 (specweave-studio 043e9db88), rehearsed 2026-10-18",
+  "offCamera": [
+    "seed.sh: greet-app, specweave init . --quick, increment 0001 with captures/spec.md (two tasks), committed",
+    "claude-auth.sh and codex-auth.sh: short-lived logins in the demo HOME (no refresh tokens, mode 600)",
+    "serve.sh <demo> 8343 (no simulation); pair; finish the welcome wizard; add greet-app as a Local folder; project permissions Full access",
+    "Coordinator message: Start a thread titled \"Personal greeting\". In it, run $sw-do for increment 0001: do T-01 only, then stop. (a real Claude Code turn; the ledger records claude@demo)",
+    "kill the server; serve.sh <demo> 8343 claudeAgent (STUDIO_SIMULATE_USAGE_LIMIT=claudeAgent); the take starts on the project page"
+  ],
+  "shots": [
+    {
+      "id": "02-thread",
+      "kind": "APP",
+      "chapter": "A thread on Claude Code",
+      "steps": [
+        { "do": "expect", "text": "Personal greeting" },
+        { "do": "pause", "ms": 1500 },
+        { "do": "hover", "text": "Personal greeting", "exact": true, "last": true, "ms": 1200 },
+        { "do": "click", "text": "Personal greeting", "exact": true, "last": true },
+        { "do": "pause", "ms": 1200 },
+        { "do": "click", "role": "button", "name": "Expand panel" },
+        { "do": "pause", "ms": 3000 }
+      ]
+    },
+    {
+      "id": "03-limit",
+      "kind": "APP",
+      "chapter": "Claude Code hits its limit",
+      "steps": [
+        { "do": "type", "css": "[contenteditable=\"true\"]", "last": true, "text": "Now do T-02, then stop.", "delay": 55 },
+        { "do": "pause", "ms": 500 },
+        { "do": "press", "key": "Enter" },
+        { "do": "expect", "text": "Continuing with Codex by project rule", "timeout": 60000 },
+        { "do": "pause", "ms": 5000 }
+      ]
+    },
+    {
+      "id": "04-switch",
+      "kind": "APP",
+      "chapter": "The switch to Codex",
+      "steps": [
+        { "do": "expect", "text": "continued on Codex", "timeout": 180000 },
+        { "do": "pause", "ms": 2500 }
+      ]
+    },
+    {
+      "id": "05-codex",
+      "kind": "APP",
+      "chapter": "Codex finishes T-02",
+      "steps": [
+        { "do": "waitTurn" },
+        { "do": "pause", "ms": 2500 },
+        { "do": "click", "textRegex": "^All done$" },
+        { "do": "pause", "ms": 3500 },
+        { "do": "press", "key": "Escape" },
+        { "do": "pause", "ms": 800 }
+      ]
+    },
+    {
+      "id": "07-settings",
+      "kind": "APP",
+      "chapter": "Choose the rule",
+      "steps": [
+        { "do": "click", "role": "button", "name": "Restore panel" },
+        { "do": "pause", "ms": 800 },
+        { "do": "click", "role": "button", "name": "Project settings" },
+        { "do": "pause", "ms": 1500 },
+        { "do": "click", "text": "Usage limits", "exact": true },
+        { "do": "pause", "ms": 1500 },
+        { "do": "click", "role": "combobox", "name": "When a provider runs out" },
+        { "do": "pause", "ms": 3500 },
+        { "do": "press", "key": "Escape" },
+        { "do": "pause", "ms": 600 },
+        { "do": "hover", "role": "combobox", "name": "Switch before the limit", "ms": 3000 }
+      ]
+    }
+  ]
+}

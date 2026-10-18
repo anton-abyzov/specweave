@@ -1,0 +1,19 @@
+{
+ "specweave": "3.1.0",
+ "app": "SpecWithCode 1.0.43",
+ "capturedAt": "2026-10-18T10:02:53.263Z",
+ "shots": [
+  {
+   "beat": "06-ledger",
+   "tool": "terminal",
+   "cmd": "specweave task list",
+   "out": "0001-personal-greeting — agent cli@demo\n| Task | State | By | Evidence | Note |\n|---|---|---|---|---|\n| T-01 | done | claude@demo | npm test → exit 0 log: .specweave/increments/0001-personal-… |  |\n| T-02 | done | codex@demo | npm test → exit 0 log: .specweave/increments/0001-personal-… |  |\n\n2/2 done · 0 skipped · 0 claimed · 0 blocked · 0 stale · 0 open"
+  },
+  {
+   "beat": "06-ledger",
+   "tool": "terminal",
+   "cmd": "git log --oneline -3",
+   "out": "2ecf58b 0001: fall back on blank greeting names\n1251f7d 0001: greet by name\n4a3ee26 0001: plan personal greeting"
+  }
+ ]
+}

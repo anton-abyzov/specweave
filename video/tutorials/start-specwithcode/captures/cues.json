@@ -1,0 +1,323 @@
+{
+ "shotlist": "SHOTLIST.json",
+ "cues": [
+  {
+   "shot": "sync",
+   "step": 0,
+   "label": "black-on",
+   "ms": 4042
+  },
+  {
+   "shot": "sync",
+   "step": 0,
+   "label": "black-off",
+   "ms": 4345
+  },
+  {
+   "shot": "02-version",
+   "step": -1,
+   "label": "shot-start",
+   "ms": 5347
+  },
+  {
+   "shot": "02-version",
+   "step": 0,
+   "label": "click Account: Demo Mac",
+   "ms": 5348
+  },
+  {
+   "shot": "02-version",
+   "step": 0,
+   "label": "clicked Account: Demo Mac",
+   "ms": 6307
+  },
+  {
+   "shot": "02-version",
+   "step": 1,
+   "label": "click Settings",
+   "ms": 6808
+  },
+  {
+   "shot": "02-version",
+   "step": 1,
+   "label": "clicked Settings",
+   "ms": 7335
+  },
+  {
+   "shot": "02-version",
+   "step": 2,
+   "label": "scroll Current version of the application.",
+   "ms": 8537
+  },
+  {
+   "shot": "02-version",
+   "step": 3,
+   "label": "hover Current version of the application.",
+   "ms": 12297
+  },
+  {
+   "shot": "02-version",
+   "step": 4,
+   "label": "press Escape",
+   "ms": 14800
+  },
+  {
+   "shot": "02-version",
+   "step": 999,
+   "label": "shot-end",
+   "ms": 15624
+  },
+  {
+   "shot": "03-project",
+   "step": -1,
+   "label": "shot-start",
+   "ms": 15707
+  },
+  {
+   "shot": "03-project",
+   "step": 0,
+   "label": "click [aria-label='Add project']",
+   "ms": 15707
+  },
+  {
+   "shot": "03-project",
+   "step": 0,
+   "label": "clicked [aria-label='Add project']",
+   "ms": 16546
+  },
+  {
+   "shot": "03-project",
+   "step": 1,
+   "label": "hover Start a code project from a name",
+   "ms": 18174
+  },
+  {
+   "shot": "03-project",
+   "step": 2,
+   "label": "hover Browse a folder on disk",
+   "ms": 20637
+  },
+  {
+   "shot": "03-project",
+   "step": 3,
+   "label": "click Local folder",
+   "ms": 22139
+  },
+  {
+   "shot": "03-project",
+   "step": 3,
+   "label": "clicked Local folder",
+   "ms": 22746
+  },
+  {
+   "shot": "03-project",
+   "step": 4,
+   "label": "type ~/greet-app",
+   "ms": 23648
+  },
+  {
+   "shot": "03-project",
+   "step": 4,
+   "label": "typed",
+   "ms": 24475
+  },
+  {
+   "shot": "03-project",
+   "step": 6,
+   "label": "press Enter",
+   "ms": 25779
+  },
+  {
+   "shot": "03-project",
+   "step": 7,
+   "label": "expect Excited to get started on greet-app",
+   "ms": 27286
+  },
+  {
+   "shot": "03-project",
+   "step": 8,
+   "label": "hover Continue increment 0001",
+   "ms": 27838
+  },
+  {
+   "shot": "03-project",
+   "step": 9,
+   "label": "hover Coordinator model: Codex · GPT-6.1-Sol. Change model",
+   "ms": 31138
+  },
+  {
+   "shot": "03-project",
+   "step": 999,
+   "label": "shot-end",
+   "ms": 33141
+  },
+  {
+   "shot": "04-ask",
+   "step": -1,
+   "label": "shot-start",
+   "ms": 33220
+  },
+  {
+   "shot": "04-ask",
+   "step": 0,
+   "label": "select Full access",
+   "ms": 33792
+  },
+  {
+   "shot": "04-ask",
+   "step": 1,
+   "label": "type Start two workers in par",
+   "ms": 34538
+  },
+  {
+   "shot": "04-ask",
+   "step": 1,
+   "label": "typed",
+   "ms": 40406
+  },
+  {
+   "shot": "04-ask",
+   "step": 3,
+   "label": "press Enter",
+   "ms": 41510
+  },
+  {
+   "shot": "04-ask",
+   "step": 999,
+   "label": "shot-end",
+   "ms": 42514
+  },
+  {
+   "shot": "05-workers",
+   "step": -1,
+   "label": "shot-start",
+   "ms": 42592
+  },
+  {
+   "shot": "05-workers",
+   "step": 0,
+   "label": "expect Working",
+   "ms": 58449
+  },
+  {
+   "shot": "05-workers",
+   "step": 2,
+   "label": "wait Done x2",
+   "ms": 58907
+  },
+  {
+   "shot": "05-workers",
+   "step": 2,
+   "label": "seen Done x2",
+   "ms": 83517
+  },
+  {
+   "shot": "05-workers",
+   "step": 999,
+   "label": "shot-end",
+   "ms": 89518
+  },
+  {
+   "shot": "06-report",
+   "step": -1,
+   "label": "shot-start",
+   "ms": 89611
+  },
+  {
+   "shot": "06-report",
+   "step": 0,
+   "label": "click 0001 T-01",
+   "ms": 89611
+  },
+  {
+   "shot": "06-report",
+   "step": 0,
+   "label": "clicked 0001 T-01",
+   "ms": 90434
+  },
+  {
+   "shot": "06-report",
+   "step": 1,
+   "label": "expect Open report",
+   "ms": 91938
+  },
+  {
+   "shot": "06-report",
+   "step": 2,
+   "label": "hover from coordinator",
+   "ms": 92119
+  },
+  {
+   "shot": "06-report",
+   "step": 3,
+   "label": "hover Saved",
+   "ms": 96403
+  },
+  {
+   "shot": "06-report",
+   "step": 4,
+   "label": "click Open report",
+   "ms": 101406
+  },
+  {
+   "shot": "06-report",
+   "step": 4,
+   "label": "clicked Open report",
+   "ms": 101944
+  },
+  {
+   "shot": "06-report",
+   "step": 6,
+   "label": "press Escape",
+   "ms": 106447
+  },
+  {
+   "shot": "06-report",
+   "step": 999,
+   "label": "shot-end",
+   "ms": 107662
+  },
+  {
+   "shot": "07-plan",
+   "step": -1,
+   "label": "shot-start",
+   "ms": 107780
+  },
+  {
+   "shot": "07-plan",
+   "step": 0,
+   "label": "click [data-thread-plan-card] > button",
+   "ms": 107780
+  },
+  {
+   "shot": "07-plan",
+   "step": 0,
+   "label": "clicked [data-thread-plan-card] > button",
+   "ms": 108426
+  },
+  {
+   "shot": "07-plan",
+   "step": 1,
+   "label": "click Acceptance criteria",
+   "ms": 110929
+  },
+  {
+   "shot": "07-plan",
+   "step": 1,
+   "label": "clicked Acceptance criteria",
+   "ms": 111423
+  },
+  {
+   "shot": "07-plan",
+   "step": 2,
+   "label": "hover Open spec",
+   "ms": 114069
+  },
+  {
+   "shot": "07-plan",
+   "step": 999,
+   "label": "shot-end",
+   "ms": 120754
+  }
+ ]
+}
