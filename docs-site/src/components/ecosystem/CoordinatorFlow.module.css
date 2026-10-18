@@ -18,11 +18,9 @@
   color: var(--wv-muted);
 }
 
-/* ---------- Segmented control ---------- */
+/* ---------- Segmented control ----------
+   In the flow, not sticky: a pinned bar covered the top of the tall captures. */
 .tabs {
-  position: sticky;
-  top: var(--ifm-navbar-height);
-  z-index: 2;
   display: flex;
   gap: var(--wv-space-1);
   width: fit-content;

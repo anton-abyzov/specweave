@@ -21,12 +21,12 @@ Because all of it is plain files in git, it works with Claude Code (including Pr
 
 ```mermaid
 flowchart LR
-  you([You: describe the change]) --> spec[spec.md<br/>criteria and tasks]
-  spec --> loop[Agent works a task<br/>claim, commit, test]
-  loop --> ledger[(ledger.jsonl<br/>evidence)]
+  you([You: describe the change]) --> spec[spec.md: criteria and tasks]
+  spec --> loop[Agent works a task: claim, commit, test]
+  loop --> ledger[(ledger.jsonl: evidence)]
   ledger --> loop
-  loop -->|out of tokens,<br/>switching tools| handoff[handoff]
-  handoff --> pickup[pickup in the<br/>next tool]
+  loop -->|out of tokens, switching tools| handoff[handoff]
+  handoff --> pickup[pickup in the next tool]
   pickup --> loop
   ledger --> done[verify and complete]
 ```

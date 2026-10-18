@@ -58,4 +58,4 @@ The words SpecWeave uses, as they apply to 3.0. Terms with their own page link t
 
 ## Removed in 3.0
 
-Living docs, the separate `tasks.md` for new increments, and a set of commands were removed in 3.0. See [SpecWeave 3.0](/docs/guides/specweave-3#removed-commands) for the list.
+The separate `tasks.md` for new increments and a set of commands were removed in 3.0. Living docs became optional and off by default (`livingDocs: "onDone"` turns them back on). See [SpecWeave 3.0](/docs/guides/specweave-3#removed-commands) for the list.

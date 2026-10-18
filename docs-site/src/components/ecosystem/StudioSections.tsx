@@ -2,8 +2,9 @@ import React from 'react';
 import Link from '@docusaurus/Link';
 import styles from './studio.module.css';
 import { SPECWITHCODE_RELEASE as release } from '../../data/specwithcodeRelease';
+import { providerNames } from '../../data/tools';
 
-export const providers = ['Claude Code', 'Codex', 'Grok Build', 'Cursor', 'OpenCode', 'GitHub Copilot', 'Antigravity', 'Pi'];
+export const providers = providerNames;
 
 const features: [string, string, React.ReactNode][] = [
   ['Coordinator', 'One conversation per goal.', <>Tell the coordinator what you want. It splits the work, starts or reuses workers, checks what they bring back and asks you only when a decision is yours.</>],
@@ -53,7 +54,7 @@ export function ProjectFeatures() {
 }
 
 const rows: [string, string, string][] = [
-  ['Where work runs', 'A cloud container per thread, with a bridge to your computer in some products.', 'On machines you own: this computer, plus any you pair over your network, SSH or Tailscale.'],
+  ['Where work runs', 'A cloud container per thread, with a bridge to your computer in some products.', 'On machines you own: this computer, plus the Macs and Linux machines you add over your private Tailscale network.'],
   ['Models', 'One vendor’s models.', 'Claude Code, Codex, Grok Build, Cursor, OpenCode, Copilot and more. The coordinator and each worker choose their own.'],
   ['Your skills and folders', 'Upload skills to the account or a repository. Neighbouring local folders are out of reach.', 'The agent runs on your machine with its provider’s local configuration, so local skills, MCP servers and folders you approve are within reach.'],
   ['When a limit hits', 'Wait for the reset or change plans.', 'By default the thread offers to continue on another provider, carrying the recent conversation over; per project you can have it wait and resume on the same account, or switch on its own. Or hand off to another tool with SpecWeave.'],
@@ -75,8 +76,8 @@ export function StudioFaq() {
   return <div className={styles.faq}>
     <article>
       <h3>Do I need Tailscale?</h3>
-      <p>No. One machine needs nothing extra: SpecWithCode runs at <code>localhost:8319</code>. A machine on the same home or office network can be paired directly once its network access is on, and the desktop app can open an SSH tunnel to a machine you already reach over SSH. Tailscale Serve is for private HTTPS from a phone or from away.</p>
-      <p>Either way, being reachable is not permission. Every machine and every browser is paired with SpecWithCode separately, and SpecWithCode never uses Tailscale Funnel to go public.</p>
+      <p>Only to add a second machine. One machine needs nothing extra: SpecWithCode runs at <code>localhost:8319</code>. To let coordinators start work on another Mac or a Linux machine, every machine joins the same Tailscale network and is reached by its own private Tailscale name. Run <code>specwithcode fleet invite</code> on the new machine, or choose Invite this machine in its Settings, and paste the line into Settings &gt; Connections &gt; Add a machine on your main one.</p>
+      <p>Being reachable is not permission. The line is a credential you can revoke, each machine is approved separately, and SpecWithCode publishes with Tailscale Serve inside your network, never with Tailscale Funnel.</p>
     </article>
     <article>
       <h3>What is CLIProxyAPI for?</h3>
@@ -109,7 +110,7 @@ export function StudioFaq() {
     </article>
     <article>
       <h3>Is it a cloud service?</h3>
-      <p>No. SpecWithCode is a local app on each machine: a desktop app for Apple silicon Macs on macOS 13 or later, also usable from a browser. Windows and Intel Macs are not built yet. Telemetry and the hosted relay are off by default. By default the desktop app checks GitHub every hour and installs updates for itself and the service; you can turn that off in Settings. Model calls still go to the providers you choose.</p>
+      <p>No. SpecWithCode is a local app on each machine: a desktop app for Apple silicon Macs on macOS 13 or later, also usable from a browser. A Linux machine (x64 or arm64) can join as a worker; Windows and Intel Macs are not built yet. Telemetry and the hosted relay are off by default. By default the desktop app checks GitHub every hour and installs updates for itself and the service; you can turn that off in Settings. Model calls still go to the providers you choose.</p>
     </article>
     <article>
       <h3>Can I use it today?</h3>

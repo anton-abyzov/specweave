@@ -28,11 +28,11 @@ Errors compound. A misunderstanding in the request becomes a wrong design, which
 
 ```mermaid
 flowchart LR
-  idea[Request] --> spec[spec.md<br/>criteria and tasks]
-  spec --> review{You read it:<br/>is this what done means?}
+  idea[Request] --> spec[spec.md: criteria and tasks]
+  spec --> review{You read it: is this what done means?}
   review -->|no| spec
-  review -->|yes| work[Agent works the tasks<br/>with recorded evidence]
-  work --> verify[verify and review<br/>in a fresh session<br/>or another model]
+  review -->|yes| work[Agent works the tasks with recorded evidence]
+  work --> verify[verify and review in a fresh session or another model]
   verify --> ship[complete]
 ```
 

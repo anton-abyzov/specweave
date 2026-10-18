@@ -254,6 +254,8 @@ const config: Config = {
         },
       };
     },
+    // One guide page per published tutorial at /tutorials/<slug>/, from src/data/tutorials.json.
+    require.resolve('./plugins/tutorial-pages'),
     [
       '@docusaurus/plugin-client-redirects',
       {

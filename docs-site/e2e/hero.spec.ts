@@ -1,26 +1,28 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('3.0 landing page', () => {
+test.describe('landing page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
 
-  test('hero headline and primary action are visible', async ({ page }) => {
-    const hero = page.locator('section').first();
-    await expect(hero.locator('h1')).toContainText('Every AI agent.');
-    await expect(hero.locator('h1')).toContainText('One workspace.');
-    const studio = hero.getByRole('link', { name: /See SpecWithCode/ });
-    await expect(studio).toBeVisible();
-    await expect(studio).toHaveAttribute('href', /^\/code\/?$/);
-    await expect(hero.getByRole('link', { name: /Start free with the CLI/ })).toHaveAttribute('href', /^\/docs\/getting-started\/?$/);
+  test('hero headline and primary actions are visible', async ({ page }) => {
+    await expect(page.locator('h1')).toHaveCount(1);
+    await expect(page.locator('h1')).toContainText('Switch AI tools without losing your place.');
+    const download = page.getByRole('link', { name: /Download SpecWithCode|Download for Mac/ }).first();
+    await expect(download).toBeVisible();
+    await expect(download).toHaveAttribute('href', /\.dmg$/);
+    await expect(page.getByRole('link', { name: 'Get the CLI' })).toHaveAttribute('href', /^\/product\/?$/);
   });
 
-  test('handoff story keeps the tagline and all four beats', async ({ page }) => {
-    await expect(page.locator('#how')).toContainText('Switch tools. Keep your place.');
+  test('family section names all three products', async ({ page }) => {
+    for (const name of ['SpecWeave CLI', 'SpecWithCode', 'Verified Skill']) {
+      await expect(page.locator('#family h3', { hasText: name })).toHaveCount(1);
+    }
   });
 
-  test('scroll story shows all four beats', async ({ page }) => {
-    for (const title of ['what done means.', 'with its criteria.', 'Hand it off.', 'Same place.']) {
+  test('handoff section shows all four layers', async ({ page }) => {
+    await expect(page.locator('#how')).toContainText('When Claude Code hits its limit, Codex picks up the same task');
+    for (const title of ['The spec', 'The agents', 'The ledger in git', 'The handoff']) {
       await expect(page.locator('#how h3', { hasText: title })).toHaveCount(1);
     }
   });

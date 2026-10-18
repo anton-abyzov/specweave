@@ -1,13 +1,14 @@
-/* Shared tutorial player. Weave tokens (--wv-*), with legacy --sw-brand-* bridged onto them
-   in src/css/weave-bridge.css; both follow data-theme. */
+/* Shared tutorial player: a real screen recording in the Weave window frame.
+   Weave tokens only (--wv-*), so light and dark follow data-theme. */
 .root {
   margin: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  border: 1px solid var(--sw-brand-line);
+  border: 1px solid var(--wv-line);
   border-radius: var(--wv-radius-lg);
   overflow: hidden;
   background: var(--wv-panel);
+  box-shadow: var(--wv-shadow-window);
   color: var(--wv-ink);
   font-family: var(--wv-font-sans);
 }
@@ -15,7 +16,7 @@
 .frame {
   display: flex;
   align-items: center;
-  background: var(--sw-brand-term-bg);
+  background: var(--wv-sunken);
 }
 
 .video {
@@ -23,11 +24,11 @@
   width: 100%;
   height: auto;
   aspect-ratio: 16 / 9;
-  background: var(--sw-brand-term-bg);
+  background: var(--wv-sunken);
 }
 
 .video:focus-visible {
-  outline: 3px solid var(--sw-brand-accent);
+  outline: 2px solid var(--wv-iris);
   outline-offset: -3px;
 }
 
@@ -36,7 +37,7 @@
   align-content: start;
   gap: 14px;
   padding: 18px 20px 20px;
-  border-top: 1px solid var(--sw-brand-line);
+  border-top: 1px solid var(--wv-line);
   min-width: 0;
 }
 
@@ -47,7 +48,7 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.4;
-  color: var(--sw-brand-muted);
+  color: var(--wv-muted);
 }
 
 .meta > span {
@@ -86,9 +87,9 @@
   min-height: 44px;
   padding: 9px 10px;
   border: 1px solid transparent;
-  border-radius: var(--sw-brand-radius);
+  border-radius: var(--wv-radius-sm);
   background: transparent;
-  color: var(--sw-brand-ink);
+  color: var(--wv-ink);
   font: inherit;
   font-size: 14px;
   line-height: 1.35;
@@ -98,17 +99,17 @@
 }
 
 .chapter:hover {
-  background: var(--sw-brand-hover);
+  background: var(--wv-sunken);
 }
 
 .chapter:focus-visible {
-  outline: 3px solid var(--sw-brand-accent);
+  outline: 2px solid var(--wv-iris);
   outline-offset: 2px;
 }
 
 .chapter[aria-current='true'] {
-  background: var(--sw-brand-selected);
-  border-color: var(--sw-brand-line-strong);
+  background: var(--wv-iris-tint);
+  border-color: var(--wv-control);
 }
 
 .time {
@@ -116,11 +117,11 @@
   min-width: 3.4em;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
-  color: var(--sw-brand-muted);
+  color: var(--wv-muted);
 }
 
 .chapter[aria-current='true'] .time {
-  color: var(--sw-brand-accent-ink);
+  color: var(--wv-iris-strong);
   font-weight: 600;
 }
 
@@ -130,14 +131,14 @@
 
 .caption {
   padding: 14px 20px 16px;
-  border-top: 1px solid var(--sw-brand-line);
+  border-top: 1px solid var(--wv-line);
   font-size: 13px;
   line-height: 1.6;
-  color: var(--sw-brand-muted);
+  color: var(--wv-muted);
 }
 
 .root .caption a {
-  color: var(--sw-brand-ink);
+  color: var(--wv-ink);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -184,7 +185,7 @@
 
 .outline {
   font-size: 13px;
-  color: var(--sw-brand-muted);
+  color: var(--wv-muted);
 }
 
 /* Split: chapters beside the player on wide screens. */
@@ -207,7 +208,7 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     border-top: 0;
-    border-left: 1px solid var(--sw-brand-line);
+    border-left: 1px solid var(--wv-line);
   }
 
   .split .chapters ol {

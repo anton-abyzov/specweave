@@ -53,7 +53,7 @@ On your own machine, SpecWeave can do this for you:
 specweave auto-handoff on          # heads-up at 95% of the 5-hour or weekly window
 ```
 
-In Claude Code it reads the usage the status line reports. In Codex it reads the rate limits Codex writes to its session log. When usage crosses the threshold, the agent stops once, runs `specweave handoff`, and tells you to say "pick up" in the other tool. Cloud sessions don't expose usage, so there you still say "hand off" yourself.
+In Claude Code it reads the usage the status line reports. In Codex it reads the rate limits Codex writes to its session log. When usage crosses the threshold, the agent tells you once that a handoff is available and keeps working; say "hand off" when you want to move. In Claude Code, a turn that actually hits the limit hands off by itself. Then you say "pick up" in the other tool. `--mode enforce` stops and hands off at the threshold instead. Cloud sessions don't expose usage, so there you still say "hand off" yourself.
 
 ## Set up one repository for both
 

@@ -203,29 +203,29 @@ Snyk's ToxicSkills study identified coordinated campaigns by named threat actors
 
 ```mermaid
 flowchart TD
-    A["Attacker publishes<br/>malicious SKILL.md"] --> B["Developer installs skill<br/>(no scanning)"]
-    B --> C["Agent loads SKILL.md<br/>as trusted context"]
+    A["Attacker publishes malicious SKILL.md"] --> B["Developer installs skill: no scanning"]
+    B --> C["Agent loads SKILL.md as trusted context"]
 
     C --> D{"Attack Vector"}
 
-    D --> E["Prompt Injection<br/>(91% of attacks)"]
+    D --> E["Prompt Injection: 91% of attacks"]
     D --> F["Credential Theft"]
-    D --> G["Supply Chain<br/>Payload"]
+    D --> G["Supply Chain Payload"]
     D --> H["Memory Poisoning"]
 
-    E --> I["Override safety<br/>guidelines"]
-    I --> J["Agent executes<br/>arbitrary commands"]
+    E --> I["Override safety guidelines"]
+    I --> J["Agent executes arbitrary commands"]
 
-    F --> K["Read ~/.ssh/id_rsa<br/>Read .env files<br/>Read credentials.json"]
-    K --> L["Base64 encode<br/>+ exfiltrate"]
+    F --> K["Read ~/.ssh/id_rsa, .env files, credentials.json"]
+    K --> L["Base64 encode + exfiltrate"]
 
-    G --> M["Trojanized archive<br/>or typosquatted<br/>npm package"]
-    M --> N["Persistent malware<br/>installed"]
+    G --> M["Trojanized archive or typosquatted npm package"]
+    M --> N["Persistent malware installed"]
 
-    H --> O["Append to CLAUDE.md<br/>or MEMORY.md"]
-    O --> P["Persistent backdoor<br/>across all sessions"]
+    H --> O["Append to CLAUDE.md or MEMORY.md"]
+    O --> P["Persistent backdoor across all sessions"]
 
-    J --> Q["Full shell access<br/>on developer machine"]
+    J --> Q["Full shell access on developer machine"]
     L --> Q
     N --> Q
     P --> Q
@@ -267,24 +267,24 @@ Not all attacks are equal in sophistication. The ToxicSkills data reveals a spec
 ```mermaid
 graph LR
     subgraph Low["Low Sophistication"]
-        L1["Plain-text rm -rf<br/>in SKILL.md body"]
-        L2["Obvious system<br/>tag injection"]
+        L1["Plain-text rm -rf in SKILL.md body"]
+        L2["Obvious system tag injection"]
     end
 
     subgraph Medium["Medium Sophistication"]
-        M1["Base64-encoded<br/>credential exfiltration"]
-        M2["Social engineering<br/>via crypto themes"]
+        M1["Base64-encoded credential exfiltration"]
+        M2["Social engineering via crypto themes"]
     end
 
     subgraph High["High Sophistication"]
-        H1["Password-protected<br/>trojanized archives"]
-        H2["Memory poisoning<br/>via config files"]
-        H3["Multi-stage: inject<br/>then persist"]
+        H1["Password-protected trojanized archives"]
+        H2["Memory poisoning via config files"]
+        H3["Multi-stage: inject then persist"]
     end
 
-    Low -->|"Caught by<br/>Tier 1"| Medium
-    Medium -->|"Caught by<br/>Tier 2"| High
-    High -->|"Requires<br/>Tier 3"| Review["Human Review"]
+    Low -->|"Caught by Tier 1"| Medium
+    Medium -->|"Caught by Tier 2"| High
+    High -->|"Requires Tier 3"| Review["Human Review"]
 
     style Low fill:#27ae60,color:#fff
     style Medium fill:#f39c12,color:#000
@@ -503,8 +503,8 @@ flowchart LR
     subgraph Tier2["Tier 2: Verified"]
         direction TB
         T2A["LLM intent analysis"]
-        T2B["Purpose vs instruction<br/>alignment check"]
-        T2C["Permission<br/>proportionality"]
+        T2B["Purpose vs instruction alignment check"]
+        T2C["Permission proportionality"]
         T2A --> T2R{"Pass?"}
         T2B --> T2R
         T2C --> T2R
@@ -512,9 +512,9 @@ flowchart LR
 
     subgraph Tier3["Tier 3: Certified"]
         direction TB
-        T3A["Human security<br/>reviewer"]
+        T3A["Human security reviewer"]
         T3B["Adversarial testing"]
-        T3C["Author identity<br/>verification"]
+        T3C["Author identity verification"]
         T3A --> T3R{"Pass?"}
         T3B --> T3R
         T3C --> T3R
@@ -525,9 +525,9 @@ flowchart LR
     T2R -->|"~$0.03, 5-15s"| Tier3
     T3R -->|"$50-200, 1-5 days"| Badge["Certified Badge"]
 
-    T1R -->|Fail| Reject1["Rejected<br/>with findings"]
-    T2R -->|Fail| Reject2["Rejected<br/>with analysis"]
-    T3R -->|Fail| Reject3["Rejected<br/>with review notes"]
+    T1R -->|Fail| Reject1["Rejected with findings"]
+    T2R -->|Fail| Reject2["Rejected with analysis"]
+    T3R -->|Fail| Reject3["Rejected with review notes"]
 
     style Tier1 fill:#1a5276,color:#fff
     style Tier2 fill:#1e8449,color:#fff
