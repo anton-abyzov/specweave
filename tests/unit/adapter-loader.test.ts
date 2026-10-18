@@ -41,7 +41,7 @@ describe('AdapterLoader', () => {
       // Even if Cursor would be detected, Claude wins
       vi.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(true);
 
-      const detected = await adapterLoader.detectTool();
+      const detected = await adapterLoader.detectTool({});
 
       expect(detected).toBe('claude');
     });
@@ -61,7 +61,7 @@ describe('AdapterLoader', () => {
         vi.spyOn(adapter, 'detect').mockResolvedValue(adapter.name === 'cursor');
       }
 
-      const detected = await adapterLoader.detectTool();
+      const detected = await adapterLoader.detectTool({});
 
       expect(detected).toBe('cursor');
     });
@@ -81,17 +81,69 @@ describe('AdapterLoader', () => {
         vi.spyOn(adapter, 'detect').mockResolvedValue(false);
       }
 
-      const detected = await adapterLoader.detectTool();
+      const detected = await adapterLoader.detectTool({});
 
       // Claude is still the default/recommended, even without CLI
       expect(detected).toBe('claude');
+    });
+
+    it('honours SPECWEAVE_TOOL over passive indicators such as ~/.codex', async () => {
+      const detectSpy = vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
+        available: true, commandExists: true, pluginCommandsWork: true, platform: 'darwin',
+      });
+      for (const adapter of adapterLoader.getAllAdapters()) {
+        vi.spyOn(adapter, 'detect').mockResolvedValue(adapter.name === 'codex');
+      }
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      expect(await adapterLoader.detectTool({ SPECWEAVE_TOOL: 'claude' })).toBe('claude');
+      expect(await adapterLoader.detectTool({ SPECWEAVE_TOOL: 'Cursor' })).toBe('cursor');
+      // Only the explicit claude choice checks the claude command; no passive scan runs.
+      expect(detectSpy).toHaveBeenCalledTimes(1);
+      for (const adapter of adapterLoader.getAllAdapters()) expect(adapter.detect).not.toHaveBeenCalled();
+      expect(adapterLoader.claudeCliIssue).toBeUndefined();
+    });
+
+    it('warns about a broken claude command even when SPECWEAVE_TOOL=claude', async () => {
+      vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
+        available: false, commandExists: true, pluginCommandsWork: false, error: 'version_check_failed', platform: 'darwin',
+      });
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      expect(await adapterLoader.detectTool({ SPECWEAVE_TOOL: 'claude' })).toBe('claude');
+      expect(adapterLoader.claudeCliIssue).toBe('version_check_failed');
+    });
+
+    it('ignores an unknown SPECWEAVE_TOOL and detects as usual', async () => {
+      vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
+        available: false, commandExists: false, pluginCommandsWork: false, error: 'command_not_found', platform: 'darwin',
+      });
+      for (const adapter of adapterLoader.getAllAdapters()) {
+        vi.spyOn(adapter, 'detect').mockResolvedValue(adapter.name === 'codex');
+      }
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      expect(await adapterLoader.detectTool({ SPECWEAVE_TOOL: 'cli' })).toBe('codex');
+    });
+
+    it('remembers a claude command that failed its check, so init does not claim a clean install', async () => {
+      vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
+        available: false, commandExists: true, pluginCommandsWork: false, error: 'version_check_failed', platform: 'darwin',
+      });
+      for (const adapter of adapterLoader.getAllAdapters()) {
+        vi.spyOn(adapter, 'detect').mockResolvedValue(false);
+      }
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      expect(await adapterLoader.detectTool({})).toBe('claude');
+      expect(adapterLoader.claudeCliIssue).toBe('version_check_failed');
     });
 
     it('should return claude as default and never generic unless explicit', async () => {
       // This test ensures that Claude is always the default
       // Generic is only for explicit --adapter generic flag
 
-      const detected = await adapterLoader.detectTool();
+      const detected = await adapterLoader.detectTool({});
 
       // Should be 'claude' (default) or 'cursor'/'copilot'/etc if detected
       // But NEVER 'generic' from auto-detection

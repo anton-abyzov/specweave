@@ -5,6 +5,7 @@
  * @module cli/commands/verify
  */
 
+import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { resolveIncrement, readLeaseHours, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
 import { runVerify, describeUncheckedAcs } from '../../core/tasks/verify-runner.js';
@@ -20,7 +21,8 @@ export interface VerifyCommandOptions {
 export async function verifyCommand(incrementId?: string, opts: VerifyCommandOptions = {}): Promise<number> {
   const out = (s: string) => process.stdout.write(s + '\n');
   const err = (s: string) => process.stderr.write(s + '\n');
-  const projectRoot = resolveEffectiveRoot(opts.cwd ?? process.cwd());
+  const cwd = opts.cwd ?? process.cwd();
+  const projectRoot = resolveEffectiveRoot(cwd);
 
   let inc;
   try {
@@ -50,7 +52,7 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
     }
     for (const s of report.skipped) out(`  skipped ${s.id}: ${s.reason ?? '(no reason recorded)'}`);
     if (report.ledgerMalformed) out(`  ${report.ledgerMalformed} malformed ledger line(s) skipped`);
-    out(`${report.ok ? 'PASS' : 'FAIL'} → ${result.mdPath}`);
+    out(`${report.ok ? 'PASS' : 'FAIL'} → ${path.relative(cwd, result.mdPath).split(path.sep).join('/')}`);
     if (report.ok) out(`Next: specweave complete ${inc.id}`);
   }
   return result.report.ok ? 0 : 1;

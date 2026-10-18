@@ -96,6 +96,26 @@ describe('completion-validator coverage enforcement', () => {
     expect(result.errors.some((e: string) => e.includes('coverage'))).toBe(false);
   });
 
+  it('no coverage data at all (fresh project, default target 80) is not reported as 0% coverage', async () => {
+    buildFs({
+      '/mock-root/.specweave/increments/0007-test/metadata.json': JSON.stringify({
+        id: '0007-test', status: 'active', testMode: 'TDD', coverageTarget: 80,
+      }),
+      '/mock-root/.specweave/increments/0007-test/spec.md': specOk,
+      '/mock-root/.specweave/increments/0007-test/tasks.md': tasksOk,
+    });
+    mockValidateCoverage.mockResolvedValue({
+      passed: false, skipped: false, target: 80, actual: 0,
+      reason: 'Coverage data not found. Run tests with --coverage flag.',
+      details: null, coverageFile: null, format: null,
+    });
+
+    const result = await IncrementCompletionValidator.validateCompletion('0007-test');
+
+    expect(mockValidateCoverage).toHaveBeenCalled();
+    expect(result.warnings.some((w: string) => /coverage/i.test(w))).toBe(false);
+  });
+
   it('testMode=none skips coverage validation', async () => {
     buildFs({
       '/mock-root/.specweave/increments/0002-test/metadata.json': JSON.stringify({

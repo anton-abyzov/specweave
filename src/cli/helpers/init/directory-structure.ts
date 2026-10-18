@@ -186,7 +186,7 @@ export async function copyTemplates(
     if (result.action === 'created') {
       const techCount = detection.detected.length;
       if (techCount > 0) {
-        console.log(chalk.green(`   ✓ .gitignore created (${techCount} tech patterns detected)`));
+        console.log(chalk.green(`   ✓ .gitignore created (${techCount} tech pattern${techCount === 1 ? '' : 's'} detected)`));
       } else {
         console.log(chalk.green('   ✓ .gitignore created'));
       }

@@ -113,6 +113,18 @@ describe('brief', () => {
     expect(resolveBase(root, 'no-such-ref')).toBeNull();
   });
 
+  it('keeps the leading space of the first diff stat row, like the rows after it', () => {
+    write('src/other.ts', 'export const other = 1;\n');
+    write(`.specweave/increments/${ID}/spec.md`, fs.readFileSync(path.join(incDir, 'spec.md'), 'utf-8').replace('Files: src/total.ts', 'Files: src/total.ts, src/other.ts'));
+    git('add', '-A');
+    git('commit', '-qm', '0001: other');
+    const brief = buildBrief({ projectRoot: root, repoRoot: root, incrementId: ID, incrementDir: incDir, base: resolveBase(root)! });
+    const rows = brief.stat.split('\n');
+    expect(rows[0]).toMatch(/^ src\/other\.ts +\| /);
+    expect(rows[1]).toMatch(/^ src\/total\.ts +\| /);
+    expect(brief.stat).toBe(brief.stat.trimEnd());
+  });
+
   it('--brief prints the brief and runs nothing', async () => {
     expect(await reviewCommand(ID, { cwd: root, brief: true })).toBe(0);
     expect(out.join('')).toContain('# Adversarial review: 0001-demo 0001 Demo total');
@@ -162,9 +174,10 @@ describe('specweave review', () => {
     const report = fs.readFileSync(path.join(incDir, 'reports', 'review-fake.md'), 'utf-8');
     expect(report).toMatch(/^<!-- specweave review: reviewer=fake family=openai author=claude /);
     expect(report).toContain('saw-brief');
-    expect(fs.readdirSync(path.join(incDir, 'reports'))).toEqual(['review-fake.md']);
+    expect(fs.readdirSync(path.join(incDir, 'reports')).sort()).toEqual(['review-fake.md', 'reviews']);
+    expect(fs.readFileSync(path.join(incDir, 'reports', 'reviews', 'review-fake-1.md'), 'utf-8')).toBe(report);
     const note = ledgerLines().at(-1);
-    expect(note).toMatchObject({ t: '*', e: 'note', note: 'review by fake (openai): ship · reports/review-fake.md' });
+    expect(note).toMatchObject({ t: '*', e: 'note', note: 'review by fake (openai): ship · reports/reviews/review-fake-1.md' });
   });
 
   it('exit 3 on fix first and when the answer has no verdict; the close gate notes fix first', async () => {
@@ -175,6 +188,29 @@ describe('specweave review', () => {
     configure({ reviewer: 'fake', reviewers: { fake: { command: fakeReviewer('Looks fine to me.'), family: 'openai' } } });
     expect(await reviewCommand(ID, { cwd: root })).toBe(3);
     expect(ledgerLines().at(-1).note).toContain('no verdict');
+  });
+
+  it('keeps every run\'s report: the ledger note names the file of that run, review-<reviewer>.md is the latest', async () => {
+    configure({ reviewer: 'fake', reviewers: { fake: { command: fakeReviewer('# Review\nVerdict: fix first'), family: 'openai' } } });
+    expect(await reviewCommand(ID, { cwd: root })).toBe(3);
+    configure({ reviewer: 'fake', reviewers: { fake: { command: fakeReviewer('# Review\nVerdict: ship'), family: 'openai' } } });
+    expect(await reviewCommand(ID, { cwd: root })).toBe(0);
+    const notes = ledgerLines().filter((l) => l.e === 'note').map((l) => l.note as string);
+    expect(notes).toEqual([
+      'review by fake (openai): fix first · reports/reviews/review-fake-1.md',
+      'review by fake (openai): ship · reports/reviews/review-fake-2.md',
+    ]);
+    expect(fs.readFileSync(path.join(incDir, 'reports', 'reviews', 'review-fake-1.md'), 'utf-8')).toContain('Verdict: fix first');
+    expect(fs.readFileSync(path.join(incDir, 'reports', 'reviews', 'review-fake-2.md'), 'utf-8')).toContain('Verdict: ship');
+    expect(fs.readFileSync(path.join(incDir, 'reports', 'review-fake.md'), 'utf-8')).toContain('Verdict: ship');
+    expect(checkClosureGate(incDir, ID).notices.join('\n')).not.toContain('fix first');
+  });
+
+  it('prints the report path relative to where it was run', async () => {
+    configure({ reviewer: 'fake', reviewers: { fake: { command: fakeReviewer('Verdict: ship'), family: 'openai' } } });
+    expect(await reviewCommand(ID, { cwd: root })).toBe(0);
+    const verdictLine = out.join('').split('\n').find((l) => l.startsWith('Verdict:'));
+    expect(verdictLine).toBe(`Verdict: ship → .specweave/increments/${ID}/reports/review-fake.md`);
   });
 
   it('warns when the reviewer is the author\'s own family', async () => {

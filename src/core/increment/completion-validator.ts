@@ -246,6 +246,12 @@ export class IncrementCompletionValidator {
 
           if (coverageResult.skipped) {
             logger.info(`Coverage validation skipped: ${coverageResult.reason}`);
+          } else if (!coverageResult.coverageFile && !coverageResult.details) {
+            // No coverage data at all is missing evidence, not 0% coverage:
+            // create-increment writes coverageTarget 80 into every new
+            // increment, so a project without coverage tooling would warn
+            // "0.0% < 80%" on every close.
+            logger.info(`Coverage validation skipped: ${coverageResult.reason}`);
           } else if (!coverageResult.passed) {
             // 2.0: coverage is evidence, not a gate — reports/verify.json is the
             // only hard closure gate. Surface the shortfall as a warning.
