@@ -12,7 +12,7 @@
  * Part of increment 0298: Hook Lifecycle Wiring
  */
 
-import { appendFileSync, mkdirSync } from 'fs';
+import { appendFileSync, mkdirSync, readFileSync } from 'fs';
 import path from 'path';
 import { ConfigManager } from '../config/config-manager.js';
 import type { HookConfiguration, SpecWeaveConfig } from '../config/types.js';
@@ -187,8 +187,20 @@ export class LifecycleHookDispatcher {
         }
       }
 
-      const shouldSyncLivingDocs = livingDocs === 'onDone' && autoSync && !perIncrementSkip;
+      let shouldSyncLivingDocs = livingDocs === 'onDone' && autoSync && !perIncrementSkip;
       if (!doneConfig && !shouldSyncLivingDocs) return result;
+      // 0933: a 3.0 spec has acceptance criteria but no user stories, so a
+      // living-docs sync only produces "User Stories: 0". Skip it with one
+      // line; the external closure below runs either way.
+      if (shouldSyncLivingDocs && LifecycleHookDispatcher.specHasUserStories(projectRoot, incrementId) === false) {
+        shouldSyncLivingDocs = false;
+        result.syncSuccess.push('Living docs skipped: spec.md has no user stories');
+        try {
+          process.stdout.write(`Living docs skipped for ${incrementId}: spec.md has no user stories\n`);
+        } catch {
+          // stdout replaced (tests) — the syncSuccess entry still records it
+        }
+      }
       // v1.0.357 + 0696: Support closing issues for ALL providers (JIRA/ADO/GitHub).
       // close_github_issue is the legacy flag; close_external_issue is the new generic one.
       // SyncCoordinator.syncIncrementClosure() closes every enabled provider using a
@@ -249,7 +261,11 @@ export class LifecycleHookDispatcher {
         }
       }
 
-      // STEP 2: Run closure sync for JIRA/ADO (GitHub already handled by Step 1 via LivingDocsSync).
+      // STEP 2: Run closure sync for JIRA/ADO. It runs whether living docs
+      // synced, were skipped or failed: living docs never gate the closure.
+      // GitHub issues are closed from metadata.json by completeIncrement()
+      // (GitHubReconciler.closeCompletedIncrementIssues) right after this hook,
+      // so they close without living docs too.
       // 0696 hotfix: forward per-provider errors from SyncCoordinator into result.syncErrors
       // AND persist them to .specweave/logs/hooks.log via logError.
       const syncClosure = async () => {
@@ -344,6 +360,21 @@ export class LifecycleHookDispatcher {
   /**
    * Check if dispatch should be skipped (test environment guard)
    */
+  /**
+   * Whether the increment's spec.md declares user stories (`## User Stories`
+   * or a `US-NNN` heading). `undefined` when spec.md cannot be read, so a
+   * missing file never changes the sync decision.
+   */
+  static specHasUserStories(projectRoot: string, incrementId: string): boolean | undefined {
+    let spec: string;
+    try {
+      spec = readFileSync(path.join(projectRoot, '.specweave', 'increments', incrementId, 'spec.md'), 'utf-8');
+    } catch {
+      return undefined;
+    }
+    return /^##\s+User Stories\b/im.test(spec) || /^#{2,4}\s+\**US-\d+/m.test(spec);
+  }
+
   private static shouldSkip(options: DispatchOptions): boolean {
     // Allow tests to bypass the guard to test the dispatcher itself
     if (options._bypassTestGuard === true) return false;

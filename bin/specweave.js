@@ -183,6 +183,7 @@ program
   .description("Run the project's test/lint/build commands and write reports/verify.{md,json}")
   .option('--cmd <command>', 'Command to run (repeatable; overrides config/auto-detection)', (val, acc) => { (acc || []).push(val); return acc || [val]; }, [])
   .option('--json', 'Print the verify report as JSON')
+  .option('--reason <text>', 'Pass with no test commands configured; the reason is recorded in verify.json')
   .action(async (incrementId, options) => {
     const { verifyCommand } = await import('../dist/src/cli/commands/verify.js');
     process.exitCode = await verifyCommand(incrementId, options);
