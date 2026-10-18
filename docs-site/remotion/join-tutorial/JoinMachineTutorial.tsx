@@ -8,11 +8,12 @@ import {Backdrop, Chip, Copy, Eyebrow, Highlight, Pop, Reveal, ScaleCtx, SourceN
 
 // How to join a Mac to a SpecWithCode cluster. Product scenes are real screenshots
 // (1440x900 CSS px at 2x) captured headless from a private test server built from
-// specwithcode main; the invitation line is masked. Anything drawn is labelled.
+// specwithcode main (the 1.0.44 flow; released 1.0.43 lacks it); the invitation line
+// and the host's machine name are masked. Anything drawn is labelled.
 const SRC_W = 1440;
 const SRC_H = 900;
 const WIN = {left: 712, top: 176, w: 1088, h: 680};
-const SHOT = 'Screenshot · SpecWithCode 1.0.43, captured 18 Oct 2026';
+const SHOT = 'Screenshot · SpecWithCode 1.0.44 (pre-release build from main), captured 18 Oct 2026';
 
 const ease = Easing.bezier(0.65, 0, 0.35, 1);
 type Rect = [x: number, y: number, w: number];
@@ -42,7 +43,7 @@ const FULL: Rect = [0, 0, SRC_W];
 
 /** Corner tag that says what the window shows. */
 const Tag: React.FC<{kind: 'screenshot' | 'illustration' | 'terminal'}> = ({kind}) => {
-  const label = {screenshot: 'Real screenshot', illustration: 'Illustration', terminal: 'Terminal graphic'}[kind];
+  const label = {screenshot: 'Real screenshot', illustration: 'Illustration', terminal: 'Terminal graphic · for 1.0.43'}[kind];
   return <div style={{position: 'absolute', left: WIN.left + WIN.w - 18, top: WIN.top - 22, transform: 'translateX(-100%)'}}>
     <Pop at={18}><Chip tone={kind === 'screenshot' ? 'olive' : 'rust'} size={17}>{label}</Chip></Pop>
   </div>;
@@ -223,7 +224,7 @@ const Masked: React.FC<{at: number; w: number}> = ({at, w}) => {
 };
 
 const Cli: React.FC = () =>
-  <Split kind="terminal" note="Styled terminal graphic of specwithcode 1.0.43 output, abridged. Address and line are placeholders." copy={<Copy width={540} eyebrow="Or from a terminal" line1="One command" line2="on the new Mac." body="With the app running, the CLI prints the same line, plus the command to paste on your main machine." />}>
+  <Split kind="terminal" note="For 1.0.43: styled terminal graphic of the specwithcode 1.0.43 CLI output, abridged. Address and line are placeholders." copy={<Copy width={540} eyebrow="On 1.0.43 · from a terminal" line1="One command" line2="on the new Mac." body="Released 1.0.43 has no in-app Join yet. With the app running, the CLI prints the line, plus the command for your main machine." />}>
     <div style={{position: 'absolute', left: WIN.left, top: 250}}>
       <Window w={WIN.w} h={520} title="MacBook Air · zsh" delay={4} dark>
         <div style={{padding: '30px 36px'}}>
