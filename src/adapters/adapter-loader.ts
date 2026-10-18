@@ -84,6 +84,12 @@ export class AdapterLoader {
   }
 
   /**
+   * Set by detectTool() when a `claude` command exists but failed its check,
+   * so init does not report a clean Claude Code install.
+   */
+  claudeCliIssue?: string;
+
+  /**
    * Load registry.yaml
    */
   async loadRegistry(): Promise<AdapterRegistry> {
@@ -133,8 +139,18 @@ export class AdapterLoader {
    *
    * @returns Promise<string> Detected tool name (not adapter - Claude has no adapter!)
    */
-  async detectTool(): Promise<string> {
+  async detectTool(env: NodeJS.ProcessEnv = process.env): Promise<string> {
     console.log('🔍 Detecting AI coding tool...\n');
+    this.claudeCliIssue = undefined;
+
+    // SPECWEAVE_TOOL names the tool outright (the ledger reads it too), so a
+    // passive indicator such as an old ~/.codex folder must not override it.
+    const explicit = env.SPECWEAVE_TOOL?.trim().toLowerCase();
+    if (explicit && (explicit === 'claude' || this.adapters.has(explicit))) {
+      console.log(`✅ Using ${explicit} (SPECWEAVE_TOOL)`);
+      console.log('');
+      return explicit;
+    }
 
     // ✅ CLAUDE FIRST! SpecWeave is built for Claude Code.
     // Claude CLI being available = user wants Claude (active indicator)
@@ -165,6 +181,7 @@ export class AdapterLoader {
     // No tool detected at all
     if (claudeStatus.commandExists) {
       // Claude command exists but plugin commands don't work
+      this.claudeCliIssue = claudeStatus.error ?? 'not functional';
       console.log(`⚠️  Claude command found but not fully functional`);
       console.log(`   Issue: ${claudeStatus.error}`);
       console.log(`   Will still use Claude (may need manual plugin install)`);
