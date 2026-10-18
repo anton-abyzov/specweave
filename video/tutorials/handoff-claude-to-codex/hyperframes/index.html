@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Hand off from Claude Code to Codex at a usage limit</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 400 900; src: url(assets/fonts/schibsted-grotesk-latin.woff2) format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; src: url(assets/fonts/jetbrains-mono-latin.woff2) format("woff2"); }
+      :root {
+        --canvas: #f8f7f9; --panel: #ffffff; --sunken: #efedf2; --ink: #241523; --muted: #675d69; --line: #dedae5;
+        --iris: #6d4fb5; --iris-strong: #4a3678; --iris-tint: #ece6f8; --pass: #1d7348; --fail: #b4232c;
+        --sans: "Schibsted Grotesk", sans-serif; --mono: "JetBrains Mono", monospace;
+        --shadow-window: 0 1px 2px rgba(36, 21, 35, 0.06), 0 12px 32px rgba(36, 21, 35, 0.08);
+      }
+      body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--sans); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--canvas); }
+      .clip { position: absolute; }
+      .card, .stage { inset: 0; background: var(--canvas); }
+      .card-inner { position: absolute; inset: 120px 160px 230px; }
+      .wordmark { font: 700 34px/1 var(--sans); color: var(--ink); letter-spacing: -0.01em; }
+      .title { margin: 170px 0 0; max-width: 1400px; font: 600 92px/1.04 var(--sans); letter-spacing: -0.025em; color: var(--ink); text-wrap: balance; }
+      .thread { height: 4px; width: 0; background: var(--iris); margin-top: 44px; border-radius: 2px; }
+      .subtitle { margin: 40px 0 0; font: 400 36px/1.35 var(--sans); color: var(--muted); }
+      .footer { position: absolute; left: 0; bottom: 0; font: 500 26px/1.2 var(--sans); color: var(--muted); }
+      .outro-l1 { margin-top: 190px; font: 600 72px/1.1 var(--sans); letter-spacing: -0.02em; color: var(--ink); }
+      .outro-l1 code { font: 500 0.86em var(--mono); color: var(--ink); white-space: nowrap; }
+      .outro-l2 { margin: 44px 0 0; max-width: 1300px; font: 400 32px/1.45 var(--sans); color: var(--muted); }
+      .tool-label { position: absolute; right: 140px; top: 60px; font: 600 28px/1.2 var(--sans); color: var(--ink); }
+      .tool-label code { font: 400 22px var(--mono); color: var(--muted); background: var(--sunken); border-radius: 4px; padding: 3px 8px; margin-left: 14px; vertical-align: 2px; }
+      .tool-label .dot { display: inline-block; width: 12px; height: 12px; border-radius: 6px; background: var(--iris); margin-right: 12px; vertical-align: 3px; }
+      .window { position: absolute; left: 140px; right: 140px; top: 136px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-window); padding: 18px; }
+      .viewport { background: var(--sunken); border-radius: 8px; padding: 22px 30px; }
+      .clipbox { height: 42px; overflow: hidden; margin: 0 -14px; padding: 0 14px; }
+      .rows { will-change: transform; }
+      .row { font: 400 28px/42px var(--mono); height: 42px; white-space: pre; color: var(--ink); border-radius: 4px; margin: 0 -10px; padding: 0 10px; opacity: 0; background-color: rgba(109,79,181,0); box-shadow: inset 4px 0 0 0 rgba(109,79,181,0); }
+      .row.cmd { font-weight: 500; }
+      .prompt { color: var(--muted); font-weight: 400; }
+      .chip { left: 140px; top: 48px; z-index: 10; }
+      .chip-inner { display: inline-block; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 20px; font: 600 30px/1.25 var(--sans); color: var(--ink); white-space: nowrap; }
+      .chip-inner code { font: 500 0.86em var(--mono); color: var(--iris-strong); }
+      .diffpanel { left: 0; right: 0; top: 300px; z-index: 12; text-align: center; }
+      .diff-inner { display: inline-block; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 2px 6px rgba(36,21,35,0.08), 0 24px 60px rgba(36,21,35,0.16); padding: 24px 32px; }
+      .diff-head { font: 600 30px/1.3 var(--sans); color: var(--ink); margin-bottom: 16px; }
+      .diff-head code { font: 500 0.86em var(--mono); }
+      .diff-body { background: var(--sunken); border-radius: 8px; padding: 16px 24px; }
+      .dl { font: 400 30px/45px var(--mono); white-space: pre; color: var(--ink); }
+      .dl.add { color: var(--pass); } .dl.del { color: var(--fail); }
+      .caption { left: 0; right: 0; bottom: 56px; z-index: 20; text-align: center; }
+      .caption .pill { display: inline-block; white-space: nowrap; background: rgba(255, 255, 255, 0.96); border: 1px solid var(--line); color: var(--ink);
+        padding: 12px 26px; border-radius: 8px; font: 600 40px/1.3 var(--sans); }
+      .caption code { font: 500 0.86em var(--mono); background: var(--sunken); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="78.18">
+
+      <section id="scr-claude-1" class="clip stage" data-start="5.4" data-duration="23.98" data-track-index="1">
+        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-1" data-layout-allow-overflow><div class="rows" id="rows-claude-1" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row cmd" id="r1"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row out" id="r2">greet-app · Claude Opus 5.5 · 5-hour 95% · weekly 41% · handoff available</div>
+          <div class="row cmd" id="r3"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row out" id="r4">Auto-handoff: usage is at 95% of the 5-hour limit, which resets in 2 h 10 min. Work</div>
+          <div class="row out" id="r5">continues; say &quot;hand off&quot; to move it to another tool or account.</div>
+          <div class="row cmd" id="r6"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row out" id="r7">Handed off 0001-personal-greeting (released T-02).</div>
+          <div class="row out" id="r8">To continue in another tool on this machine, say &quot;pick up&quot; there (or run `specweave</div>
+          <div class="row out" id="r9">pickup`).</div>
+          <div class="row out" id="r10">Nothing was pushed, so another machine or a cloud session will not see it; run `specweave</div>
+          <div class="row out" id="r11">handoff --inline` for a prompt you can paste instead.</div>
+          <div class="row out" id="r12">Details: .specweave/increments/0001-personal-greeting/handoff.md</div>
+        </div></div></div></div>
+      </section>
+
+      <section id="scr-claude-2" class="clip stage" data-start="29.38" data-duration="11.15" data-track-index="1">
+        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-2" data-layout-allow-overflow><div class="rows" id="rows-claude-2" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row cmd" id="r13"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row out" id="r14"># Handoff — 0001-personal-greeting Personal greeting</div>
+          <div class="row out" id="r15">agent: claude@demo · 2026-10-18T07:58:43.139Z · branch main @ 7bf842e · tree: 1</div>
+          <div class="row out" id="r16">uncommitted · redactions: 0</div>
+          <div class="row out" id="r17">active claims: none · released: T-02</div>
+          <div class="row elide" id="r18">…</div>
+          <div class="row out" id="r19">## Where I left off</div>
+          <div class="row out" id="r20">Why: usage at 95% of the 5-hour limit</div>
+          <div class="row out" id="r21">Increment 0001-personal-greeting (active) · tasks 1/2 done · ACs 1/2</div>
+          <div class="row elide" id="r22">…</div>
+          <div class="row out" id="r23">## Done / Pending</div>
+          <div class="row out" id="r24">| Task | State | By | Evidence / note |</div>
+          <div class="row out" id="r25">|---|---|---|---|</div>
+          <div class="row out" id="r26">| T-01 Greet by name | done | claude@demo | npm test → exit 0 · log: .specweave/</div>
+          <div class="row out" id="r27">increments/0001-personal |</div>
+          <div class="row out" id="r28">| T-02 Fall back on a blank name | open |  | handoff |</div>
+          <div class="row out" id="r29">1/2 done · 0 skipped · 0 claimed · 0 blocked · 0 stale · 1 open</div>
+          <div class="row elide" id="r30">…</div>
+          <div class="row out" id="r31">## Files touched</div>
+          <div class="row out" id="r32">UNCOMMITTED — commit or stash before anything destructive.</div>
+          <div class="row elide" id="r33">…</div>
+          <div class="row out" id="r34">M test/greeting.test.js</div>
+          <div class="row elide" id="r35">…</div>
+          <div class="row out" id="r36">Full diff: `.specweave/increments/0001-personal-greeting/handoff.diff`</div>
+          <div class="row elide" id="r37">…</div>
+          <div class="row out" id="r38">## Next steps</div>
+          <div class="row out" id="r39">`specweave task claim T-02 0001-personal-greeting` — Fall back on a blank name</div>
+          <div class="row elide" id="r40">…</div>
+        </div></div></div></div>
+      </section>
+
+      <section id="scr-codex" class="clip stage" data-start="40.53" data-duration="31.38" data-track-index="1">
+        <div class="tool-label"><span class="dot"></span>Terminal as Codex<code>SPECWEAVE_TOOL=codex</code></div>
+        <div class="window"><div class="viewport"><div class="clipbox" id="clip-codex" data-layout-allow-overflow><div class="rows" id="rows-codex" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row cmd" id="r41"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row out" id="r42">Picking up handoff: 0001 Personal greeting · claude@demo · 1m ago · usage at 95% of the</div>
+          <div class="row out" id="r43">5-hour limit</div>
+          <div class="row out" id="r44">SpecWeave pickup · you are codex@demo</div>
+          <div class="row out" id="r45">Increment 0001-personal-greeting &quot;Personal greeting&quot; (active) · tasks 1/2 done · ACs 1/2</div>
+          <div class="row out" id="r46">met</div>
+          <div class="row out" id="r47">Next: T-02 Fall back on a blank name</div>
+          <div class="row out" id="r48">  AC-02: a blank or whitespace-only name falls back to &quot;Hello, world!&quot;</div>
+          <div class="row out" id="r49">  Files: src/greeting.js, test/greeting.test.js | Test: npm test</div>
+          <div class="row out" id="r50">  claim: specweave task claim T-02 0001-personal-greeting</div>
+          <div class="row out" id="r51">Spec: .specweave/increments/0001-personal-greeting/spec.md</div>
+          <div class="row elide" id="r52">…</div>
+          <div class="row cmd" id="r53"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row cmd" id="r54"><span class="cmd"></span></div>
+          <div class="row out" id="r55">{&quot;e&quot;:&quot;pickup&quot;,&quot;by&quot;:&quot;codex@demo&quot;,&quot;note&quot;:&quot;from claude@demo&quot;}</div>
+          <div class="row cmd" id="r56"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row out" id="r57">Claimed T-02 as codex@demo</div>
+          <div class="row out" id="r58">T-02 Fall back on a blank name</div>
+          <div class="row out" id="r59">  AC-02: a blank or whitespace-only name falls back to &quot;Hello, world!&quot;</div>
+          <div class="row out" id="r60">  Files: src/greeting.js, test/greeting.test.js | Test: npm test</div>
+          <div class="row out" id="r61">  state: claimed by codex@demo since 2026-10-18T07:59:58.393Z</div>
+          <div class="row out" id="r62">  when done: specweave task done T-02 0001-personal-greeting --run &quot;npm test&quot;</div>
+          <div class="row cmd" id="r63"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row out" id="r64">Done T-02 (2/2) — evidence: npm test → exit 0</div>
+          <div class="row out" id="r65">All tasks done. Next: specweave verify 0001-personal-greeting</div>
+          <div class="row cmd" id="r66"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
+          <div class="row cmd" id="r67"><span class="cmd"></span></div>
+          <div class="row out" id="r68">{&quot;t&quot;:&quot;T-02&quot;,&quot;e&quot;:&quot;done&quot;,&quot;by&quot;:&quot;codex@demo&quot;}</div>
+        </div></div></div></div>
+      </section>
+      <audio id="vo-01-intro" src="assets/media/01-intro.wav" data-start="1.1" data-duration="4" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-02-limit" src="assets/media/02-limit.wav" data-start="5.45" data-duration="13.68" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-02-limit" class="clip chip" data-start="5.4" data-duration="13.83" data-track-index="2"><span class="chip-inner" id="chipi-02-limit">Claude Code at 95% of the 5-hour limit</span></div>
+      <audio id="vo-03-handoff" src="assets/media/03-handoff.wav" data-start="19.28" data-duration="10" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-03-handoff" class="clip chip" data-start="19.23" data-duration="10.15" data-track-index="2"><span class="chip-inner" id="chipi-03-handoff">Hand off: <code>specweave handoff --reason</code></span></div>
+      <audio id="vo-04-doc" src="assets/media/04-doc.wav" data-start="29.43" data-duration="10.8" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-04-doc" class="clip chip" data-start="29.38" data-duration="11.15" data-track-index="2"><span class="chip-inner" id="chipi-04-doc">Read <code>handoff.md</code></span></div>
+      <audio id="vo-05-pickup" src="assets/media/05-pickup.wav" data-start="40.58" data-duration="10.96" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-05-pickup" class="clip chip" data-start="40.53" data-duration="11.11" data-track-index="2"><span class="chip-inner" id="chipi-05-pickup">As Codex: <code>specweave pickup</code></span></div>
+      <audio id="vo-06-next" src="assets/media/06-next.wav" data-start="51.69" data-duration="8.4" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-06-next" class="clip chip" data-start="51.64" data-duration="8.55" data-track-index="2"><span class="chip-inner" id="chipi-06-next">Next task: <code>T-02</code> with <code>AC-02</code></span></div>
+      <audio id="vo-07-done" src="assets/media/07-done.wav" data-start="60.44" data-duration="11.12" data-track-index="6" data-volume="1"></audio>
+      <div id="chip-07-done" class="clip chip" data-start="60.19" data-duration="11.72" data-track-index="2"><span class="chip-inner" id="chipi-07-done">Prove it: <code>task done --run &quot;npm test&quot;</code></span></div>
+      <div id="diff-07-done" class="clip diffpanel" data-layout-allow-overlap data-start="60.19" data-duration="2.12" data-track-index="3"><div class="diff-inner" id="diffi-07-done" data-layout-allow-overlap><div class="diff-head">The change for <code>T-02</code> in <code>src/greeting.js</code></div><div class="diff-body"><div class="dl ">@@ -1,3 +1,3 @@</div><div class="dl "> export function greet(name) {</div><div class="dl del">-  return `Hello, ${name ?? &quot;world&quot;}!`;</div><div class="dl add">+  return `Hello, ${name?.trim() || &quot;world&quot;}!`;</div><div class="dl "> }</div></div></div></div>
+      <audio id="vo-08-outro" src="assets/media/08-outro.wav" data-start="71.96" data-duration="4.72" data-track-index="6" data-volume="1"></audio>
+
+      <section id="intro" class="clip card" data-start="0" data-duration="5.4" data-track-index="1">
+        <div class="card-inner">
+          <div class="wordmark rise">SpecWeave</div>
+          <h1 class="title rise">Hand off from Claude Code to Codex at a usage limit</h1>
+          <div class="thread" id="intro-thread"></div>
+          <p class="subtitle rise">A real run of the SpecWeave 3.1.0 CLI in a sample repo.</p>
+          <div class="footer rise">spec-weave.com/tutorials</div>
+        </div>
+      </section>
+
+      <section id="outro" class="clip card" data-start="71.91" data-duration="6.27" data-track-index="1">
+        <div class="card-inner">
+          <div class="wordmark rise">SpecWeave</div>
+          <div class="outro-l1 rise">Next: check the increment with <code>specweave verify</code></div>
+          <div class="thread" id="outro-thread"></div>
+          <p class="outro-l2 rise">Agent sessions are not shown. Each command ran in a terminal as that agent, and every output is real. The narration is an AI voice.</p>
+          <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
+        </div>
+      </section>
+      <div id="cap-1" class="clip caption" data-start="1.1" data-duration="4.3" data-track-index="5"><span class="pill">Hand off from Claude Code<br>to Codex at a usage limit.</span></div>
+      <div id="cap-2" class="clip caption" data-start="5.45" data-duration="5.072" data-track-index="5"><span class="pill">With <code>specweave auto-handoff on</code>,<br>Claude Code sends its usage to SpecWeave.</span></div>
+      <div id="cap-3" class="clip caption" data-start="10.522" data-duration="4.985" data-track-index="5"><span class="pill">Here we pass in a sample reading<br>of 95% of the 5-hour limit.</span></div>
+      <div id="cap-4" class="clip caption" data-start="15.507" data-duration="3.723" data-track-index="5"><span class="pill">The guard says a handoff is<br>available, and work continues.</span></div>
+      <div id="cap-5" class="clip caption" data-start="19.28" data-duration="3.19" data-track-index="5"><span class="pill">When you are ready,<br>tell Claude to hand off.</span></div>
+      <div id="cap-6" class="clip caption" data-start="22.47" data-duration="2.44" data-track-index="5"><span class="pill">It runs <code>specweave handoff</code> with a reason,</span></div>
+      <div id="cap-7" class="clip caption" data-start="24.91" data-duration="4.47" data-track-index="5"><span class="pill">releases its claim on <code>T-02</code>,<br>and writes <code>handoff.md</code>.</span></div>
+      <div id="cap-8" class="clip caption" data-start="29.43" data-duration="5.129" data-track-index="5"><span class="pill"><code>handoff.md</code> says who stopped and<br>why, and which tasks are done.</span></div>
+      <div id="cap-9" class="clip caption" data-start="34.559" data-duration="4.046" data-track-index="5"><span class="pill">It lists the uncommitted files,<br>with the full diff beside it,</span></div>
+      <div id="cap-10" class="clip caption" data-start="38.605" data-duration="1.925" data-track-index="5"><span class="pill">and the exact next step.</span></div>
+      <div id="cap-11" class="clip caption" data-start="40.58" data-duration="4.103" data-track-index="5"><span class="pill">Now open Codex in the same<br>repo and say &quot;pick up&quot;.</span></div>
+      <div id="cap-12" class="clip caption" data-start="44.683" data-duration="3.257" data-track-index="5"><span class="pill">It runs <code>specweave pickup</code>,<br>which reads the handoff</span></div>
+      <div id="cap-13" class="clip caption" data-start="47.94" data-duration="3.7" data-track-index="5"><span class="pill">and records the pickup in<br>the ledger as <code>codex@demo</code>.</span></div>
+      <div id="cap-14" class="clip caption" data-start="51.69" data-duration="3.192" data-track-index="5"><span class="pill">Pickup names the next task, <code>T-02</code>,</span></div>
+      <div id="cap-15" class="clip caption" data-start="54.882" data-duration="3.92" data-track-index="5"><span class="pill">with its acceptance criterion,<br>its files and its test.</span></div>
+      <div id="cap-16" class="clip caption" data-start="58.802" data-duration="1.388" data-track-index="5"><span class="pill">Codex claims it.</span></div>
+      <div id="cap-17" class="clip caption" data-start="60.44" data-duration="1.528" data-track-index="5"><span class="pill">With the change in place,</span></div>
+      <div id="cap-18" class="clip caption" data-start="61.968" data-duration="4.009" data-track-index="5"><span class="pill"><code>task done --run</code> runs the test again.</span></div>
+      <div id="cap-19" class="clip caption" data-start="65.977" data-duration="3.143" data-track-index="5"><span class="pill">Only a passing test marks the task done,</span></div>
+      <div id="cap-20" class="clip caption" data-start="69.12" data-duration="2.79" data-track-index="5"><span class="pill">and the ledger shows<br>that Codex finished it.</span></div>
+      <div id="cap-21" class="clip caption" data-start="71.96" data-duration="5.12" data-track-index="5"><span class="pill">Next, <code>specweave verify</code> checks the<br>increment before you close it.</span></div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // Types a command across its wrapped rows; segs are the row texts after the prompt.
+      function typeCmd(ids, segs, start, dur) {
+        const o = { n: 0 };
+        const els = ids.map((id) => document.querySelector("#" + id + " .cmd"));
+        const total = segs.reduce((a, s) => a + s.length, 0);
+        tl.to(o, { n: total, duration: dur, ease: "none", onUpdate: () => {
+          let left = Math.round(o.n);
+          segs.forEach((s, i) => { els[i].textContent = s.slice(0, Math.max(0, left)); left -= s.length; });
+        } }, start);
+      }
+      typeCmd(["r1"], ["specweave statusline < ~/claude-status.json"], 5.7, 0.717);
+      typeCmd(["r3"], ["specweave usage-guard < ~/stop-hook.json | jq -r .systemMessage"], 13.45, 1);
+      typeCmd(["r6"], ["specweave handoff --reason \"usage at 95% of the 5-hour limit\""], 22.64, 1);
+      tl.set("#r1", { opacity: 1 }, 5.4);
+      tl.fromTo("#r2", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 6.667);
+      tl.set("#r3", { opacity: 1 }, 13.45);
+      tl.fromTo("#r4", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 14.7);
+      tl.fromTo("#r5", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 14.7);
+      tl.set("#r6", { opacity: 1 }, 22.64);
+      tl.fromTo("#r7", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 23.89);
+      tl.fromTo("#r8", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 23.93);
+      tl.fromTo("#r9", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 23.93);
+      tl.fromTo("#r10", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 23.97);
+      tl.fromTo("#r11", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 23.97);
+      tl.fromTo("#r12", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 24.01);
+      tl.to("#clip-claude-1", { height: 84, duration: 0.2, ease: "power2.out" }, 6.667);
+      tl.to("#clip-claude-1", { height: 126, duration: 0.2, ease: "power2.out" }, 13.45);
+      tl.to("#clip-claude-1", { height: 210, duration: 0.2, ease: "power2.out" }, 14.7);
+      tl.to("#clip-claude-1", { height: 252, duration: 0.2, ease: "power2.out" }, 22.64);
+      tl.to("#clip-claude-1", { height: 504, duration: 0.2, ease: "power2.out" }, 23.89);
+      tl.to("#r2", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 10.73);
+      tl.to("#r2", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 19.03);
+      tl.to("#r4,#r5", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 15.93);
+      tl.to("#r4,#r5", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 19.03);
+      tl.to("#r7", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 24.96);
+      tl.to("#r7", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 29.18);
+      tl.to("#r12", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 27.44);
+      tl.to("#r12", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 29.18);
+      typeCmd(["r13"], ["cat .specweave/increments/0001-personal-greeting/handoff.md"], 29.48, 0.983);
+      tl.set("#r13", { opacity: 1 }, 29.38);
+      tl.fromTo("#r14", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 30.713);
+      tl.fromTo("#r15", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 30.753);
+      tl.fromTo("#r16", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 30.753);
+      tl.fromTo("#r17", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 30.793);
+      tl.fromTo("#r18", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 30.833);
+      tl.fromTo("#r19", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 30.873);
+      tl.fromTo("#r20", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 30.913);
+      tl.fromTo("#r21", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 30.953);
+      tl.fromTo("#r22", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 30.993);
+      tl.fromTo("#r23", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.033);
+      tl.fromTo("#r24", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.073);
+      tl.fromTo("#r25", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.113);
+      tl.fromTo("#r26", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.153);
+      tl.fromTo("#r27", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.153);
+      tl.fromTo("#r28", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.193);
+      tl.fromTo("#r29", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.233);
+      tl.fromTo("#r30", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 31.273);
+      tl.fromTo("#r31", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.313);
+      tl.fromTo("#r32", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.353);
+      tl.fromTo("#r33", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 31.393);
+      tl.fromTo("#r34", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.433);
+      tl.fromTo("#r35", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 31.473);
+      tl.fromTo("#r36", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.513);
+      tl.fromTo("#r37", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 31.553);
+      tl.fromTo("#r38", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.593);
+      tl.fromTo("#r39", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 31.633);
+      tl.fromTo("#r40", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 31.673);
+      tl.to("#clip-claude-2", { height: 630, duration: 0.2, ease: "power2.out" }, 30.713);
+      tl.to("#rows-claude-2", { y: -294, duration: 0.3, ease: "power2.inOut" }, 33.03);
+      tl.to("#rows-claude-2", { y: -546, duration: 0.3, ease: "power2.inOut" }, 37.51);
+      tl.to("#r15,#r16,#r20", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 31.19);
+      tl.to("#r15,#r16,#r20", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 32.83);
+      tl.to("#r21,#r26,#r27,#r28", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 33.03);
+      tl.to("#r21,#r26,#r27,#r28", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 35.39);
+      tl.to("#r32,#r34", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 35.59);
+      tl.to("#r32,#r34", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 37.31);
+      tl.to("#r36", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 37.51);
+      tl.to("#r36", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 38.59);
+      tl.to("#r39", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 38.79);
+      tl.to("#r39", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 40.33);
+      typeCmd(["r41"], ["specweave pickup"], 43.14, 0.267);
+      typeCmd(["r53","r54"], ["grep '\"e\":\"pickup\"' .specweave/increments/0001-personal-greeting/ledger.jsonl","| jq -c '{e,by,note}'"], 48.26, 1);
+      typeCmd(["r56"], ["specweave task claim T-02"], 58.81, 0.417);
+      typeCmd(["r63"], ["specweave task done T-02 --run \"npm test\""], 62.26, 0.683);
+      typeCmd(["r66","r67"], ["tail -n 1 .specweave/increments/0001-personal-greeting/ledger.jsonl | jq -c","'{t,e,by}'"], 69.12, 1);
+      tl.set("#r41", { opacity: 1 }, 40.53);
+      tl.fromTo("#r42", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 43.657);
+      tl.fromTo("#r43", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 43.657);
+      tl.fromTo("#r44", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 43.697);
+      tl.fromTo("#r45", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 43.737);
+      tl.fromTo("#r46", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 43.737);
+      tl.fromTo("#r47", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 43.777);
+      tl.fromTo("#r48", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 43.817);
+      tl.fromTo("#r49", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 43.857);
+      tl.fromTo("#r50", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 43.897);
+      tl.fromTo("#r51", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 43.937);
+      tl.fromTo("#r52", { opacity: 0 }, { opacity: 0.5, duration: 0.1, ease: "none" }, 43.977);
+      tl.set("#r53", { opacity: 1 }, 48.26);
+      tl.set("#r54", { opacity: 1 }, 48.26);
+      tl.fromTo("#r55", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 49.51);
+      tl.set("#r56", { opacity: 1 }, 58.81);
+      tl.fromTo("#r57", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 59.477);
+      tl.fromTo("#r58", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 59.517);
+      tl.fromTo("#r59", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 59.557);
+      tl.fromTo("#r60", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 59.597);
+      tl.fromTo("#r61", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 59.637);
+      tl.fromTo("#r62", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 59.677);
+      tl.set("#r63", { opacity: 1 }, 62.26);
+      tl.fromTo("#r64", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 63.193);
+      tl.fromTo("#r65", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 63.233);
+      tl.set("#r66", { opacity: 1 }, 69.12);
+      tl.set("#r67", { opacity: 1 }, 69.12);
+      tl.fromTo("#r68", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 70.37);
+      tl.to("#clip-codex", { height: 504, duration: 0.2, ease: "power2.out" }, 43.657);
+      tl.to("#clip-codex", { height: 588, duration: 0.2, ease: "power2.out" }, 48.26);
+      tl.to("#clip-codex", { height: 630, duration: 0.2, ease: "power2.out" }, 49.51);
+      tl.to("#rows-codex", { y: -42, duration: 0.3, ease: "power2.inOut" }, 58.81);
+      tl.to("#rows-codex", { y: -294, duration: 0.3, ease: "power2.inOut" }, 59.477);
+      tl.to("#rows-codex", { y: -336, duration: 0.3, ease: "power2.inOut" }, 62.26);
+      tl.to("#rows-codex", { y: -420, duration: 0.3, ease: "power2.inOut" }, 63.193);
+      tl.to("#rows-codex", { y: -504, duration: 0.3, ease: "power2.inOut" }, 69.12);
+      tl.to("#rows-codex", { y: -546, duration: 0.3, ease: "power2.inOut" }, 70.37);
+      tl.to("#r42,#r43", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 46.98);
+      tl.to("#r42,#r43", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 47.74);
+      tl.to("#r47,#r48,#r49", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 52.09);
+      tl.to("#r47,#r48,#r49", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 58.61);
+      tl.to("#r55", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 50.18);
+      tl.to("#r55", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 51.44);
+      tl.to("#r57", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 59.577);
+      tl.to("#r57", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 62.06);
+      tl.to("#r64", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 66.28);
+      tl.to("#r64", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 71.71);
+      tl.to("#r68", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, 70.47);
+      tl.to("#r68", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, 71.71);
+      tl.fromTo("#chipi-02-limit", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 5.5);
+      tl.fromTo("#chipi-03-handoff", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 19.33);
+      tl.fromTo("#chipi-04-doc", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 29.48);
+      tl.fromTo("#chipi-05-pickup", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 40.63);
+      tl.fromTo("#chipi-06-next", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 51.74);
+      tl.fromTo("#chipi-07-done", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 60.29);
+      tl.fromTo("#diffi-07-done", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 60.19);
+      tl.to("#diffi-07-done", { opacity: 0, duration: 0.2, ease: "none" }, 62.11);
+      tl.fromTo("#intro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, 0);
+      tl.fromTo("#intro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, 0.2);
+      tl.to("#intro .card-inner", { opacity: 0, duration: 0.25, ease: "none" }, 5.15);
+      tl.fromTo("#outro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, 71.91);
+      tl.fromTo("#outro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, 72.21);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

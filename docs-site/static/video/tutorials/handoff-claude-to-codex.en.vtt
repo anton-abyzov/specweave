@@ -1,0 +1,85 @@
+WEBVTT
+
+1
+00:00:01.100 --> 00:00:05.400
+Hand off from Claude Code to Codex at a usage limit.
+
+2
+00:00:05.450 --> 00:00:10.522
+With specweave auto-handoff on, Claude Code sends its usage to SpecWeave.
+
+3
+00:00:10.522 --> 00:00:15.507
+Here we pass in a sample reading of 95% of the 5-hour limit.
+
+4
+00:00:15.507 --> 00:00:19.230
+The guard says a handoff is available, and work continues.
+
+5
+00:00:19.280 --> 00:00:22.470
+When you are ready, tell Claude to hand off.
+
+6
+00:00:22.470 --> 00:00:24.910
+It runs specweave handoff with a reason,
+
+7
+00:00:24.910 --> 00:00:29.380
+releases its claim on T-02, and writes handoff.md.
+
+8
+00:00:29.430 --> 00:00:34.559
+handoff.md says who stopped and why, and which tasks are done.
+
+9
+00:00:34.559 --> 00:00:38.605
+It lists the uncommitted files, with the full diff beside it,
+
+10
+00:00:38.605 --> 00:00:40.530
+and the exact next step.
+
+11
+00:00:40.580 --> 00:00:44.683
+Now open Codex in the same repo and say "pick up".
+
+12
+00:00:44.683 --> 00:00:47.940
+It runs specweave pickup, which reads the handoff
+
+13
+00:00:47.940 --> 00:00:51.640
+and records the pickup in the ledger as codex@demo.
+
+14
+00:00:51.690 --> 00:00:54.882
+Pickup names the next task, T-02,
+
+15
+00:00:54.882 --> 00:00:58.802
+with its acceptance criterion, its files and its test.
+
+16
+00:00:58.802 --> 00:01:00.190
+Codex claims it.
+
+17
+00:01:00.440 --> 00:01:01.968
+With the change in place,
+
+18
+00:01:01.968 --> 00:01:05.977
+task done --run runs the test again.
+
+19
+00:01:05.977 --> 00:01:09.120
+Only a passing test marks the task done,
+
+20
+00:01:09.120 --> 00:01:11.910
+and the ledger shows that Codex finished it.
+
+21
+00:01:11.960 --> 00:01:17.080
+Next, specweave verify checks the increment before you close it.
