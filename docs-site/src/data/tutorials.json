@@ -512,6 +512,168 @@
       ]
     },
     {
+      "slug": "start-specwithcode",
+      "product": "specwithcode",
+      "title": "Start SpecWithCode with a coordinator and two workers",
+      "seoTitle": "Start SpecWithCode: add a project, ask the coordinator, and watch two workers report back",
+      "summary": "A real run of SpecWithCode 1.0.45 on a sample repo: Settings shows the version, the plus next to Projects adopts the greet-app folder, and one request to the coordinator starts two Codex workers in parallel. They appear in the right panel, each finishes its SpecWeave task and ends with a report card saved in the increment, and the plan chip shows both tasks done and both acceptance criteria met.",
+      "outcome": "You end with a project whose coordinator has started two workers and returned a report.",
+      "prerequisites": [
+        "SpecWithCode for Mac",
+        "a signed-in coding agent (Codex in this video)",
+        "a git repository, ideally with a SpecWeave increment planned"
+      ],
+      "testedOn": "SpecWithCode 1.0.45 with SpecWeave 3.1.0, 18 October 2026",
+      "agent": "codex",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/start-specwithcode.mp4",
+        "poster": "/video/tutorials/start-specwithcode.jpg",
+        "captionsVtt": "/video/tutorials/start-specwithcode.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 108.6,
+        "uploadDate": "2026-10-18",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will do"
+          },
+          {
+            "start": 6.96,
+            "title": "SpecWithCode 1.0.45"
+          },
+          {
+            "start": 15.99,
+            "title": "Add a project"
+          },
+          {
+            "start": 31.1,
+            "title": "Ask the coordinator"
+          },
+          {
+            "start": 43.41,
+            "title": "Two workers in the right panel"
+          },
+          {
+            "start": 69.32,
+            "title": "The worker's report card"
+          },
+          {
+            "start": 85.79,
+            "title": "Plan chip and acceptance criteria"
+          },
+          {
+            "start": 102.1,
+            "title": "Next"
+          }
+        ]
+      },
+      "steps": [
+        "Check your version in Settings, General, About.",
+        "Click the plus next to Projects. New project starts one from a name; Local folder adopts a repo you already have. The project opens on its coordinator.",
+        "Choose the project's permissions in the composer (Full access in this video); the choice applies to every chat in the project. Then ask the coordinator for the work: it does none of it itself, it starts worker threads and briefs each one with your words.",
+        "Watch the workers in the right panel, grouped as Waiting on you, Working, Idle and Resolved. They share one checkout, so give each its own files.",
+        "Open a worker. A final message with three headed sections becomes a report card, saved in the increment's reports folder; Open report reads it in full.",
+        "Click the plan chip to see the increment's tasks and acceptance criteria, with Open spec and Open increment. Put the increment number in each worker's title (for example `0001 T-01`): in 1.0.45 a worker's chip finds its increment only by title."
+      ],
+      "transcript": "captions",
+      "note": "Recorded headlessly in one take on a private SpecWithCode 1.0.45 server with a disposable home and a sample repo, 18 October 2026. Codex was the coordinator and both workers, signed in with the author's account through a short-lived token copied into that home; Claude Code is not installed there. Off camera, increment 0001 was planned in advance and the welcome wizard and a Codex update notice were dismissed. The permissions menu does not render in headless capture, so only its label changing to Full access is shown; Full access was chosen for the demo only. Known issues in 1.0.45, framed out of the video or noted on screen: the coordinator's worker cards can name the wrong task or lag behind the right panel, empty assistant headers appear in the coordinator timeline after workers finish, a worker's changed-files card also counts the other worker's edits, and a worker's own SpecWeave claim does not bind its plan chip, so only the title match works. Agent work is sped up where the video says so, and one permission moment is slowed to 0.5x. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/projects",
+      "related": [
+        "projects-and-threads",
+        "memory-and-usage"
+      ]
+    },
+    {
+      "slug": "provider-runs-out",
+      "product": "specwithcode",
+      "title": "Keep working when a provider runs out",
+      "seoTitle": "Keep working when Claude Code hits its usage limit: SpecWithCode continues the thread on Codex",
+      "summary": "A real run of SpecWithCode 1.0.43 on a sample repo. A thread on Claude Code has finished T-01 of the increment. The next request stops on a usage limit, simulated with the app's documented test switch. Under the project's default rule, Switch automatically, SpecWithCode hands the stopped turn to Codex with its context, in the same worktree, and Codex finishes T-02. The SpecWeave ledger then shows who did each task, and Project settings, Usage limits, shows where to choose the rule. The video also shows a known issue in this build: after the switch, the model picker returns to Claude Code.",
+      "outcome": "You end with a thread that continued on another provider under a rule you set for the project.",
+      "prerequisites": [
+        "SpecWithCode for Mac",
+        "two signed-in coding agents (Claude Code and Codex in this video)",
+        "a git repository with a SpecWeave increment planned"
+      ],
+      "testedOn": "SpecWithCode 1.0.43 with SpecWeave 3.1.0, 18 October 2026",
+      "agent": "multi",
+      "agentsShown": [
+        "claude-code",
+        "codex"
+      ],
+      "video": {
+        "src": "/video/tutorials/provider-runs-out.mp4",
+        "poster": "/video/tutorials/provider-runs-out.jpg",
+        "captionsVtt": "/video/tutorials/provider-runs-out.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 99.8,
+        "uploadDate": "2026-10-18",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will see"
+          },
+          {
+            "start": 3.9,
+            "title": "A thread on Claude Code"
+          },
+          {
+            "start": 11.22,
+            "title": "Claude Code hits its usage limit"
+          },
+          {
+            "start": 25.06,
+            "title": "The thread moves to Codex"
+          },
+          {
+            "start": 41.98,
+            "title": "Codex finishes T-02"
+          },
+          {
+            "start": 62.74,
+            "title": "Who did what: the ledger"
+          },
+          {
+            "start": 76.21,
+            "title": "Choose the rule"
+          },
+          {
+            "start": 93.73,
+            "title": "Next: sw-done"
+          }
+        ]
+      },
+      "steps": [
+        "Open the thread in the project's right panel. Here it runs on Claude Code and has finished `T-01` of increment 0001.",
+        "Send the next request. When the provider stops on its usage limit, the thread shows a Usage limit reached banner with the reset time and what the project rule will do, for example Continuing with Codex by project rule.",
+        "Under the default rule, Switch automatically, SpecWithCode hands the stopped turn to Codex with its context, in the same worktree. The thread shows Context handoff and Claude Code limit reached, continued on Codex. The warning row then reads Usage limit resolved — chat continued: that means this chat continued, not that Claude Code's limit has reset.",
+        "Before you send the next message, check the composer's model picker. In SpecWithCode 1.0.43 it returns to Claude Code a few seconds after the switched turn ends, so the next message would go to Claude Code, stop on the limit and hand off again.",
+        "Run `specweave task list` in the repo. The By column shows which agent finished each task, with the test run that proved it, and `git log --oneline` shows both agents' commits.",
+        "Choose the rule in Project settings, Usage limits. When a provider runs out offers Switch automatically, Offer the fallback and Wait for the reset. With Offer the fallback, the thread waits until you click Continue with Codex.",
+        "Use Switch before the limit to move an idle thread early. The default is At 5% left."
+      ],
+      "transcript": "captions",
+      "note": "Recorded headlessly in one take on a private SpecWithCode 1.0.43 server with a disposable home and a sample repo, 18 October 2026. A real usage limit cannot be forced, so the limit is simulated with the app's documented test switch, STUDIO_SIMULATE_USAGE_LIMIT=claudeAgent, which makes every Claude Code turn stop with a limit that resets in one hour. T-01 was a real Claude Code turn, started off camera through the coordinator before the switch was turned on. T-02 was a real Codex turn, and the handoff, banner and ledger are the app's own. Both agents were signed in with the author's accounts through short-lived tokens copied into that home. Full access was chosen for the demo only. Nothing in Codex's turn is sped up; two still screens (the limit banner and the open plan list) play slower to fit the narration, and nothing moves in them. After the switch the composer's last frame is held for about 2 s, marked Still frame, and the walk to Project settings, Usage limits plays at 3×, marked Sped up 3×. The ledger beat is a captured terminal run of `specweave task list` and `git log --oneline -3`. Its first line, '0001-personal-greeting — agent cli@demo', is left out: cli@demo is the capture shell's own identity, not a third agent. Known issues in 1.0.43, shown in the video: the model picker returns to Claude Code after the automatic switch (the docs say it follows the switch), so the next message bounces back to Claude Code and hands off again; and the row 'Usage limit resolved — chat continued' does not mean Claude Code's limit has reset. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/memory-and-usage",
+      "related": [
+        "handoff-claude-to-codex",
+        "memory-and-usage"
+      ]
+    },
+    {
       "slug": "projects-and-threads",
       "product": "specwithcode",
       "title": "Run a project with a coordinator and workers",
@@ -1332,36 +1494,6 @@
   ],
   "planned": [
     {
-      "slug": "start-specwithcode",
-      "product": "specwithcode",
-      "title": "Start SpecWithCode with a coordinator and two workers",
-      "outcome": "You end with a project whose coordinator has started two workers and returned a report.",
-      "beats": [
-        "Install the current release",
-        "New project or adopt a folder",
-        "Ask the coordinator",
-        "Workers in the right panel",
-        "Report card and plan chips"
-      ],
-      "targetSeconds": 110,
-      "replaces": "how-specwithcode-works"
-    },
-    {
-      "slug": "provider-runs-out",
-      "product": "specwithcode",
-      "title": "Keep working when a provider runs out",
-      "outcome": "You end with a thread that continued on another provider under a rule you set for the project.",
-      "beats": [
-        "A limit is hit",
-        "Continue on another provider",
-        "Per-project rule",
-        "Credits and banked resets",
-        "Usage limits per account",
-        "Undo the failover"
-      ],
-      "targetSeconds": 90
-    },
-    {
       "slug": "find-and-install-a-skill",
       "product": "verified-skill",
       "title": "Find and install a verified skill",
@@ -1479,11 +1611,11 @@
       "summary": "Understand the setup, run a project through its coordinator, then add plans, memory and a second provider.",
       "steps": [
         "how-specwithcode-works",
+        "start-specwithcode",
         "projects-and-threads",
         "plans-and-routines",
         "memory-and-usage",
         "specwithcode-tour",
-        "start-specwithcode",
         "provider-runs-out",
         "add-a-machine",
         "finish-a-thread",

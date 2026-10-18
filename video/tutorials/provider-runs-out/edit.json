@@ -1,0 +1,516 @@
+{
+ "comment": "App tutorial edit, framed-window layout (ported from start-specwithcode). Each app beat is a list of shots; segments are [srcStart, srcEnd, rate] in take.mp4 (data-media-start = src + syncOffset; syncOffset = blackdetect 2.967 minus black-on cue 3.010); [src, src, 'hold', s|'fit'] holds the frame at src as a still; 'fit' sets the beat's last rate so it fills the beat (refused below minRate, default 0.75; below 0.75 shows a 'Slowed to' badge). aspect is crop width/height; cam keyframes are crop rectangles {src, x, y, w} in source seconds and 1920x1080 pixels (h = w / aspect). Every crop ends on a panel edge (the right panel at x 1462, the thread column 708-1468, the composer top at 918, the settings dialog and its Usage limits card) and scales UI text 1.28x-1.71x. Terminal anchors: [beat, cue|null, offset] or [beat, cue, spokenWord, offset].",
+ "title": "Keep working when a provider runs out",
+ "subtitle": "A real run of SpecWithCode 1.0.43 with Claude Code and Codex in a sample repo.",
+ "wordmark": "SpecWithCode",
+ "outro": {
+  "next": "Next: `sw-done` verifies and closes the increment",
+  "note": "The usage limit is simulated with STUDIO_SIMULATE_USAGE_LIMIT. Both agent turns are real and nothing in them is sped up; the ledger is a captured terminal run. The narration is an AI voice."
+ },
+ "take": "assets/media/take.mp4",
+ "syncOffset": -0.043,
+ "voOffset": 0.05,
+ "tailAfterVo": 0.15,
+ "termCols": 96,
+ "termFont": 26,
+ "visibleRows": 14,
+ "posterAt": 1.0,
+ "toolLabels": {
+  "terminal": "Terminal in greet-app"
+ },
+ "screens": {
+  "ledger": {
+   "tool": "terminal",
+   "items": [
+    {
+     "shot": 0,
+     "at": [
+      "06-ledger",
+      0,
+      "spec",
+      0
+     ],
+     "lines": [
+      [
+       1,
+       6
+      ]
+     ],
+     "hl": [
+      {
+       "lines": [
+        3
+       ],
+       "from": [
+        "06-ledger",
+        1,
+        "claude",
+        0
+       ],
+       "to": [
+        "06-ledger",
+        4,
+        null,
+        -0.1
+       ]
+      },
+      {
+       "lines": [
+        4
+       ],
+       "from": [
+        "06-ledger",
+        2,
+        "codex",
+        0
+       ],
+       "to": [
+        "06-ledger",
+        4,
+        null,
+        -0.1
+       ]
+      }
+     ]
+    },
+    {
+     "shot": 1,
+     "at": [
+      "06-ledger",
+      4,
+      -1.0
+     ],
+     "lines": [
+      [
+       0,
+       1
+      ]
+     ],
+     "hl": [
+      {
+       "lines": [
+        0,
+        1
+       ],
+       "from": [
+        "06-ledger",
+        4,
+        "commits",
+        0
+       ],
+       "to": [
+        "07-settings",
+        null,
+        -0.05
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "beats": [
+  {
+   "id": "01-intro",
+   "kind": "card",
+   "chapter": "What you will see",
+   "voOffset": 1.1,
+   "tail": 0.4
+  },
+  {
+   "id": "02-thread",
+   "kind": "app",
+   "chapter": "A thread on Claude Code",
+   "shots": [
+    {
+     "chip": "Right panel → Threads → Personal greeting",
+     "aspect": 1.0857,
+     "segments": [
+      [
+       6.0,
+       7.95,
+       1.0
+      ]
+     ],
+     "cam": [
+      {
+       "src": 6.0,
+       "x": 1462,
+       "y": 0,
+       "w": 456
+      }
+     ]
+    },
+    {
+     "chip": "The thread opens on Claude Opus 5.5",
+     "aspect": 1.0654,
+     "segments": [
+      [
+       7.95,
+       10.3,
+       1.0
+      ]
+     ],
+     "cam": [
+      {
+       "src": 7.95,
+       "x": 1462,
+       "y": 652,
+       "w": 456
+      },
+      {
+       "src": 9.2,
+       "x": 1462,
+       "y": 0,
+       "w": 456,
+       "dur": 0.8
+      }
+     ]
+    },
+    {
+     "chip": "Expand panel",
+     "aspect": 1.9,
+     "segments": [
+      [
+       10.3,
+       13.0,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "src": 10.3,
+       "x": 708,
+       "y": 404,
+       "w": 760
+      },
+      {
+       "src": 11.55,
+       "x": 708,
+       "y": 44,
+       "w": 760
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "03-limit",
+   "kind": "app",
+   "chapter": "Claude Code hits its usage limit",
+   "extra": 0.6,
+   "shots": [
+    {
+     "chip": "Composer → “Now do T-02, then stop.”",
+     "aspect": 1.5833,
+     "segments": [
+      [
+       13.0,
+       18.3,
+       1.0
+      ]
+     ],
+     "cam": [
+      {
+       "src": 13.0,
+       "x": 708,
+       "y": 590,
+       "w": 760
+      }
+     ]
+    },
+    {
+     "chip": "Usage limit reached → the banner",
+     "aspect": 3.0894,
+     "segments": [
+      [
+       18.3,
+       24.8,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "src": 18.3,
+       "x": 708,
+       "y": 672,
+       "w": 760
+      },
+      {
+       "src": 21.2,
+       "x": 712,
+       "y": 670,
+       "w": 752,
+       "dur": 3.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "04-switch",
+   "kind": "app",
+   "chapter": "The thread moves to Codex",
+   "shots": [
+    {
+     "chip": "Switch automatically → Codex takes the turn",
+     "aspect": 2.9457,
+     "segments": [
+      [
+       24.8,
+       33.6,
+       0.957
+      ]
+     ],
+     "cam": [
+      {
+       "src": 24.8,
+       "x": 708,
+       "y": 656,
+       "w": 760
+      }
+     ]
+    },
+    {
+     "chip": "Warning row → Usage limit resolved",
+     "aspect": 2.9457,
+     "segments": [
+      [
+       33.6,
+       41.0,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "src": 33.6,
+       "x": 708,
+       "y": 656,
+       "w": 760
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "05-codex",
+   "kind": "app",
+   "chapter": "Codex finishes T-02",
+   "minRate": 0.5,
+   "shots": [
+    {
+     "chip": "Codex runs `npm test` and commits",
+     "aspect": 2.9457,
+     "segments": [
+      [
+       41.0,
+       46.0,
+       1.0
+      ]
+     ],
+     "cam": [
+      {
+       "src": 41.0,
+       "x": 708,
+       "y": 656,
+       "w": 760
+      }
+     ]
+    },
+    {
+     "chip": "Codex runs `specweave handoff`",
+     "aspect": 2.9457,
+     "segments": [
+      [
+       46.0,
+       48.3,
+       1.0
+      ]
+     ],
+     "cam": [
+      {
+       "src": 46.0,
+       "x": 708,
+       "y": 656,
+       "w": 760
+      }
+     ]
+    },
+    {
+     "chip": "Codex's summary: `T-02` done",
+     "aspect": 2.9457,
+     "segments": [
+      [
+       48.3,
+       53.1,
+       1.0
+      ]
+     ],
+     "cam": [
+      {
+       "src": 48.3,
+       "x": 708,
+       "y": 596,
+       "w": 760
+      }
+     ]
+    },
+    {
+     "chip": "Plan chip → 0001 All done 2/2",
+     "aspect": 2.9457,
+     "segments": [
+      [
+       53.1,
+       54.4,
+       1.0
+      ],
+      [
+       54.4,
+       55.4,
+       0.5
+      ]
+     ],
+     "cam": [
+      {
+       "src": 53.1,
+       "x": 708,
+       "y": 44,
+       "w": 760
+      }
+     ]
+    },
+    {
+     "chip": "Composer → model picker",
+     "aspect": 3.4545,
+     "segments": [
+      [
+       55.4,
+       55.7,
+       0.5
+      ],
+      [
+       55.7,
+       56.6,
+       0.75
+      ],
+      [
+       56.6,
+       57.9,
+       1.0
+      ],
+      [
+       57.9,
+       57.9,
+       "hold",
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "src": 55.4,
+       "x": 708,
+       "y": 852,
+       "w": 760
+      }
+     ],
+     "note": {
+      "text": "after the switch, the picker returns to Claude Code.",
+      "from": 55.9
+     }
+    }
+   ]
+  },
+  {
+   "id": "06-ledger",
+   "kind": "term",
+   "screen": "ledger",
+   "chapter": "Who did what: the ledger",
+   "stepChip": "Check the ledger: `specweave task list`",
+   "tail": 0.3,
+   "extra": 0.4
+  },
+  {
+   "id": "07-settings",
+   "kind": "app",
+   "chapter": "Choose the rule",
+   "tail": 0.35,
+   "extra": 0.4,
+   "shots": [
+    {
+     "chip": "Project settings",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       62.25,
+       64.3,
+       0.88
+      ]
+     ],
+     "cam": [
+      {
+       "src": 62.25,
+       "x": 460,
+       "y": 140,
+       "w": 1000
+      }
+     ]
+    },
+    {
+     "chip": "Usage limits → When a provider runs out",
+     "aspect": 1.8702,
+     "segments": [
+      [
+       64.3,
+       68.9,
+       3.0
+      ],
+      [
+       68.9,
+       71.7,
+       0.75
+      ],
+      [
+       71.7,
+       76.0,
+       0.8
+      ]
+     ],
+     "cam": [
+      {
+       "src": 64.3,
+       "x": 652,
+       "y": 520,
+       "w": 778
+      }
+     ]
+    },
+    {
+     "chip": "Switch before the limit → At 5% left",
+     "aspect": 1.8702,
+     "segments": [
+      [
+       76.0,
+       79.45,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "src": 76.0,
+       "x": 652,
+       "y": 520,
+       "w": 778
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "08-outro",
+   "kind": "card",
+   "chapter": "Next: sw-done",
+   "tail": 1.5
+  }
+ ],
+ "noteLabel": "Known issue in 1.0.43:"
+}
