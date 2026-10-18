@@ -113,6 +113,18 @@ describe('brief', () => {
     expect(resolveBase(root, 'no-such-ref')).toBeNull();
   });
 
+  it('keeps the leading space of the first diff stat row, like the rows after it', () => {
+    write('src/other.ts', 'export const other = 1;\n');
+    write(`.specweave/increments/${ID}/spec.md`, fs.readFileSync(path.join(incDir, 'spec.md'), 'utf-8').replace('Files: src/total.ts', 'Files: src/total.ts, src/other.ts'));
+    git('add', '-A');
+    git('commit', '-qm', '0001: other');
+    const brief = buildBrief({ projectRoot: root, repoRoot: root, incrementId: ID, incrementDir: incDir, base: resolveBase(root)! });
+    const rows = brief.stat.split('\n');
+    expect(rows[0]).toMatch(/^ src\/other\.ts +\| /);
+    expect(rows[1]).toMatch(/^ src\/total\.ts +\| /);
+    expect(brief.stat).toBe(brief.stat.trimEnd());
+  });
+
   it('--brief prints the brief and runs nothing', async () => {
     expect(await reviewCommand(ID, { cwd: root, brief: true })).toBe(0);
     expect(out.join('')).toContain('# Adversarial review: 0001-demo 0001 Demo total');
