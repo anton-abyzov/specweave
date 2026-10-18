@@ -5,9 +5,9 @@ description: How SpecWeave, SpecWithCode and spec-weave.com handle your informat
 
 # Privacy Policy
 
-Effective 11 October 2026.
+Effective 18 October 2026.
 
-This policy covers the SpecWeave command-line tool, the SpecWithCode desktop app and service, and this website, spec-weave.com. They are made by Anton Abyzov ("we"). Questions go to [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com).
+This policy covers the SpecWeave command-line tool, the SpecWithCode desktop app and service, the SpecWithCode iPhone app, and this website, spec-weave.com. They are made by Anton Abyzov ("we"). Questions go to [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com).
 
 ## Where your data lives
 
@@ -39,6 +39,18 @@ SpecWithCode's use and transfer to any other app of information received from Go
 
 The SpecWithCode Browser extension for Chrome has its own policy: [SpecWithCode Browser privacy policy](/specwithcode/chrome-extension-privacy/).
 
+## SpecWithCode for iPhone
+
+The SpecWithCode iPhone app connects only to the computers you pair it with: the addresses in the pairing links you use, and other addresses those computers report for reaching them. It has no account with us, no analytics, no advertising and no tracking, and it sends nothing to us. If you turn on sharing with app developers in your iPhone's analytics settings, Apple may share crash reports with us.
+
+The app sends your messages only to your own computers, and replies come back only from them. SpecWithCode on the computer passes your messages to the coding agent or AI provider you set up there, as described above. On a local network the connection can be unencrypted HTTP; on a network you don't trust, pair using a secure (HTTPS) address instead.
+
+On the phone, the app keeps the list of computers you paired: each computer's name and ID, its addresses, whether it is turned on, and how far the app has synced. This list is a file in the app's storage and is included in your device backups. Access tokens, valid for 30 days, are kept in the iOS Keychain on this phone only; they are not synced to iCloud or moved to another device. The app also keeps your appearance setting and the device name you choose, and sends that name to a computer when you pair so the computer can show which phone it is. Messages, replies and drafts are not saved on the phone.
+
+The camera is used only to scan the pairing QR code, and local network access only to reach your own computers.
+
+Removing a computer in the app deletes its addresses and tokens from the phone, but does not tell the computer. To end the phone's access sooner, revoke it in SpecWithCode on that computer, under Settings > Connections > Authorized clients. Otherwise access ends after 30 days.
+
 ## This website
 
 spec-weave.com is a static site served by GitHub Pages. GitHub may log standard request data such as IP addresses to operate and secure its service; see the [GitHub Privacy Statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). The site sets no advertising cookies.
@@ -53,4 +65,4 @@ If this policy changes, the new version is published on this page with a new eff
 
 ## Contact
 
-Anton Abyzov, [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com).
+Anton Abyzov, [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com). For help with the apps, see [Support](/support).
