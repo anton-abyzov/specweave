@@ -51,6 +51,10 @@ Return to [SpecWithCode projects](./projects.md) or continue with [plans and rou
 
 ## Video walkthroughs
 
+### Keep working when a provider runs out
+
+<TutorialEmbed slug="provider-runs-out" />
+
 ### Shared facts, honest usage
 
 <TutorialEmbed slug="memory-and-usage" />
