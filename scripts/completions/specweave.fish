@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall pause start resume abandon complete task verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
+set -l commands init uninstall pause start resume abandon complete task card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -17,6 +17,8 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a resume -
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a abandon -d "Abandon an increment"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a complete -d "Complete one or more increments (triggers GitHub/JIRA/ADO sync)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d "Task ledger: list | next | claim | done | release | block | skip | render | whoami"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a card -d "Cards: add \"<text>\" | start <id> | done <id> | wait <id> | list. T-NN ids alias `task`; C-NN cards live in .specweave/cards/<branch>.jsonl"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a cards -d "Print the card checklist: a header, a blank line, then one ✓ / ✱ / ○ line per card with its link"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -d ""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a review -d "Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a skills -d "List the project's SpecWeave skills, or enable/disable optional ones (grill-me, glossary, sync, project, jev)"
@@ -109,12 +111,30 @@ complete -c specweave -n "__fish_seen_subcommand_from task" -l note -s n -d "Not
 complete -c specweave -n "__fish_seen_subcommand_from task" -l reason -d "Reason (required for skip / block)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l all-mine -d "With `release`: release every task claimed by this agent"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l write -d "With `render`: refresh a legacy tasks.md from the ledger"
+complete -c specweave -n "__fish_seen_subcommand_from task" -l line -d "Card text for claim/done/block (max 100 chars, longer text is truncated)"
+complete -c specweave -n "__fish_seen_subcommand_from task" -l link -d "Card link for claim/done/block (PR URL, report path, artifact URL)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l json -d "Machine-readable output"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l workspace -d "Select the planning workspace explicitly"
+
+# card
+complete -c specweave -n "__fish_seen_subcommand_from card" -l line -d "Card text (max 100 chars)"
+complete -c specweave -n "__fish_seen_subcommand_from card" -l link -d "Card link (PR URL, report path, artifact URL)"
+complete -c specweave -n "__fish_seen_subcommand_from card" -l evidence -s e -d "Evidence for `done`"
+complete -c specweave -n "__fish_seen_subcommand_from card" -l run -d "With `done` on a T-NN card: run <cmd>, exit 0 required"
+complete -c specweave -n "__fish_seen_subcommand_from card" -l reason -d "Why the card waits (`wait`)"
+complete -c specweave -n "__fish_seen_subcommand_from card" -l force -s f -d "Override a live claim (T-NN cards)"
+complete -c specweave -n "__fish_seen_subcommand_from card" -l json -d "Machine-readable output"
+complete -c specweave -n "__fish_seen_subcommand_from card" -l workspace -d "Select the planning workspace explicitly"
+
+# cards
+complete -c specweave -n "__fish_seen_subcommand_from cards" -l md -d "Markdown checklist (the default output)"
+complete -c specweave -n "__fish_seen_subcommand_from cards" -l json -d "Machine-readable output"
+complete -c specweave -n "__fish_seen_subcommand_from cards" -l workspace -d "Select the planning workspace explicitly"
 
 # verify
 complete -c specweave -n "__fish_seen_subcommand_from verify" -l cmd -d "Command to run (repeatable; overrides config/auto-detection)"
 complete -c specweave -n "__fish_seen_subcommand_from verify" -l json -d "Print the verify report as JSON"
+complete -c specweave -n "__fish_seen_subcommand_from verify" -l reason -d "Pass with no test commands configured; the reason is recorded in verify.json"
 complete -c specweave -n "__fish_seen_subcommand_from verify" -l workspace -d "Select the planning workspace explicitly"
 
 # review
