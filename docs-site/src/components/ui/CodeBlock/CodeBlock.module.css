@@ -25,7 +25,7 @@
   left: var(--sw-space-3);
   font-size: var(--sw-font-size-xs);
   color: var(--sw-text-tertiary);
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: var(--sw-letter-spacing-wider);
   font-weight: var(--sw-font-weight-medium);
 }

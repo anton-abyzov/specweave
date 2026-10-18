@@ -1,0 +1,190 @@
+/**
+ * Weave bridge for spec-weave.com (docs site only).
+ * Points the legacy --sw-brand-* contract and the Infima --ifm-* variables at the
+ * Weave tokens in weave.css. Every value is a var(--wv-*), and the Weave tokens flip
+ * on [data-theme='dark'], so one block serves both themes.
+ *
+ * Selector notes:
+ * - `html:root[data-theme]` (0,2,1) outranks brand-tokens.css `:root[data-theme='dark']`
+ *   (0,2,0), which several CSS modules re-import later in the cascade.
+ * - It also outranks Infima's `html[data-theme='dark']` defaults (0,1,1).
+ * src/styles/brand-tokens.css stays untouched: the local dashboard still uses it.
+ */
+
+html:root,
+html:root[data-theme] {
+  /* ---- Legacy brand contract -> Weave ---- */
+  --sw-brand-paper: var(--wv-canvas);
+  --sw-brand-ink: var(--wv-ink);
+  --sw-brand-muted: var(--wv-muted);
+  --sw-brand-line: var(--wv-line);
+  --sw-brand-line-soft: var(--wv-line);
+  --sw-brand-line-strong: var(--wv-control);
+  --sw-brand-accent: var(--wv-iris);
+  --sw-brand-accent-ink: var(--wv-iris-strong);
+  --sw-brand-on-accent: var(--wv-on-iris);
+  --sw-brand-surface: var(--wv-panel);
+  --sw-brand-card: var(--wv-panel);
+  --sw-brand-soft: var(--wv-sunken);
+  --sw-brand-hover: var(--wv-sunken);
+  --sw-brand-selected: var(--wv-iris-tint);
+  --sw-brand-control-border: var(--wv-control);
+  --sw-brand-action: var(--wv-iris);
+  --sw-brand-action-hover: var(--wv-iris-strong);
+  --sw-brand-on-action: var(--wv-on-iris);
+  --sw-brand-success: var(--wv-pass);
+  --sw-brand-success-ink: var(--wv-pass);
+  --sw-brand-warning: var(--wv-warn);
+  --sw-brand-danger: var(--wv-fail);
+  --sw-brand-danger-soft: var(--wv-fail-tint);
+  --sw-brand-review: var(--wv-muted);
+  --sw-brand-sans: var(--wv-font-sans);
+  --sw-brand-display: var(--wv-font-sans);
+  --sw-brand-mono: var(--wv-font-mono);
+  --sw-brand-radius: var(--wv-radius-sm);
+  --sw-brand-shadow: 0 0 0 transparent;
+  --sw-brand-overlay: color-mix(in srgb, var(--wv-ink) 40%, transparent);
+  --sw-brand-term-bg: var(--wv-sunken);
+  --sw-brand-term-ink: var(--wv-ink);
+
+  /* ---- Infima: color ---- */
+  --ifm-color-primary: var(--wv-iris);
+  --ifm-color-primary-contrast-background: var(--wv-iris-tint);
+  --ifm-color-primary-contrast-foreground: var(--wv-iris-strong);
+  --ifm-background-color: var(--wv-canvas);
+  --ifm-background-surface-color: var(--wv-canvas);
+  --ifm-font-color-base: var(--wv-ink);
+  --ifm-font-color-secondary: var(--wv-muted);
+  --ifm-color-content: var(--wv-ink);
+  --ifm-color-content-secondary: var(--wv-muted);
+  --ifm-heading-color: var(--wv-ink);
+  --ifm-link-color: var(--wv-ink);
+  --ifm-link-hover-color: var(--wv-iris-strong);
+  --ifm-link-decoration: underline;
+  --ifm-link-hover-decoration: underline;
+  --ifm-hr-background-color: var(--wv-line);
+  --ifm-color-emphasis-0: var(--wv-canvas);
+  --ifm-color-emphasis-100: var(--wv-sunken);
+  --ifm-color-emphasis-200: var(--wv-line);
+  --ifm-color-emphasis-300: var(--wv-line);
+  --ifm-color-emphasis-400: var(--wv-control);
+  --ifm-color-emphasis-500: var(--wv-control);
+  --ifm-color-emphasis-600: var(--wv-muted);
+  --ifm-color-emphasis-700: var(--wv-muted);
+  --ifm-color-emphasis-800: var(--wv-ink);
+  --ifm-color-emphasis-900: var(--wv-ink);
+  --ifm-color-emphasis-1000: var(--wv-ink);
+
+  /* ---- Infima: type ---- */
+  --ifm-font-family-base: var(--wv-font-sans);
+  --ifm-heading-font-family: var(--wv-font-sans);
+  --ifm-font-family-monospace: var(--wv-font-mono);
+  --ifm-font-size-base: 17px;
+  --ifm-line-height-base: 1.65;
+  --ifm-heading-font-weight: 700;
+  --ifm-heading-line-height: 1.2;
+  --ifm-h1-font-size: 2.5rem;
+  --ifm-h2-font-size: 2rem;
+  --ifm-h3-font-size: 1.3125rem;
+  --ifm-code-font-size: 0.875em;
+  --ifm-code-background: var(--wv-sunken);
+  --ifm-code-border-radius: var(--wv-radius-xs);
+  --ifm-code-padding-horizontal: 0.3em;
+  --ifm-code-padding-vertical: 0.1em;
+  --ifm-pre-background: var(--wv-sunken);
+  --ifm-pre-color: var(--wv-ink);
+  --ifm-pre-border-radius: var(--wv-radius-md);
+  --ifm-blockquote-color: var(--wv-muted);
+  --ifm-blockquote-border-color: var(--wv-line);
+  --ifm-blockquote-border-left-width: 2px;
+
+  /* ---- Infima: shape ---- */
+  --ifm-global-radius: var(--wv-radius-sm);
+  --ifm-button-border-radius: var(--wv-radius-sm);
+  --ifm-card-border-radius: var(--wv-radius-md);
+  --ifm-global-shadow-lw: 0 0 0 transparent;
+  --ifm-global-shadow-md: 0 0 0 transparent;
+  --ifm-global-shadow-tl: var(--wv-shadow-overlay);
+  --ifm-transition-fast: 120ms;
+  --ifm-container-width: var(--wv-page-max);
+  --ifm-card-background-color: var(--wv-panel);
+  --ifm-hero-background-color: var(--wv-canvas);
+  --ifm-hero-text-color: var(--wv-ink);
+
+  /* ---- Navbar ---- */
+  --ifm-navbar-background-color: var(--wv-canvas);
+  --ifm-navbar-shadow: none;
+  --ifm-navbar-link-color: var(--wv-muted);
+  --ifm-navbar-link-hover-color: var(--wv-ink);
+  --ifm-navbar-link-active-color: var(--wv-ink);
+  --ifm-navbar-item-padding-horizontal: 0.625rem;
+  --ifm-navbar-search-input-background-color: var(--wv-panel);
+  --ifm-navbar-search-input-color: var(--wv-ink);
+  --ifm-navbar-search-input-placeholder-color: var(--wv-muted);
+  --ifm-dropdown-background-color: var(--wv-panel);
+  --ifm-dropdown-link-color: var(--wv-ink);
+  --ifm-dropdown-hover-background-color: var(--wv-sunken);
+
+  /* ---- Sidebar menu, TOC, breadcrumbs ---- */
+  --ifm-menu-color: var(--wv-muted);
+  --ifm-menu-color-active: var(--wv-iris-strong);
+  --ifm-menu-color-background-active: var(--wv-iris-tint);
+  --ifm-menu-color-background-hover: var(--wv-sunken);
+  --ifm-toc-border-color: var(--wv-line);
+  --ifm-toc-link-color: var(--wv-muted);
+  --ifm-breadcrumb-color-active: var(--wv-iris-strong);
+  --ifm-breadcrumb-item-background-active: var(--wv-iris-tint);
+  --ifm-tabs-color: var(--wv-muted);
+  --ifm-tabs-color-active: var(--wv-ink);
+  --ifm-tabs-color-active-border: var(--wv-iris);
+
+  /* ---- Tables ---- */
+  --ifm-table-background: transparent;
+  --ifm-table-stripe-background: transparent;
+  --ifm-table-head-background: transparent;
+  --ifm-table-head-color: var(--wv-ink);
+  --ifm-table-head-font-weight: 600;
+  --ifm-table-border-color: var(--wv-line);
+  --ifm-table-border-width: 1px;
+  --ifm-table-cell-padding: 0.625rem 0.875rem;
+
+  /* ---- Footer: canvas band with a hairline, not near-black ---- */
+  --ifm-footer-background-color: var(--wv-canvas);
+  --ifm-footer-color: var(--wv-muted);
+  --ifm-footer-link-color: var(--wv-muted);
+  --ifm-footer-link-hover-color: var(--wv-ink);
+  --ifm-footer-title-color: var(--wv-ink);
+
+  /* ---- Admonitions: Weave note (hairline box, icon carries the status) ---- */
+  --ifm-alert-background-color: var(--wv-panel);
+  --ifm-alert-background-color-highlight: var(--wv-sunken);
+  --ifm-alert-foreground-color: var(--wv-ink);
+  --ifm-alert-border-color: var(--wv-line);
+  --ifm-alert-border-width: 1px;
+  --ifm-alert-border-left-width: 1px;
+  --ifm-alert-border-radius: var(--wv-radius-md);
+  --ifm-alert-shadow: none;
+
+  /* ---- Code blocks ---- */
+  --prism-background-color: var(--wv-sunken);
+  --docusaurus-highlighted-code-line-bg: var(--wv-iris-tint);
+
+  /* ---- Local search plugin (@easyops-cn/docusaurus-search-local) ---- */
+  --search-local-modal-background: var(--wv-panel);
+  --search-local-modal-shadow: var(--wv-shadow-overlay);
+  --search-local-hit-background: var(--wv-panel);
+  --search-local-hit-color: var(--wv-ink);
+  --search-local-hit-shadow: 0 0 0 1px var(--wv-line);
+  --search-local-hit-active-color: var(--wv-on-iris);
+  --search-local-highlight-color: var(--wv-iris-strong);
+  --search-local-muted-color: var(--wv-muted);
+  --search-local-input-active-border-color: var(--wv-iris);
+  --search-local-spacing: 12px;
+
+  /* ---- Mermaid colors (read by the overrides in custom.css) ---- */
+  --mermaid-node-fill: var(--wv-panel);
+  --mermaid-node-stroke: var(--wv-control);
+  --mermaid-text: var(--wv-ink);
+  --mermaid-line: var(--wv-muted);
+  --mermaid-group-fill: var(--wv-sunken);
+}

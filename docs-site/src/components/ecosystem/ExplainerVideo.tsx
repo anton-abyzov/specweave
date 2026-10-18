@@ -17,6 +17,6 @@ export default function ExplainerVideo({id, style}: {id?: string; style?: React.
     chapters={explainer.chapters}
     style={style}
     ariaLabel="How SpecWithCode works, narrated: subscriptions on your own machines, a private network between them, usage limits and fallbacks, a project coordinator that starts threads, auto-resolve, and which machines to use"
-    caption={<>Under 3 minutes, narrated, captions available / Subscriptions on your machines, limits and fallbacks, one coordinator per project, and the hardware a worker needs. <Link to="/tutorials">All tutorials</Link></>}
+    caption={<>Narrated, with captions. <Link to="/tutorials">All tutorials</Link></>}
   />;
 }

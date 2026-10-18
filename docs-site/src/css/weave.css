@@ -1,0 +1,335 @@
+/*
+  Weave design system tokens and components.
+  Canonical source: specweave repo design/weave/. Copy this file unchanged into each site.
+  Light values on :root; dark values on [data-theme="dark"] and, when no theme is set, prefers-color-scheme.
+*/
+
+:root {
+  --wv-canvas: #f8f7f9;
+  --wv-panel: #ffffff;
+  --wv-sunken: #efedf2;
+  --wv-ink: #241523;
+  --wv-muted: #675d69;
+  --wv-line: #dedae5;
+  --wv-control: #8c8399;
+  --wv-iris: #6d4fb5;
+  --wv-iris-strong: #4a3678;
+  --wv-iris-tint: #ece6f8;
+  --wv-on-iris: #ffffff;
+  --wv-pass: #1d7348;
+  --wv-pass-tint: #e3f2e9;
+  --wv-warn: #8f5400;
+  --wv-warn-tint: #f7ecd9;
+  --wv-fail: #b4232c;
+  --wv-fail-tint: #f9e3e4;
+  --wv-brand-tile: #5b6cff;
+  --wv-shadow-window: 0 1px 2px rgba(36,21,35,0.06), 0 24px 48px -24px rgba(36,21,35,0.30);
+  --wv-shadow-overlay: 0 12px 32px -12px rgba(36,21,35,0.28);
+  --wv-space-1: 4px;
+  --wv-space-2: 8px;
+  --wv-space-3: 12px;
+  --wv-space-4: 16px;
+  --wv-space-6: 24px;
+  --wv-space-8: 32px;
+  --wv-space-12: 48px;
+  --wv-space-16: 64px;
+  --wv-space-24: 96px;
+  --wv-space-32: 128px;
+  --wv-radius-xs: 4px;
+  --wv-radius-sm: 6px;
+  --wv-radius-md: 10px;
+  --wv-radius-lg: 14px;
+  --wv-measure: 68ch;
+  --wv-page-max: 1200px;
+  --wv-thread-width: 1.5px;
+  --wv-font-sans: "Schibsted Grotesk", ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  --wv-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --wv-canvas: #16131d;
+    --wv-panel: #201c29;
+    --wv-sunken: #110e17;
+    --wv-ink: #f3eff9;
+    --wv-muted: #a69fb2;
+    --wv-line: #322c3e;
+    --wv-control: #776d8a;
+    --wv-iris: #a88cf6;
+    --wv-iris-strong: #cbbcff;
+    --wv-iris-tint: #2b2340;
+    --wv-on-iris: #1b1328;
+    --wv-pass: #5cc68d;
+    --wv-pass-tint: #15301f;
+    --wv-warn: #e8ab3e;
+    --wv-warn-tint: #33270f;
+    --wv-fail: #ff8080;
+    --wv-fail-tint: #3a1a1d;
+    --wv-shadow-window: 0 1px 2px rgba(0,0,0,0.4), 0 24px 48px -24px rgba(0,0,0,0.7);
+    --wv-shadow-overlay: 0 12px 32px -12px rgba(0,0,0,0.75);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"], html[data-theme="dark"] {
+  --wv-canvas: #16131d;
+  --wv-panel: #201c29;
+  --wv-sunken: #110e17;
+  --wv-ink: #f3eff9;
+  --wv-muted: #a69fb2;
+  --wv-line: #322c3e;
+  --wv-control: #776d8a;
+  --wv-iris: #a88cf6;
+  --wv-iris-strong: #cbbcff;
+  --wv-iris-tint: #2b2340;
+  --wv-on-iris: #1b1328;
+  --wv-pass: #5cc68d;
+  --wv-pass-tint: #15301f;
+  --wv-warn: #e8ab3e;
+  --wv-warn-tint: #33270f;
+  --wv-fail: #ff8080;
+  --wv-fail-tint: #3a1a1d;
+  --wv-shadow-window: 0 1px 2px rgba(0,0,0,0.4), 0 24px 48px -24px rgba(0,0,0,0.7);
+  --wv-shadow-overlay: 0 12px 32px -12px rgba(0,0,0,0.75);
+  color-scheme: dark;
+}
+
+/* Weave components. Every value comes from the wv- tokens. */
+
+.wv-root {
+  background: var(--wv-canvas);
+  color: var(--wv-ink);
+  font-family: var(--wv-font-sans);
+  font-size: 17px;
+  line-height: 28px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.wv-root :focus-visible {
+  outline: 2px solid var(--wv-iris);
+  outline-offset: 2px;
+}
+
+/* Link: ink text, iris thread underneath. */
+.wv-link {
+  color: var(--wv-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--wv-iris);
+  text-decoration-thickness: var(--wv-thread-width);
+  text-underline-offset: 0.22em;
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+}
+.wv-link:hover { color: var(--wv-iris-strong); text-decoration-color: var(--wv-iris-strong); }
+
+/* Button */
+.wv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--wv-space-2);
+  min-height: 40px;
+  padding: 0 var(--wv-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--wv-radius-sm);
+  font: 500 15px/22px var(--wv-font-sans);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.wv-btn svg { width: 16px; height: 16px; flex: none; }
+.wv-btn--lg { min-height: 48px; padding: 0 var(--wv-space-6); font-size: 17px; }
+.wv-btn--primary { background: var(--wv-iris); color: var(--wv-on-iris); }
+.wv-btn--primary:hover { background: var(--wv-iris-strong); }
+.wv-btn--secondary { background: transparent; color: var(--wv-ink); border-color: var(--wv-control); }
+.wv-btn--secondary:hover { border-color: var(--wv-ink); }
+.wv-btn--quiet { background: transparent; color: var(--wv-ink); padding: 0 var(--wv-space-2); }
+.wv-btn--quiet:hover { color: var(--wv-iris-strong); }
+.wv-btn[disabled], .wv-btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+
+/* Family bar: the three products, the current one marked. */
+.wv-family {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-1);
+  min-height: 36px;
+  font: 400 13px/18px var(--wv-font-sans);
+  color: var(--wv-muted);
+  border-bottom: 1px solid var(--wv-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.wv-family a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px var(--wv-space-2);
+  border-radius: var(--wv-radius-sm);
+  color: var(--wv-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.wv-family a:hover { color: var(--wv-ink); }
+.wv-family a[aria-current="page"],
+.wv-family a[aria-current="true"] { background: var(--wv-iris-tint); color: var(--wv-iris-strong); font-weight: 500; }
+.wv-family__what { color: var(--wv-muted); }
+.wv-family a[aria-current] .wv-family__what { color: inherit; opacity: 0.8; }
+
+/* Command line with copy */
+.wv-cmd {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-3);
+  min-width: 0;
+  padding: var(--wv-space-2) var(--wv-space-2) var(--wv-space-2) var(--wv-space-4);
+  background: var(--wv-sunken);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  font: 400 14px/22px var(--wv-font-mono);
+  color: var(--wv-ink);
+}
+.wv-cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: pre; font: inherit; background: none; padding: 0; border: 0; }
+.wv-cmd code::before { content: "$ "; color: var(--wv-muted); }
+.wv-cmd__copy {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 var(--wv-space-3);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-sm);
+  background: var(--wv-panel);
+  color: var(--wv-ink);
+  font: 500 13px/18px var(--wv-font-sans);
+  cursor: pointer;
+}
+.wv-cmd__copy:hover { border-color: var(--wv-control); }
+
+/* Multi-line code */
+.wv-code {
+  margin: 0;
+  padding: var(--wv-space-4);
+  background: var(--wv-sunken);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  font: 400 14px/22px var(--wv-font-mono);
+  color: var(--wv-ink);
+  overflow-x: auto;
+}
+.wv-code .wv-dim { color: var(--wv-muted); }
+.wv-code .wv-hl { color: var(--wv-iris); }
+
+/* Status chip: a dot plus a word, never color alone. */
+.wv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px var(--wv-space-2);
+  border-radius: var(--wv-radius-xs);
+  font: 500 13px/18px var(--wv-font-sans);
+  white-space: nowrap;
+  background: var(--wv-sunken);
+  color: var(--wv-muted);
+}
+.wv-chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+.wv-chip--pass { background: var(--wv-pass-tint); color: var(--wv-pass); }
+.wv-chip--warn { background: var(--wv-warn-tint); color: var(--wv-warn); }
+.wv-chip--fail { background: var(--wv-fail-tint); color: var(--wv-fail); }
+.wv-chip--fail::before { border-radius: 1px; transform: rotate(45deg); }
+.wv-chip--iris { background: var(--wv-iris-tint); color: var(--wv-iris-strong); }
+
+/* Evidence list: what a skill has been through. */
+.wv-evidence { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--wv-line); }
+.wv-evidence > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--wv-space-1) var(--wv-space-4);
+  align-items: baseline;
+  padding: var(--wv-space-4) 0;
+  border-bottom: 1px solid var(--wv-line);
+}
+.wv-evidence__name { font: 600 15px/22px var(--wv-font-sans); color: var(--wv-ink); }
+.wv-evidence__detail { grid-column: 1 / -1; font: 400 15px/22px var(--wv-font-sans); color: var(--wv-muted); }
+.wv-evidence__detail code { font: 400 13px/20px var(--wv-font-mono); color: var(--wv-ink); }
+
+/* Window frame around a real screenshot. */
+.wv-window {
+  margin: 0;
+  background: var(--wv-panel);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  box-shadow: var(--wv-shadow-window);
+  overflow: hidden;
+  max-width: 100%;
+}
+.wv-window__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wv-space-3);
+  padding: var(--wv-space-2) var(--wv-space-4);
+  border-bottom: 1px solid var(--wv-line);
+  font: 400 13px/18px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+.wv-window img, .wv-window video { display: block; width: 100%; height: auto; }
+.wv-window figcaption, .wv-window__caption { padding: var(--wv-space-2) var(--wv-space-4); font: 400 13px/18px var(--wv-font-sans); color: var(--wv-muted); border-top: 1px solid var(--wv-line); }
+
+/* Thread flow: steps joined by one iris line. */
+.wv-thread { list-style: none; margin: 0; padding: 0; position: relative; display: grid; gap: var(--wv-space-6); }
+.wv-thread::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 10px;
+  bottom: 10px;
+  width: var(--wv-thread-width);
+  background: var(--wv-iris);
+  transform-origin: top;
+}
+.wv-thread > li { position: relative; padding-left: var(--wv-space-8); min-width: 0; }
+.wv-thread > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 15px;
+  height: 15px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--wv-canvas);
+  border: var(--wv-thread-width) solid var(--wv-iris);
+}
+.wv-thread > li[aria-current]::before { background: var(--wv-iris); }
+.wv-thread__title { font: 600 17px/24px var(--wv-font-sans); color: var(--wv-ink); margin: 0; }
+.wv-thread__body { margin: var(--wv-space-1) 0 0; font: 400 15px/22px var(--wv-font-sans); color: var(--wv-muted); }
+
+@media (min-width: 900px) {
+  .wv-thread--across { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--wv-space-6); }
+  .wv-thread--across::before { left: 7px; right: 7px; top: 12px; bottom: auto; width: auto; height: var(--wv-thread-width); transform-origin: left; }
+  .wv-thread--across > li { padding-left: 0; padding-top: var(--wv-space-8); }
+  .wv-thread--across > li::before { top: 5px; }
+}
+
+/* Note */
+.wv-note {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--wv-space-3);
+  padding: var(--wv-space-4);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-panel);
+  font: 400 15px/22px var(--wv-font-sans);
+  color: var(--wv-ink);
+}
+.wv-note svg { width: 20px; height: 20px; color: var(--wv-iris); margin-top: 1px; }
+.wv-note--warn svg { color: var(--wv-warn); }
+.wv-note--fail svg { color: var(--wv-fail); }
+.wv-note strong { font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wv-root *, .wv-root *::before, .wv-root *::after { transition: none !important; animation: none !important; }
+}
