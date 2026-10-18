@@ -1,0 +1,237 @@
+{
+ "comment": "App tutorial edit, framed-window layout (from provider-runs-out). One take recorded across two origins (the Mac mini UI through ssh -L 8349, then the main at 8347). Segments are [srcStart, srcEnd, rate] in take.mp4 (data-media-start = src + syncOffset; syncOffset = blackdetect 3.000 minus black-on cue 3.05); [src, src, 'hold', s] holds the frame at src as a still; 'fit' fills the beat. Crops: the Connections page and the Your private machines card x 640-1540, y 165-671 (1.42x); the invite dialog x 700-1220, y 350-721 (1.94x).",
+ "title": "Add a second machine",
+ "subtitle": "A real run of SpecWithCode 1.0.47 on two Macs joined over Tailscale.",
+ "wordmark": "SpecWithCode",
+ "outro": {
+  "next": "Next: add a Linux server with the Linux worker guide",
+  "note": "Recorded with two disposable SpecWithCode 1.0.47 servers, a Mac and a Mac mini on one tailnet. The invitation line, the pairing code and the Mac mini's Tailscale address are blurred; the pairing code was made off camera with specwithcode pair. Navigation is sped up where marked. The narration is an AI voice."
+ },
+ "take": "assets/media/take.mp4",
+ "syncOffset": -0.05,
+ "voOffset": 0.05,
+ "tailAfterVo": 0.15,
+ "termCols": 96,
+ "termFont": 26,
+ "visibleRows": 14,
+ "posterAt": 1.0,
+ "beats": [
+  {
+   "id": "01-intro",
+   "kind": "card",
+   "chapter": "What you need",
+   "voOffset": 1.1,
+   "tail": 0.4
+  },
+  {
+   "id": "02-invite",
+   "kind": "app",
+   "chapter": "Make the line on the new machine",
+   "extra": 0.6,
+   "shots": [
+    {
+     "chip": "Mac mini → Settings → Connections",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       5.0,
+       11.6,
+       1.15
+      ]
+     ]
+    },
+    {
+     "chip": "Add this machine to another one → Invite this machine",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       12.8,
+       16.9,
+       1.0
+      ]
+     ],
+     "cam": [
+      {
+       "x": 640,
+       "y": 165,
+       "w": 900,
+       "src": 12.8
+      }
+     ]
+    },
+    {
+     "chip": "Name on the main machine → Make the line",
+     "aspect": 1.4,
+     "segments": [
+      [
+       19.2,
+       24.3,
+       2.0
+      ]
+     ],
+     "cam": [
+      {
+       "x": 700,
+       "y": 350,
+       "w": 520,
+       "src": 19.2
+      }
+     ]
+    },
+    {
+     "chip": "The line, blurred here → Done",
+     "aspect": 1.4,
+     "segments": [
+      [
+       24.3,
+       34.0,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "x": 700,
+       "y": 350,
+       "w": 520,
+       "src": 24.3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "03-add",
+   "kind": "app",
+   "chapter": "Add it on the main machine",
+   "extra": 0.5,
+   "shots": [
+    {
+     "chip": "Main machine → Settings → Connections",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       38.6,
+       46.0,
+       2.0
+      ]
+     ]
+    },
+    {
+     "chip": "Add a machine → paste the line → Add machine",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       46.0,
+       51.2,
+       1.0
+      ]
+     ],
+     "cam": [
+      {
+       "x": 640,
+       "y": 165,
+       "w": 900,
+       "src": 46.0
+      }
+     ]
+    },
+    {
+     "chip": "Demo Mac mini · Reachable",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       51.2,
+       57.0,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "x": 640,
+       "y": 165,
+       "w": 900,
+       "src": 51.2
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "04-allow",
+   "kind": "app",
+   "chapter": "Allow workers",
+   "extra": 0.5,
+   "shots": [
+    {
+     "chip": "Most access for workers → Full access",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       57.0,
+       60.4,
+       1.15
+      ]
+     ],
+     "cam": [
+      {
+       "x": 640,
+       "y": 165,
+       "w": 900,
+       "src": 57.0
+      }
+     ]
+    },
+    {
+     "chip": "Pairing code from the Mac mini (blurred)",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       60.4,
+       63.45,
+       0.75
+      ],
+      [
+       63.45,
+       63.45,
+       "hold",
+       4.8
+      ]
+     ],
+     "cam": [
+      {
+       "x": 640,
+       "y": 165,
+       "w": 900,
+       "src": 60.4
+      }
+     ]
+    },
+    {
+     "chip": "Allow workers → Allowed: Full access",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       63.45,
+       70.4,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "x": 640,
+       "y": 165,
+       "w": 900,
+       "src": 63.45
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "05-outro",
+   "kind": "card",
+   "chapter": "Next: a Linux server",
+   "tail": 1.5
+  }
+ ]
+}

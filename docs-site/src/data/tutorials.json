@@ -674,6 +674,149 @@
       ]
     },
     {
+      "slug": "add-a-machine",
+      "product": "specwithcode",
+      "title": "Add a second machine",
+      "seoTitle": "Add a second Mac to SpecWithCode over Tailscale: invite it, add it and allow workers",
+      "summary": "A real run of SpecWithCode 1.0.47 on two Macs on one tailnet. On the Mac mini, Settings, Connections, Invite this machine makes a one-line invitation and publishes the app on the Mac mini's private Tailscale name. On the main Mac, the same page adds the machine from that line, checks it answers, and lists it as reachable. Allow workers then grants Full access for workers there; in 1.0.47 that also needs a one-time pairing code made on the Mac mini.",
+      "outcome": "You end with your second machine listed as reachable and allowed to run workers.",
+      "prerequisites": [
+        "SpecWithCode for Mac on both machines",
+        "Tailscale on both machines, signed in to the same account, with MagicDNS and HTTPS certificates on"
+      ],
+      "testedOn": "SpecWithCode 1.0.47 with SpecWeave 3.0.23, 18 October 2026",
+      "agent": "codex",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/add-a-machine.mp4",
+        "poster": "/video/tutorials/add-a-machine.jpg",
+        "captionsVtt": "/video/tutorials/add-a-machine.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 73.4,
+        "uploadDate": "2026-10-18",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you need"
+          },
+          {
+            "start": 11.0,
+            "title": "Make the line on the new machine"
+          },
+          {
+            "start": 32.6,
+            "title": "Add it on the main machine"
+          },
+          {
+            "start": 49.0,
+            "title": "Allow workers"
+          },
+          {
+            "start": 67.3,
+            "title": "Next: a Linux server"
+          }
+        ]
+      },
+      "steps": [
+        "Install Tailscale on both machines, sign in to the same account, and turn on MagicDNS and HTTPS certificates for the tailnet.",
+        "On the new machine, open Settings, then Connections, and choose Invite this machine. Give it a name and choose Make the line. SpecWithCode publishes itself on that machine's private Tailscale name, never on the public internet.",
+        "Copy the line. It works like a password, so paste it only on your main machine.",
+        "On the main machine, open Settings, Connections, paste the line under Add a machine and choose Add machine. It checks the address answers as that machine and lists it as Reachable.",
+        "Pick the most a worker there may do. In 1.0.47, also run `specwithcode pair --scope orchestration:read --scope orchestration:operate` on the new machine and paste its one-time code into the pairing code field.",
+        "Choose Allow workers. The card reads Allowed: Full access."
+      ],
+      "transcript": "captions",
+      "note": "Recorded headlessly in one take on two disposable SpecWithCode 1.0.47 servers with disposable homes, a Mac (main) and a Mac mini (new machine) on one tailnet, 18 October 2026. The invitation line, the Mac mini's Tailscale address and the pairing code are blurred. The one-time pairing code was made off camera on the Mac mini with `specwithcode pair` (Operate threads scopes); the welcome wizard, adding the sample project and choosing Full access happened off camera, and Full access was chosen for the demo only. Navigation is sped up 2x where marked and one frame is held as a still. Known issues in 1.0.47: Allow workers asks for a pairing code although the guide describes one click; Connect machine fails with 'Could not pair this machine'; and a coordinator could not yet start a worker on the added machine ('no execution binding'), so the video ends at Allowed rather than a running worker. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/add-a-machine",
+      "related": [
+        "start-specwithcode",
+        "provider-runs-out"
+      ]
+    },
+    {
+      "slug": "finish-a-thread",
+      "product": "specwithcode",
+      "title": "Finish a thread with a pull request and auto-merge",
+      "seoTitle": "Finish a SpecWithCode thread with a pull request and auto-merge: conflict resolved in its thread, merged by GitHub",
+      "summary": "A real run of SpecWithCode 1.0.48 with Codex on a public demo repository. A worker thread does T-01 of a SpecWeave increment in its own worktree and stops with a clean tree. The project's finish rule, Open PR and auto-merge, then opens pull request #2 into main and turns on auto-merge. main had changed the same lines, so the thread reports a conflict and does not merge. Project settings show where the rule, the merge method and agent-credit removal are set. Code Review shows the pull request blocked by the conflict with auto-merge armed. The thread that wrote the code merges main, runs the tests and pushes, the required test check passes, and GitHub merges the pull request.",
+      "outcome": "You end with a thread whose pull request merged automatically once its conflict was resolved and the required test check passed.",
+      "prerequisites": [
+        "SpecWithCode for Mac",
+        "a signed-in coding agent (Codex in this video)",
+        "a GitHub repository with Git and GitHub sign-in on the machine that runs the thread",
+        "a SpecWeave increment planned (optional)"
+      ],
+      "testedOn": "SpecWithCode 1.0.48 with SpecWeave 3.1.1, 18 October 2026",
+      "agent": "codex",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/finish-a-thread.mp4",
+        "poster": "/video/tutorials/finish-a-thread.jpg",
+        "captionsVtt": "/video/tutorials/finish-a-thread.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 79.3,
+        "uploadDate": "2026-10-18",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will see"
+          },
+          {
+            "start": 4.78,
+            "title": "The thread finishes and opens a PR"
+          },
+          {
+            "start": 31.78,
+            "title": "Open PR and auto-merge, per project"
+          },
+          {
+            "start": 42.09,
+            "title": "Code Review"
+          },
+          {
+            "start": 52.67,
+            "title": "Resolve the conflict in its thread"
+          },
+          {
+            "start": 63.75,
+            "title": "Merged"
+          },
+          {
+            "start": 73.26,
+            "title": "Next: sw-done"
+          }
+        ]
+      },
+      "steps": [
+        "Start a worker thread from the project coordinator, for example: Start a thread titled \"Greet a team\" in a new worktree from main. The thread gets its own worktree and branch (here greet/greet-a-team, from the branch prefix greet/).",
+        "Let the thread finish its work with a clean worktree and nothing queued. With the project's rule set to Open PR and auto-merge, SpecWithCode pushes the branch, opens a pull request into the default branch and turns on the host's auto-merge. The thread shows each step as a notice: Opened #2 into main, then Auto-merge on for #2; it merges into main when checks pass.",
+        "If the base branch changed the same lines, the thread shows #2 conflicts with main; not merging. Nothing is merged or force-pushed.",
+        "Set the rule per project: open the project's settings (Applying settings for greet-app) and, under Repositories, choose When a thread finishes: Leave branch, Open PR or Open PR and auto-merge. The same card sets Default merge method (Squash and merge here) and Remove agent credits when merging.",
+        "Open Code Review to see the pull request. Its summary shows Blocked, Conflicts with the base, and the armed Auto-merge (squash and merge); the Code tab shows the changed files.",
+        "Send the conflict back to the thread that wrote the code, for example: main changed under this pull request. Merge main in, resolve the conflicts, run npm test, then commit and push.",
+        "Auto-merge stays on. When the required checks pass, GitHub merges the pull request and the thread shows Merged #2 into main."
+      ],
+      "transcript": "captions",
+      "note": "Recorded headlessly on a private SpecWithCode 1.0.48 server with a disposable home, 18 October 2026, against the public demo repository anton-abyzov/greet-app-demo. main there is protected by one required status check, test (GitHub Actions running npm test), with admins included and no required reviews; auto-merge and delete-branch-on-merge are on. No review gated this merge: the pull request merged when the conflict was resolved and the test check passed. The thread's T-01 turn and its conflict-resolution turn are real Codex turns, signed in with the author's account through a short-lived token copied into that home; the GitHub sign-in was the author's own, held in memory only. Full access was chosen for the demo only. The conflicting commit on main, \"Say Hi in every greeting\", was pushed off camera right after the thread started. The take was recorded in two parts on the same server minutes apart (the recorder stopped once on the Code tab and was restarted from Code Review); nothing between the parts changed the pull request. Waits are sped up and marked on screen: the agent turns (1.5× to 4×), the wait for the conflict notice (8×) and the wait for the app's next pull-request sync after GitHub merged (15×). The Code Review list blurs the account owner's display name. Before the first pull request the project's merge method was set to Squash and merge and Remove agent credits when merging was turned on; the branch prefix greet/ was set on the Source Control page, the only place 1.0.48 offers it. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/finish-a-thread",
+      "related": [
+        "provider-runs-out",
+        "review-with-another-model"
+      ]
+    },
+    {
       "slug": "projects-and-threads",
       "product": "specwithcode",
       "title": "Run a project with a coordinator and workers",
@@ -1508,20 +1651,6 @@
       "targetSeconds": 80
     },
     {
-      "slug": "finish-a-thread",
-      "product": "specwithcode",
-      "title": "Finish a thread with a pull request and auto-merge",
-      "outcome": "You end with a thread whose pull request merged after review.",
-      "beats": [
-        "Thread done",
-        "Open PR and auto-merge",
-        "Code Review view",
-        "A conflict resolved in its thread",
-        "Merged"
-      ],
-      "targetSeconds": 80
-    },
-    {
       "slug": "test-a-skill-in-studio",
       "product": "verified-skill",
       "title": "Test a skill in Skill Studio",
@@ -1534,19 +1663,6 @@
         "Cross-model sweep"
       ],
       "targetSeconds": 110
-    },
-    {
-      "slug": "add-a-machine",
-      "product": "specwithcode",
-      "title": "Add a second machine",
-      "outcome": "You end with a worker thread running on your second machine.",
-      "beats": [
-        "Tailscale on both machines",
-        "Invite this machine",
-        "Paste the line on your main machine",
-        "A worker runs there"
-      ],
-      "targetSeconds": 75
     },
     {
       "slug": "publish-a-skill",

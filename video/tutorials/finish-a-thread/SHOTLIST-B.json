@@ -1,0 +1,134 @@
+{
+  "series": "SpecWithCode tutorials",
+  "slug": "finish-a-thread",
+  "title": "Finish a thread with a pull request and auto-merge",
+  "resolution": "1920x1080",
+  "fps": 30,
+  "demoRepo": "anton-abyzov/greet-app-demo (public demo repo; main protected: required check test, admins included, no required reviews; auto-merge allowed; branches deleted on merge)",
+  "labelsCheckedAt": "SpecWithCode 1.0.48 (specweave-studio v1.0.48), rehearsed 2026-10-18",
+  "offCamera": [
+    "seed.sh: clone greet-app-demo into the demo HOME; Demo User gitconfig with helpers reset and git's in-memory credential cache; demo Codex rules in ~/.codex/AGENTS.md",
+    "codex-auth.sh (short-lived Codex login, no refresh token); cred.sh (token into the in-memory cache); serve.sh with GH_TOKEN in env only; pair; prepare.mjs (wizard, greet-app, Full access)",
+    "setup-settings.mjs: project overrides Remove agent credits when merging ON and Default merge method Squash and merge; When a thread finishes = Open PR and auto-merge; branch prefix greet/",
+    "Coordinator message: Start a thread titled \"Greet a team\" in a new worktree from main on branch greet/greet-a-team. In it, run $sw-do for increment 0002: do T-01, commit, then stop.",
+    "As soon as the worktree exists: conflict.sh change-2.sh pushes \"Say Hi in every greeting\" to main (the same lines), then the take starts"
+  ],
+  "shots": [
+    {
+      "id": "04-review",
+      "kind": "APP",
+      "chapter": "Code Review",
+      "steps": [
+        {
+          "do": "goto",
+          "path": "/pull-requests",
+          "ms": 3000
+        },
+        {
+          "do": "click",
+          "textRegex": "greet-app-demo#\\d+"
+        },
+        {
+          "do": "pause",
+          "ms": 3500
+        },
+        {
+          "do": "click",
+          "text": "Code",
+          "exact": true,
+          "last": true
+        },
+        {
+          "do": "pause",
+          "ms": 1500
+        },
+        {
+          "do": "click",
+          "text": "src/greeting.js",
+          "exact": true
+        },
+        {
+          "do": "pause",
+          "ms": 3500
+        }
+      ]
+    },
+    {
+      "id": "05-resolve",
+      "kind": "APP",
+      "chapter": "Resolve the conflict in the thread",
+      "steps": [
+        {
+          "do": "goto",
+          "path": "${PROJECT_PATH}",
+          "ms": 3000
+        },
+        {
+          "do": "clickIfPresent",
+          "role": "tab",
+          "name": "Threads"
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "nameRegex": "^Open thread Greet a team"
+        },
+        {
+          "do": "pause",
+          "ms": 1500
+        },
+        {
+          "do": "clickIfPresent",
+          "role": "button",
+          "name": "Expand panel"
+        },
+        {
+          "do": "pause",
+          "ms": 800
+        },
+        {
+          "do": "type",
+          "css": "[contenteditable=\"true\"]",
+          "last": true,
+          "text": "main changed under this pull request. Merge main in, resolve the conflicts, run npm test, then commit and push.",
+          "delay": 40
+        },
+        {
+          "do": "pause",
+          "ms": 500
+        },
+        {
+          "do": "press",
+          "key": "Enter"
+        },
+        {
+          "do": "waitTurn"
+        },
+        {
+          "do": "pause",
+          "ms": 1500
+        }
+      ]
+    },
+    {
+      "id": "06-merged",
+      "kind": "APP",
+      "chapter": "Merged",
+      "steps": [
+        {
+          "do": "expect",
+          "textRegex": "Merged #\\d+ into main",
+          "timeout": 300000
+        },
+        {
+          "do": "pause",
+          "ms": 4000
+        }
+      ]
+    }
+  ],
+  "takes": {
+    "A": "shots 02-thread and 03-setting (recording stopped in 04-review: the Code tab is not a role=tab element)",
+    "B": "shots 04-review, 05-resolve, 06-merged, recorded right after take A on the same server; the edit plays B after A"
+  }
+}
