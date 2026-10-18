@@ -45,7 +45,7 @@ Tailscale **Serve** exposes a local service inside the private tailnet. **Funnel
 
 ### Providers and switching
 
-SpecWithCode runs each provider's own agent with the sign-ins already on that machine: Claude Code, Codex, Cursor, Grok Build, OpenCode, Muse Code and Pi through their own integrations, and Gemini CLI, GitHub Copilot, Antigravity and other agents through the ACP Registry. Each thread picks its provider, model and effort. You can change provider inside a thread: SpecWithCode passes a budgeted selection of the conversation to the new agent, which continues in the same checkout. When a provider hits its usage limit, the project’s rule decides: switch to the fallback provider on its own (the default), offer the fallback, or wait for the reset.
+SpecWithCode runs each provider's own agent with the sign-ins already on that machine: Claude Code, Codex, Cursor, Grok Build, OpenCode, Muse Code, Antigravity and Pi through their own integrations, and Gemini CLI, GitHub Copilot and other agents through the ACP Registry. Each thread picks its provider, model and effort. You can change provider inside a thread: SpecWithCode passes a budgeted selection of the conversation to the new agent, which continues in the same checkout. When a provider hits its usage limit, the project’s rule decides: switch to the fallback provider on its own (the default), offer the fallback, or wait for the reset.
 
 ### Optional components
 

@@ -122,17 +122,16 @@
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    /* Fill forwards only: before its range starts (still below the fold, or a full-page
-       capture) each part keeps its static, final look. Ranges start at the viewport edge,
-       so the switch to the first frame happens out of sight. */
+    /* Ranges start at entry 0% and fill both ways, so no part shows its final look and then
+       snaps back; everything is at rest by cover 40%. */
     .pathThread::before {
-      animation: tutThreadDraw linear forwards;
+      animation: tutThreadDraw linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 50%;
+      animation-range: entry 0% cover 40%;
     }
 
     .pathThread > li {
-      animation: tutStepReached linear forwards;
+      animation: tutStepReached linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 60%;
     }

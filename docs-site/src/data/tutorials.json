@@ -1154,13 +1154,13 @@
       "slug": "agents-use-your-mac-and-chrome",
       "product": "specwithcode",
       "title": "Let agents use your Mac and Chrome",
-      "outcome": "You end with an agent acting in an app and a browser profile kept for the project.",
+      "outcome": "You end with an agent acting in an app and in isolated browser tabs, or in a profile you chose for the project.",
       "beats": [
         "Turn on computer use",
         "Screen Recording and Accessibility",
         "The agent acts",
         "SpecWithCode Browser tab group",
-        "A browser profile per project"
+        "Isolated tabs or a project profile"
       ],
       "targetSeconds": 80
     },

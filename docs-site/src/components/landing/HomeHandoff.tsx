@@ -16,7 +16,8 @@ import s from './HomeHandoff.module.css';
  * `task done --run` cites `reports/task-T-NN.txt` and HEAD (src/cli/commands/task.ts).
  * The increment matches the real pickup output on /product (codex@laptop after claude@cloud).
  * Motion lives only in HomeHandoff.module.css: the spine draws, the layer nodes light, and the handoff
- * node switches from claude@cloud to codex@laptop. The resting state is the final layout.
+ * node switches from claude@cloud to codex@laptop by crossfading a stacked earlier state (opacity
+ * and transform only). The resting state is the final layout.
  */
 
 const SPEC = `## Acceptance Criteria
@@ -76,7 +77,7 @@ export default function HomeHandoff() {
         <h3>The ledger in git</h3>
         <p>Every claim, finish and release is one line, committed with the code. <code>ledger.jsonl</code></p>
       </div>
-      <pre className={clsx('wv-code', s.body, s.code, s.ledgerCode)} aria-label="Lines from ledger.jsonl after both agents">{LEDGER.join('\n')}</pre>
+      <pre className={clsx('wv-code', s.body, s.code, s.ledgerCode)} tabIndex={0} role="region" aria-label="Lines from ledger.jsonl after both agents">{LEDGER.join('\n')}</pre>
     </li>
 
     <li className={clsx(s.plane, s.handoff)}>
@@ -84,9 +85,9 @@ export default function HomeHandoff() {
         <h3>The handoff</h3>
         <p>Another tool continues from the same files, not from a chat window.</p>
         <p className={s.switch}>
-          <span className={s.from}>claude@cloud</span>
+          <span className={s.from} data-label="claude@cloud">claude@cloud</span>
           <span className={s.switchRule}><span className={s.srOnly}> hands T-02 to </span></span>
-          <span className={s.to}>codex@laptop</span>
+          <span className={s.to} data-label="codex@laptop">codex@laptop</span>
         </p>
       </div>
       <ol className={clsx('wv-thread', 'wv-thread--across', s.body, s.thread)}>

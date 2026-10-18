@@ -3,8 +3,9 @@
   Static markup is the final state. Inside @supports and prefers-reduced-motion:
   no-preference, a view timeline draws the iris thread out to the machines, brings
   the machine rows in at different rates, then draws the thread back to the results.
-  Every animation fills forwards only and starts at entry 0%, so before the stage
-  reaches the viewport (or in a full-page capture) everything sits in its final place.
+  Every animation fills both ways and starts at entry 0%, so nothing shows its final
+  state and then snaps back, and everything is at rest by cover 40%. Without support
+  or with reduced motion everything sits in its final place.
 */
 .fleet {
   padding-top: var(--wv-space-24);
@@ -319,27 +320,27 @@
     .results,
     .stage::before {
       animation-timing-function: linear;
-      animation-fill-mode: forwards;
+      animation-fill-mode: both;
       animation-timeline: --wv-fleet;
     }
 
-    .nodeCoord::after { animation-name: fleetDrawAcross; animation-range: entry 0% cover 30%; }
-    .machines::before { animation-name: fleetDrawDown; animation-range: entry 0% cover 36%; }
-    .machine::before { animation-name: fleetBranch; animation-range: entry 0% cover 40%; }
+    .nodeCoord::after { animation-name: fleetDrawAcross; animation-range: entry 0% cover 15%; }
+    .machines::before { animation-name: fleetDrawDown; animation-range: entry 0% cover 20%; }
+    .machine::before { animation-name: fleetBranch; animation-range: entry 0% cover 25%; }
 
     /* Three layers, three rates: the farther machine arrives later and travels farther. */
     .machine { animation-name: fleetRowIn; }
-    .machine:nth-child(1) { --from: 16px; animation-range: entry 0% cover 40%; }
-    .machine:nth-child(2) { --from: 32px; animation-range: entry 0% cover 45%; }
-    .machine:nth-child(3) { --from: 48px; animation-range: entry 0% cover 50%; }
+    .machine:nth-child(1) { --from: 16px; animation-range: entry 0% cover 26%; }
+    .machine:nth-child(2) { --from: 32px; animation-range: entry 0% cover 29%; }
+    .machine:nth-child(3) { --from: 48px; animation-range: entry 0% cover 32%; }
 
-    .machine :global(.wv-chip) { animation-name: fleetReported; animation-range: entry 0% cover 55%; }
-    .machine::after { animation-name: fleetReturnAcross; animation-range: entry 0% cover 58%; }
-    .machines::after { animation-name: fleetReturnDown; animation-range: entry 0% cover 60%; }
-    .results::before { animation-name: fleetReturnAcross; animation-range: entry 0% cover 62%; }
-    .results { animation-name: fleetResultsIn; animation-range: entry 0% cover 65%; }
+    .machine :global(.wv-chip) { animation-name: fleetReported; animation-range: entry 0% cover 34%; }
+    .machine::after { animation-name: fleetReturnAcross; animation-range: entry 0% cover 36%; }
+    .machines::after { animation-name: fleetReturnDown; animation-range: entry 0% cover 37%; }
+    .results::before { animation-name: fleetReturnAcross; animation-range: entry 0% cover 38%; }
+    .results { animation-name: fleetResultsIn; animation-range: entry 0% cover 40%; }
 
-    .stage::before { animation-name: fleetStackDraw; animation-range: entry 0% cover 70%; }
+    .stage::before { animation-name: fleetStackDraw; animation-range: entry 0% cover 40%; }
   }
 }
 
