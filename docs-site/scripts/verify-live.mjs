@@ -11,7 +11,7 @@
 // /code/ and /docs/.
 //
 // --browser also renders each page in headless Chromium (never a visible
-// window), scrolls it to the bottom so lazy images load, requires every image
+// window), loads lazy images eagerly (hidden tab panels too), requires every image
 // to have decoded, and saves a full-page screenshot per page to --screenshots
 // (default: a new directory under the system temp dir). --preflight only
 // checks that Playwright and its Chromium are installed.
@@ -129,7 +129,10 @@ async function checkBrowser(pages, screenshotDir, failures) {
       try {
         await page.goto(url, { waitUntil: 'load', timeout: 60_000 });
         // Scroll in viewport steps so loading="lazy" images start loading.
+        // Lazy images in hidden panels (inactive tabs) never load on scroll,
+        // so switch every image to eager first.
         await page.evaluate(async () => {
+          for (const img of document.images) img.loading = 'eager';
           for (let y = 0; y < document.documentElement.scrollHeight; y += window.innerHeight / 2) {
             window.scrollTo(0, y);
             await new Promise((resolve) => setTimeout(resolve, 150));
