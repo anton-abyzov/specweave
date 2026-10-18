@@ -57,6 +57,7 @@ import {
 import { promptRootRepoConnection, type RootRepoInfo } from '../helpers/init/root-repo-detection.js';
 import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
 import { displaySummaryBanner } from '../helpers/init/summary-banner.js';
+import { claudeInstallLine } from '../helpers/init/claude-install-line.js';
 import { installProjectSkills, PROJECT_SKILL_DIRS } from '../../core/skills/project-skills.js';
 
 const __dirname = getDirname(import.meta.url);
@@ -416,9 +417,7 @@ export async function initCommand(
     // Non-Claude adapter install
     if (toolName === 'claude') {
       spinner.text = 'Configuring for Claude Code...';
-      console.log('\n' + (adapterLoader.claudeCliIssue
-        ? chalk.yellow(`⚠️  Claude Code files written, but the claude command failed its check (${adapterLoader.claudeCliIssue}); plugins may need a manual install`)
-        : locale.t('cli', 'init.claudeNativeComplete')));
+      console.log('\n' + claudeInstallLine(adapterLoader.claudeCliIssue, locale.t('cli', 'init.claudeNativeComplete')));
     } else {
       await installNonClaudeAdapter(adapterLoader, toolName, targetDir, finalProjectName, options, spinner);
     }

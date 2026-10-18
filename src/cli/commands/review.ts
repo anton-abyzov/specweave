@@ -142,7 +142,7 @@ export async function reviewCommand(incrementId?: string, opts: ReviewCommandOpt
   if (opts.json) {
     out(JSON.stringify({ reviewer: reviewer.name, family: reviewer.family, author: brief.author.primary ?? null, verdict: verdict ?? null, report: reportPath, run: runPath, base, head: brief.head }, null, 2));
   } else {
-    const shown = path.relative(projectRoot, reportPath).split(path.sep).join('/');
+    const shown = path.relative(cwd, reportPath).split(path.sep).join('/');
     out(`${verdict ? `Verdict: ${verdict}` : 'No verdict line in the answer; read the report'} → ${shown}`);
     if (verdict === 'fix first') out('Fix every critical and high finding (or add a task for it), then verify and review again.');
   }

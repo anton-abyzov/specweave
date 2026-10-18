@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe('specweave verify', () => {
-  it('prints the report path relative to the project root', async () => {
+  it('prints the report path relative to where it was run', async () => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-verify-cmd-'));
     const inc = path.join(root, '.specweave', 'increments', '0001-demo');
     fs.mkdirSync(inc, { recursive: true });
@@ -24,5 +24,12 @@ describe('specweave verify', () => {
     await verifyCommand('0001', { cwd: root, cmd: ['true'] });
     const line = out.join('').split('\n').find((l) => /^(PASS|FAIL) → /.test(l));
     expect(line).toMatch(/^(PASS|FAIL) → \.specweave\/increments\/0001-demo\/reports\/verify\.md$/);
+
+    // From a subdirectory the printed path still resolves from where the user is.
+    out.length = 0;
+    fs.mkdirSync(path.join(root, 'src'));
+    await verifyCommand('0001', { cwd: path.join(root, 'src'), cmd: ['true'] });
+    const subLine = out.join('').split('\n').find((l) => /^(PASS|FAIL) → /.test(l));
+    expect(subLine).toMatch(/^(PASS|FAIL) → \.\.\/\.specweave\/increments\/0001-demo\/reports\/verify\.md$/);
   });
 });
