@@ -4,6 +4,8 @@ sidebar_label: SpecWithCode Browser
 description: "Agents in SpecWithCode can use a browser beside each thread, with separate profiles per account, or your real Chrome through the SpecWithCode Browser extension, in a visible tab group, on this computer only."
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # Browsers for agents
 
 Agents often need the web: a dashboard to read, a form to fill, a page to check after a deploy. SpecWithCode gives them two ways in, and you can watch and take over in both.
@@ -13,7 +15,13 @@ Agents often need the web: a dashboard to read, a form to fill, a page to check 
 | Where it runs | Inside SpecWithCode, beside the thread | In your own Chrome profile |
 | Signed in as | An in-app profile: imported cookies or a fresh login | You, with that Chrome profile's logins |
 | Agents of | Every provider | Every provider |
-| Turn it on | **Settings > Integrations > Agent browser access**, per project | **Settings > Chrome**, per machine |
+| Turn it on | **Settings > Integrations > Agent browser access**, for every project, with a per-project override | **Settings > Chrome**, per machine |
+
+## Watch it
+
+A real Codex worker in SpecWithCode 1.0.47 opens a sample app in the in-app browser beside its thread and fills in a form; then you take over, type, hand back, and the agent's screenshot lands in the chat.
+
+<TutorialEmbed slug="agents-use-a-browser" />
 
 ## The in-app browser
 
