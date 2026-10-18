@@ -45,6 +45,7 @@ const COLUMNS = [
       {label: 'Verified Skill', href: 'https://verified-skill.com'},
       {label: 'Blog', to: '/blog'},
       {label: 'Privacy', to: '/privacy'},
+      {label: 'Support', to: '/support'},
     ],
   },
 ];
