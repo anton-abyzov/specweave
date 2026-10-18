@@ -34,6 +34,10 @@ export interface SecretPattern {
  * whitespace.
  */
 export const SECRET_PATTERNS: readonly SecretPattern[] = [
+  // Runs first so no other pattern can eat the BEGIN/END markers. Includes
+  // multiline bodies and JSON-escaped newlines; an unterminated block is cut
+  // off to end of text in scrubSecrets.
+  { type: 'private-key', regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----/g },
   { type: 'openai-key', regex: /sk-[A-Za-z0-9_-]{16,}/g },
   { type: 'github-token', regex: /ghp_[A-Za-z0-9]{20,}/g },
   { type: 'github-oauth', regex: /gho_[A-Za-z0-9]{20,}/g },
@@ -45,8 +49,6 @@ export const SECRET_PATTERNS: readonly SecretPattern[] = [
   { type: 'bearer', regex: /Bearer\s+[A-Za-z0-9._~+/=-]{8,}/g },
   { type: 'password', regex: /password=\S+/gi },
   { type: 'api-key', regex: /api_key=\S+/gi },
-  // Includes multiline bodies, JSON-escaped newlines, and truncated blocks to EOF. Runs last: an unterminated key scrubs to end of text, so the other patterns count first.
-  { type: 'private-key', regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z0-9 ]*PRIVATE KEY-----|$)/g },
 ] as const;
 
 /**
@@ -73,6 +75,13 @@ export function scrubSecrets(text: string): ScrubResult {
   const counts: Record<string, number> = {};
   let scrubbed = text ?? '';
 
+  // A private key with no END marker (a truncated diff or log) is redacted
+  // from its BEGIN to end of text. That tail is only scanned so the counts
+  // still report other secrets inside it.
+  const cut = unterminatedKeyStart(scrubbed);
+  const tail = cut < 0 ? '' : scrubbed.slice(cut);
+  if (cut >= 0) scrubbed = scrubbed.slice(0, cut);
+
   for (const { type, regex } of SECRET_PATTERNS) {
     // Fresh lastIndex per call (regex literals are module-scoped + global).
     regex.lastIndex = 0;
@@ -86,7 +95,29 @@ export function scrubSecrets(text: string): ScrubResult {
     }
   }
 
+  if (cut >= 0) {
+    for (const { type, regex } of SECRET_PATTERNS) {
+      regex.lastIndex = 0;
+      const n = type === 'private-key' ? 0 : (tail.match(regex) ?? []).length;
+      if (n > 0) counts[type] = (counts[type] ?? 0) + n;
+    }
+    counts['private-key'] = (counts['private-key'] ?? 0) + 1;
+    scrubbed += '[REDACTED-private-key]';
+  }
+
   return { scrubbed, counts };
+}
+
+/** Index of the first private-key BEGIN marker with no END marker after it, or -1. */
+function unterminatedKeyStart(text: string): number {
+  const begin = /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----/g;
+  const end = /-----END [A-Z0-9 ]*PRIVATE KEY-----/g;
+  let lastEnd = -1;
+  for (let m = end.exec(text); m; m = end.exec(text)) lastEnd = m.index;
+  for (let m = begin.exec(text); m; m = begin.exec(text)) {
+    if (m.index > lastEnd) return m.index;
+  }
+  return -1;
 }
 
 /**

@@ -108,7 +108,7 @@
         "audio": "narrated",
         "durationSeconds": 78.3,
         "uploadDate": "2026-10-18",
-        "publishedAt": "2026-10-18T08:17:21Z",
+        "publishedAt": null,
         "chapters": [
           {
             "start": 0,

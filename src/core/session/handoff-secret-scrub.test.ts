@@ -79,6 +79,26 @@ describe('scrubSecrets', () => {
     expect(scrubbed).not.toMatch(/-----BEGIN RSA PRIVATE KEY-----/);
   });
 
+  it('redacts a key body even when an assignment pattern precedes BEGIN', () => {
+    for (const prefix of ['api_key=', 'password=', 'Bearer ']) {
+      const { scrubbed } = scrubSecrets(`${prefix}-----BEGIN PRIVATE KEY-----\nMIIESECRETBODY\n-----END PRIVATE KEY-----\nafter`);
+      expect(scrubbed).not.toContain('SECRETBODY');
+      expect(scrubbed).toContain('after');
+    }
+  });
+
+  it('keeps text after a JSON-escaped key whose body holds an assignment', () => {
+    const { scrubbed } = scrubSecrets('-----BEGIN PRIVATE KEY-----\\npassword=x\\n-----END PRIVATE KEY-----\\nnext line keep');
+    expect(scrubbed).toContain('next line keep');
+    expect(scrubbed).not.toContain('password=x');
+  });
+
+  it('redacts an unterminated key to end of text and counts what precedes it', () => {
+    const { scrubbed, counts } = scrubSecrets('ghp_0123456789abcdefABCDEF0123456789abcd\n-----BEGIN RSA PRIVATE KEY-----\nMIIETRUNCATED');
+    expect(scrubbed).toBe('[REDACTED-github-token]\n[REDACTED-private-key]');
+    expect(counts).toEqual({ 'github-token': 1, 'private-key': 1 });
+  });
+
   it('counts multiple occurrences of the same pattern', () => {
     const { counts } = scrubSecrets('sk-aaaaaaaaaaaaaaaaaaaa and sk-bbbbbbbbbbbbbbbbbbbb');
     expect(counts['openai-key']).toBe(2);
