@@ -1,0 +1,88 @@
+{
+  "specweave": "3.1.0",
+  "codex": "codex-cli 0.162.1",
+  "capturedAt": "2026-10-18T08:47:55.316Z",
+  "reviewSeconds": [
+    29,
+    32
+  ],
+  "shots": [
+    {
+      "beat": "02-review",
+      "tool": "claude",
+      "cmd": "specweave review; echo \"exit $?\"",
+      "out": "Reviewer: codex (openai; another family than the author (claude)). Author: claude.\n  2 path(s) since 067bfbf1dc26 · timeout 30 min\nVerdict: fix first → /Users/Shared/specwithcode-demo/tut05-review-with-another-model/final/home/greet-app/.specweave/increments/0001-personal-greeting/reports/review-codex.md\nFix every critical and high finding (or add a task for it), then verify and review again.\nexit 3"
+    },
+    {
+      "beat": "04-report",
+      "tool": "claude",
+      "cmd": "cat .specweave/increments/0001-personal-greeting/reports/review-codex.md",
+      "out": "<!-- specweave review: reviewer=codex family=openai author=claude base=067bfbf1dc2687fddfb1449c8ddf69ca56d45706 head=4cb830cc2d225a3a045c7e02dd989b98f0689d3f at=2026-10-18T08:47:23.094Z -->\n# Review: 0001-personal-greeting Personal greeting\nVerdict: fix first · risk: high · 2 files · 1 finding (1 high)\n\n## [high] src/greeting.js:2 blank names bypass the required fallback\n`greet(\"\")` returns `\"Hello, !\"` and `greet(\"   \")` returns `\"Hello,    !\"`, violating AC-02. `??` only handles null and undefined. Names also remain untrimmed: `greet(\" Ada \")` returns `\"Hello,  Ada !\"`, contrary to the Approach. Reproduced with failing assertions; existing `npm test` passes because these cases are absent. Fix: trim the name, fall back to `\"world\"` when empty, and cover these inputs.\n\nNits: none."
+    },
+    {
+      "beat": "05-fix",
+      "tool": "claude",
+      "cmd": "npm test 2>&1 | grep -E '^# (tests|pass|fail)'",
+      "out": "# tests 3\n# pass 3\n# fail 0"
+    },
+    {
+      "beat": "06-again",
+      "tool": "claude",
+      "cmd": "specweave review; echo \"exit $?\"",
+      "out": "Reviewer: codex (openai; another family than the author (claude)). Author: claude.\n  2 path(s) since 067bfbf1dc26 · timeout 30 min\nVerdict: ship → /Users/Shared/specwithcode-demo/tut05-review-with-another-model/final/home/greet-app/.specweave/increments/0001-personal-greeting/reports/review-codex.md\nexit 0"
+    },
+    {
+      "beat": "07-ledger",
+      "tool": "claude",
+      "cmd": "grep '\"e\":\"note\"' .specweave/increments/0001-personal-greeting/ledger.jsonl | jq -r .note",
+      "out": "review by codex (openai): fix first · reports/review-codex.md\nreview by codex (openai): ship · reports/review-codex.md"
+    },
+    {
+      "beat": "02-review",
+      "tool": "claude",
+      "cmd": "specweave review --brief",
+      "out": "# Adversarial review: 0001-personal-greeting Personal greeting\n\nYou are reviewing code another model wrote. Do not edit files. Hunt for real failures:\ninput or state that leads to wrong output, a crash, a hang, data loss, a leak, or an\nacceptance criterion claimed but not met. Every finding cites `path:line` and the\nconcrete failure. Re-open the lines before you report a finding; drop what does not\nsurvive. \"Consider refactoring\" is not a finding.\n\nRepository: /Users/Shared/specwithcode-demo/tut05-review-with-another-model/final/home/greet-app-first-review\nWritten by: claude (claude 1 finished tasks)\nDiff: git diff 067bfbf1dc26...HEAD -- src/greeting.js test/greeting.test.js (base 067bfbf1dc2687fddfb1449c8ddf69ca56d45706, head 4cb830cc2d225a3a045c7e02dd989b98f0689d3f)\n\nOrder: correctness (logic, error paths, races, off-by-one), security (injection, path\ntraversal, secrets, unsafe exec), spec compliance (ACs below; tests that assert nothing\nor mock the subject), portability (Windows paths, shells, encodings).\n\n## Acceptance criteria\n\n- AC-01: greet(\"Ada\") returns \"Hello, Ada!\" and greet() still returns \"Hello, world!\"\n- AC-02: a blank or whitespace-only name falls back to \"Hello, world!\"\n\n## Approach\n\nChange src/greeting.js and its test only. Trim the name before using it.\n\n## Tasks\n\n- T-01 Greet by name [done] · Files: src/greeting.js, test/greeting.test.js · Test: npm test\n\n## Diff stat\n\n```\nsrc/greeting.js       | 4 +++-\n test/greeting.test.js | 4 ++++\n 2 files changed, 7 insertions(+), 1 deletion(-)\n```\n\n## Diff\n\n```diff\ndiff --git a/src/greeting.js b/src/greeting.js\nindex 83ca416..9b34a29 100644\n--- a/src/greeting.js\n+++ b/src/greeting.js\n@@ -1 +1,3 @@\n-export function greet() { return \"Hello, world!\"; }\n+export function greet(name) {\n+  return `Hello, ${name ?? \"world\"}!`;\n+}\ndiff --git a/test/greeting.test.js b/test/greeting.test.js\nindex 8e43f78..0f2176f 100644\n--- a/test/greeting.test.js\n+++ b/test/greeting.test.js\n@@ -5,3 +5,7 @@ import { greet } from \"../src/greeting.js\";\n test(\"greet() says hello to the world\", () => {\n   assert.equal(greet(), \"Hello, world!\");\n });\n+\n+test(\"greet(name) says hello by name\", () => {\n+  assert.equal(greet(\"Ada\"), \"Hello, Ada!\");\n+});\n```\n\n## Answer in exactly this shape\n\n```markdown\n# Review: 0001-personal-greeting Personal greeting\nVerdict: fix first · risk: high · 6 files · 2 findings (1 critical, 1 high)\n\n## [critical] src/core/tasks/ledger.ts:142 lost claim under equal timestamps\nTwo agents claim T-01 in the same second; the fold sorts only by `at`, so both read\nthemselves as owner. Fix: break ties by `by`, then file order.\n\nNits: at most 5, on one line.\n```\n\nSeverity is critical, high, medium or low. The verdict is `fix first` while any critical\nor high finding survives, otherwise `ship`. The second line must start with `Verdict:`.",
+      "extra": true
+    },
+    {
+      "beat": "05-fix",
+      "tool": "claude",
+      "cmd": "git --no-pager show --format=%s HEAD -- src test",
+      "out": "0001: fall back on a blank name\n\ndiff --git a/src/greeting.js b/src/greeting.js\nindex 9b34a29..947926c 100644\n--- a/src/greeting.js\n+++ b/src/greeting.js\n@@ -1,3 +1,4 @@\n export function greet(name) {\n-  return `Hello, ${name ?? \"world\"}!`;\n+  const trimmed = typeof name === \"string\" ? name.trim() : \"\";\n+  return `Hello, ${trimmed || \"world\"}!`;\n }\ndiff --git a/test/greeting.test.js b/test/greeting.test.js\nindex 0f2176f..23f0ab3 100644\n--- a/test/greeting.test.js\n+++ b/test/greeting.test.js\n@@ -9,3 +9,8 @@ test(\"greet() says hello to the world\", () => {\n test(\"greet(name) says hello by name\", () => {\n   assert.equal(greet(\"Ada\"), \"Hello, Ada!\");\n });\n+\n+test(\"a blank name falls back to the world\", () => {\n+  assert.equal(greet(\"\"), \"Hello, world!\");\n+  assert.equal(greet(\"   \"), \"Hello, world!\");\n+});",
+      "extra": true
+    },
+    {
+      "beat": "07-ledger",
+      "tool": "claude",
+      "cmd": "grep -m1 '^Verdict' .specweave/increments/0001-personal-greeting/reports/review-codex.md",
+      "out": "Verdict: ship · risk: low · 2 files · 0 findings",
+      "extra": true
+    }
+  ],
+  "offCameraDiff": "diff --git a/src/greeting.js b/src/greeting.js\nindex 9b34a29..947926c 100644\n--- a/src/greeting.js\n+++ b/src/greeting.js\n@@ -1,3 +1,4 @@\n export function greet(name) {\n-  return `Hello, ${name ?? \"world\"}!`;\n+  const trimmed = typeof name === \"string\" ? name.trim() : \"\";\n+  return `Hello, ${trimmed || \"world\"}!`;\n }",
+  "ledger": [
+    {
+      "t": "T-01",
+      "e": "claim",
+      "by": "claude@demo"
+    },
+    {
+      "t": "T-01",
+      "e": "done",
+      "by": "claude@demo"
+    },
+    {
+      "t": "*",
+      "e": "note",
+      "by": "claude@demo",
+      "note": "review by codex (openai): fix first · reports/review-codex.md"
+    },
+    {
+      "t": "*",
+      "e": "note",
+      "by": "claude@demo",
+      "note": "review by codex (openai): ship · reports/review-codex.md"
+    }
+  ],
+  "extraCapturedAt": "2026-10-18T09:00:51.781Z"
+}

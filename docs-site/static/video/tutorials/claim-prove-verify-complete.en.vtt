@@ -1,0 +1,101 @@
+WEBVTT
+
+1
+00:00:01.100 --> 00:00:04.940
+Claim, prove, verify and complete a task
+
+2
+00:00:04.940 --> 00:00:07.220
+with the SpecWeave CLI.
+
+3
+00:00:07.270 --> 00:00:10.981
+Start with specweave task claim T-01.
+
+4
+00:00:10.981 --> 00:00:14.176
+The claim goes into the ledger as claude@demo,
+
+5
+00:00:14.176 --> 00:00:16.434
+so others see who owns the task.
+
+6
+00:00:16.434 --> 00:00:20.410
+It prints the acceptance criteria, the files and the test.
+
+7
+00:00:20.660 --> 00:00:22.173
+With the change committed,
+
+8
+00:00:22.173 --> 00:00:26.366
+task done --run runs the test again.
+
+9
+00:00:26.366 --> 00:00:29.514
+Only a zero exit marks the task done,
+
+10
+00:00:29.514 --> 00:00:31.240
+with the output as evidence.
+
+11
+00:00:31.290 --> 00:00:36.795
+The full output is saved in reports/task-T-01.txt:
+
+12
+00:00:36.795 --> 00:00:41.670
+the command, its exit code and the time, then the test results.
+
+13
+00:00:41.720 --> 00:00:45.597
+Now try to close the increment with specweave complete.
+
+14
+00:00:45.597 --> 00:00:50.144
+It refuses: reports/verify.json is missing,
+
+15
+00:00:50.144 --> 00:00:53.580
+so it tells you to run specweave verify first.
+
+16
+00:00:53.630 --> 00:00:58.409
+specweave verify runs the project's test, lint and build scripts,
+
+17
+00:00:58.409 --> 00:01:01.120
+here only npm run test.
+
+18
+00:01:01.120 --> 00:01:03.582
+Both acceptance criteria are met,
+
+19
+00:01:03.582 --> 00:01:06.130
+because the task that covers them is done.
+
+20
+00:01:06.180 --> 00:01:10.620
+Its report, verify.md, keeps the test output,
+
+21
+00:01:10.620 --> 00:01:13.975
+the criteria table, and the task with its evidence.
+
+22
+00:01:13.975 --> 00:01:18.480
+verify.json beside it is what complete reads.
+
+23
+00:01:18.530 --> 00:01:20.678
+Run specweave complete again.
+
+24
+00:01:20.678 --> 00:01:24.430
+The verify check passes, and the increment is completed.
+
+25
+00:01:24.480 --> 00:01:29.040
+Next, hand the work to another agent with specweave handoff.

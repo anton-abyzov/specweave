@@ -1,0 +1,165 @@
+{
+  "voiceId": "0Ki1af67ybTaTu4TNmO8",
+  "modelId": "eleven_v4",
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "lines": [
+    {
+      "id": "01-intro",
+      "chunks": [
+        [
+          "Install SpecWeave and plan your first increment.",
+          "Install spec weave, and plan your first increment."
+        ]
+      ]
+    },
+    {
+      "id": "02-install",
+      "chunks": [
+        [
+          "Install the CLI from npm",
+          "Install the C L I from npm,"
+        ],
+        [
+          "with `npm i -g specweave`.",
+          " with npm i dash g spec weave."
+        ],
+        [
+          "It needs Node 20.12 or later.",
+          " It needs Node twenty point twelve or later."
+        ],
+        [
+          "`specweave --version` prints 3.1.0.",
+          " Spec weave dash dash version prints three point one point oh."
+        ]
+      ]
+    },
+    {
+      "id": "03-init",
+      "chunks": [
+        [
+          "In your repo, run `specweave init` with the Claude Code adapter.",
+          "In your repo, run spec weave init, with the Claude Code adapter."
+        ],
+        [
+          "It writes CLAUDE.md and AGENTS.md,",
+          " It writes Claude dot M D and agents dot M D,"
+        ],
+        [
+          "installs six SpecWeave skills,",
+          " installs six spec weave skills,"
+        ],
+        [
+          "and keeps its settings in `.specweave/config.json`.",
+          " and keeps its settings in config dot JSON, in the spec weave folder."
+        ]
+      ]
+    },
+    {
+      "id": "04-create",
+      "chunks": [
+        [
+          "Now plan the work. Give `specweave create-increment` a title.",
+          "Now plan the work. Give spec weave create increment a title."
+        ],
+        [
+          "It makes the folder `0001-personal-greeting`,",
+          " It makes the folder zero zero zero one personal greeting,"
+        ],
+        [
+          "with a `spec.md` to fill in.",
+          " with a spec dot M D to fill in."
+        ]
+      ]
+    },
+    {
+      "id": "05-decide",
+      "chunks": [
+        [
+          "Step one is Decide. At the default level, critical,",
+          "Step one is Decide. At the default level, critical,"
+        ],
+        [
+          "your agent asks only the decisions that are yours,",
+          " your agent asks only the decisions that are yours,"
+        ],
+        [
+          "one at a time with a recommended answer.",
+          " one at a time, with a recommended answer."
+        ]
+      ]
+    },
+    {
+      "id": "06-spec",
+      "chunks": [
+        [
+          "Then fill in `spec.md`,",
+          "Then fill in spec dot M D,"
+        ],
+        [
+          "yourself or with the `sw-increment` skill:",
+          " yourself, or with the S W increment skill:"
+        ],
+        [
+          "the problem, and numbered acceptance criteria that a test can check.",
+          " the problem, and numbered acceptance criteria that a test can check."
+        ]
+      ]
+    },
+    {
+      "id": "07-tasks",
+      "chunks": [
+        [
+          "Decisions records what was asked, what was defaulted, and what is open.",
+          "Decisions records what was asked, what was defaulted, and what is still open."
+        ],
+        [
+          "Each task names its acceptance criterion, its files,",
+          " Each task names its acceptance criterion, its files,"
+        ],
+        [
+          "and the test that proves it.",
+          " and the test that proves it."
+        ]
+      ]
+    },
+    {
+      "id": "08-pickup",
+      "chunks": [
+        [
+          "Commit the plan, then run `specweave pickup`.",
+          "Commit the plan, then run spec weave pickup."
+        ],
+        [
+          "It shows the increment, the next task, `T-01`,",
+          " It shows the increment, the next task, T zero one,"
+        ],
+        [
+          "with its acceptance criterion, files and test,",
+          " with its acceptance criterion, files, and test,"
+        ],
+        [
+          "and the command that claims it.",
+          " and the command that claims it."
+        ]
+      ]
+    },
+    {
+      "id": "09-outro",
+      "chunks": [
+        [
+          "Next, claim `T-01`",
+          "Next, claim T zero one,"
+        ],
+        [
+          "and prove it with `task done --run`.",
+          " and prove it with task done, dash dash run."
+        ]
+      ]
+    }
+  ]
+}

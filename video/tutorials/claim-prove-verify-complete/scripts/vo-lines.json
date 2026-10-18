@@ -1,0 +1,157 @@
+{
+  "voiceId": "0Ki1af67ybTaTu4TNmO8",
+  "modelId": "eleven_v4",
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "lines": [
+    {
+      "id": "01-intro",
+      "chunks": [
+        [
+          "Claim, prove, verify and complete a task",
+          "Claim, prove, verify, and complete a task,"
+        ],
+        [
+          "with the SpecWeave CLI.",
+          " with the spec weave C L I."
+        ]
+      ]
+    },
+    {
+      "id": "02-claim",
+      "chunks": [
+        [
+          "Start with `specweave task claim T-01`.",
+          "Start with spec weave task claim, T zero one."
+        ],
+        [
+          "The claim goes into the ledger as `claude@demo`,",
+          " The claim goes into the ledger as claude at demo,"
+        ],
+        [
+          "so others see who owns the task.",
+          " so others see who owns the task."
+        ],
+        [
+          "It prints the acceptance criteria, the files and the test.",
+          " It prints the acceptance criteria, the files, and the test."
+        ]
+      ]
+    },
+    {
+      "id": "03-done",
+      "chunks": [
+        [
+          "With the change committed,",
+          "With the change committed,"
+        ],
+        [
+          "`task done --run` runs the test again.",
+          " task done, dash dash run, runs the test again."
+        ],
+        [
+          "Only a zero exit marks the task done,",
+          " Only a zero exit marks the task done,"
+        ],
+        [
+          "with the output as evidence.",
+          " with the output as evidence."
+        ]
+      ]
+    },
+    {
+      "id": "04-evidence",
+      "chunks": [
+        [
+          "The full output is saved in `reports/task-T-01.txt`:",
+          "The full output is saved in reports, task T zero one dot T X T:"
+        ],
+        [
+          "the command, its exit code and the time, then the test results.",
+          " the command, its exit code and the time, then the test results."
+        ]
+      ]
+    },
+    {
+      "id": "05-blocked",
+      "chunks": [
+        [
+          "Now try to close the increment with `specweave complete`.",
+          "Now try to close the increment, with spec weave complete."
+        ],
+        [
+          "It refuses: `reports/verify.json` is missing,",
+          " It refuses: reports, verify dot JSON is missing,"
+        ],
+        [
+          "so it tells you to run `specweave verify` first.",
+          " so it tells you to run spec weave verify first."
+        ]
+      ]
+    },
+    {
+      "id": "06-verify",
+      "chunks": [
+        [
+          "`specweave verify` runs the project's test, lint and build scripts,",
+          "Spec weave verify runs the project's test, lint, and build scripts,"
+        ],
+        [
+          "here only `npm run test`.",
+          " here only N P M run test."
+        ],
+        [
+          "Both acceptance criteria are met,",
+          " Both acceptance criteria are met,"
+        ],
+        [
+          "because the task that covers them is done.",
+          " because the task that covers them is done."
+        ]
+      ]
+    },
+    {
+      "id": "07-report",
+      "chunks": [
+        [
+          "Its report, `verify.md`, keeps the test output,",
+          "Its report, verify dot M D, keeps the test output,"
+        ],
+        [
+          "the criteria table, and the task with its evidence.",
+          " the criteria table, and the task with its evidence."
+        ],
+        [
+          "`verify.json` beside it is what `complete` reads.",
+          " Verify dot JSON, beside it, is what complete reads."
+        ]
+      ]
+    },
+    {
+      "id": "08-complete",
+      "chunks": [
+        [
+          "Run `specweave complete` again.",
+          "Run spec weave complete again."
+        ],
+        [
+          "The verify check passes, and the increment is completed.",
+          " The verify check passes, and the increment is completed."
+        ]
+      ]
+    },
+    {
+      "id": "09-outro",
+      "chunks": [
+        [
+          "Next, hand the work to another agent with `specweave handoff`.",
+          "Next, hand the work to another agent with spec weave handoff."
+        ]
+      ]
+    }
+  ]
+}
