@@ -23,9 +23,9 @@ const pickupLines: Array<[string, boolean?]> = [
 ];
 
 const handoffOutput = [
-  'Handed off (pushed your uncommitted edits).',
+  'Handed off 0001-resumable-checkout (released T-02, pushed your uncommitted edits).',
   'To continue in any tool, machine or account, say "pick up" there (or run `specweave pickup`).',
-  'Details: .handoff/HANDOFF.md',
+  'Details: .specweave/increments/0001-resumable-checkout/handoff.md',
 ].join('\n');
 
 function Prompt({ children }: { children: string }) {
@@ -89,7 +89,7 @@ export default function Product() {
             <p className={s.machineLabel}>Arriving: Codex, as codex@laptop</p>
             <pre className={`wv-code ${s.terminal}`} aria-label="specweave pickup in the next tool"><Prompt>specweave pickup</Prompt><PickupOutput lines={pickupLines.slice(0, 4)} /></pre>
           </div>
-          <p className={s.caption}>Both terminals show real CLI output: the handoff from the session being left, the pickup from a second clone running as Codex.</p>
+          <p className={s.caption}>The pickup lines are real output from a second clone running as Codex. The handoff lines are the CLI's exact message for the same run.</p>
         </div>
       </section>
 
