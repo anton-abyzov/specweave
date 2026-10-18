@@ -177,9 +177,10 @@ export default function Tutorials() {
                   type="button"
                   className={styles.filter}
                   aria-pressed={filter === f.id}
+                  aria-label={`${f.label}, ${counts[f.id]} ${counts[f.id] === 1 ? 'guide' : 'guides'}`}
                   onClick={() => choose(f.id)}
                 >
-                  {f.label}<span className={styles.count}>{counts[f.id]}</span>
+                  {f.label}<span className={styles.count} aria-hidden="true">{counts[f.id]}</span>
                 </button>
               ))}
             </div>

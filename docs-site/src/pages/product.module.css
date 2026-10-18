@@ -179,28 +179,29 @@
   to { transform: none; opacity: 1; }
 }
 
-/* Fill forwards only: before a range starts (below the fold, a full-page capture,
-   no support, reduced motion) every part keeps its static, final layout. */
+/* Ranges start at entry 0% and fill both ways, so nothing shows its final state and then
+   snaps back; every part is at rest by cover 40%. Without support or with reduced motion
+   every part keeps its static, final layout. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .loop { view-timeline: --wv-loop block; }
 
     .loop::before {
-      animation: loopDraw linear forwards;
+      animation: loopDraw linear both;
       animation-timeline: --wv-loop;
-      animation-range: entry 25% exit 30%;
+      animation-range: entry 0% cover 40%;
     }
 
     .loop > .step::before {
-      animation: markerOn linear forwards;
+      animation: markerOn linear both;
       animation-timeline: view();
-      animation-range: entry 30% entry 70%;
+      animation-range: entry 0% entry 100%;
     }
 
     .stepFile {
-      animation: fileIn linear forwards;
+      animation: fileIn linear both;
       animation-timeline: view();
-      animation-range: entry 20% cover 40%;
+      animation-range: entry 0% cover 40%;
     }
   }
 }

@@ -23,10 +23,12 @@ Tailscale connects outward, so the machine needs no open inbound port. Leave the
 
 ```bash
 curl -fsSL https://tailscale.com/install.sh | sh
-sudo tailscale up
+sudo tailscale up --operator="$(id -un)"
 ```
 
-Sign in with the Tailscale account your Mac uses, then turn off key expiry for this machine in the Tailscale admin console.
+On a machine where Tailscale is already up, run `sudo tailscale set --operator="$(id -un)"` instead. Making your user the operator lets SpecWithCode set up Tailscale Serve without root.
+
+Sign in with the Tailscale account your Mac uses, then turn off key expiry for this machine in the Tailscale admin console. HTTPS certificates must be on for the tailnet: in the admin console, open **DNS** and turn on **HTTPS Certificates**.
 
 ## Install the server
 
@@ -48,28 +50,33 @@ curl -fsSLO "$BASE/$ARCHIVE"
 grep "$ARCHIVE" SHA256SUMS | sha256sum -c -
 ```
 
-Unpack it into a folder of its own and give it a command:
+Unpack it into a temporary folder and run its `bin.mjs` once to set up the background service:
 
 ```bash
-mkdir -p ~/.local/share/specwithcode/runtime/$VERSION ~/.local/bin
-tar -xzf "$ARCHIVE" -C ~/.local/share/specwithcode/runtime/$VERSION
-printf '#!/bin/sh\nexec node "%s/bin.mjs" "$@"\n' "$HOME/.local/share/specwithcode/runtime/$VERSION" \
-  > ~/.local/bin/specwithcode
-chmod +x ~/.local/bin/specwithcode
+mkdir -p /tmp/swc && tar -xzf "$ARCHIVE" -C /tmp/swc
+sudo loginctl enable-linger "$(id -un)"
+node /tmp/swc/bin.mjs service install
+```
+
+`service install` pins this version under `~/.specwithcode/runtime/versions/$VERSION` and writes the systemd user unit; lingering keeps the service running after you log out and starts it at boot. Then put the command on your `PATH` and remove the temporary copy:
+
+```bash
+mkdir -p ~/.local/bin
+ln -sf ~/.specwithcode/runtime/versions/$VERSION/specweave-studio ~/.local/bin/specwithcode
+rm -rf /tmp/swc
+specwithcode service status
 specwithcode --version
 ```
 
-Keep `~/.local/bin` on the `PATH`. To update, unpack the next release into its own folder and point the wrapper at it.
+Keep `~/.local/bin` on the `PATH`. The service takes the `PATH` of your login shell when it starts: install `claude` and `codex` so they run in a new SSH session, then run `specwithcode service restart`.
 
-## Run it over Tailscale
+## Update it
 
-Start it once by hand, then make it a user service that survives logouts and reboots:
+The service runs the pinned copy under `~/.specwithcode/runtime/versions/<version>`, so unpacking a new archive elsewhere does not change what runs. Update it one of these ways:
 
-```bash
-specwithcode serve --tailscale-serve     # prints its https://<host>.<tailnet>.ts.net address
-specwithcode service install
-specwithcode service status
-```
+- On the machine, run `STUDIO_ENABLE_SELF_UPDATE=true specwithcode update --yes`. It installs the next release under `~/.specwithcode/runtime/versions/<version>`, switches the `specwithcode` command to it and restarts the service; `--yes` allows the restart from a script.
+- Update it from the Mac.
+- Unpack the new release as above and run its `node bin.mjs service install` again, which pins the new version and rewrites the unit.
 
 ## Pair it with your Mac
 
@@ -77,7 +84,7 @@ specwithcode service status
 specwithcode fleet invite --label "Hetzner VPS"
 ```
 
-It prints one line starting with `swc-machine-`. Treat it like a password. On the Mac, paste it under **Settings > Connections > Your private machines > Add a machine**, then choose **Allow workers** on the new card. [Add a machine](/docs/studio/add-a-machine) covers the rest, including the one-subscription-per-machine recommendation.
+It publishes the server on `https://<host>.<tailnet>.ts.net` through Tailscale Serve; the address persists across restarts and is reachable only on your tailnet. It prints one line starting with `swc-machine-`. Treat it like a password. On the Mac, paste it under **Settings > Connections > Your private machines > Add a machine**, then choose **Allow workers** on the new card. [Add a machine](/docs/studio/add-a-machine) covers the rest, including the one-subscription-per-machine recommendation.
 
 From then on a coordinator starts work there when you ask, for example "run the tests on the Hetzner VPS".
 
