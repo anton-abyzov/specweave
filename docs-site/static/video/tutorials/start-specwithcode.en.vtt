@@ -1,0 +1,121 @@
+WEBVTT
+
+1
+00:00:01.100 --> 00:00:06.460
+Start SpecWithCode with a project, a coordinator and two workers.
+
+2
+00:00:07.010 --> 00:00:11.741
+This run uses SpecWithCode 1.0.45.
+
+3
+00:00:11.741 --> 00:00:15.990
+Settings, General, About shows the version on your Mac.
+
+4
+00:00:16.040 --> 00:00:18.407
+Click the plus next to Projects.
+
+5
+00:00:18.407 --> 00:00:23.949
+New project starts one from a name. Local folder adopts a repo you already have.
+
+6
+00:00:23.949 --> 00:00:28.695
+Here it's greet-app, with SpecWeave and one increment of two tasks.
+
+7
+00:00:28.695 --> 00:00:31.100
+The project opens on its coordinator.
+
+8
+00:00:31.150 --> 00:00:33.416
+Choose Full access for this demo.
+
+9
+00:00:33.416 --> 00:00:36.122
+It applies to every chat in this project.
+
+10
+00:00:36.122 --> 00:00:39.472
+Then ask the coordinator for a two-part change:
+
+11
+00:00:39.472 --> 00:00:43.410
+one worker per task, with titles and a short report.
+
+12
+00:00:43.460 --> 00:00:46.358
+The coordinator does none of the work itself.
+
+13
+00:00:46.358 --> 00:00:48.220
+It starts two worker threads,
+
+14
+00:00:48.220 --> 00:00:51.034
+and they appear in the right panel under Working.
+
+15
+00:00:51.034 --> 00:00:56.663
+Each one gets a brief: claim, implement, test, close and report.
+
+16
+00:00:56.663 --> 00:01:01.021
+The workers share one checkout, so each works on its own files.
+
+17
+00:01:01.021 --> 00:01:04.135
+Each plan chip counts the increment's tasks done,
+
+18
+00:01:04.135 --> 00:01:06.037
+from zero to two of two.
+
+19
+00:01:06.037 --> 00:01:09.320
+The whole run took under a minute; it's sped up here.
+
+20
+00:01:09.370 --> 00:01:13.186
+Open a worker. Its result stays in its own thread.
+
+21
+00:01:13.186 --> 00:01:17.132
+Its first message is the coordinator's brief, with your words.
+
+22
+00:01:17.132 --> 00:01:21.019
+A final message with three headed sections becomes a report card,
+
+23
+00:01:21.019 --> 00:01:23.546
+saved in the increment's reports folder.
+
+24
+00:01:23.546 --> 00:01:25.790
+Open report reads it in full.
+
+25
+00:01:25.840 --> 00:01:28.920
+Click the plan chip: both tasks are done,
+
+26
+00:01:28.920 --> 00:01:31.438
+and both acceptance criteria are met.
+
+27
+00:01:31.438 --> 00:01:34.684
+Open spec and Open increment go to its files.
+
+28
+00:01:34.684 --> 00:01:39.200
+This chip matched increment 0001 by the thread's title,
+
+29
+00:01:39.200 --> 00:01:42.100
+so put the increment number in each worker's title.
+
+30
+00:01:42.150 --> 00:01:45.990
+Next: keep working when a provider runs out.

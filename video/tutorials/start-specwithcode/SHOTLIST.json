@@ -1,0 +1,222 @@
+{
+  "episode": "start-specwithcode",
+  "app": "SpecWithCode 1.0.45 (release aec65f41a671d18d03de), disposable server on 127.0.0.1:8341",
+  "startPath": "/",
+  "comment": "One continuous headless take. The first-run setup and the provider-update toast are handled off camera by record.mjs --prepare. Beat ids match edit.json and vo-lines.json.",
+  "shots": [
+    {
+      "id": "02-version",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Account: Demo Mac"
+        },
+        {
+          "do": "click",
+          "role": "menuitem",
+          "name": "Settings",
+          "after": 1200
+        },
+        {
+          "do": "scrollTo",
+          "text": "Current version of the application.",
+          "ms": 1500
+        },
+        {
+          "do": "hover",
+          "text": "Current version of the application.",
+          "ms": 2500
+        },
+        {
+          "do": "press",
+          "key": "Escape",
+          "after": 800
+        }
+      ]
+    },
+    {
+      "id": "03-project",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "click",
+          "css": "[aria-label='Add project']",
+          "after": 900
+        },
+        {
+          "do": "hover",
+          "text": "Start a code project from a name",
+          "ms": 2200
+        },
+        {
+          "do": "hover",
+          "text": "Browse a folder on disk",
+          "ms": 1500
+        },
+        {
+          "do": "click",
+          "text": "Local folder",
+          "exact": true,
+          "after": 900
+        },
+        {
+          "do": "type",
+          "text": "~/greet-app",
+          "delay": 70
+        },
+        {
+          "do": "pause",
+          "ms": 900
+        },
+        {
+          "do": "press",
+          "key": "Enter",
+          "after": 1500
+        },
+        {
+          "do": "expect",
+          "text": "Excited to get started on greet-app"
+        },
+        {
+          "do": "hover",
+          "text": "Continue increment 0001",
+          "ms": 2500
+        },
+        {
+          "do": "hover",
+          "label": "Coordinator model: Codex \u00b7 GPT-6.1-Sol. Change model",
+          "ms": 2000
+        }
+      ]
+    },
+    {
+      "id": "04-ask",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "select",
+          "label": "Project permissions",
+          "option": "Full access"
+        },
+        {
+          "do": "type",
+          "placeholder": "Describe a task or ask a question",
+          "delay": 18,
+          "text": "Start two workers in parallel, titled 0001 T-01 and 0001 T-02, one per task of increment 0001. Each claims its task with specweave, makes the change, closes it with specweave task done and the task's test, and ends with a short report under three headings: What changed, Test, Files."
+        },
+        {
+          "do": "pause",
+          "ms": 700
+        },
+        {
+          "do": "press",
+          "key": "Enter",
+          "after": 1000
+        }
+      ]
+    },
+    {
+      "id": "05-workers",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "expect",
+          "text": "Working",
+          "exact": true,
+          "timeout": 120000
+        },
+        {
+          "do": "mouse",
+          "x": 1100,
+          "y": 760,
+          "ms": 300
+        },
+        {
+          "do": "waitCount",
+          "text": "Done",
+          "exact": true,
+          "count": 2,
+          "timeout": 600000
+        },
+        {
+          "do": "pause",
+          "ms": 6000
+        }
+      ]
+    },
+    {
+      "id": "06-report",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "click",
+          "text": "0001 T-01",
+          "exact": true,
+          "last": true,
+          "after": 1500
+        },
+        {
+          "do": "expect",
+          "text": "Open report"
+        },
+        {
+          "do": "hover",
+          "text": "from coordinator",
+          "ms": 4000
+        },
+        {
+          "do": "hover",
+          "text": "Saved",
+          "exact": true,
+          "last": true,
+          "ms": 5000
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Open report",
+          "after": 1500
+        },
+        {
+          "do": "pause",
+          "ms": 3000
+        },
+        {
+          "do": "press",
+          "key": "Escape",
+          "after": 1200
+        }
+      ]
+    },
+    {
+      "id": "07-plan",
+      "kind": "APP",
+      "steps": [
+        {
+          "do": "click",
+          "css": "[data-thread-plan-card] > button",
+          "after": 2500
+        },
+        {
+          "do": "click",
+          "text": "Acceptance criteria",
+          "after": 2500
+        },
+        {
+          "do": "hover",
+          "text": "Open spec",
+          "exact": true,
+          "ms": 3000
+        },
+        {
+          "do": "mouse",
+          "x": 1700,
+          "y": 620,
+          "ms": 3500
+        }
+      ]
+    }
+  ]
+}
