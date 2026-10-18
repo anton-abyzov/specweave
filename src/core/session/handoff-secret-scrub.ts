@@ -34,11 +34,14 @@ export interface SecretPattern {
  * whitespace.
  */
 export const SECRET_PATTERNS: readonly SecretPattern[] = [
-  // Runs first so no other pattern can eat the BEGIN/END markers. Includes
-  // multiline bodies and JSON-escaped newlines; an unterminated block is cut
-  // off to end of text in scrubSecrets.
-  { type: 'private-key', regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----/g },
-  { type: 'openai-key', regex: /sk-[A-Za-z0-9_-]{16,}/g },
+  // Runs first so no other pattern can eat the BEGIN/END markers. Covers PEM
+  // and PGP armor, multiline bodies and JSON-escaped newlines. A block never
+  // spans another BEGIN, so a marker quoted in prose does not swallow the text
+  // up to a later real key; an unterminated block is cut off to end of text in
+  // scrubSecrets.
+  { type: 'private-key', regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY(?: BLOCK)?-----(?:(?!-----BEGIN )[\s\S])*?-----END [A-Z0-9 ]*PRIVATE KEY(?: BLOCK)?-----/g },
+  // Not inside a word, so slugs like task-handoff-secret-scrub survive.
+  { type: 'openai-key', regex: /(?<![A-Za-z0-9_-])sk-[A-Za-z0-9_-]{16,}/g },
   { type: 'github-token', regex: /ghp_[A-Za-z0-9]{20,}/g },
   { type: 'github-oauth', regex: /gho_[A-Za-z0-9]{20,}/g },
   { type: 'github-server', regex: /ghs_[A-Za-z0-9]{20,}/g },
@@ -46,9 +49,12 @@ export const SECRET_PATTERNS: readonly SecretPattern[] = [
   { type: 'aws-temp-key', regex: /ASIA[0-9A-Z]{12,}/g },
   { type: 'vskill-token', regex: /vsk_[A-Za-z0-9]{16,}/g },
   { type: 'slack-token', regex: /xox[bap]-[A-Za-z0-9-]{10,}/g },
-  { type: 'bearer', regex: /Bearer\s+[A-Za-z0-9._~+/=-]{8,}/g },
-  { type: 'password', regex: /password=\S+/gi },
-  { type: 'api-key', regex: /api_key=\S+/gi },
+  // Same line, and the token holds a digit or a dot, so prose like
+  // "Bearer authentication" is left alone.
+  { type: 'bearer', regex: /Bearer[ \t]+(?=[A-Za-z0-9._~+/=-]*[0-9.])[A-Za-z0-9._~+/=-]{8,}/g },
+  // Skip a value an earlier pattern already redacted, so it counts once.
+  { type: 'password', regex: /password=(?!\[REDACTED-)\S+/gi },
+  { type: 'api-key', regex: /api_key=(?!\[REDACTED-)\S+/gi },
 ] as const;
 
 /**
@@ -82,25 +88,11 @@ export function scrubSecrets(text: string): ScrubResult {
   const tail = cut < 0 ? '' : scrubbed.slice(cut);
   if (cut >= 0) scrubbed = scrubbed.slice(0, cut);
 
-  for (const { type, regex } of SECRET_PATTERNS) {
-    // Fresh lastIndex per call (regex literals are module-scoped + global).
-    regex.lastIndex = 0;
-    let matched = 0;
-    scrubbed = scrubbed.replace(regex, () => {
-      matched += 1;
-      return `[REDACTED-${type}]`;
-    });
-    if (matched > 0) {
-      counts[type] = matched;
-    }
-  }
+  scrubbed = applyPatterns(scrubbed, counts);
 
   if (cut >= 0) {
-    for (const { type, regex } of SECRET_PATTERNS) {
-      regex.lastIndex = 0;
-      const n = type === 'private-key' ? 0 : (tail.match(regex) ?? []).length;
-      if (n > 0) counts[type] = (counts[type] ?? 0) + n;
-    }
+    // Same sequential pass as the head, so counts match the same text anywhere.
+    applyPatterns(tail, counts);
     counts['private-key'] = (counts['private-key'] ?? 0) + 1;
     scrubbed += '[REDACTED-private-key]';
   }
@@ -108,10 +100,28 @@ export function scrubSecrets(text: string): ScrubResult {
   return { scrubbed, counts };
 }
 
+/** Runs every pattern in order over `text`, adding to `counts`. */
+function applyPatterns(text: string, counts: Record<string, number>): string {
+  let out = text;
+  for (const { type, regex } of SECRET_PATTERNS) {
+    // Fresh lastIndex per call (regex literals are module-scoped + global).
+    regex.lastIndex = 0;
+    let matched = 0;
+    out = out.replace(regex, () => {
+      matched += 1;
+      return `[REDACTED-${type}]`;
+    });
+    if (matched > 0) {
+      counts[type] = (counts[type] ?? 0) + matched;
+    }
+  }
+  return out;
+}
+
 /** Index of the first private-key BEGIN marker with no END marker after it, or -1. */
 function unterminatedKeyStart(text: string): number {
-  const begin = /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----/g;
-  const end = /-----END [A-Z0-9 ]*PRIVATE KEY-----/g;
+  const begin = /-----BEGIN [A-Z0-9 ]*PRIVATE KEY(?: BLOCK)?-----/g;
+  const end = /-----END [A-Z0-9 ]*PRIVATE KEY(?: BLOCK)?-----/g;
   let lastEnd = -1;
   for (let m = end.exec(text); m; m = end.exec(text)) lastEnd = m.index;
   for (let m = begin.exec(text); m; m = begin.exec(text)) {
