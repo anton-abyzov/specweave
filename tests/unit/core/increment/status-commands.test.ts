@@ -59,6 +59,13 @@ vi.mock('../../../../src/sync/github-reconciler.js', () => ({
   },
 }));
 
+const mockValidateCompletion = vi.fn();
+vi.mock('../../../../src/core/increment/completion-validator.js', () => ({
+  IncrementCompletionValidator: {
+    validateCompletion: (...args: unknown[]) => mockValidateCompletion(...args),
+  },
+}));
+
 // Mock process.exit — throw to halt code execution (like real process.exit)
 class ProcessExitError extends Error {
   code: number;
@@ -477,6 +484,49 @@ describe('status-commands', () => {
       // Living docs sync is now handled by LifecycleHookDispatcher.onIncrementDone
       // (not called directly in completeIncrement)
       expect(mockOnIncrementDone).toHaveBeenCalled();
+    });
+
+    it('prints no success line before a run blocked by the quality gates, and the error once', async () => {
+      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.ACTIVE }));
+      mockValidateCompletion.mockResolvedValue({ isValid: false, errors: ['reports/verify.json missing'], warnings: [] });
+      const lines: string[] = [];
+      const logSpy = vi.spyOn(console, 'log').mockImplementation((m: unknown) => { lines.push(String(m)); });
+      const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+      expect(await completeIncrement({ incrementId: '0001-test' })).toBe(false);
+
+      expect(lines.join('\n')).not.toContain('✅');
+      expect(lines.join('\n')).toContain('failed quality gates');
+      expect(stderrSpy).not.toHaveBeenCalledWith(expect.stringContaining('failed quality gates'));
+      logSpy.mockImplementation(() => {});
+      stderrSpy.mockRestore();
+    });
+
+    it('still reports a blocked run on stderr in silent mode', async () => {
+      mockRead.mockReturnValue(makeMetadata({ status: IncrementStatus.ACTIVE }));
+      mockValidateCompletion.mockResolvedValue({ isValid: false, errors: ['reports/verify.json missing'], warnings: [] });
+      const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+      expect(await completeIncrement({ incrementId: '0001-test', silent: true })).toBe(false);
+
+      expect(stderrSpy).toHaveBeenCalledWith(expect.stringContaining('failed quality gates: reports/verify.json missing'));
+      stderrSpy.mockRestore();
+    });
+
+    it('logs no intermediate transitions on a successful close', async () => {
+      mockRead
+        .mockReturnValueOnce(makeMetadata({ status: IncrementStatus.ACTIVE }))
+        .mockReturnValue(makeMetadata({ status: IncrementStatus.READY_FOR_REVIEW }));
+      mockValidateCompletion.mockResolvedValue({ isValid: true, errors: [], warnings: [], info: ['verify ok'] });
+      const lines: string[] = [];
+      const logSpy = vi.spyOn(console, 'log').mockImplementation((m: unknown) => { lines.push(String(m)); });
+
+      expect(await completeIncrement({ incrementId: '0001-test' })).toBe(true);
+
+      const text = lines.join('\n');
+      expect(text).not.toContain('Transitioning');
+      expect(text.indexOf('✅')).toBe(text.indexOf('✅ Increment 0001-test completed!'));
+      logSpy.mockImplementation(() => {});
     });
 
     it('should return true even when hooks throw (error-isolated)', async () => {

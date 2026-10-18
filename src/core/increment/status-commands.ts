@@ -305,8 +305,11 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
   const closeReason = options.reason?.trim() || undefined;
 
   const log = (msg: string) => !silent && console.log(msg);
+  // The terminal already got the failure from log(); stderr carries it only
+  // when output is silenced, so auto/silent mode failures stay visible.
+  const failNote = (msg: string) => { if (silent) process.stderr.write(`[completeIncrement] ${msg}\n`); };
 
-  log(chalk.blue(`\n✅ Completing increment ${incrementId}...\n`));
+  log(chalk.blue(`\nCompleting increment ${incrementId}...\n`));
 
   try {
     // Check if increment exists
@@ -325,8 +328,7 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
       log(chalk.red(`❌ Cannot complete increment ${incrementId}`));
       log(chalk.gray(`   Current status: ${metadata.status}`));
       log(chalk.gray(`   No valid transition path to completed`));
-      // Always log to stderr so auto/silent mode failures are visible
-      process.stderr.write(`[completeIncrement] Cannot complete ${incrementId}: no valid transition from "${metadata.status}" to "completed"\n`);
+      failNote(`Cannot complete ${incrementId}: no valid transition from "${metadata.status}" to "completed"`);
       return false;
     }
 
@@ -343,8 +345,7 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
           log(chalk.yellow(`\n⚠️  Warnings:\n`));
           validation.warnings.forEach((warn) => log(chalk.yellow(`   • ${warn}`)));
         }
-        // Always log to stderr so auto/silent mode failures are visible
-        process.stderr.write(`[completeIncrement] ${incrementId} failed quality gates: ${validation.errors.join('; ')}\n`);
+        failNote(`${incrementId} failed quality gates: ${validation.errors.join('; ')}`);
         return false;
       }
 
@@ -369,7 +370,6 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
     // Walk intermediate transitions (all states before the final COMPLETED)
     const intermediateSteps = path.slice(0, -1);
     for (const intermediateStatus of intermediateSteps) {
-      log(chalk.gray(`   Transitioning: ${metadata.status} → ${intermediateStatus}`));
       try {
         MetadataManager.updateStatus(incrementId, intermediateStatus);
         Object.assign(metadata, MetadataManager.read(incrementId));
@@ -377,7 +377,7 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
         const errMsg = error instanceof Error ? error.message : String(error);
         log(chalk.red(`❌ Failed during intermediate transition to ${intermediateStatus}`));
         log(chalk.gray(`   ${errMsg}`));
-        process.stderr.write(`[completeIncrement] Failed transition ${incrementId} to "${intermediateStatus}": ${errMsg}\n`);
+        failNote(`Failed transition ${incrementId} to "${intermediateStatus}": ${errMsg}`);
         return false;
       }
     }
@@ -471,8 +471,7 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     log(chalk.red(`\n❌ Failed to complete increment: ${msg}\n`));
-    // Always write to stderr so auto/silent mode failures are visible
-    process.stderr.write(`[completeIncrement] Unexpected failure for ${incrementId}: ${msg}\n`);
+    failNote(`Unexpected failure for ${incrementId}: ${msg}`);
     return false;
   }
 }
