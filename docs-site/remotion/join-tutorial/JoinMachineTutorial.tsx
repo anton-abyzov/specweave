@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Audio, Easing, Img, interpolate, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {TransitionSeries, linearTiming} from '@remotion/transitions';
 import {fade} from '@remotion/transitions/fade';
 import {slide} from '@remotion/transitions/slide';
@@ -7,13 +7,13 @@ import {C, FONT} from '../studio-tutorial/theme';
 import {Backdrop, Chip, Copy, Eyebrow, Highlight, Pop, Reveal, ScaleCtx, SourceNote, Window} from '../studio-tutorial/primitives';
 
 // How to join a Mac to a SpecWithCode cluster. Product scenes are real screenshots
-// (1440x900 CSS px at 2x) captured headless from a private test server built from
-// specwithcode main (the 1.0.44 flow; released 1.0.43 lacks it); the invitation line
-// and the host's machine name are masked. Anything drawn is labelled.
+// (1440x900 CSS px at 2x) captured headless from a private test server running the
+// released specwithcode 1.0.47 npm package; the invitation line and the host's machine
+// name are masked. Anything drawn is labelled. Voiceover: one clip per scene.
 const SRC_W = 1440;
 const SRC_H = 900;
 const WIN = {left: 712, top: 176, w: 1088, h: 680};
-const SHOT = 'Screenshot · SpecWithCode 1.0.44 (pre-release build from main), captured 18 Oct 2026';
+const SHOT = 'Screenshot · SpecWithCode 1.0.47, captured 18 Oct 2026';
 
 const ease = Easing.bezier(0.65, 0, 0.35, 1);
 type Rect = [x: number, y: number, w: number];
@@ -43,7 +43,7 @@ const FULL: Rect = [0, 0, SRC_W];
 
 /** Corner tag that says what the window shows. */
 const Tag: React.FC<{kind: 'screenshot' | 'illustration' | 'terminal'}> = ({kind}) => {
-  const label = {screenshot: 'Real screenshot', illustration: 'Illustration', terminal: 'Terminal graphic · for 1.0.43'}[kind];
+  const label = {screenshot: 'Real screenshot', illustration: 'Illustration', terminal: 'Terminal graphic'}[kind];
   return <div style={{position: 'absolute', left: WIN.left + WIN.w - 18, top: WIN.top - 22, transform: 'translateX(-100%)'}}>
     <Pop at={18}><Chip tone={kind === 'screenshot' ? 'olive' : 'rust'} size={17}>{label}</Chip></Pop>
   </div>;
@@ -157,11 +157,11 @@ const Joined: React.FC = () =>
   </Split>;
 
 const Add: React.FC = () =>
-  <Split kind="screenshot" note={`${SHOT}. Shown empty; paste your own line here.`} copy={<Copy width={540} eyebrow="05 / On the main machine" line1="Settings › Connections." line2="Add a machine." body="Paste the line into Add a machine, then choose Add machine. The new Mac shows up in Your private machines." />}>
+  <Split kind="screenshot" note={`${SHOT}. Shown empty; paste your own line here.`} copy={<Copy width={540} eyebrow="05 / On the main machine" line1="Settings › Connections." line2="Add a machine." body="Paste the line into Add a machine, then choose Add machine. It works for a second Mac or your own Linux VPS, and it shows up in Your private machines." />}>
     <InWindow title="Settings · Connections">
       <Still src="04-connections-add-a-machine.png" keys={[{f: 0, r: FULL}, {f: 35, r: FULL}, {f: 85, r: [400, 110, 900]}]}>
-        <Highlight x={418} y={200} w={860} h={73} from={92} to={160} color={C.olive} />
-        <Highlight x={878} y={223} w={285} h={28} from={165} />
+        <Highlight x={418} y={200} w={860} h={105} from={92} to={160} color={C.olive} />
+        <Highlight x={878} y={239} w={285} h={28} from={165} />
       </Still>
     </InWindow>
   </Split>;
@@ -173,7 +173,7 @@ const WorkersCallout: React.FC<{at: number}> = ({at}) => {
   const btn = interpolate(frame, [at + 40, at + 52], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   return <>
     <div style={{position: 'absolute', inset: 0, background: 'rgba(246,244,238,.55)', opacity: p}} />
-    <div style={{position: 'absolute', left: 430, top: 150, width: 836, padding: '14px 18px', background: C.card, border: `2px dashed ${C.rust}`, borderRadius: 10, opacity: p, transform: `translateY(${(1 - p) * 14}px)`, fontFamily: FONT.sans, boxShadow: '0 20px 40px -24px rgba(32,35,28,.45)'}}>
+    <div style={{position: 'absolute', left: 430, top: 150, width: 836, minHeight: 146, padding: '14px 18px', background: C.card, border: `2px dashed ${C.rust}`, borderRadius: 10, opacity: p, transform: `translateY(${(1 - p) * 14}px)`, fontFamily: FONT.sans, boxShadow: '0 20px 40px -24px rgba(32,35,28,.45)'}}>
       <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
         <span style={{width: 9, height: 9, borderRadius: 5, background: C.olive}} />
         <span style={{fontSize: 15, fontWeight: 600, color: C.ink}}>MacBook Air</span>
@@ -220,32 +220,45 @@ const TermLine: React.FC<{at: number; text: string; prompt?: boolean; color?: st
 const Masked: React.FC<{at: number; w: number}> = ({at, w}) => {
   const frame = useCurrentFrame();
   if (frame < at) return null;
-  return <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: w, height: 26, borderRadius: 4, background: C.olive, color: '#fff', fontFamily: FONT.sans, fontSize: 15, verticalAlign: 'middle'}}>line hidden</div>;
+  return <div style={{display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: w, height: 24, borderRadius: 4, background: C.olive, color: '#fff', fontFamily: FONT.mono, fontSize: 15, verticalAlign: 'middle'}}>{'<line hidden>'}</div>;
 };
 
-const Cli: React.FC = () =>
-  <Split kind="terminal" note="For 1.0.43: styled terminal graphic of the specwithcode 1.0.43 CLI output, abridged. Address and line are placeholders." copy={<Copy width={540} eyebrow="On 1.0.43 · from a terminal" line1="One command" line2="on the new Mac." body="Released 1.0.43 has no in-app Join yet. With the app running, the CLI prints the line, plus the command for your main machine." />}>
-    <div style={{position: 'absolute', left: WIN.left, top: 250}}>
-      <Window w={WIN.w} h={520} title="MacBook Air · zsh" delay={4} dark>
-        <div style={{padding: '30px 36px'}}>
-          <TermLine at={18} prompt text={'specwithcode fleet invite --label "MacBook Air"'} />
+const Out: React.FC<{at: number; text: string; color?: string}> = ({at, text, color = '#c9c7bb'}) => {
+  const frame = useCurrentFrame();
+  if (frame < at) return null;
+  return <div style={{fontFamily: FONT.mono, fontSize: 19, lineHeight: 1.5, color, whiteSpace: 'pre-wrap'}}>{text}</div>;
+};
+
+// Output follows the released specwithcode 1.0.47 CLI's `fleet invite` text, abridged.
+const Cli: React.FC = () => {
+  const frame = useCurrentFrame();
+  return <Split kind="terminal" note="Terminal graphic styled after the specwithcode 1.0.47 CLI, output abridged. The address and the line are placeholders." copy={<Copy width={540} eyebrow="No desktop app? · from a terminal" line1="Install from npm." line2="Invite from the CLI." body="fleet invite prints the same line for your main machine. service install keeps SpecWithCode running in the background." />}>
+    <div style={{position: 'absolute', left: WIN.left, top: 190}}>
+      <Window w={WIN.w} h={660} title="MacBook Air · zsh" delay={4} dark>
+        <div style={{padding: '26px 34px'}}>
+          <TermLine at={22} prompt text="npm i -g specwithcode" />
           <div style={{height: 14}} />
-          <TermLine at={90} color="#c9c7bb" text="MacBook Air is published at https://macbook-air.<tailnet>.ts.net (private to your tailnet)." />
-          <div style={{height: 12}} />
-          <TermLine at={104} color="#c9c7bb" text="On your primary machine, run:" />
-          <div style={{fontFamily: FONT.mono, fontSize: 22, lineHeight: 1.7, color: '#e9e7dd', whiteSpace: 'pre', opacity: useCurrentFrame() >= 112 ? 1 : 0}}>
-            {'  specwithcode fleet add '}<Masked at={112} w={360} />
-          </div>
-          <div style={{height: 12}} />
-          <TermLine at={124} color="#c9c7bb" text="or paste the line below into Settings > Connections > Add a machine there." />
+          <TermLine at={70} prompt text={'specwithcode fleet invite --label "MacBook Air"'} />
+          <div style={{height: 10}} />
+          <Out at={112} text="MacBook Air is published at https://macbook-air.<tailnet>.ts.net (private to your tailnet)." />
           <div style={{height: 8}} />
-          <Masked at={132} w={740} />
+          <Out at={122} text="On your primary machine, run:" />
+          <div style={{fontFamily: FONT.mono, fontSize: 19, lineHeight: 1.7, color: '#e9e7dd', whiteSpace: 'pre', opacity: frame >= 130 ? 1 : 0}}>
+            {'  specwithcode fleet add '}<Masked at={130} w={300} />
+          </div>
+          <div style={{height: 8}} />
+          <Out at={140} text="or paste the line below into Settings > Connections > Add a machine there." />
+          <div style={{height: 6}} />
+          <Masked at={148} w={620} />
+          <div style={{height: 10}} />
+          <Out at={156} color="#8a8d80" text="It works until … Treat it like a password: it lets the primary pair with this machine. Revoke it with `specwithcode auth session revoke …`." />
           <div style={{height: 14}} />
-          <TermLine at={144} color="#8a8d80" text="It works until … Treat it like a password. Revoke it with `specwithcode auth session revoke …`." />
+          <TermLine at={186} prompt text="specwithcode service install" />
         </div>
       </Window>
     </div>
   </Split>;
+};
 
 const Cta: React.FC = () =>
   <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
@@ -266,29 +279,55 @@ const ProgressBar: React.FC = () => {
   return <div style={{position: 'absolute', left: 0, bottom: 0, height: 5, width: `${(frame / durationInFrames) * 100}%`, background: C.olive, opacity: 0.85}} />;
 };
 
-export const JOIN_SCENES: {c: React.FC; d: number; name: string}[] = [
-  {c: Opening, d: 135, name: 'Opening'},
-  {c: Roles, d: 200, name: 'Roles diagram'},
-  {c: Choice, d: 260, name: 'First run: How will you use this Mac?'},
-  {c: Ready, d: 290, name: 'Join step, Tailscale ready'},
-  {c: Line, d: 290, name: 'Make the line (masked)'},
-  {c: Joined, d: 230, name: 'This Mac is ready'},
-  {c: Add, d: 290, name: 'Main machine: Add a machine'},
-  {c: Allow, d: 250, name: 'Allow workers (illustration)'},
-  {c: Invite, d: 240, name: 'Invite this machine dialog'},
-  {c: Cli, d: 300, name: 'CLI terminal graphic'},
-  {c: Cta, d: 160, name: 'Recap'},
-];
 const T = 15;
+const FPS = 30;
+/** Each scene's voiceover clip (seconds, from ffprobe). The scene holds at least clip + 0.6 s before the next transition starts. */
+const BASE: {c: React.FC; d: number; name: string; vo: number}[] = [
+  {c: Opening, d: 135, name: 'Opening', vo: 4.88},
+  {c: Roles, d: 200, name: 'Roles diagram', vo: 5.84},
+  {c: Choice, d: 260, name: 'First run: How will you use this Mac?', vo: 5.44},
+  {c: Ready, d: 290, name: 'Join step, Tailscale ready', vo: 6.56},
+  {c: Line, d: 290, name: 'Make the line (masked)', vo: 5.2},
+  {c: Joined, d: 230, name: 'This Mac is ready', vo: 3.6},
+  {c: Add, d: 290, name: 'Main machine: Add a machine', vo: 6.32},
+  {c: Allow, d: 250, name: 'Allow workers (illustration)', vo: 5.84},
+  {c: Invite, d: 240, name: 'Invite this machine dialog', vo: 5.44},
+  {c: Cli, d: 330, name: 'No desktop app: terminal graphic', vo: 9.04},
+  {c: Cta, d: 175, name: 'Recap', vo: 4.64},
+];
+export const JOIN_SCENES = BASE.map((s, i) => ({...s, d: Math.max(s.d, Math.ceil((s.vo + 0.6) * FPS) + (i < BASE.length - 1 ? T : 0))}));
 export const JOIN_TUTORIAL_FRAMES = JOIN_SCENES.reduce((n, s) => n + s.d, 0) - T * (JOIN_SCENES.length - 1);
+export const JOIN_SCENE_STARTS = JOIN_SCENES.map((_, i) => JOIN_SCENES.slice(0, i).reduce((n, s) => n + s.d - T, 0));
 
 export const JoinMachineTutorial: React.FC = () =>
   <AbsoluteFill style={{background: C.paper}}>
     <TransitionSeries>
       {JOIN_SCENES.flatMap(({c: Scene, d}, i) => [
         ...(i ? [<TransitionSeries.Transition key={`t${i}`} timing={linearTiming({durationInFrames: T})} presentation={i === 2 || i === 6 ? slide({direction: 'from-right'}) : fade()} />] : []),
-        <TransitionSeries.Sequence key={`s${i}`} durationInFrames={d}><Scene /></TransitionSeries.Sequence>,
+        <TransitionSeries.Sequence key={`s${i}`} durationInFrames={d}>
+          <Scene />
+          <Audio src={staticFile(`vo/scene-${String(i + 1).padStart(2, '0')}.mp3`)} />
+        </TransitionSeries.Sequence>,
       ])}
     </TransitionSeries>
     <ProgressBar />
   </AbsoluteFill>;
+
+/** YouTube thumbnail, 1280x720: the real first-run screenshot under the headline. */
+export const JoinThumbnail: React.FC = () => {
+  const crop = {x: 320, y: 290, w: 800, h: 322};
+  const W = 720;
+  const s = W / crop.w;
+  return <AbsoluteFill style={{background: C.paper}}>
+    <div style={{position: 'absolute', left: 64, top: 52, display: 'flex', alignItems: 'center', gap: 16}}>
+      <div style={{fontFamily: FONT.sans, fontWeight: 600, fontSize: 34, color: C.ink, letterSpacing: '-0.01em'}}>SpecWithCode</div>
+      <div style={{fontFamily: FONT.sans, fontWeight: 500, fontSize: 20, color: C.olive, background: C.oliveSoft, padding: '6px 14px', borderRadius: 999}}>1.0.47</div>
+    </div>
+    <div style={{position: 'absolute', left: 60, top: 116, fontFamily: FONT.serif, fontSize: 132, lineHeight: 0.98, color: C.ink, letterSpacing: '-0.035em'}}>
+      Add a Mac<br /><span style={{fontStyle: 'italic', color: C.olive}}>in one line.</span>
+    </div>
+    <div style={{position: 'absolute', right: 40, bottom: 32, width: W, height: crop.h * s, overflow: 'hidden', borderRadius: 18, border: `2px solid ${C.line}`, boxShadow: '0 30px 60px -30px rgba(32,35,28,.55)', background: C.card}}>
+      <Img src={staticFile('01-machine-choice.png')} style={{position: 'absolute', width: SRC_W * s, height: SRC_H * s, left: -crop.x * s, top: -crop.y * s}} />
+    </div>
+  </AbsoluteFill>;
+};
