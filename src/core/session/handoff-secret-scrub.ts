@@ -40,13 +40,13 @@ export const SECRET_PATTERNS: readonly SecretPattern[] = [
   { type: 'github-server', regex: /ghs_[A-Za-z0-9]{20,}/g },
   { type: 'aws-key', regex: /AKIA[0-9A-Z]{12,}/g },
   { type: 'aws-temp-key', regex: /ASIA[0-9A-Z]{12,}/g },
-  // Includes multiline bodies, JSON-escaped newlines, and truncated blocks to EOF.
-  { type: 'private-key', regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z0-9 ]*PRIVATE KEY-----|$)/g },
   { type: 'vskill-token', regex: /vsk_[A-Za-z0-9]{16,}/g },
   { type: 'slack-token', regex: /xox[bap]-[A-Za-z0-9-]{10,}/g },
   { type: 'bearer', regex: /Bearer\s+[A-Za-z0-9._~+/=-]{8,}/g },
   { type: 'password', regex: /password=\S+/gi },
   { type: 'api-key', regex: /api_key=\S+/gi },
+  // Includes multiline bodies, JSON-escaped newlines, and truncated blocks to EOF. Runs last: an unterminated key scrubs to end of text, so the other patterns count first.
+  { type: 'private-key', regex: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z0-9 ]*PRIVATE KEY-----|$)/g },
 ] as const;
 
 /**

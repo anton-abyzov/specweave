@@ -236,6 +236,44 @@ describe('buildWorkHandoff — SpecWeave with 1 active increment', () => {
   });
 });
 
+describe('buildWorkHandoff — AC count matches pickup', () => {
+  it('counts an AC as met when the ledger shows its tasks done, like pickup and verify', async () => {
+    const root = makeSpecWeaveWorkspace({ activeIds: ['0001-foo'] });
+    const dir = path.join(root, '.specweave', 'increments', '0001-foo');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'metadata.json'), JSON.stringify({ id: '0001-foo', status: 'active', type: 'feature' }));
+    fs.writeFileSync(
+      path.join(dir, 'spec.md'),
+      [
+        '# Foo',
+        '## Acceptance Criteria',
+        '- [ ] AC-01: first',
+        '- [ ] AC-02: second',
+        '## Tasks',
+        '### T-01 First',
+        '- AC: AC-01 | Files: a.txt | Test: true',
+        '### T-02 Second',
+        '- AC: AC-02 | Files: b.txt | Test: true',
+      ].join('\n'),
+    );
+    fs.writeFileSync(
+      path.join(dir, 'ledger.jsonl'),
+      [
+        { t: 'T-01', e: 'claim', by: 'claude@demo', at: '2026-10-18T07:00:00Z' },
+        { t: 'T-01', e: 'done', by: 'claude@demo', at: '2026-10-18T07:05:00Z', evidence: 'true → exit 0\nlog: reports/task-T-01.txt' },
+      ].map((e) => JSON.stringify(e)).join('\n') + '\n',
+    );
+
+    const res = await buildWorkHandoff(root, { agent: 'claude@demo' });
+    expect(res.docMarkdown).toContain('tasks 1/2 done');
+    expect(res.docMarkdown).toContain('ACs 1/2');
+    // The two-line evidence stays inside its table row.
+    const row = res.docMarkdown.split('\n').find((l) => l.startsWith('| T-01'));
+    expect(row).toContain('true → exit 0 · log: reports/task-T-01.txt');
+    expect(res.docMarkdown).not.toMatch(/^log: /m);
+  });
+});
+
 describe('buildWorkHandoff — 0 active increments', () => {
   it('writes a git+config doc noting no active increment', async () => {
     const root = makeSpecWeaveWorkspace({ activeIds: [] });

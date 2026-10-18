@@ -32,6 +32,11 @@ export function extractKeepBlocks(text: string): string[] {
 export const INLINE_BEGIN_MARKER = 'BEGIN HANDOFF';
 export const INLINE_END_MARKER = 'END HANDOFF';
 
+/** One Markdown table cell: pipes and line breaks would split the row, so flatten them. */
+export function tableCell(text: string): string {
+  return text.replace(/\|/g, '/').replace(/\s*\r?\n\s*/g, ' · ').trim();
+}
+
 export const HANDOFF_SECTION_ORDER: readonly string[] = [
   'Where I left off',
   'Done / Pending',
@@ -238,7 +243,7 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
     L.push('| Task | State | By | Evidence / note |');
     L.push('|---|---|---|---|');
     for (const t of inc.tasks.slice(0, MAX_TASK_ROWS)) {
-      L.push(`| ${t.id} ${t.title} | ${t.status} | ${t.by ?? ''} | ${(t.evidence ?? '').replace(/\|/g, '/').slice(0, 60)} |`);
+      L.push(`| ${t.id} ${tableCell(t.title)} | ${t.status} | ${t.by ?? ''} | ${tableCell(t.evidence ?? '').slice(0, 60)} |`);
     }
     if (inc.tasks.length > MAX_TASK_ROWS) L.push(`| … | +${inc.tasks.length - MAX_TASK_ROWS} more | | see tasks.md |`);
     const c = inc.counts;

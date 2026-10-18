@@ -129,6 +129,19 @@ describe('renderHandoffDoc', () => {
   });
 });
 
+describe('Done / Pending table cells', () => {
+  it('keeps multi-line evidence and pipes inside one row', () => {
+    const input = baseInput();
+    input.increment!.tasks[0].evidence = 'npm test → exit 0\nlog: reports/task-T-01.txt';
+    input.increment!.tasks[1].title = 'a | b';
+    const lines = renderHandoffDoc(input).split('\n');
+    const t1 = lines.find((l) => l.startsWith('| T-01'))!;
+    expect(t1).toBe('| T-01 workspace detection | done | claude@mbp | npm test → exit 0 · log: reports/task-T-01.txt |');
+    expect(lines.find((l) => l.startsWith('| T-02'))).toContain('| T-02 a / b |');
+    expect(lines.some((l) => l.startsWith('log: '))).toBe(false);
+  });
+});
+
 describe('per-tool resume matrix (pinned strings)', () => {
   it('pins the exact verified resume commands', () => {
     const byTool = new Map(TOOL_RESUME_MATRIX.map((e) => [e.tool, e.resumeCmd]));

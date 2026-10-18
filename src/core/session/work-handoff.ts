@@ -25,7 +25,7 @@ import { pushHandoff } from './handoff-remote.js';
 import { writeHandoffReport } from './handoff-report.js';
 import { loadTaskBoard, nextTask } from '../tasks/task-board.js';
 import { resolveIncrement, listActiveIncrementIds, readLeaseHours, IncrementResolutionError } from '../tasks/resolve-increment.js';
-import { parseSpecAcs } from '../tasks/verify-runner.js';
+import { parseSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
 import { INTENT_BOARD_PATH, readIntentContext } from '../intent/portable-context.js';
 import { serializeHandoffPointer } from './handoff-pointer.js';
 import {
@@ -227,9 +227,11 @@ function assembleIncrementInfo(incDir: string, incrementId: string, agent: strin
   }
   const specPath = path.join(incDir, 'spec.md');
   const title = readSpecTitle(specPath);
-  const acs = fs.existsSync(specPath) ? parseSpecAcs(fs.readFileSync(specPath, 'utf-8')) : [];
+  const specAcs = fs.existsSync(specPath) ? parseSpecAcs(fs.readFileSync(specPath, 'utf-8')) : [];
 
   const board = loadTaskBoard(incDir, { leaseHours });
+  // Same count as `specweave pickup` and `verify`: an AC is met when the tasks covering it are done.
+  const acs = deriveAcStatus(specAcs, board);
   const row = (t: (typeof board.tasks)[number]): HandoffTaskRow => ({
     id: t.id,
     title: t.title,

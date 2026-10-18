@@ -83,6 +83,89 @@
       ]
     },
     {
+      "slug": "handoff-claude-to-codex",
+      "product": "cli",
+      "title": "Hand off from Claude Code to Codex at a usage limit",
+      "seoTitle": "Hand off from Claude Code to Codex at a usage limit with SpecWeave",
+      "summary": "A real SpecWeave 3.1.0 run in a sample repo: the usage guard warns at 95% of the 5-hour limit, specweave handoff writes handoff.md and releases the claim, and specweave pickup gives Codex the next task with its acceptance criteria. Codex proves the task with task done --run.",
+      "outcome": "You end with Codex running the next task from the ledger, and the ledger shows who handed off, who picked up and who finished.",
+      "prerequisites": [
+        "Node.js 20.12 or later and git",
+        "SpecWeave installed with `npm i -g specweave` and a repo set up with `specweave init`",
+        "an increment whose spec.md lists tasks with their Files and Test"
+      ],
+      "testedOn": "SpecWeave 3.1.0, 18 October 2026",
+      "agent": "multi",
+      "agentsShown": [
+        "claude-code",
+        "codex"
+      ],
+      "video": {
+        "src": "/video/tutorials/handoff-claude-to-codex.mp4",
+        "poster": "/video/tutorials/handoff-claude-to-codex.jpg",
+        "captionsVtt": "/video/tutorials/handoff-claude-to-codex.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 78.3,
+        "uploadDate": "2026-10-18",
+        "publishedAt": "2026-10-18T08:17:21Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will do"
+          },
+          {
+            "start": 5.4,
+            "title": "The usage limit warning"
+          },
+          {
+            "start": 19.2,
+            "title": "specweave handoff --reason"
+          },
+          {
+            "start": 29.4,
+            "title": "What handoff.md carries"
+          },
+          {
+            "start": 40.5,
+            "title": "specweave pickup in Codex"
+          },
+          {
+            "start": 51.6,
+            "title": "The next task and its acceptance criteria"
+          },
+          {
+            "start": 60.2,
+            "title": "task done --run"
+          },
+          {
+            "start": 71.9,
+            "title": "Next: verify"
+          }
+        ]
+      },
+      "steps": [
+        "Turn on the usage guard once with `specweave auto-handoff on`. In the default suggest mode, the first time a session reaches 95% of a usage window it tells you a handoff is available and keeps working; nothing is said when every full window resets within 30 minutes.",
+        "When you decide to move, tell Claude Code to hand off. It runs `specweave handoff --reason \"usage at 95% of the 5-hour limit\"`, which releases its task claims and writes handoff.md and handoff.diff in the increment folder. With a Git remote it also pushes, so another machine can pick up.",
+        "Read handoff.md: who stopped and why, which tasks are done with their evidence, the uncommitted files with the full diff beside it, and the exact next step.",
+        "Open Codex in the same repo and say \"pick up\". Codex runs `specweave pickup`, which prints the next task with its acceptance criteria, files and test, and records a pickup line in ledger.jsonl.",
+        "Codex claims the task with `specweave task claim T-02` and makes the change.",
+        "Codex runs `specweave task done T-02 --run \"npm test\"`. The test runs again; the task is marked done only when it exits 0, and the ledger records who finished it, as codex@<host> (codex@demo in the recording), with the test output as evidence.",
+        "Then run `specweave verify` to check the increment before you close it with `specweave complete`."
+      ],
+      "transcript": "captions",
+      "note": "Real output of the SpecWeave 3.1.0 CLI in a sample repo inside a disposable home, recorded headlessly. Agent sessions are not shown: each command ran in a terminal as that agent (SPECWEAVE_TOOL=claude or codex), which is how the ledger reads claude@demo and codex@demo. The 95% usage reading is a sample passed to `specweave statusline` and `specweave usage-guard` in the format Claude Code sends; their output is real. The new T-02 test was written by Claude before the handoff (the uncommitted file in handoff.md); Codex's change to src/greeting.js was made off camera and is shown as its diff. Nothing was pushed. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Read the handoff guide",
+        "to": "/docs/guides/switch-claude-code-to-codex"
+      },
+      "guide": "/docs/guides/switch-claude-code-to-codex",
+      "related": [
+        "specweave-workflow",
+        "how-specwithcode-works"
+      ]
+    },
+    {
       "slug": "how-specwithcode-works",
       "product": "specwithcode",
       "title": "See how SpecWithCode runs your agents",
@@ -997,21 +1080,6 @@
   ],
   "planned": [
     {
-      "slug": "handoff-at-a-usage-limit",
-      "product": "cli",
-      "title": "Hand off from Claude Code to Codex at a usage limit",
-      "outcome": "You end with Codex running the next task from the ledger.",
-      "beats": [
-        "A limit warning in suggest mode",
-        "specweave handoff --reason",
-        "What handoff.md carries",
-        "specweave pickup in Codex",
-        "The next task with its acceptance criteria",
-        "task done --run"
-      ],
-      "targetSeconds": 90
-    },
-    {
       "slug": "install-and-plan",
       "product": "cli",
       "title": "Install SpecWeave and plan your first increment",
@@ -1188,7 +1256,7 @@
         "specweave-workflow",
         "install-and-plan",
         "claim-prove-verify-complete",
-        "handoff-at-a-usage-limit",
+        "handoff-claude-to-codex",
         "review-with-another-model"
       ]
     },

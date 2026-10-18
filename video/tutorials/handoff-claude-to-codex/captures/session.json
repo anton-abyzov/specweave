@@ -1,0 +1,106 @@
+{
+  "specweave": "3.1.0",
+  "capturedAt": "2026-10-18T07:59:58.690Z",
+  "shots": [
+    {
+      "beat": "02-limit",
+      "tool": "claude",
+      "cmd": "specweave statusline < ~/claude-status.json",
+      "out": "greet-app · Claude Opus 5.5 · 5-hour 95% · weekly 41% · handoff available"
+    },
+    {
+      "beat": "02-limit",
+      "tool": "claude",
+      "cmd": "specweave usage-guard < ~/stop-hook.json | jq -r .systemMessage",
+      "out": "Auto-handoff: usage is at 95% of the 5-hour limit, which resets in 2 h 10 min. Work continues; say \"hand off\" to move it to another tool or account."
+    },
+    {
+      "beat": "03-handoff",
+      "tool": "claude",
+      "cmd": "specweave handoff --reason \"usage at 95% of the 5-hour limit\"",
+      "out": "Handed off 0001-personal-greeting (released T-02).\nTo continue in another tool on this machine, say \"pick up\" there (or run `specweave pickup`).\nNothing was pushed, so another machine or a cloud session will not see it; run `specweave handoff --inline` for a prompt you can paste instead.\nDetails: .specweave/increments/0001-personal-greeting/handoff.md"
+    },
+    {
+      "beat": "04-doc",
+      "tool": "claude",
+      "cmd": "cat .specweave/increments/0001-personal-greeting/handoff.md",
+      "out": "# Handoff — 0001-personal-greeting Personal greeting\nagent: claude@demo · 2026-10-18T07:58:43.139Z · branch main @ 7bf842e · tree: 1 uncommitted · redactions: 0\nactive claims: none · released: T-02\n\n## Where I left off\nWhy: usage at 95% of the 5-hour limit\nIncrement 0001-personal-greeting (active) · tasks 1/2 done · ACs 1/2\n\n## Done / Pending\n| Task | State | By | Evidence / note |\n|---|---|---|---|\n| T-01 Greet by name | done | claude@demo | npm test → exit 0 · log: .specweave/increments/0001-personal |\n| T-02 Fall back on a blank name | open |  | handoff |\n1/2 done · 0 skipped · 0 claimed · 0 blocked · 0 stale · 1 open\n\n## Decisions\n_None recorded — see spec.md Approach._\n\n## Files touched\nUNCOMMITTED — commit or stash before anything destructive.\n```\nM test/greeting.test.js\n```\nFull diff: `.specweave/increments/0001-personal-greeting/handoff.diff`\n\n## Next steps\n`specweave task claim T-02 0001-personal-greeting` — Fall back on a blank name\n\n## Resume\n1. `specweave pickup` prints the next task with its acceptance criteria, claims and branch state.\n2. `specweave task claim <T-id> 0001-personal-greeting` → implement → `specweave task done <T-id> --run \"<test>\"`.\n3. Original transcript (optional): Claude Code: `claude -r <uuid>`.\n\n---\n<!-- Doc format v2 -->"
+    },
+    {
+      "beat": "05-pickup",
+      "tool": "codex",
+      "cmd": "specweave pickup",
+      "out": "Picking up handoff: 0001 Personal greeting · claude@demo · 1m ago · usage at 95% of the 5-hour limit\nSpecWeave pickup · you are codex@demo\nIncrement 0001-personal-greeting \"Personal greeting\" (active) · tasks 1/2 done · ACs 1/2 met\nNext: T-02 Fall back on a blank name\n  AC-02: a blank or whitespace-only name falls back to \"Hello, world!\"\n  Files: src/greeting.js, test/greeting.test.js | Test: npm test\n  claim: specweave task claim T-02 0001-personal-greeting\nSpec: .specweave/increments/0001-personal-greeting/spec.md\nBranch: main @ 7bf842e · not pushed · 3 uncommitted files\nLast handoff: claude@demo 1m ago: usage at 95% of the 5-hour limit → .specweave/increments/0001-personal-greeting/handoff.md\nLocal checkpoint: session demo-session-1 1m ago, newer than the last handoff → ~/.specweave/checkpoints/1d53f4d6cb791767b5b593b81b215d98d23889df41cc9c6ee7c8930dc3b53639/snapshot-1792310322897-b6b6aabd-173f-4aa3-a58e-29b773b4d683/handoff.md (+ handoff.diff beside it)\nMemory (.specweave/memory/MEMORY.md):\n  # Project memory index\n  Committed and read by every tool and account: one file per durable fact in this folder, one line per file here (see AGENTS.md)."
+    },
+    {
+      "beat": "05-pickup",
+      "tool": "codex",
+      "cmd": "grep '\"e\":\"pickup\"' .specweave/increments/0001-personal-greeting/ledger.jsonl | jq -c '{e,by,note}'",
+      "out": "{\"e\":\"pickup\",\"by\":\"codex@demo\",\"note\":\"from claude@demo\"}"
+    },
+    {
+      "beat": "06-next",
+      "tool": "codex",
+      "cmd": "specweave task claim T-02",
+      "out": "Claimed T-02 as codex@demo\nT-02 Fall back on a blank name\n  AC-02: a blank or whitespace-only name falls back to \"Hello, world!\"\n  Files: src/greeting.js, test/greeting.test.js | Test: npm test\n  state: claimed by codex@demo since 2026-10-18T07:59:58.393Z\n  when done: specweave task done T-02 0001-personal-greeting --run \"npm test\""
+    },
+    {
+      "beat": "07-done",
+      "tool": "codex",
+      "cmd": "specweave task done T-02 --run \"npm test\"",
+      "out": "Done T-02 (2/2) — evidence: npm test → exit 0\nAll tasks done. Next: specweave verify 0001-personal-greeting"
+    },
+    {
+      "beat": "07-done",
+      "tool": "codex",
+      "cmd": "tail -n 1 .specweave/increments/0001-personal-greeting/ledger.jsonl | jq -c '{t,e,by}'",
+      "out": "{\"t\":\"T-02\",\"e\":\"done\",\"by\":\"codex@demo\"}"
+    }
+  ],
+  "offCameraDiff": "diff --git a/src/greeting.js b/src/greeting.js\nindex 9b34a29..cc1227d 100644\n--- a/src/greeting.js\n+++ b/src/greeting.js\n@@ -1,3 +1,3 @@\n export function greet(name) {\n-  return `Hello, ${name ?? \"world\"}!`;\n+  return `Hello, ${name?.trim() || \"world\"}!`;\n }",
+  "ledger": [
+    {
+      "t": "T-01",
+      "e": "claim",
+      "by": "claude@demo"
+    },
+    {
+      "t": "T-01",
+      "e": "done",
+      "by": "claude@demo"
+    },
+    {
+      "t": "T-02",
+      "e": "claim",
+      "by": "claude@demo"
+    },
+    {
+      "t": "T-02",
+      "e": "release",
+      "by": "claude@demo",
+      "note": "handoff"
+    },
+    {
+      "t": "*",
+      "e": "handoff",
+      "by": "claude@demo",
+      "note": "usage at 95% of the 5-hour limit"
+    },
+    {
+      "t": "*",
+      "e": "pickup",
+      "by": "codex@demo",
+      "note": "from claude@demo"
+    },
+    {
+      "t": "T-02",
+      "e": "claim",
+      "by": "codex@demo"
+    },
+    {
+      "t": "T-02",
+      "e": "done",
+      "by": "codex@demo"
+    }
+  ]
+}
