@@ -1,7 +1,8 @@
 /**
  * CLI: `specweave review [id]` — adversarial review of an increment's diff by a
  * model from another family than the one that wrote it (Codex with GPT-6.1-Sol
- * for Claude-written code). Writes reports/review-<reviewer>.md and a ledger note.
+ * for Claude-written code). Writes reports/reviews/review-<reviewer>-<n>.md for
+ * each run, a copy as reports/review-<reviewer>.md (the latest), and a ledger note.
  *
  * Exit 0: verdict ship. 3: fix first, or the reviewer gave no verdict. 1: error.
  * `--brief` prints the brief and runs nothing.
@@ -95,7 +96,8 @@ export async function reviewCommand(incrementId?: string, opts: ReviewCommandOpt
   }
 
   const reportsDir = path.join(inc.dir, 'reports');
-  const reportPath = path.join(reportsDir, `review-${reviewer.name.replace(/[^A-Za-z0-9._-]/g, '-')}.md`);
+  const safeName = reviewer.name.replace(/[^A-Za-z0-9._-]/g, '-');
+  const reportPath = path.join(reportsDir, `review-${safeName}.md`);
   const sameFamily = brief.author.primary !== undefined && reviewer.family === brief.author.primary;
   if (!opts.json) {
     out(`Reviewer: ${reviewer.name} (${reviewer.family}; ${choice.why}). Author: ${brief.author.primary ?? 'unknown'}.`);
@@ -121,8 +123,13 @@ export async function reviewCommand(incrementId?: string, opts: ReviewCommandOpt
   fs.mkdirSync(reportsDir, { recursive: true });
   const at = new Date().toISOString();
   const header = `<!-- specweave review: reviewer=${reviewer.name} family=${reviewer.family} author=${brief.author.primary ?? 'unknown'} base=${base} head=${brief.head} at=${at} -->`;
-  fs.writeFileSync(reportPath, `${header}\n${run.output}\n`);
-  const rel = path.relative(inc.dir, reportPath).split(path.sep).join('/');
+  // Each run keeps its own numbered file, so a later review never erases the
+  // one an earlier ledger note points at; review-<reviewer>.md is the latest.
+  const runPath = nextRunPath(path.join(reportsDir, 'reviews'), safeName);
+  fs.mkdirSync(path.dirname(runPath), { recursive: true });
+  fs.writeFileSync(runPath, `${header}\n${run.output}\n`);
+  fs.copyFileSync(runPath, reportPath);
+  const rel = path.relative(inc.dir, runPath).split(path.sep).join('/');
   appendEvent(ledgerPath(inc.dir), {
     t: INCREMENT_EVENT_TASK,
     e: 'note',
@@ -133,10 +140,26 @@ export async function reviewCommand(incrementId?: string, opts: ReviewCommandOpt
 
   const code = verdict === 'ship' ? 0 : 3;
   if (opts.json) {
-    out(JSON.stringify({ reviewer: reviewer.name, family: reviewer.family, author: brief.author.primary ?? null, verdict: verdict ?? null, report: reportPath, base, head: brief.head }, null, 2));
+    out(JSON.stringify({ reviewer: reviewer.name, family: reviewer.family, author: brief.author.primary ?? null, verdict: verdict ?? null, report: reportPath, run: runPath, base, head: brief.head }, null, 2));
   } else {
-    out(`${verdict ? `Verdict: ${verdict}` : 'No verdict line in the answer; read the report'} → ${reportPath}`);
+    const shown = path.relative(projectRoot, reportPath).split(path.sep).join('/');
+    out(`${verdict ? `Verdict: ${verdict}` : 'No verdict line in the answer; read the report'} → ${shown}`);
     if (verdict === 'fix first') out('Fix every critical and high finding (or add a task for it), then verify and review again.');
   }
   return code;
+}
+
+/** reviews/review-<name>-<n>.md with n one past the highest run on file. */
+function nextRunPath(dir: string, name: string): string {
+  const re = new RegExp(`^review-${name.replace(/[.\\-]/g, '\\$&')}-(\\d+)\\.md$`);
+  let max = 0;
+  try {
+    for (const f of fs.readdirSync(dir)) {
+      const m = re.exec(f);
+      if (m) max = Math.max(max, Number(m[1]));
+    }
+  } catch {
+    // no runs yet
+  }
+  return path.join(dir, `review-${name}-${max + 1}.md`);
 }
