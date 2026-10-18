@@ -99,6 +99,35 @@ describe('scrubSecrets', () => {
     expect(counts).toEqual({ 'github-token': 1, 'private-key': 1 });
   });
 
+  it('redacts PGP armored private keys', () => {
+    const { scrubbed, counts } = scrubSecrets('-----BEGIN PGP PRIVATE KEY BLOCK-----\nlQOYBF5SECRETBODY\n-----END PGP PRIVATE KEY BLOCK-----');
+    expect(scrubbed).toBe('[REDACTED-private-key]');
+    expect(counts).toEqual({ 'private-key': 1 });
+  });
+
+  it('keeps prose that quotes a BEGIN marker before a real key', () => {
+    const { scrubbed } = scrubSecrets('Keys start with `-----BEGIN RSA PRIVATE KEY-----`. Next step: fix T-04.\n-----BEGIN RSA PRIVATE KEY-----\nMIIEabc\n-----END RSA PRIVATE KEY-----\nafter');
+    expect(scrubbed).toContain('Next step: fix T-04.');
+    expect(scrubbed).not.toContain('MIIEabc');
+    expect(scrubbed).toContain('after');
+  });
+
+  it('leaves hyphenated words and prose Bearer alone', () => {
+    const text = 'Branch inc/0867-task-handoff-secret-scrub, see disk-cleanup-script-utility.\nUse Bearer authentication for the API.\nBearer\nauthorization-headers are next.';
+    expect(scrubSecrets(text)).toEqual({ scrubbed: text, counts: {} });
+  });
+
+  it('counts an assigned token once', () => {
+    expect(scrubSecrets('api_key=sk-aaaaaaaaaaaaaaaaaaaa')).toEqual({ scrubbed: 'api_key=[REDACTED-openai-key]', counts: { 'openai-key': 1 } });
+    expect(scrubSecrets('password=Bearer abcdefgh12345').counts).toEqual({ bearer: 1 });
+  });
+
+  it('counts the tail of an unterminated key like the same text elsewhere', () => {
+    const tail = 'Bearer ghp_AAAAAAAAAAAAAAAAAAAAAAAA';
+    const { counts } = scrubSecrets(`x -----BEGIN RSA PRIVATE KEY-----\nbody\n${tail}`);
+    expect(counts).toEqual({ ...scrubSecrets(tail).counts, 'private-key': 1 });
+  });
+
   it('counts multiple occurrences of the same pattern', () => {
     const { counts } = scrubSecrets('sk-aaaaaaaaaaaaaaaaaaaa and sk-bbbbbbbbbbbbbbbbbbbb');
     expect(counts['openai-key']).toBe(2);
