@@ -343,6 +343,10 @@ export async function runSessionCheckpoint(requestPath: string): Promise<void> {
   try {
     fs.mkdirSync(generationDir, { mode: 0o700 });
     const { buildWorkHandoff } = await import('./work-handoff.js');
+    // The snapshot holds the state from when the capture started. Stamping it
+    // at publish time made a capture queued by the Stop hook look newer than
+    // a `specweave handoff` that ran while it was still being written.
+    const capturedAt = new Date().toISOString();
     const result = await buildWorkHandoff(request.cwd, {
       checkpoint: true, checkpointRoot: request.cwd, push: false, keepClaims: true,
       out: path.join(generationDir, 'handoff.md'), reason: request.reason ?? 'automatic local session checkpoint', summary: request.summary,
@@ -351,7 +355,7 @@ export async function runSessionCheckpoint(requestPath: string): Promise<void> {
     if (!leaseMatches(path.join(request.directory, 'pending.lock'), request.token)) return;
     const title = summaryTitle(request.summary) ?? previous?.title;
     const receipt: CheckpointReceipt = {
-      version: 1, sessionId: request.sessionId, cwd: request.cwd, savedAt: new Date().toISOString(),
+      version: 1, sessionId: request.sessionId, cwd: request.cwd, savedAt: capturedAt,
       docPath: result.docPath, diffPath: result.diffPath, ...(result.incrementId ? { incrementId: result.incrementId } : {}),
       ...(request.studioThreadId ? { studioThreadId: request.studioThreadId } : {}),
       ...(title ? { title } : {}),
