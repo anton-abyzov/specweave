@@ -256,10 +256,10 @@ function oneLine(s: string, max: number): string {
   return flat.length > max ? flat.slice(0, max - 1) + '…' : flat;
 }
 
-/** One line per handoff: id, title, who, when, why. */
-export function handoffLine(h: PendingHandoff): string {
+/** One line per handoff: id, title, who, when, why. Lists keep two spaces after the id; a sentence passes `' '`. */
+export function handoffLine(h: PendingHandoff, idSep = '  '): string {
   const bits = [h.by, Date.parse(h.at) ? ageMs(Date.parse(h.at)) : '', h.reason ? oneLine(h.reason, 80) : ''].filter(Boolean);
-  return `${h.id}  ${oneLine(h.title, 80)}${bits.length ? ` · ${bits.join(' · ')}` : ''}`;
+  return `${h.id}${idSep}${oneLine(h.title, 80)}${bits.length ? ` · ${bits.join(' · ')}` : ''}`;
 }
 
 /** Where a handoff's work is: the document for an increment, the checkout and branch for a session. */

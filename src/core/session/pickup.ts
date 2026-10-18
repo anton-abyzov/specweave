@@ -14,6 +14,7 @@
 
 import { execFileSync } from 'child_process';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { getAgentId, ledgerPath, readIncrementEvents, type LedgerEvent } from '../tasks/ledger.js';
 import { loadTaskBoard, nextTask, type TaskBoard } from '../tasks/task-board.js';
@@ -232,8 +233,15 @@ function lastCheckpoint(projectRoot: string, handoffAt: number | undefined, home
   if (!receipt) return '';
   const savedAt = Date.parse(receipt.savedAt);
   if (!Number.isFinite(savedAt) || (handoffAt !== undefined && savedAt <= handoffAt)) return '';
-  const diff = fs.existsSync(receipt.diffPath) ? ` + ${receipt.diffPath}` : '';
-  return `Local checkpoint: session ${receipt.sessionId} ${ageMs(savedAt)}, newer than the last handoff → ${receipt.docPath}${diff}`;
+  const besideDoc = path.dirname(receipt.diffPath) === path.dirname(receipt.docPath);
+  const diff = !fs.existsSync(receipt.diffPath) ? '' : besideDoc ? ` (+ ${path.basename(receipt.diffPath)} beside it)` : ` + ${tildeHome(receipt.diffPath)}`;
+  return `Local checkpoint: session ${receipt.sessionId} ${ageMs(savedAt)}, newer than the last handoff → ${tildeHome(receipt.docPath)}${diff}`;
+}
+
+/** `~/…` for a path under the current HOME, so the line stays short and copyable. */
+function tildeHome(p: string): string {
+  const home = os.homedir();
+  return home && p.startsWith(home + path.sep) ? '~' + p.slice(home.length) : p;
 }
 
 function newestHandoffDoc(projectRoot: string, incDirs: string[]): { p: string; mtime: number } | undefined {

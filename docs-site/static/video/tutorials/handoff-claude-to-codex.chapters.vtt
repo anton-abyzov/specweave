@@ -1,0 +1,33 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:05.400
+What you will do
+
+2
+00:00:05.400 --> 00:00:19.230
+The usage limit warning
+
+3
+00:00:19.230 --> 00:00:29.380
+specweave handoff --reason
+
+4
+00:00:29.380 --> 00:00:40.530
+What handoff.md carries
+
+5
+00:00:40.530 --> 00:00:51.640
+specweave pickup in Codex
+
+6
+00:00:51.640 --> 00:01:00.190
+The next task and its acceptance criteria
+
+7
+00:01:00.190 --> 00:01:11.910
+task done --run
+
+8
+00:01:11.910 --> 00:01:18.180
+Next: verify
