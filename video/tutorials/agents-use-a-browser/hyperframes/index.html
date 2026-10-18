@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Let agents use a browser</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 400 900; src: url(assets/fonts/schibsted-grotesk-latin.woff2) format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; src: url(assets/fonts/jetbrains-mono-latin.woff2) format("woff2"); }
+      :root {
+        --canvas: #f8f7f9; --panel: #ffffff; --sunken: #efedf2; --ink: #241523; --muted: #675d69; --line: #dedae5;
+        --iris: #6d4fb5; --iris-strong: #4a3678; --iris-tint: #ece6f8; --pass: #1d7348; --fail: #b4232c;
+        --sans: "Schibsted Grotesk", sans-serif; --mono: "JetBrains Mono", monospace;
+        --shadow-window: 0 1px 2px rgba(36, 21, 35, 0.06), 0 12px 32px rgba(36, 21, 35, 0.08);
+      }
+      body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--sans); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--canvas); }
+      .clip { position: absolute; }
+      .card, .stage { inset: 0; background: var(--canvas); }
+      .card-inner { position: absolute; inset: 120px 160px 230px; }
+      .wordmark { font: 700 34px/1 var(--sans); color: var(--ink); letter-spacing: -0.01em; }
+      .title { margin: 170px 0 0; max-width: 1400px; font: 600 92px/1.04 var(--sans); letter-spacing: -0.025em; color: var(--ink); text-wrap: balance; }
+      .thread { height: 4px; width: 0; background: var(--iris); margin-top: 44px; border-radius: 2px; }
+      .subtitle { margin: 40px 0 0; font: 400 36px/1.35 var(--sans); color: var(--muted); }
+      .footer { position: absolute; left: 0; bottom: 0; font: 500 26px/1.2 var(--sans); color: var(--muted); }
+      .outro-l1 { margin-top: 190px; font: 600 72px/1.1 var(--sans); letter-spacing: -0.02em; color: var(--ink); }
+      .outro-l1 code { font: 500 0.86em var(--mono); color: var(--ink); white-space: nowrap; }
+      .outro-l2 { margin: 44px 0 0; max-width: 1300px; font: 400 32px/1.45 var(--sans); color: var(--muted); }
+      .tool-label { position: absolute; right: 140px; top: 60px; font: 600 28px/1.2 var(--sans); color: var(--ink); }
+      .tool-label code { font: 400 22px var(--mono); color: var(--muted); background: var(--sunken); border-radius: 4px; padding: 3px 8px; margin-left: 14px; vertical-align: 2px; }
+      .tool-label .dot { display: inline-block; width: 12px; height: 12px; border-radius: 6px; background: var(--iris); margin-right: 12px; vertical-align: 3px; }
+      .window { position: absolute; left: 140px; right: 140px; top: 136px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-window); padding: 18px; }
+      .viewport { background: var(--sunken); border-radius: 8px; padding: 22px 30px; }
+      .clipbox { height: 42px; overflow: hidden; margin: 0 -14px; padding: 0 14px; }
+      .rows { will-change: transform; }
+      .row { font: 400 28px/42px var(--mono); height: 42px; white-space: pre; color: var(--ink); border-radius: 4px; margin: 0 -10px; padding: 0 10px; opacity: 0; background-color: rgba(109,79,181,0); box-shadow: inset 4px 0 0 0 rgba(109,79,181,0); }
+      .row.cmd { font-weight: 500; }
+      .prompt { color: var(--muted); font-weight: 400; }
+      .chip { left: 140px; top: 48px; z-index: 10; }
+      .chip-inner { display: inline-block; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 20px; font: 600 30px/1.25 var(--sans); color: var(--ink); white-space: nowrap; }
+      .chip-inner code { font: 500 0.86em var(--mono); color: var(--iris-strong); }
+      .diffpanel { left: 0; right: 0; top: 300px; z-index: 12; text-align: center; }
+      .diff-inner { display: inline-block; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 2px 6px rgba(36,21,35,0.08), 0 24px 60px rgba(36,21,35,0.16); padding: 24px 32px; }
+      .diff-head { font: 600 30px/1.3 var(--sans); color: var(--ink); margin-bottom: 16px; }
+      .diff-head code { font: 500 0.86em var(--mono); }
+      .diff-body { background: var(--sunken); border-radius: 8px; padding: 16px 24px; }
+      .dl { font: 400 30px/45px var(--mono); white-space: pre; color: var(--ink); }
+      .dl.add { color: var(--pass); } .dl.del { color: var(--fail); }
+      .win { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-window); box-sizing: border-box; }
+      .footage { left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; transform-origin: 0 0; z-index: 2; }
+      .chip.appchip { left: 320px; top: 36px; }
+      .speed { right: 320px; top: 36px; z-index: 10; }
+      .speed-inner { display: inline-block; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 18px; font: 600 28px/1.25 var(--sans); color: var(--muted); }
+      .note { left: 0; right: 0; top: 850px; z-index: 12; text-align: center; }
+      .note-inner { display: inline-block; background: var(--iris-tint); border-left: 4px solid var(--iris); border-radius: 6px; padding: 6px 18px; font: 400 26px/1.3 var(--sans); color: var(--ink); white-space: nowrap; }
+      .note-inner b { font-weight: 700; color: var(--iris-strong); }
+      .caption { left: 0; right: 0; bottom: 30px; z-index: 20; text-align: center; }
+      .caption .pill { display: inline-block; white-space: nowrap; background: rgba(255, 255, 255, 0.96); border: 1px solid var(--line); color: var(--ink);
+        padding: 10px 26px; border-radius: 8px; font: 600 38px/1.28 var(--sans); }
+      .caption code { font: 500 0.86em var(--mono); background: var(--sunken); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="69.93">
+      <div id="win-02-settings-0" class="clip win" data-start="4.86" data-duration="3.267" data-track-index="1" style="left:308px;top:100.004px;width:1304px;height:743.991px"></div>
+      <video id="v-02-settings-0-0" class="clip footage cam-02-settings-0" src="assets/media/take.mp4" muted playsinline data-start="4.86" data-duration="3.267" data-media-start="4.968" data-playback-rate="1.5" data-track-index="0"></video>
+      <div id="win-02-settings-1" class="clip win" data-start="8.127" data-duration="6.854" data-track-index="1" style="left:308px;top:328.399px;width:1304px;height:287.201px"></div>
+      <video id="v-02-settings-1-0" class="clip footage cam-02-settings-1" src="assets/media/take.mp4" muted playsinline data-start="8.127" data-duration="6.3" data-media-start="9.868" data-playback-rate="1" data-track-index="0"></video>
+      <video id="v-02-settings-1-1" class="clip footage cam-02-settings-1" src="assets/media/take.mp4" muted playsinline data-start="14.427" data-duration="0.554" data-media-start="16.168" data-playback-rate="1.084" data-track-index="0"></video>
+      <div id="chip-02-settings-0" class="clip chip appchip" data-start="4.86" data-duration="3.267" data-track-index="2"><span class="chip-inner" id="chip-02-settings-0-i">Account menu → Settings → Integrations</span></div>
+      <div id="chip-02-settings-1" class="clip chip appchip" data-start="8.127" data-duration="6.853" data-track-index="2"><span class="chip-inner" id="chip-02-settings-1-i">Browser → Agent browser access</span></div>
+      <div id="win-03-ask-0" class="clip win" data-start="14.98" data-duration="4.4" data-track-index="1" style="left:308px;top:100.004px;width:1304px;height:743.991px"></div>
+      <video id="v-03-ask-0-0" class="clip footage cam-03-ask-0" src="assets/media/take.mp4" muted playsinline data-start="14.98" data-duration="4.4" data-media-start="18.368" data-playback-rate="1" data-track-index="0"></video>
+      <div id="win-03-ask-1" class="clip win" data-start="19.38" data-duration="5.217" data-track-index="1" style="left:308px;top:246.667px;width:1304px;height:450.667px"></div>
+      <video id="v-03-ask-1-0" class="clip footage cam-03-ask-1" src="assets/media/take.mp4" muted playsinline data-start="19.38" data-duration="5.217" data-media-start="22.768" data-playback-rate="1.15" data-track-index="0"></video>
+      <div id="win-03-ask-2" class="clip win" data-start="24.597" data-duration="2.023" data-track-index="1" style="left:308px;top:100.004px;width:1304px;height:743.991px"></div>
+      <video id="v-03-ask-2-0" class="clip footage cam-03-ask-2" src="assets/media/take.mp4" muted playsinline data-start="24.597" data-duration="2.023" data-media-start="28.768" data-playback-rate="4.796" data-track-index="0"></video>
+      <div id="chip-03-ask-0" class="clip chip appchip" data-start="14.98" data-duration="4.4" data-track-index="2"><span class="chip-inner" id="chip-03-ask-0-i">Projects → greet-app</span></div>
+      <div id="chip-03-ask-1" class="clip chip appchip" data-start="19.38" data-duration="5.217" data-track-index="2"><span class="chip-inner" id="chip-03-ask-1-i">Ask the coordinator</span></div>
+      <div id="chip-03-ask-2" class="clip chip appchip" data-start="24.597" data-duration="2.023" data-track-index="2"><span class="chip-inner" id="chip-03-ask-2-i">The coordinator starts a thread</span></div>
+      <div id="win-04-watch-0" class="clip win" data-start="26.62" data-duration="3.3" data-track-index="1" style="left:308px;top:100.004px;width:1304px;height:743.991px"></div>
+      <video id="v-04-watch-0-0" class="clip footage cam-04-watch-0" src="assets/media/take.mp4" muted playsinline data-start="26.62" data-duration="3.3" data-media-start="38.468" data-playback-rate="1" data-track-index="0"></video>
+      <div id="win-04-watch-1" class="clip win" data-start="29.92" data-duration="3.25" data-track-index="1" style="left:308px;top:100.004px;width:1304px;height:743.991px"></div>
+      <video id="v-04-watch-1-0" class="clip footage cam-04-watch-1" src="assets/media/take.mp4" muted playsinline data-start="29.92" data-duration="3.25" data-media-start="41.768" data-playback-rate="2" data-track-index="0"></video>
+      <div id="win-04-watch-2" class="clip win" data-start="33.17" data-duration="2.7" data-track-index="1" style="left:308px;top:100.004px;width:1304px;height:743.991px"></div>
+      <video id="v-04-watch-2-0" class="clip footage cam-04-watch-2" src="assets/media/take.mp4" muted playsinline data-start="33.17" data-duration="2.7" data-media-start="48.268" data-playback-rate="1" data-track-index="0"></video>
+      <div id="win-04-watch-3" class="clip win" data-start="35.87" data-duration="6.63" data-track-index="1" style="left:308px;top:100.004px;width:1304px;height:743.991px"></div>
+      <video id="v-04-watch-3-0" class="clip footage cam-04-watch-3" src="assets/media/take.mp4" muted playsinline data-start="35.87" data-duration="3.6" data-media-start="50.968" data-playback-rate="1" data-track-index="0"></video>
+      <video id="v-04-watch-3-1" class="clip footage cam-04-watch-3" src="assets/media/take.mp4" muted playsinline data-start="39.47" data-duration="3.03" data-media-start="54.568" data-playback-rate="0.99" data-track-index="0"></video>
+      <div id="chip-04-watch-0" class="clip chip appchip" data-start="26.62" data-duration="3.3" data-track-index="2"><span class="chip-inner" id="chip-04-watch-0-i">Right panel → Check greeting page</span></div>
+      <div id="chip-04-watch-1" class="clip chip appchip" data-start="29.92" data-duration="3.25" data-track-index="2"><span class="chip-inner" id="chip-04-watch-1-i">The agent opens a tab with <code>preview_*</code> tools</span></div>
+      <div id="chip-04-watch-2" class="clip chip appchip" data-start="33.17" data-duration="2.7" data-track-index="2"><span class="chip-inner" id="chip-04-watch-2-i">Dock → the tab sits beside the thread</span></div>
+      <div id="chip-04-watch-3" class="clip chip appchip" data-start="35.87" data-duration="6.63" data-track-index="2"><span class="chip-inner" id="chip-04-watch-3-i">The agent types Ada and presses Greet</span></div>
+      <div id="win-05-takeover-0" class="clip win" data-start="42.5" data-duration="10.603" data-track-index="1" style="left:678px;top:100px;width:564px;height:744px"></div>
+      <video id="v-05-takeover-0-0" class="clip footage cam-05-takeover-0" src="assets/media/take.mp4" muted playsinline data-start="42.5" data-duration="10.603" data-media-start="75.968" data-playback-rate="0.979" data-track-index="0"></video>
+      <div id="chip-05-takeover-0" class="clip chip appchip" data-start="42.5" data-duration="10.6" data-track-index="2"><span class="chip-inner" id="chip-05-takeover-0-i">Take over → type Grace → Hand back</span></div>
+      <div id="win-06-screenshot-0" class="clip win" data-start="53.1" data-duration="3.913" data-track-index="1" style="left:308px;top:291.579px;width:1304px;height:360.842px"></div>
+      <video id="v-06-screenshot-0-0" class="clip footage cam-06-screenshot-0" src="assets/media/take.mp4" muted playsinline data-start="53.1" data-duration="3.913" data-media-start="86.368" data-playback-rate="1.15" data-track-index="0"></video>
+      <div id="win-06-screenshot-1" class="clip win" data-start="57.013" data-duration="6.007" data-track-index="1" style="left:520.5px;top:100px;width:879px;height:744px"></div>
+      <video id="v-06-screenshot-1-0" class="clip footage cam-06-screenshot-1" src="assets/media/take.mp4" muted playsinline data-start="57.013" data-duration="2.033" data-media-start="90.868" data-playback-rate="3" data-track-index="0"></video>
+      <video id="v-06-screenshot-1-1" class="clip footage cam-06-screenshot-1" src="assets/media/take.mp4" muted playsinline data-start="59.046" data-duration="3.5" data-media-start="96.968" data-playback-rate="1" data-track-index="0"></video>
+      <video id="v-06-screenshot-1-2" class="clip footage cam-06-screenshot-1" src="assets/media/take.mp4" muted playsinline data-start="62.546" data-duration="0.473" data-media-start="100.468" data-playback-rate="1.056" data-track-index="0"></video>
+      <div id="chip-06-screenshot-0" class="clip chip appchip" data-start="53.1" data-duration="3.913" data-track-index="2"><span class="chip-inner" id="chip-06-screenshot-0-i">Thread composer → ask for a screenshot</span></div>
+      <div id="chip-06-screenshot-1" class="clip chip appchip" data-start="57.013" data-duration="6.007" data-track-index="2"><span class="chip-inner" id="chip-06-screenshot-1-i">The screenshot in the chat</span></div>
+      <div id="speed-0" class="clip speed" data-start="4.86" data-duration="3.267" data-track-index="3"><span class="speed-inner">Sped up 1.5×</span></div>
+      <div id="speed-1" class="clip speed" data-start="24.597" data-duration="2.023" data-track-index="3"><span class="speed-inner">Sped up 5×</span></div>
+      <div id="speed-2" class="clip speed" data-start="29.92" data-duration="3.25" data-track-index="3"><span class="speed-inner">Sped up 2×</span></div>
+      <div id="speed-3" class="clip speed" data-start="57.013" data-duration="2.033" data-track-index="3"><span class="speed-inner">Sped up 3×</span></div>
+      <audio id="vo-01-intro" src="assets/media/01-intro.wav" data-start="1.1" data-duration="3.36" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-02-settings" src="assets/media/02-settings.wav" data-start="4.91" data-duration="9.92" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-03-ask" src="assets/media/03-ask.wav" data-start="15.03" data-duration="9.44" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-04-watch" src="assets/media/04-watch.wav" data-start="26.67" data-duration="12.48" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-05-takeover" src="assets/media/05-takeover.wav" data-start="42.55" data-duration="10.4" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-06-screenshot" src="assets/media/06-screenshot.wav" data-start="53.15" data-duration="5.92" data-track-index="6" data-volume="1"></audio>
+      <audio id="vo-07-outro" src="assets/media/07-outro.wav" data-start="63.07" data-duration="5.36" data-track-index="6" data-volume="1"></audio>
+
+      <section id="intro" class="clip card" data-start="0" data-duration="4.86" data-track-index="1">
+        <div class="card-inner">
+          <div class="wordmark rise">SpecWithCode</div>
+          <h1 class="title rise">Let agents use a browser</h1>
+          <div class="thread" id="intro-thread"></div>
+          <p class="subtitle rise">A real run of SpecWithCode 1.0.47 with Codex in a sample repo.</p>
+          <div class="footer rise">spec-weave.com/tutorials</div>
+        </div>
+      </section>
+
+      <section id="outro" class="clip card" data-start="63.02" data-duration="6.91" data-track-index="1">
+        <div class="card-inner">
+          <div class="wordmark rise">SpecWithCode</div>
+          <div class="outro-l1 rise">Next: to use your real Chrome, see the SpecWithCode Browser extension docs</div>
+          <div class="thread" id="outro-thread"></div>
+          <p class="outro-l2 rise">Recorded headlessly in one take on a private SpecWithCode 1.0.47 server with a disposable home. Off camera: the welcome wizard, adding greet-app with Full access, turning Agent browser access off first, and a page reload before Take over. Agent waits are sped up where marked. The narration is an AI voice.</p>
+          <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
+        </div>
+      </section>
+      <div id="cap-1" class="clip caption" data-start="1.1" data-duration="3.76" data-track-index="5"><span class="pill">Let agents use a browser,<br>right beside the thread.</span></div>
+      <div id="cap-2" class="clip caption" data-start="4.91" data-duration="4.762" data-track-index="5"><span class="pill">Open Settings, Integrations, and<br>turn on Agent browser access.</span></div>
+      <div id="cap-3" class="clip caption" data-start="9.672" data-duration="5.308" data-track-index="5"><span class="pill">Projects can override it, and it applies<br>when an agent session next starts.</span></div>
+      <div id="cap-4" class="clip caption" data-start="15.03" data-duration="4.874" data-track-index="5"><span class="pill">greet-app serves its demo<br>page locally, on port 5173.</span></div>
+      <div id="cap-5" class="clip caption" data-start="19.904" data-duration="2.606" data-track-index="5"><span class="pill">Ask the coordinator to<br>check it in the browser</span></div>
+      <div id="cap-6" class="clip caption" data-start="22.51" data-duration="2.36" data-track-index="5"><span class="pill">beside the thread, so you can watch.</span></div>
+      <div id="cap-7" class="clip caption" data-start="26.67" data-duration="1.522" data-track-index="5"><span class="pill">Open the new thread.</span></div>
+      <div id="cap-8" class="clip caption" data-start="28.192" data-duration="3.867" data-track-index="5"><span class="pill">Its agent opens an isolated<br>tab with the <code>preview_*</code> tools.</span></div>
+      <div id="cap-9" class="clip caption" data-start="32.059" data-duration="5.095" data-track-index="5"><span class="pill">Dock the tab beside the thread and<br>watch it type Ada and press Greet.</span></div>
+      <div id="cap-10" class="clip caption" data-start="37.154" data-duration="2.396" data-track-index="5"><span class="pill">The page says Hello, Ada.</span></div>
+      <div id="cap-11" class="clip caption" data-start="42.55" data-duration="3.295" data-track-index="5"><span class="pill">To try something<br>yourself, click Take over.</span></div>
+      <div id="cap-12" class="clip caption" data-start="45.845" data-duration="3.408" data-track-index="5"><span class="pill">It's the same tab, and the<br>agent waits while you drive.</span></div>
+      <div id="cap-13" class="clip caption" data-start="49.253" data-duration="3.847" data-track-index="5"><span class="pill">Type Grace, press Enter, then Hand back.</span></div>
+      <div id="cap-14" class="clip caption" data-start="53.15" data-duration="2.019" data-track-index="5"><span class="pill">Now ask for a screenshot.</span></div>
+      <div id="cap-15" class="clip caption" data-start="55.169" data-duration="4.301" data-track-index="5"><span class="pill">The agent captures the tab as you<br>left it and shows it in the chat.</span></div>
+      <div id="cap-16" class="clip caption" data-start="63.07" data-duration="5.76" data-track-index="5"><span class="pill">To use your real Chrome instead, see<br>the SpecWithCode Browser extension docs.</span></div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // Types a command across its wrapped rows; segs are the row texts after the prompt.
+      function typeCmd(ids, segs, start, dur) {
+        const o = { n: 0 };
+        const els = ids.map((id) => document.querySelector("#" + id + " .cmd"));
+        const total = segs.reduce((a, s) => a + s.length, 0);
+        tl.to(o, { n: total, duration: dur, ease: "none", onUpdate: () => {
+          let left = Math.round(o.n);
+          segs.forEach((s, i) => { els[i].textContent = s.slice(0, Math.max(0, left)); left -= s.length; });
+        } }, start);
+      }
+      tl.set(".cam-02-settings-0", { scale: 0.667, x: 320, y: 112.004, clipPath: "inset(0px 0px 0.013px 0px round 9px)", transformOrigin: "0 0" }, 4.86);
+      tl.set(".cam-02-settings-1", { scale: 1.385, x: -547.186, y: 201.871, clipPath: "inset(100px 370px 790.002px 626px round 4.331px)", transformOrigin: "0 0" }, 8.127);
+      tl.fromTo("#chip-02-settings-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 4.91);
+      tl.fromTo("#chip-02-settings-1-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 8.177);
+      tl.set(".cam-03-ask-0", { scale: 0.877, x: 320, y: 112.004, clipPath: "inset(0px 460px 258.76px 0px round 6.844px)", transformOrigin: "0 0" }, 14.98);
+      tl.set(".cam-03-ask-1", { scale: 1.641, x: -451.282, y: -1086.974, clipPath: "inset(820px 670px 0px 470px round 3.656px)", transformOrigin: "0 0" }, 19.38);
+      tl.set(".cam-03-ask-2", { scale: 0.667, x: 320, y: 112.004, clipPath: "inset(0px 0px 0.013px 0px round 9px)", transformOrigin: "0 0" }, 24.597);
+      tl.fromTo("#chip-03-ask-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 15.03);
+      tl.fromTo("#chip-03-ask-1-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 19.43);
+      tl.fromTo("#chip-03-ask-2-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 24.647);
+      tl.set(".cam-04-watch-0", { scale: 0.667, x: 320, y: 112.004, clipPath: "inset(0px 0px 0.013px 0px round 9px)", transformOrigin: "0 0" }, 26.62);
+      tl.set(".cam-04-watch-1", { scale: 0.865, x: -60.541, y: -102.482, clipPath: "inset(248px 0px -0.49px 440px round 6.938px)", transformOrigin: "0 0" }, 29.92);
+      tl.set(".cam-04-watch-2", { scale: 0.865, x: -60.541, y: -102.482, clipPath: "inset(248px 0px -0.49px 440px round 6.938px)", transformOrigin: "0 0" }, 33.17);
+      tl.set(".cam-04-watch-3", { scale: 0.865, x: -60.541, y: -102.482, clipPath: "inset(248px 0px -0.49px 440px round 6.938px)", transformOrigin: "0 0" }, 35.87);
+      tl.fromTo("#chip-04-watch-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 26.67);
+      tl.fromTo("#chip-04-watch-1-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 29.97);
+      tl.fromTo("#chip-04-watch-2-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 33.22);
+      tl.fromTo("#chip-04-watch-3-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 35.92);
+      tl.set(".cam-05-takeover-0", { scale: 1.002, x: -693.562, y: 71.926, clipPath: "inset(40px 0px 321.333px 1381px round 5.989px)", transformOrigin: "0 0" }, 42.5);
+      tl.fromTo("#chip-05-takeover-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 42.55);
+      tl.set(".cam-06-screenshot-0", { scale: 1.684, x: -421.053, y: -1178.526, clipPath: "inset(880px 720px 0px 440px round 3.563px)", transformOrigin: "0 0" }, 53.1);
+      tl.set(".cam-06-screenshot-1", { scale: 1.125, x: 37.5, y: -135.5, clipPath: "inset(220px 720px 220px 440px round 5.333px)", transformOrigin: "0 0" }, 57.013);
+      tl.fromTo("#chip-06-screenshot-0-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 53.15);
+      tl.fromTo("#chip-06-screenshot-1-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, 57.063);
+      tl.fromTo("#intro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, 0);
+      tl.fromTo("#intro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, 0.2);
+      tl.to("#intro .card-inner", { opacity: 0, duration: 0.25, ease: "none" }, 4.61);
+      tl.fromTo("#outro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, 63.02);
+      tl.fromTo("#outro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, 63.32);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
