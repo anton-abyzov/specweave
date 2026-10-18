@@ -149,6 +149,11 @@ export class AdapterLoader {
     if (explicit && (explicit === 'claude' || this.adapters.has(explicit))) {
       console.log(`✅ Using ${explicit} (SPECWEAVE_TOOL)`);
       console.log('');
+      if (explicit === 'claude') {
+        // Still check the command, so init can warn about a broken install.
+        const status = detectClaudeCli();
+        if (status.commandExists && !status.available) this.claudeCliIssue = status.error ?? 'not functional';
+      }
       return explicit;
     }
 

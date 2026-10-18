@@ -206,7 +206,7 @@ describe('specweave review', () => {
     expect(checkClosureGate(incDir, ID).notices.join('\n')).not.toContain('fix first');
   });
 
-  it('prints the report path relative to the project root', async () => {
+  it('prints the report path relative to where it was run', async () => {
     configure({ reviewer: 'fake', reviewers: { fake: { command: fakeReviewer('Verdict: ship'), family: 'openai' } } });
     expect(await reviewCommand(ID, { cwd: root })).toBe(0);
     const verdictLine = out.join('').split('\n').find((l) => l.startsWith('Verdict:'));
