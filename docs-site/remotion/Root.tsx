@@ -4,7 +4,7 @@ import {SpecWeaveHero} from './SpecWeaveHero';
 import {CONFIG} from './lib/theme';
 import {YouTubeCompositions} from './youtube/YouTubeRoot';
 import {StudioTutorial, STUDIO_TUTORIAL_FRAMES} from './studio-tutorial/StudioTutorial';
-import {JoinMachineTutorial, JOIN_TUTORIAL_FRAMES} from './join-tutorial/JoinMachineTutorial';
+import {JoinMachineTutorial, JoinThumbnail, JOIN_TUTORIAL_FRAMES} from './join-tutorial/JoinMachineTutorial';
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -32,6 +32,14 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1920}
         height={1080}
+      />
+      <Composition
+        id="JoinThumbnail"
+        component={JoinThumbnail}
+        durationInFrames={1}
+        fps={30}
+        width={1280}
+        height={720}
       />
       <YouTubeCompositions />
     </>
