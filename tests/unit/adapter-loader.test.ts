@@ -87,6 +87,44 @@ describe('AdapterLoader', () => {
       expect(detected).toBe('claude');
     });
 
+    it('honours SPECWEAVE_TOOL over passive indicators such as ~/.codex', async () => {
+      const detectSpy = vi.spyOn(claudeCliDetector, 'detectClaudeCli');
+      for (const adapter of adapterLoader.getAllAdapters()) {
+        vi.spyOn(adapter, 'detect').mockResolvedValue(adapter.name === 'codex');
+      }
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      expect(await adapterLoader.detectTool({ SPECWEAVE_TOOL: 'claude' })).toBe('claude');
+      expect(await adapterLoader.detectTool({ SPECWEAVE_TOOL: 'Cursor' })).toBe('cursor');
+      expect(detectSpy).not.toHaveBeenCalled();
+      expect(adapterLoader.claudeCliIssue).toBeUndefined();
+    });
+
+    it('ignores an unknown SPECWEAVE_TOOL and detects as usual', async () => {
+      vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
+        available: false, commandExists: false, pluginCommandsWork: false, error: 'command_not_found', platform: 'darwin',
+      });
+      for (const adapter of adapterLoader.getAllAdapters()) {
+        vi.spyOn(adapter, 'detect').mockResolvedValue(adapter.name === 'codex');
+      }
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      expect(await adapterLoader.detectTool({ SPECWEAVE_TOOL: 'cli' })).toBe('codex');
+    });
+
+    it('remembers a claude command that failed its check, so init does not claim a clean install', async () => {
+      vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
+        available: false, commandExists: true, pluginCommandsWork: false, error: 'version_check_failed', platform: 'darwin',
+      });
+      for (const adapter of adapterLoader.getAllAdapters()) {
+        vi.spyOn(adapter, 'detect').mockResolvedValue(false);
+      }
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      expect(await adapterLoader.detectTool({})).toBe('claude');
+      expect(adapterLoader.claudeCliIssue).toBe('version_check_failed');
+    });
+
     it('should return claude as default and never generic unless explicit', async () => {
       // This test ensures that Claude is always the default
       // Generic is only for explicit --adapter generic flag

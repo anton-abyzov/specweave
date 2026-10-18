@@ -416,7 +416,9 @@ export async function initCommand(
     // Non-Claude adapter install
     if (toolName === 'claude') {
       spinner.text = 'Configuring for Claude Code...';
-      console.log('\n' + locale.t('cli', 'init.claudeNativeComplete'));
+      console.log('\n' + (adapterLoader.claudeCliIssue
+        ? chalk.yellow(`⚠️  Claude Code files written, but the claude command failed its check (${adapterLoader.claudeCliIssue}); plugins may need a manual install`)
+        : locale.t('cli', 'init.claudeNativeComplete')));
     } else {
       await installNonClaudeAdapter(adapterLoader, toolName, targetDir, finalProjectName, options, spinner);
     }
