@@ -4,11 +4,15 @@ title: "Your First Increment"
 description: "Create, work through and close your first SpecWeave increment, then carry it to another tool."
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 import CommandTabs from '@site/src/components/CommandTabs';
 
 # Your First Increment
 
 This walks through one small change from request to closed increment, and shows how to move it to another tool halfway through.
+
+<TutorialEmbed slug="install-and-plan" />
 
 ## Before you start
 

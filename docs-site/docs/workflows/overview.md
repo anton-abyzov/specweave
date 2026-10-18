@@ -3,9 +3,13 @@ title: "A Claude Code and Codex workflow: the daily loop"
 description: "A repeatable AI coding workflow for Claude Code, Codex and other agents: plan a short spec, claim a task, prove it with a test, verify, review and close, and hand off when a usage limit hits."
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # The daily loop
 
 Every change that deserves an increment goes through the same five steps. In a tool with SpecWeave skills you can say the words in the first column; everywhere else, or when you want control, run the commands.
+
+<TutorialEmbed slug="claim-prove-verify-complete" />
 
 ```mermaid
 flowchart LR

@@ -4,9 +4,13 @@ sidebar_label: Review with another model
 description: "specweave review hands an increment's diff to a reviewer from another model family than the one that wrote it, saves the review in reports/ and exits 0 to ship or 3 to fix first. Setup, reviewers, configuration and CI use."
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # Review with another model
 
 A model reviewing its own code tends to agree with itself. `specweave review` gives the increment's diff to a reviewer from a different model family: Codex for code Claude wrote, Claude for code an OpenAI model wrote. The review lands in the increment folder and the exit code tells you, or your script, whether to ship.
+
+<TutorialEmbed slug="review-with-another-model" />
 
 Added in SpecWeave 3.1.0 (17 October 2026, [CHANGELOG](https://github.com/anton-abyzov/specweave/blob/develop/CHANGELOG.md)).
 
