@@ -1,0 +1,69 @@
+WEBVTT
+
+1
+00:00:01.100 --> 00:00:02.780
+Add a second machine.
+
+2
+00:00:02.780 --> 00:00:06.660
+Both machines need Tailscale, signed in to the same account,
+
+3
+00:00:06.660 --> 00:00:11.020
+with MagicDNS and HTTPS certificates turned on.
+
+4
+00:00:11.070 --> 00:00:16.453
+On the new machine, here a Mac mini, open Settings, then Connections.
+
+5
+00:00:16.453 --> 00:00:21.826
+Choose Invite this machine, give it a name, and choose Make the line.
+
+6
+00:00:21.826 --> 00:00:26.443
+SpecWithCode publishes itself on the Mac mini's private Tailscale name,
+
+7
+00:00:26.443 --> 00:00:28.408
+never on the public internet.
+
+8
+00:00:28.408 --> 00:00:32.270
+The line works like a password, so it stays blurred here.
+
+9
+00:00:32.670 --> 00:00:36.077
+On your main machine, open the same Connections page.
+
+10
+00:00:36.077 --> 00:00:40.651
+Paste the line under Add a machine, and choose Add machine.
+
+11
+00:00:40.651 --> 00:00:44.449
+The main machine checks that the address answers as that Mac,
+
+12
+00:00:44.449 --> 00:00:48.750
+then lists it as reachable. Its address is blurred too.
+
+13
+00:00:49.050 --> 00:00:51.740
+Pick the most a worker there may do.
+
+14
+00:00:51.740 --> 00:00:57.930
+Version 1.0.47 also asks for a one-time pairing code from the Mac mini,
+
+15
+00:00:57.930 --> 00:01:01.087
+made there beforehand with specwithcode pair.
+
+16
+00:01:01.087 --> 00:01:07.050
+Then choose Allow workers. The card now reads Allowed: Full access.
+
+17
+00:01:07.350 --> 00:01:12.230
+Next: add a Linux server you rent, with the Linux worker guide.

@@ -1,0 +1,258 @@
+{
+  "series": "SpecWithCode tutorials",
+  "slug": "add-a-machine",
+  "title": "Add a second machine",
+  "resolution": "1920x1080",
+  "fps": 30,
+  "demoRepo": "greet-app",
+  "labelsCheckedAt": "SpecWithCode 1.0.47 (release b806fc7f3daf85c7d601), rehearsed 2026-10-18",
+  "origins": {
+    "worker": "http://127.0.0.1:8349",
+    "main": "http://127.0.0.1:8347"
+  },
+  "offCamera": [
+    "seed.sh on both machines: greet-app with origin https://github.com/demo/greet-app.git (never fetched), specweave init . --quick, Demo User commits; scutil shim: Demo Mac (this Mac), Demo Mac mini (the M1)",
+    "codex-auth.sh on both machines: each machine's own Codex login copied into its demo HOME with the refresh token blanked",
+    "serve.sh: main on this Mac at 127.0.0.1:8347 (no Tailscale Serve); worker on the M1 at 127.0.0.1:8349 with --tailscale-serve --tailscale-serve-port 8445; the M1 UI reaches this Mac through ssh -L 8349",
+    "pair.sh on both (standard scopes plus access:read and access:write); finish the welcome wizard; add greet-app as a Local folder; project permissions Full access",
+    "Right before the take, on the M1: pair --scope orchestration:read --scope orchestration:operate --ttl 30m writes the one-time pairing code (Operate threads) into final/main/secret/code, mode 600"
+  ],
+  "shots": [
+    {
+      "id": "02-invite",
+      "kind": "APP",
+      "chapter": "Make the line on the new machine",
+      "steps": [
+        {
+          "do": "expect",
+          "text": "Control desk"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Account: Demo Mac mini"
+        },
+        {
+          "do": "pause",
+          "ms": 700
+        },
+        {
+          "do": "click",
+          "role": "menuitem",
+          "name": "Settings"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Connections",
+          "exact": true
+        },
+        {
+          "do": "expect",
+          "text": "Add this machine to another one"
+        },
+        {
+          "do": "pause",
+          "ms": 1500
+        },
+        {
+          "do": "hover",
+          "text": "Add this machine to another one",
+          "ms": 1500
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Invite this machine"
+        },
+        {
+          "do": "expect",
+          "text": "Invite this machine to another one"
+        },
+        {
+          "do": "pause",
+          "ms": 2500
+        },
+        {
+          "do": "click",
+          "placeholder": "Demo Mac mini"
+        },
+        {
+          "do": "pause",
+          "ms": 600
+        },
+        {
+          "do": "type",
+          "text": "Demo Mac mini",
+          "delay": 70
+        },
+        {
+          "do": "pause",
+          "ms": 800
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Make the line"
+        },
+        {
+          "do": "expect",
+          "text": "Paste this line on your main machine",
+          "timeout": 60000
+        },
+        {
+          "do": "captureValue",
+          "css": "input[aria-label='Invitation line for the main machine']",
+          "to": "/Users/Shared/specwithcode-demo/ep-add-machine/final/main/secret/line"
+        },
+        {
+          "do": "pause",
+          "ms": 4500
+        },
+        {
+          "do": "hover",
+          "text": "It works like a password",
+          "ms": 2500
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Done"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
+        }
+      ]
+    },
+    {
+      "id": "03-add",
+      "kind": "APP",
+      "chapter": "Add it on the main machine",
+      "steps": [
+        {
+          "do": "goto",
+          "origin": "main",
+          "path": "/",
+          "ms": 3000
+        },
+        {
+          "do": "expect",
+          "text": "Control desk"
+        },
+        {
+          "do": "pause",
+          "ms": 800
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Account: Demo Mac"
+        },
+        {
+          "do": "pause",
+          "ms": 700
+        },
+        {
+          "do": "click",
+          "role": "menuitem",
+          "name": "Settings"
+        },
+        {
+          "do": "pause",
+          "ms": 1200
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Connections",
+          "exact": true
+        },
+        {
+          "do": "expect",
+          "text": "No private machines yet"
+        },
+        {
+          "do": "pause",
+          "ms": 1500
+        },
+        {
+          "do": "fillFromFile",
+          "css": "input[aria-label='Invitation from the other machine']",
+          "file": "/Users/Shared/specwithcode-demo/ep-add-machine/final/main/secret/line",
+          "ms": 1200
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Add machine"
+        },
+        {
+          "do": "expect",
+          "text": "Added Demo Mac mini",
+          "timeout": 60000
+        },
+        {
+          "do": "pause",
+          "ms": 1500
+        },
+        {
+          "do": "hover",
+          "text": "Reachable",
+          "exact": true,
+          "ms": 3500
+        }
+      ]
+    },
+    {
+      "id": "04-allow",
+      "kind": "APP",
+      "chapter": "Allow workers",
+      "steps": [
+        {
+          "do": "selectOption",
+          "role": "combobox",
+          "name": "Most access for workers on Demo Mac mini",
+          "option": "Full access"
+        },
+        {
+          "do": "pause",
+          "ms": 1500
+        },
+        {
+          "do": "fillFromFile",
+          "css": "input[aria-label='Pairing code made on Demo Mac mini']",
+          "file": "/Users/Shared/specwithcode-demo/ep-add-machine/final/main/secret/code",
+          "ms": 1500
+        },
+        {
+          "do": "click",
+          "role": "button",
+          "name": "Allow workers"
+        },
+        {
+          "do": "expect",
+          "textRegex": "Allowed: Full access",
+          "timeout": 60000
+        },
+        {
+          "do": "pause",
+          "ms": 1500
+        },
+        {
+          "do": "hover",
+          "textRegex": "Allowed: Full access",
+          "ms": 5000
+        }
+      ]
+    }
+  ]
+}
