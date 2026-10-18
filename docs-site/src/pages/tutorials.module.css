@@ -1,511 +1,365 @@
-/* /tutorials. Builds on continuity.module.css (.page, .eyebrow, .lead); every color is a
-   brand token from src/styles/brand-tokens.css, so light and dark both come for free. */
-.tutorials {
-  --tut-gutter: 48px;
+/* /tutorials hub. Weave tokens and components only (src/css/weave.css), so light and dark
+   come from the tokens. Guides are a hairline list, not a grid of cards.
+   Motion: the learning paths draw their thread line and light each step as it scrolls in,
+   with CSS scroll-driven animation only. The resting state is the final state. */
+.page {
+  padding: var(--wv-space-16) var(--wv-space-8) var(--wv-space-24);
+}
+
+.page h1,
+.page h2,
+.page h3,
+.page p {
+  margin: 0;
+}
+
+.hero,
+.section {
+  max-width: var(--wv-page-max);
+  margin: 0 auto;
 }
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 32px 64px;
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 60px var(--tut-gutter) 40px;
+  gap: var(--wv-space-4);
 }
 
-.heroText {
-  min-width: 0;
-}
-
-.tutorials .hero h1 {
-  font-size: clamp(52px, 5vw, 76px);
-}
-
-.tutorials .hero p {
-  max-width: 600px;
-}
-
-.stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px 40px;
-  margin: 0;
-  padding: 0 0 6px 32px;
-  border-left: 1px solid var(--sw-brand-line);
-}
-
-.stats div {
-  display: grid;
-  gap: 2px;
-}
-
-.stats dt {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: normal;
-  text-transform: none;
-  color: var(--sw-brand-muted);
-}
-
-.stats dd {
-  margin: 0;
-  font-family: var(--sw-brand-display);
-  font-size: 34px;
-  line-height: 1.1;
-  color: var(--sw-brand-ink);
-}
-
-/* Player */
-.player {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 8px var(--tut-gutter) 72px;
-  scroll-margin-top: 84px;
-}
-
-.playerInfo {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px 40px;
-  margin-bottom: 22px;
-}
-
-.playerInfo > div {
-  display: grid;
-  gap: 8px;
-  max-width: 760px;
-}
-
-.playerAgent {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: normal;
-  text-transform: none;
-  color: var(--sw-brand-muted);
-}
-
-.playerAgent span:first-child {
+.hero h1 {
+  max-width: 16ch;
+  font: 600 72px/76px var(--wv-font-sans);
+  letter-spacing: -0.035em;
+  text-wrap: balance;
   color: var(--wv-ink);
 }
 
-.playerAgent span + span::before {
-  content: '/';
-  margin-right: 8px;
-  color: var(--sw-brand-line-strong);
+.lead {
+  max-width: var(--wv-measure);
+  font: 400 21px/30px var(--wv-font-sans);
+  color: var(--wv-muted);
 }
 
-.tutorials .playerTitle {
-  font-family: var(--sw-brand-display);
-  font-size: 36px;
-  font-weight: 450;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+.section {
+  display: grid;
+  gap: var(--wv-space-6);
+  margin-top: var(--wv-space-24);
 }
 
-.playerTitle:focus {
-  outline: none;
+.sectionHead {
+  display: grid;
+  gap: var(--wv-space-2);
+  max-width: var(--wv-measure);
 }
 
-.playerTitle:focus-visible {
-  outline: 3px solid var(--sw-brand-accent);
-  outline-offset: 4px;
+.sectionHead h2 {
+  font: 600 32px/38px var(--wv-font-sans);
+  letter-spacing: -0.02em;
+  color: var(--wv-ink);
 }
 
-.tutorials .playerSummary {
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--sw-brand-ink);
+.sectionHead p {
+  font: 400 17px/28px var(--wv-font-sans);
+  color: var(--wv-muted);
 }
 
-.tutorials .guideLink {
-  flex-shrink: 0;
-  justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  font-size: 15px;
-  font-weight: 500;
-  border-bottom: 1px solid var(--sw-brand-line-strong);
+/* Learning paths: three threads side by side on wide screens. */
+.paths {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--wv-space-12);
+  margin: 0;
+  padding: var(--wv-space-6) 0 0;
+  list-style: none;
+  border-top: 1px solid var(--wv-line);
 }
 
-.tutorials .guideLink:hover {
-  border-bottom-color: var(--sw-brand-accent);
-}
-
-/* Gallery */
-.gallery {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 72px var(--tut-gutter) 40px;
-  border-top: 1px solid var(--sw-brand-line);
-}
-
-.galleryHeading {
+.path {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--wv-space-3);
+  min-width: 0;
+  margin: 0;
+}
+
+.pathTitle {
+  font: 600 21px/28px var(--wv-font-sans);
+  color: var(--wv-ink);
+}
+
+.pathProduct {
+  font: 400 13px/18px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.pathSummary {
+  font: 400 15px/22px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.pathThread {
+  margin-top: var(--wv-space-3);
+  gap: var(--wv-space-4);
+}
+
+.pathThread > li {
+  margin: 0;
+}
+
+.pathMore {
+  margin-top: var(--wv-space-2);
+  font: 400 15px/22px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+@keyframes tutThreadDraw {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes tutStepReached {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Ranges start at entry 0% and fill both ways, so no part shows its final look and then
+       snaps back; everything is at rest by cover 40%. */
+    .pathThread::before {
+      animation: tutThreadDraw linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+
+    .pathThread > li {
+      animation: tutStepReached linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}
+
+/* All guides */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
-  gap: 50px;
-  margin-bottom: 34px;
+  justify-content: space-between;
+  gap: var(--wv-space-4) var(--wv-space-8);
 }
 
-.tutorials .galleryHeading h2 {
-  font-size: 32px;
-  line-height: 38px;
+.search {
+  display: grid;
+  gap: var(--wv-space-1);
+  flex: 1 1 280px;
+  max-width: 420px;
 }
 
-.tutorials .galleryHeading p {
-  max-width: 400px;
-  font-size: 16px;
-  color: var(--sw-brand-muted);
+.search label {
+  font: 500 15px/22px var(--wv-font-sans);
+  color: var(--wv-ink);
+}
+
+.search input {
+  min-height: 40px;
+  padding: 0 var(--wv-space-3);
+  border: 1px solid var(--wv-control);
+  border-radius: var(--wv-radius-sm);
+  background: var(--wv-panel);
+  color: var(--wv-ink);
+  font: 400 15px/22px var(--wv-font-sans);
+  transition: border-color 120ms ease;
+}
+
+.search input::placeholder {
+  color: var(--wv-muted);
+}
+
+.search input:hover {
+  border-color: var(--wv-ink);
+}
+
+.search input:focus-visible {
+  outline: 2px solid var(--wv-iris);
+  outline-offset: 2px;
 }
 
 .filters {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+  gap: var(--wv-space-2);
 }
 
-.filterLabel {
-  margin-right: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: normal;
-  text-transform: none;
-  color: var(--sw-brand-muted);
-}
-
-.tutorials .filter {
+.filter {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 8px 14px;
-  border: 1px solid var(--sw-brand-line);
+  gap: var(--wv-space-2);
+  min-height: 40px;
+  padding: 0 var(--wv-space-4);
+  border: 1px solid var(--wv-control);
   border-radius: var(--wv-radius-sm);
-  background: var(--sw-brand-card);
-  color: var(--sw-brand-ink);
-  font-size: 14px;
+  background: transparent;
+  color: var(--wv-ink);
+  font: 500 15px/22px var(--wv-font-sans);
   cursor: pointer;
-  transition: background-color 120ms ease, border-color 120ms ease;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
-.tutorials .filter:hover {
-  border-color: var(--sw-brand-control-border);
-  background: var(--sw-brand-hover);
+.filter:hover {
+  border-color: var(--wv-ink);
 }
 
-.tutorials .filter[aria-pressed='true'] {
-  background: var(--sw-brand-action);
-  border-color: var(--sw-brand-action);
-  color: var(--sw-brand-on-action);
+.filter[aria-pressed='true'] {
+  background: var(--wv-iris-tint);
+  border-color: var(--wv-iris);
+  color: var(--wv-iris-strong);
+}
+
+.filter:focus-visible,
+.reset:focus-visible {
+  outline: 2px solid var(--wv-iris);
+  outline-offset: 2px;
 }
 
 .count {
-  min-width: 22px;
-  padding: 1px 6px;
-  border-radius: var(--wv-radius-xs);
-  background: var(--sw-brand-soft);
-  color: var(--sw-brand-muted);
-  font-size: 12px;
-  text-align: center;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
+  color: var(--wv-muted);
 }
 
 .filter[aria-pressed='true'] .count {
-  background: color-mix(in srgb, var(--sw-brand-on-action) 18%, transparent);
-  color: var(--sw-brand-on-action);
+  color: inherit;
 }
 
-.tutorials .resultCount {
-  margin: 16px 0 26px;
-  font-size: 13px;
-  color: var(--sw-brand-muted);
+.resultCount {
+  font: 400 13px/18px var(--wv-font-sans);
+  color: var(--wv-muted);
 }
 
-.grid {
-  list-style: none;
+.rows {
   margin: 0;
   padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--wv-line);
+}
+
+.row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 28px 24px;
-}
-
-.grid > li {
-  display: flex;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--wv-space-6);
+  align-items: baseline;
   margin: 0;
+  padding: var(--wv-space-6) 0;
+  border-bottom: 1px solid var(--wv-line);
 }
 
-.card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  border: 1px solid var(--sw-brand-line);
-  border-radius: var(--wv-radius-md);
-  overflow: hidden;
-  background: var(--wv-panel);
-  transition: border-color 120ms ease;
+/* Length sits on the title's baseline, right-aligned, like a table of contents. Posters stay on the
+   guide pages; the hub is a text list so mixed poster styles never sit side by side. */
+.length {
+  font: 500 15px/22px var(--wv-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--wv-muted);
 }
 
-.card:hover {
-  border-color: var(--wv-control);
+.rowText {
+  display: grid;
+  gap: var(--wv-space-2);
+  min-width: 0;
 }
 
-.card:has(.cardButton:focus-visible) {
-  outline: 3px solid var(--sw-brand-accent);
-  outline-offset: 3px;
-}
-
-.cardSelected {
-  border-color: var(--sw-brand-accent);
-  box-shadow: inset 0 0 0 1px var(--sw-brand-accent);
-}
-
-.thumb {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  background: var(--sw-brand-term-bg);
-  border-bottom: 1px solid var(--sw-brand-line);
-}
-
-.thumb img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.thumbPlaceholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  padding: 0 22px;
-  background: var(--wv-sunken);
-}
-
-.thumbAgent {
-  font-family: var(--wv-font-sans);
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+.rowTitle {
+  font: 600 21px/28px var(--wv-font-sans);
   color: var(--wv-ink);
 }
 
-.badge {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  padding: 3px 8px;
-  border-radius: var(--wv-radius-xs);
-  background: var(--sw-brand-term-bg);
-  color: var(--sw-brand-term-ink);
-  font-family: var(--wv-font-sans);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
+.rowOutcome {
+  max-width: var(--wv-measure);
+  font: 400 17px/26px var(--wv-font-sans);
+  color: var(--wv-ink);
 }
 
-.badgeSoon {
-  background: var(--wv-panel);
-  color: var(--wv-muted);
-  border: 1px solid var(--wv-line);
-  font-family: var(--wv-font-sans);
-  font-weight: 600;
-}
-
-.cardBody {
+.rowMeta {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  padding: 18px 18px 16px;
-}
-
-.tutorials .cardAgent {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: normal;
-  text-transform: none;
+  flex-wrap: wrap;
+  gap: var(--wv-space-1) var(--wv-space-4);
+  font: 400 13px/18px var(--wv-font-sans);
   color: var(--wv-muted);
 }
 
-.tutorials .cardTitle {
-  font-size: 19px;
-  line-height: 1.3;
-  letter-spacing: -0.02em;
-  font-weight: 500;
+.empty {
+  padding: var(--wv-space-6) 0;
+  border-top: 1px solid var(--wv-line);
+  font: 400 17px/28px var(--wv-font-sans);
+  color: var(--wv-muted);
 }
 
-.tutorials .cardButton {
+.reset {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--sw-brand-ink);
+  color: var(--wv-ink);
   font: inherit;
-  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--wv-iris);
+  text-underline-offset: 0.22em;
   cursor: pointer;
 }
 
-.tutorials .cardButton:focus-visible {
-  outline: none;
+.other {
+  max-width: var(--wv-measure);
+  font: 400 17px/28px var(--wv-font-sans);
+  color: var(--wv-ink);
 }
 
-/* The whole card is the button's hit area. */
-.cardButton::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-}
-
-.tutorials .cardSummary {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--sw-brand-muted);
-}
-
-.tutorials .cardMeta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--sw-brand-line-soft);
-  font-size: 12px;
-  color: var(--sw-brand-muted);
-}
-
-/* Standards */
 .standards {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 44px var(--tut-gutter) 96px;
+  max-width: var(--wv-measure);
 }
 
-.tutorials .standardsTitle {
-  font-size: 30px;
-  margin-bottom: 22px;
-}
-
-.standards ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
-}
-
-.standards li {
-  margin: 0;
-  padding-top: 18px;
-  border-top: 1px solid var(--sw-brand-line-strong);
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--sw-brand-muted);
-}
-
-.standards strong {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
-  color: var(--sw-brand-ink);
-}
-
-@media (max-width: 1100px) {
-  .tutorials {
-    --tut-gutter: 32px;
+@media (max-width: 996px) {
+  .paths {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--wv-space-12);
   }
 }
 
 @media (max-width: 760px) {
-  .tutorials {
-    --tut-gutter: 16px;
+  .page {
+    padding: var(--wv-space-12) var(--wv-space-4) var(--wv-space-16);
   }
 
-  .hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
-    padding-top: 40px;
-    padding-bottom: 28px;
+  .hero h1 {
+    font-size: 44px;
+    line-height: 48px;
   }
 
-  .stats {
-    padding: 18px 0 0;
-    border-left: 0;
-    border-top: 1px solid var(--sw-brand-line);
+  .lead {
+    font-size: 19px;
+    line-height: 28px;
   }
 
-  .tutorials .hero h1 {
-    font-size: clamp(44px, 12vw, 60px);
+  .section {
+    margin-top: var(--wv-space-16);
   }
 
-  .stats {
-    gap: 12px 28px;
-  }
-
-  .stats dd {
-    font-size: 28px;
-  }
-
-  .player {
-    padding-bottom: 48px;
-  }
-
-  .tutorials .playerTitle {
+  .sectionHead h2 {
     font-size: 26px;
+    line-height: 32px;
   }
 
-  .playerInfo {
-    display: grid;
-    margin-bottom: 18px;
+  .row {
+    gap: var(--wv-space-4);
   }
 
-  .gallery {
-    padding-top: 48px;
+  .rowTitle {
+    font-size: 17px;
+    line-height: 24px;
   }
 
-  .galleryHeading {
-    display: block;
-    margin-bottom: 24px;
-  }
-
-  .tutorials .galleryHeading p {
-    margin-top: 16px;
+  .rowOutcome {
     font-size: 15px;
+    line-height: 22px;
   }
 
-  .tutorials .filter {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-
-  .filterLabel {
-    width: 100%;
-  }
-
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
-  }
-
-  .standards ul {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card,
-  .tutorials .filter {
-    transition: none;
+  .search {
+    max-width: none;
   }
 }

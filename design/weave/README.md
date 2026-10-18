@@ -12,7 +12,7 @@ The idea comes from the name. Work in these products is a set of threads: a spec
 2. **Iris is a thread, not a wash.** `wv-iris` appears in small, meaningful places: the primary button, links, the focus ring, the current step, the thread line. Never as a background gradient, never on more than about 5% of a screen.
 3. **Evidence before adjectives.** Lead with what a thing does and what proves it (a passed check, a command, a number with its source). Cut claims that cannot be checked.
 4. **One family, one voice.** Every page uses the same tokens, type, components and copy rules. Products differ by their name and their content, not by their colors.
-5. **Calm by default, one moment of motion.** Each site gets at most one scroll-driven sequence, and only where layers or connections are the point (the handoff between agents, a skill passing its checks). Everything else stays still.
+5. **Calm by default, motion that explains.** A scroll sequence earns its place when it shows structure, layers or connections: the handoff between agents, a coordinator starting workers, a skill passing its checks. A page may have more than one when each explains something different. Nothing moves for decoration.
 
 ## Content fundamentals
 
@@ -28,7 +28,7 @@ Real examples to copy the tone from:
 
 > When Claude Code hits its limit, Codex picks up the same task from the ledger.
 
-> Every verified skill shows its source, its security scan and whether it helped on a real task.
+> Every verified skill shows its source, its security scan and, when one exists, its evaluation.
 
 ## Color
 
@@ -71,8 +71,11 @@ Real examples to copy the tone from:
 ## Motion
 
 - UI transitions are 120 ms ease on color and border only.
-- The one scroll sequence per site draws the thread line and brings layers in at different rates, using CSS scroll-driven animations inside `@supports` and `prefers-reduced-motion: no-preference`. The resting state is the final state, so reduced motion, no JavaScript and screenshots all show the complete picture.
-- No fade-up on every section, no marquees, no hover tilt.
+- Scroll sequences are allowed wherever they explain structure, layers or connections: the thread line drawing from one step to the next, layers of a system arriving at different rates, a record filling in as the reader moves down. A page may carry more than one when each explains something different. If the sequence could be removed without the reader losing an idea, remove it.
+- Build them with CSS scroll-driven animations (`animation-timeline: view()` or a named `view-timeline`) inside `@supports (animation-timeline: view())` and `@media (prefers-reduced-motion: no-preference)`. Reach for the `motion` package only when a sequence cannot be expressed in CSS, and keep the same rules.
+- The resting state is the final state. Without scroll-timeline support, with reduced motion, without JavaScript and in a screenshot, the reader sees the complete picture: every step, every layer, the whole thread.
+- Animate `opacity`, `transform` and the thread's stroke only. Never move text the reader is trying to read, never hide content until a scroll position, never scroll-jack.
+- No decorative fade-ups, no fade-up on every section, no marquees, no parallax backgrounds, no hover tilt.
 
 ## Iconography
 
@@ -89,7 +92,7 @@ Real examples to copy the tone from:
 | Product | Site | What it is, in one line |
 | --- | --- | --- |
 | SpecWeave | spec-weave.com | Plans work as a spec, records every task in git, and lets any agent pick up where another stopped. |
-| SpecWithCode | spec-weave.com/code | A desktop workspace that runs Claude Code, Codex and Cursor on your own machines and subscriptions. |
-| Verified Skill | verified-skill.com | A registry of agent skills, each with its source, security scan and evaluation shown. |
+| SpecWithCode | spec-weave.com/code | A desktop workspace that runs Claude Code, Codex, Cursor, Grok Build, Gemini CLI, GitHub Copilot, OpenCode, Muse Code, Pi and other ACP agents on your own machines and subscriptions. |
+| Verified Skill | verified-skill.com | A registry of agent skills, each with its source and security scan shown, and its evaluation when one exists. |
 
 Every site starts with the Family bar so a visitor can move between the three.

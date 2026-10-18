@@ -1,6 +1,7 @@
 /*
-  /product page parts on Weave. Shared page kit: continuity.module.css.
-  Only --wv-* tokens. Terminals are wv-code; the window is wv-window.
+  /product (the SpecWeave CLI) on Weave. Shared page kit: continuity.module.css.
+  Only --wv-* tokens. Terminals are wv-code, the loop is wv-thread, the capture is wv-window.
+  Motion: one scroll sequence, the loop. Its resting state is the final state.
 */
 
 .hero {
@@ -19,6 +20,18 @@
 
 .inlineLink:hover {
   color: var(--wv-iris-strong) !important;
+}
+
+.cmd {
+  max-width: 440px;
+  margin-top: var(--wv-space-6);
+}
+
+.version {
+  margin-top: var(--wv-space-4) !important;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wv-muted);
 }
 
 .heroCode {
@@ -41,6 +54,24 @@
   color: var(--wv-muted);
 }
 
+/* Inline code inside running text. */
+.inlineCode,
+.loop p code,
+.flags code,
+.skills code,
+.integrations p code,
+.note code,
+.connector code,
+.table code {
+  padding: 1px var(--wv-space-1);
+  border: 0;
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-sunken);
+  font-family: var(--wv-font-mono);
+  font-size: 0.85em;
+  color: var(--wv-ink);
+}
+
 /* Hairline aligned with the content column (the section box carries side padding). */
 .ruled {
   position: relative;
@@ -60,56 +91,167 @@
   padding-bottom: var(--wv-space-16) !important;
 }
 
-@media (max-width: 760px) {
-  .ruled::before {
-    left: var(--wv-space-4);
-    right: var(--wv-space-4);
+/* ---------- The loop: a wv-thread whose line draws on scroll ---------- */
+.loop {
+  gap: 0;
+  margin-top: var(--wv-space-4);
+}
+
+.loop::before {
+  top: 14px;
+  bottom: 40px;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 280px);
+  gap: var(--wv-space-4) var(--wv-space-12);
+  padding-bottom: var(--wv-space-12);
+}
+
+.loop > .step::before {
+  top: 7px;
+}
+
+.stepText {
+  min-width: 0;
+}
+
+.stepNo {
+  color: var(--wv-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.stepCmd {
+  margin: var(--wv-space-3) 0 !important;
+  padding: var(--wv-space-2) var(--wv-space-3) !important;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px !important;
+  line-height: 21px !important;
+}
+
+.loop :global(.wv-thread__body) {
+  max-width: var(--wv-measure);
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.stepFile {
+  align-self: start;
+  min-width: 0;
+  padding-top: var(--wv-space-1);
+}
+
+.stepFile p {
+  margin-top: var(--wv-space-2) !important;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--wv-muted);
+}
+
+.file {
+  display: inline-block;
+  max-width: 100%;
+  padding: 2px var(--wv-space-2);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-panel);
+  font-family: var(--wv-font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--wv-ink);
+  overflow-wrap: anywhere;
+}
+
+@keyframes loopDraw {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes markerOn {
+  from { transform: scale(0.4); }
+  to { transform: scale(1); }
+}
+
+@keyframes fileIn {
+  from { transform: translateX(var(--wv-space-6)); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* Ranges start at entry 0% and fill both ways, so nothing shows its final state and then
+   snaps back; every part is at rest by cover 40%. Without support or with reduced motion
+   every part keeps its static, final layout. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .loop { view-timeline: --wv-loop block; }
+
+    .loop::before {
+      animation: loopDraw linear both;
+      animation-timeline: --wv-loop;
+      animation-range: entry 0% cover 40%;
+    }
+
+    .loop > .step::before {
+      animation: markerOn linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+
+    .stepFile {
+      animation: fileIn linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
   }
 }
 
-/* Three records: hairline list, file name on the left. */
-.records {
+/* ---------- Flag lists: hairline rows, command on the left ---------- */
+.flags {
   list-style: none;
-  margin: 0;
+  margin: var(--wv-space-6) 0;
   padding: 0;
   border-top: 1px solid var(--wv-line);
 }
 
-.records > li {
+.flags > li {
   display: grid;
-  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
-  gap: var(--wv-space-8);
-  padding: var(--wv-space-8) 0;
+  grid-template-columns: minmax(0, 180px) minmax(0, 1fr);
+  gap: var(--wv-space-4);
+  padding: var(--wv-space-3) 0;
   border-bottom: 1px solid var(--wv-line);
-}
-
-.file {
-  align-self: start;
-  justify-self: start;
-  padding: 2px var(--wv-space-2);
-  border: 0;
-  border-radius: var(--wv-radius-xs);
-  background: var(--wv-sunken);
-  font-family: var(--wv-font-mono);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 22px;
-  color: var(--wv-ink);
 }
 
-.records p {
-  max-width: var(--wv-measure);
-  margin: var(--wv-space-2) 0 var(--wv-space-3) !important;
+.flags > li > code {
+  justify-self: start;
+  align-self: start;
+}
+
+.flags > li > span {
   color: var(--wv-muted);
 }
 
-.recordNote {
-  font-size: 15px;
-  line-height: 22px;
-  font-weight: 500;
-  color: var(--wv-ink);
+.flagsWide {
+  max-width: 880px;
+  margin-top: var(--wv-space-8);
 }
 
-/* Handoff: two terminals joined by one iris thread (static). */
+.flagsWide > li {
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+}
+
+.note {
+  max-width: 880px;
+  margin: var(--wv-space-8) 0 var(--wv-space-4);
+}
+
+.note p {
+  margin: 0 !important;
+}
+
+/* ---------- Handoff: two terminals joined by one iris thread (static) ---------- */
 .handoff {
   min-width: 0;
 }
@@ -173,14 +315,101 @@
   color: var(--wv-muted);
 }
 
-.connector code {
-  padding: 1px var(--wv-space-1);
-  border: 0;
-  border-radius: var(--wv-radius-xs);
-  background: var(--wv-sunken);
-  font-family: var(--wv-font-mono);
-  font-size: 13px;
-  color: var(--wv-ink);
+.connector + .machine {
+  margin-top: var(--wv-space-2);
+}
+
+/* ---------- Skills: two definition lists with hairlines ---------- */
+.skillCols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--wv-space-12);
+  margin-bottom: var(--wv-space-6);
+}
+
+.colTitle {
+  margin-bottom: var(--wv-space-3) !important;
+  font-size: 17px !important;
+  line-height: 24px !important;
+}
+
+.skills {
+  margin: 0;
+  border-top: 1px solid var(--wv-line);
+}
+
+.skills > div {
+  display: grid;
+  grid-template-columns: minmax(0, 130px) minmax(0, 1fr);
+  gap: var(--wv-space-4);
+  padding: var(--wv-space-3) 0;
+  border-bottom: 1px solid var(--wv-line);
+}
+
+.skills dt {
+  margin: 0;
+  font-weight: 400;
+}
+
+.skills dt code {
+  white-space: nowrap;
+}
+
+.skills dd {
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--wv-muted);
+}
+
+/* ---------- Integrations: hairline list, name on the left ---------- */
+.integrations {
+  list-style: none;
+  margin: 0 0 var(--wv-space-6);
+  padding: 0;
+  border-top: 1px solid var(--wv-line);
+}
+
+.integrations > li {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: var(--wv-space-8);
+  padding: var(--wv-space-6) 0;
+  border-bottom: 1px solid var(--wv-line);
+}
+
+.integrations > li > div {
+  min-width: 0;
+  max-width: var(--wv-measure);
+}
+
+.integrations h3 {
+  font-size: 17px !important;
+  line-height: 24px !important;
+}
+
+.integrations .stepCmd {
+  margin-top: 0 !important;
+}
+
+.integrations p {
+  margin-bottom: var(--wv-space-2) !important;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--wv-muted);
+}
+
+.integrations .inlineLink {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
+}
+
+/* ---------- Record ---------- */
+.boardTitle {
+  margin: var(--wv-space-12) 0 var(--wv-space-4) !important;
+  font-size: 17px !important;
+  line-height: 24px !important;
 }
 
 /* Real capture in a window frame. */
@@ -190,7 +419,7 @@
   justify-self: end;
 }
 
-/* Less to carry: a table, not three cards. */
+/* ---------- Tables, not rows of cards ---------- */
 .tableWrap {
   overflow-x: auto;
 }
@@ -231,15 +460,13 @@
 }
 
 .table tbody th {
+  width: 26%;
   font-weight: 600;
   color: var(--wv-ink);
-  white-space: nowrap;
 }
 
-.table td:nth-child(2) {
-  font-weight: 500;
+.table td {
   color: var(--wv-ink);
-  white-space: nowrap;
 }
 
 .table td:last-child {
@@ -247,14 +474,8 @@
   color: var(--wv-muted);
 }
 
-.table code {
-  padding: 0 var(--wv-space-1);
-  border: 0;
-  border-radius: var(--wv-radius-xs);
-  background: var(--wv-sunken);
-  font-family: var(--wv-font-mono);
-  font-size: 13px;
-  color: var(--wv-ink);
+.table td code {
+  white-space: nowrap;
 }
 
 @media (max-width: 1100px) {
@@ -263,21 +484,49 @@
   }
 }
 
-@media (max-width: 760px) {
-  .hero {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .records > li {
+@media (max-width: 900px) {
+  .step {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--wv-space-3);
-    padding: var(--wv-space-6) 0;
+    padding-bottom: var(--wv-space-8);
+  }
+
+  .stepFile {
+    padding-top: 0;
+  }
+
+  .skillCols {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--wv-space-8);
+  }
+}
+
+@media (max-width: 760px) {
+  .ruled::before {
+    left: var(--wv-space-4);
+    right: var(--wv-space-4);
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .terminal {
     font-size: 12px;
     line-height: 19px;
     padding: var(--wv-space-3);
+  }
+
+  .flags > li,
+  .flagsWide > li,
+  .skills > div,
+  .integrations > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--wv-space-1);
+  }
+
+  .integrations > li {
+    gap: var(--wv-space-3);
   }
 
   .table,
@@ -287,6 +536,7 @@
   .table th,
   .table td {
     display: block;
+    width: auto;
   }
 
   .table thead {
@@ -303,22 +553,22 @@
   .table td {
     padding: 0;
     border: 0;
-    white-space: normal !important;
   }
 
-  .table td:nth-child(2) {
+  .table td {
     margin-top: var(--wv-space-1);
   }
 
-  .table td:last-child {
-    margin-top: var(--wv-space-2);
+  .table td code {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
 
-.records > li:last-child {
-  border-bottom: 0;
-}
-
-.connector + .machine {
-  margin-top: var(--wv-space-2);
+/* Inline code never breaks at a hyphen (--reason, wip/<branch>); code blocks keep their own wrapping. */
+.root p code,
+.root li code,
+.root td code,
+.root dd code {
+  white-space: nowrap;
 }

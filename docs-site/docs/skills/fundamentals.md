@@ -29,13 +29,13 @@ There's a lot of confusion around skills, plugins, and marketplaces in Claude Co
 
 ```mermaid
 flowchart LR
-    MP["Marketplace<br/>(marketplace.json)"] --> P1["Plugin A<br/>(plugin.json)"]
-    MP --> P2["Plugin B<br/>(plugin.json)"]
-    P1 --> S1["Skill 1<br/>(SKILL.md)"]
-    P1 --> S2["Skill 2<br/>(SKILL.md)"]
-    P1 --> A1["Agent<br/>(agent.md)"]
-    P2 --> S3["Skill 3<br/>(SKILL.md)"]
-    P2 --> H1["Hooks<br/>(hooks.json)"]
+    MP["Marketplace: marketplace.json"] --> P1["Plugin A: plugin.json"]
+    MP --> P2["Plugin B: plugin.json"]
+    P1 --> S1["Skill 1: SKILL.md"]
+    P1 --> S2["Skill 2: SKILL.md"]
+    P1 --> A1["Agent: agent.md"]
+    P2 --> S3["Skill 3: SKILL.md"]
+    P2 --> H1["Hooks: hooks.json"]
 ```
 
 ---
@@ -352,17 +352,19 @@ SpecWeave is delivered as Claude Code plugins through two marketplaces. Here's w
 
 The same skills are also generated as project skills (`sw-do`, `sw-review` and so on) in `.claude/skills/` and `.agents/skills/`, so cloud sessions and Codex get them without the plugin. Five optional skills (grill-me, glossary, sync, project, jev) are not in the plugin: a project turns them on with `specweave skills enable`, or when it detects their trigger, and gets them only as project skills (`/sw-grill-me`).
 
-**vskill marketplace** (`anton-abyzov/vskill`) provides **5 additional domain plugins**:
+**vskill marketplace** (`anton-abyzov/vskill`) provides **9 more plugins with 19 skills** (vskill 1.2.9, counted from its `plugins/` folder on 18 October 2026). The domain ones:
 
 | Plugin | Skills | Domain |
 |--------|--------|--------|
+| `frontend` | 4 | Frontend design, Figma connect, scroll-driven layouts |
+| `marketing` | 4 | Social media posting, Slack messaging, image and video generation |
+| `skills` | 2 | Skill discovery (scout) and the skill builder |
+| `google-workspace` | 1 | Google Workspace CLI (Gmail, Drive, Sheets, Docs, Calendar) |
 | `mobile` | 1 | App Store Connect automation |
-| `skills` | 1 | Skill discovery and evaluation (scout) |
-| `marketing` | 3 | Social media posting, Slack messaging, Chrome automation |
 | `productivity` | 1 | Expert network survey automation |
-| `google-workspace` | 3 | Google Workspace CLI (Gmail, Drive, Sheets, Docs, Calendar) |
+| `codex-bridge` | 1 | Writing AGENTS.md for Codex |
 
-Beyond these bundled plugins, **100,000+ community skills** are available via the [verified-skill.com](https://verified-skill.com) registry.
+Beyond these bundled plugins, community skills are listed on the [verified-skill.com](https://verified-skill.com) registry, each with its source and security scan, and its evaluation when one exists.
 
 ### Simple vs Complex Skills
 
@@ -435,7 +437,7 @@ This loads "skill memories" — corrections you've made that persist across sess
 4. **Commands = old name for skills** -- `.claude/commands/` still works, but skills are the current standard
 5. **Namespacing prevents conflicts** -- plugin skills become `/plugin:skill`
 6. **Three invocation methods** -- natural language (auto-trigger), slash command (`sw:&lt;name&gt;`), or the skill name in other AI tools (`$sw-&lt;name&gt;` in Codex)
-7. **Real scale** -- SpecWeave ships 6 core skills in 1 unified plugin and 5 optional project skills, plus 5 domain plugins via vskill and 100,000+ community skills
+7. **Real scale** -- SpecWeave ships 6 core skills in 1 unified plugin and 5 optional project skills; vskill adds 9 plugins with 19 skills (1.2.9, 18 October 2026), and verified-skill.com lists the community skills
 
 ---
 

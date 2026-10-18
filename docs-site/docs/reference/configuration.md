@@ -212,7 +212,7 @@ These keys are accepted without a warning because some code still reads them. Yo
 | `cicd` | `specweave branch-name` and the CI/CD helpers (`pushStrategy`, `git`, `release`). |
 | `issueTracker` | The older tracker block that `specweave sync setup` still writes for Jira and Azure DevOps. |
 | `plugins` | `plugins.enabled`, the list of enabled Claude Code plugins. |
-| `livingDocs` | `false` by default. `"onDone"` regenerates living docs when an increment closes; `specweave update` sets it for 2.x projects that used living docs. |
+| `livingDocs` | `false` by default: no living docs. `"onDone"` regenerates them under `.specweave/docs/` when an increment closes; `specweave update` sets it for 2.x projects that used living docs. A `skipLivingDocsSync: true` in an increment's `metadata.json` skips that one. |
 
 ## Removed keys
 

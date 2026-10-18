@@ -83,7 +83,9 @@ Increments created with 2.x keep their `tasks.md`, and the CLI still reads it. S
 
 ## What happened to living docs?
 
-Living docs are gone as a feature in 3.0, along with the `living-docs`, `sync-living-docs` and `docs` commands. They generated a second copy of every spec that drifted from the code and cost tokens to maintain. What outlives an increment now goes in two places: the Approach section of its `spec.md`, and one-file-per-fact notes in `.specweave/memory/`. Any `.specweave/docs/` folder you already have stays as ordinary files.
+Living docs are optional and off by default since 3.0. The `living-docs`, `sync-living-docs` and `docs` commands are gone: generated docs were a second copy of every spec that drifted from the code and cost tokens to maintain. What outlives an increment goes in two places by default: the Approach section of its `spec.md`, and one-file-per-fact notes in `.specweave/memory/`.
+
+If you still want them, set `"livingDocs": "onDone"` in `.specweave/config.json`: closing an increment then regenerates its living docs under `.specweave/docs/`. `specweave update` sets this for 2.x projects that used living docs. An existing `.specweave/docs/` folder otherwise stays as ordinary files.
 
 ## How do I upgrade from 2.x?
 
