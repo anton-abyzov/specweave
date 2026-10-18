@@ -8,7 +8,7 @@
 import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { resolveIncrement, readLeaseHours, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
-import { runVerify, describeUncheckedAcs } from '../../core/tasks/verify-runner.js';
+import { runVerify, describeUncheckedAcs, NO_COMMANDS_MESSAGE } from '../../core/tasks/verify-runner.js';
 
 export interface VerifyCommandOptions {
   json?: boolean;
@@ -16,6 +16,8 @@ export interface VerifyCommandOptions {
   cwd?: string;
   /** Extra/override commands, repeatable `--cmd`. */
   cmd?: string[];
+  /** Accept an empty command list (recorded in verify.json). */
+  reason?: string;
 }
 
 export async function verifyCommand(incrementId?: string, opts: VerifyCommandOptions = {}): Promise<number> {
@@ -36,13 +38,17 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
     commands: opts.cmd && opts.cmd.length ? opts.cmd : undefined,
     leaseHours: readLeaseHours(projectRoot),
     onCommand: (cmd) => { if (!opts.json) out(`▶ ${cmd}`); },
+    reason: opts.reason,
   });
+  if (result.results.length === 0 && !result.report.reason) {
+    err(`${NO_COMMANDS_MESSAGE} (${result.source}). Set testing.commands in .specweave/config.json, pass --cmd "<command>", or --reason "<why nothing runs>".`);
+  }
 
   if (opts.json) {
     out(JSON.stringify(result.report, null, 2));
   } else {
     for (const r of result.results) out(`${r.exit === 0 ? 'ok  ' : 'FAIL'} ${r.cmd} (exit ${r.exit})`);
-    if (result.results.length === 0) out(`No verification commands (${result.source}). Set testing.commands in .specweave/config.json.`);
+    if (result.results.length === 0 && result.report.reason) out(`No verification commands (${result.source}); accepted — reason: ${result.report.reason}`);
     const { report } = result;
     out(`ACs ${report.acs.done}/${report.acs.total} · tasks ${report.tasks.done}/${report.tasks.total} done (${report.tasks.skipped} skipped)`);
     const unchecked = describeUncheckedAcs(report.acs);
