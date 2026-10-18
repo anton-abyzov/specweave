@@ -13,7 +13,7 @@ _specweave_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    local main_commands="init uninstall pause start resume abandon complete task verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get"
+    local main_commands="init uninstall pause start resume abandon complete task card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get"
     local global_options="--workspace"
 
     case "${prev}" in
@@ -50,11 +50,19 @@ _specweave_completions() {
             return 0
             ;;
         task)
-            COMPREPLY=( $(compgen -W "-f --force -e --evidence --run -n --note --reason --all-mine --write --json --workspace --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-f --force -e --evidence --run -n --note --reason --all-mine --write --line --link --json --workspace --help" -- "${cur}") )
+            return 0
+            ;;
+        card)
+            COMPREPLY=( $(compgen -W "--line --link -e --evidence --run --reason -f --force --json --workspace --help" -- "${cur}") )
+            return 0
+            ;;
+        cards)
+            COMPREPLY=( $(compgen -W "--md --json --workspace --help" -- "${cur}") )
             return 0
             ;;
         verify)
-            COMPREPLY=( $(compgen -W "--cmd --json --workspace --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--cmd --json --reason --workspace --help" -- "${cur}") )
             return 0
             ;;
         review)
