@@ -1,0 +1,41 @@
+{
+ "comment": "App tutorial edit, framed-window layout (ported from provider-runs-out). Segments are [srcStart, srcEnd, rate] in take.mp4 source seconds (cue clock); syncOffset = blackdetect 4.000 minus black-on cue 4.032. Crops end on panel edges: the settings content pane (x 626-1550, rows above Agent computer access, y 100-290), the coordinator column, the thread column (x 440-1200) and the shared browser panel (x 1381-1920). The cut inside 05-takeover skips a page reload and reopening the thread (59.9-76.0).",
+ "title": "Let agents use a browser",
+ "subtitle": "A real run of SpecWithCode 1.0.47 with Codex in a sample repo.",
+ "wordmark": "SpecWithCode",
+ "outro": {
+  "next": "Next: to use your real Chrome, see the SpecWithCode Browser extension docs",
+  "note": "Recorded headlessly in one take on a private SpecWithCode 1.0.47 server with a disposable home. Off camera: the welcome wizard, adding greet-app with Full access, turning Agent browser access off first, and a page reload before Take over. Agent waits are sped up where marked. The narration is an AI voice."
+ },
+ "take": "assets/media/take.mp4",
+ "syncOffset": -0.032,
+ "voOffset": 0.05,
+ "tailAfterVo": 0.15,
+ "posterAt": 1.0,
+ "beats": [
+  {"id": "01-intro", "kind": "card", "chapter": "What you will see", "voOffset": 1.1, "tail": 0.4},
+  {"id": "02-settings", "kind": "app", "chapter": "Turn on Agent browser access", "shots": [
+    {"chip": "Account menu → Settings → Integrations", "aspect": 1.7778, "segments": [[5.0, 9.9, 1.5]], "cam": [{"src": 5.0, "x": 0, "y": 0, "w": 1920}]},
+    {"chip": "Browser → Agent browser access", "aspect": 4.8632, "segments": [[9.9, 16.2, 1.0], [16.2, 16.8, "fit"]], "cam": [{"src": 9.9, "x": 626, "y": 100, "w": 924}]}
+  ]},
+  {"id": "03-ask", "kind": "app", "chapter": "Ask for a browser check", "extra": 2.0, "shots": [
+    {"chip": "Projects → greet-app", "aspect": 1.7778, "segments": [[18.4, 22.8, 1.0]], "cam": [{"src": 18.4, "x": 0, "y": 0, "w": 1460}]},
+    {"chip": "Ask the coordinator", "aspect": 3.0, "segments": [[22.8, 28.8, 1.15]], "cam": [{"src": 22.8, "x": 470, "y": 820, "w": 780}]},
+    {"chip": "The coordinator starts a thread", "aspect": 1.7778, "segments": [[28.8, 38.5, "fit"]], "cam": [{"src": 28.8, "x": 0, "y": 0, "w": 1920}]}
+  ]},
+  {"id": "04-watch", "kind": "app", "chapter": "Watch the agent drive", "extra": 3.2, "shots": [
+    {"chip": "Right panel → Check greeting page", "aspect": 1.7778, "segments": [[38.5, 41.8, 1.0]], "cam": [{"src": 38.5, "x": 0, "y": 0, "w": 1920}]},
+    {"chip": "The agent opens a tab with `preview_*` tools", "aspect": 1.7778, "segments": [[41.8, 48.3, 2.0]], "cam": [{"src": 41.8, "x": 440, "y": 248, "w": 1480}]},
+    {"chip": "Dock → the tab sits beside the thread", "aspect": 1.7778, "segments": [[48.3, 51.0, 1.0]], "cam": [{"src": 48.3, "x": 440, "y": 248, "w": 1480}]},
+    {"chip": "The agent types Ada and presses Greet", "aspect": 1.7778, "segments": [[51.0, 54.6, 1.0], [54.6, 57.6, "fit"]], "cam": [{"src": 51.0, "x": 440, "y": 248, "w": 1480}]}
+  ]},
+  {"id": "05-takeover", "kind": "app", "chapter": "Take over the tab", "shots": [
+    {"chip": "Take over → type Grace → Hand back", "aspect": 0.75, "segments": [[76.0, 86.38, "fit"]], "cam": [{"src": 76.0, "x": 1381, "y": 40, "w": 539}]}
+  ]},
+  {"id": "06-screenshot", "kind": "app", "chapter": "A screenshot in the chat", "extra": 3.8, "shots": [
+    {"chip": "Thread composer → ask for a screenshot", "aspect": 3.8, "segments": [[86.4, 90.9, 1.15]], "cam": [{"src": 86.4, "x": 440, "y": 880, "w": 760}]},
+    {"chip": "The screenshot in the chat", "aspect": 1.1875, "segments": [[90.9, 97.0, 3.0], [97.0, 100.5, 1.0], [100.5, 101.0, "fit"]], "cam": [{"src": 90.9, "x": 440, "y": 220, "w": 760}]}
+  ]},
+  {"id": "07-outro", "kind": "card", "chapter": "Next: your real Chrome", "tail": 1.5}
+ ]
+}

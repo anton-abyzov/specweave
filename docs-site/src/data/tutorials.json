@@ -817,6 +817,81 @@
       ]
     },
     {
+      "slug": "agents-use-a-browser",
+      "product": "specwithcode",
+      "title": "Let agents use a browser",
+      "seoTitle": "Let agents use a browser in SpecWithCode: turn on agent browser access, watch, take over and get a screenshot",
+      "summary": "A real run of SpecWithCode 1.0.47 on a sample repo: Settings, Integrations turns on Agent browser access, the coordinator starts a thread whose Codex agent opens greet-app's local demo page in an isolated tab with the preview tools, the tab is docked beside the thread while the agent types Ada and presses Greet, you take over the same tab to type Grace, and a screenshot of the tab comes back in the chat.",
+      "outcome": "You end with an agent that checks a local page in a tab beside its thread, which you can watch, take over and screenshot.",
+      "prerequisites": [
+        "SpecWithCode for Mac",
+        "a signed-in coding agent (Codex in this video)",
+        "a project with a web page served locally"
+      ],
+      "testedOn": "SpecWithCode 1.0.47, 18 October 2026",
+      "agent": "codex",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/agents-use-a-browser.mp4",
+        "poster": "/video/tutorials/agents-use-a-browser.jpg",
+        "captionsVtt": "/video/tutorials/agents-use-a-browser.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 70.0,
+        "uploadDate": "2026-10-18",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will see"
+          },
+          {
+            "start": 4.86,
+            "title": "Turn on Agent browser access"
+          },
+          {
+            "start": 14.98,
+            "title": "Ask for a browser check"
+          },
+          {
+            "start": 26.62,
+            "title": "Watch the agent drive"
+          },
+          {
+            "start": 42.5,
+            "title": "Take over the tab"
+          },
+          {
+            "start": 53.1,
+            "title": "A screenshot in the chat"
+          },
+          {
+            "start": 63.02,
+            "title": "Next: your real Chrome"
+          }
+        ]
+      },
+      "steps": [
+        "Open Settings, Integrations and turn on Agent browser access. Projects can override it, and the change applies when an agent session next starts.",
+        "Serve your page locally (greet-app's demo page runs on port 5173 in this video).",
+        "Ask the coordinator to check the page in the browser beside the thread, and say you want to watch; it starts a worker thread for the check.",
+        "Open the thread. Its agent opens an isolated tab with the `preview_*` tools; dock the floating tab to keep it beside the thread while the agent types and clicks.",
+        "Click Take over to drive the same tab yourself while the agent waits, then Hand back.",
+        "Ask for a screenshot: the agent captures the tab as you left it and shows it in the chat."
+      ],
+      "transcript": "captions",
+      "note": "Recorded headlessly in one take on a private SpecWithCode 1.0.47 server with a disposable home and a sample repo, 18 October 2026. Codex ran the coordinator and the worker, signed in through a short-lived token copied into that home. Off camera, the welcome wizard was finished, greet-app was added with Full access (for the demo only), Agent browser access was switched off so the video could turn it on, and the app page was reloaded and the thread reopened before Take over, because in 1.0.47 clicks in a tab right after Dock can land off target. Agent waits are sped up where the video says so. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/browser",
+      "related": [
+        "projects-and-threads",
+        "start-specwithcode"
+      ]
+    },
+    {
       "slug": "projects-and-threads",
       "product": "specwithcode",
       "title": "Run a project with a coordinator and workers",
@@ -1735,6 +1810,7 @@
         "provider-runs-out",
         "add-a-machine",
         "finish-a-thread",
+        "agents-use-a-browser",
         "agents-use-your-mac-and-chrome"
       ]
     },
