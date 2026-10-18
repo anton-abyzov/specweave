@@ -5,9 +5,13 @@ slug: /guides/switch-claude-code-to-codex
 keywords: [switch from claude code to codex, move from claude code to codex, continue claude code session in codex, claude code to codex handoff, codex to claude code, switch ai coding tools mid task, claude code out of usage switch to codex]
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # Switch from Claude Code to Codex without losing your place
 
 Switching tools at the start of a task is easy. Switching halfway through is where work gets lost: Codex can't read Claude Code's session, so the plan, the decisions and your uncommitted edits stay behind. This guide moves all of that through git in two commands, and works the same in the other direction.
+
+<TutorialEmbed slug="handoff-claude-to-codex" />
 
 ## What carries over, and what doesn't
 
