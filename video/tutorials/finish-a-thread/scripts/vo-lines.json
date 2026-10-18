@@ -1,0 +1,107 @@
+{
+ "voiceId": "0Ki1af67ybTaTu4TNmO8",
+ "modelId": "eleven_v4",
+ "voiceSettings": {
+  "stability": 0.5,
+  "similarity_boost": 0.75,
+  "use_speaker_boost": true,
+  "speed": 1.0
+ },
+ "lines": [
+  {
+   "id": "01-intro",
+   "chunks": [
+    [
+     "Finish a thread with a pull request and auto-merge.",
+     "Finish a thread with a pull request and auto-merge."
+    ]
+   ]
+  },
+  {
+   "id": "02-thread",
+   "chunks": [
+    [
+     "In greet-app, the coordinator started a thread, Greet a team, in its own worktree.",
+     "In greet app, the coordinator started a thread, greet a team, in its own worktree."
+    ],
+    [
+     "Codex does `T-01` of increment 0002, commits, and stops with a clean tree.",
+     " Codex does T zero one of increment zero zero zero two, commits, and stops with a clean tree."
+    ],
+    [
+     "Then the project's finish rule runs: SpecWithCode opens pull request #2 into main,",
+     " Then the project's finish rule runs: spec with code opens pull request number two into main,"
+    ],
+    [
+     "and turns on auto-merge.",
+     " and turns on auto-merge."
+    ],
+    [
+     "But main changed the same lines, so the thread reports a conflict and does not merge.",
+     " But main changed the same lines, so the thread reports a conflict, and does not merge."
+    ]
+   ]
+  },
+  {
+   "id": "03-setting",
+   "chunks": [
+    [
+     "The rule is a project setting: When a thread finishes, Open PR and auto-merge.",
+     "The rule is a project setting: when a thread finishes, open P R and auto-merge."
+    ],
+    [
+     "This project squashes on merge and removes agent credit lines.",
+     " This project squashes on merge, and removes agent credit lines."
+    ]
+   ]
+  },
+  {
+   "id": "04-review",
+   "chunks": [
+    [
+     "Code Review shows the pull request blocked by the conflict, with auto-merge armed.",
+     "Code review shows the pull request blocked by the conflict, with auto-merge armed."
+    ],
+    [
+     "No review is required in this repo. The Code tab shows the thread's change.",
+     " No review is required in this repo. The code tab shows the thread's change."
+    ]
+   ]
+  },
+  {
+   "id": "05-resolve",
+   "chunks": [
+    [
+     "Send the conflict back to the thread that wrote the code.",
+     "Send the conflict back to the thread that wrote the code."
+    ],
+    [
+     "Codex merges main, keeps the new Hi wording for teams, runs `npm test`, and pushes.",
+     " Codex merges main, keeps the new, hi, wording for teams, runs N P M test, and pushes."
+    ]
+   ]
+  },
+  {
+   "id": "06-merged",
+   "chunks": [
+    [
+     "Auto-merge is still on. The required test check passes, and GitHub merges it.",
+     "Auto-merge is still on. The required test check passes, and GitHub merges it."
+    ],
+    [
+     "The thread shows Merged #2 into main.",
+     " The thread shows, merged number two into main."
+    ]
+   ]
+  },
+  {
+   "id": "07-outro",
+   "chunks": [
+    [
+     "Next, `sw-done` verifies and closes the increment.",
+     "Next, S W done verifies and closes the increment."
+    ]
+   ]
+  }
+ ]
+}
