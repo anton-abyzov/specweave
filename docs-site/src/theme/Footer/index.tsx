@@ -13,7 +13,7 @@ const COLUMNS = [
       {label: 'Quick start', to: '/docs/getting-started'},
       {label: 'Tutorials', to: '/tutorials'},
       {label: 'How it works', to: '/docs/overview/how-it-works'},
-      {label: 'What changed in 3.0', to: '/docs/guides/specweave-3'},
+      {label: 'What changed in 3.1', to: '/docs/reference/changelog#310-17-october-2026'},
     ],
   },
   {

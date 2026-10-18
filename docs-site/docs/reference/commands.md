@@ -10,6 +10,13 @@ The `specweave` CLI is the source of truth. Skills such as `/sw:do` or `$sw-hand
 
 Most commands that take an increment id accept the short number (`0042`) and fall back to the single active increment when you leave it out. Run `specweave <command> --help` for the full flag list.
 
+## Global options
+
+| Option | What it does |
+|--------|--------------|
+| `--workspace <root>` | Run the command in this planning workspace, for example the umbrella folder that holds `repositories/<org>/<repo>`, wherever you start it from. `SPECWEAVE_WORKSPACE=<root>` does the same, but only when the current folder is inside that workspace or one of its registered repositories. |
+| `--version`, `-V` | Print the CLI version. |
+
 ## The loop
 
 | Step | Command |
@@ -25,7 +32,7 @@ Most commands that take an increment id accept the short number (`0042`) and fal
 
 | Command | Purpose | Useful flags |
 |---------|---------|--------------|
-| `specweave init [project-name]` | Set up `.specweave/`, `AGENTS.md`, `CLAUDE.md` and the skills for your tool. | `-a, --adapter <tool>`, `-q, --quick` (no prompts), `-f, --force` (fresh start), `-l, --language <lang>` |
+| `specweave init [project-name]` | Set up `.specweave/`, `AGENTS.md`, `CLAUDE.md` and the skills for your tool. | `-a, --adapter <tool>`, `-q, --quick` (no prompts), `-f, --force` (fresh start), `-l, --language <lang>`, `--tech-stack <language>` (passed to the tool adapter, such as `nodejs` or `python`), `--git-hooks`. `-t, --template` and `--full` are still accepted and change nothing in 3.x. |
 | `specweave update` | Update the CLI, instruction files, config and plugins in one step. This is the upgrade path from 2.x. | `--check` (dry run), `--no-self`, `--no-plugins`, `-f, --force` |
 | `specweave update-instructions` | Rewrite `AGENTS.md` and `CLAUDE.md` with a merge that keeps your own sections. | `--dry-run`, `-v, --verbose` |
 | `specweave refresh-plugins` | Reinstall the SpecWeave skills for the configured tool. | `--force`, `--plugin <name>`, `-q, --quiet` |
@@ -36,7 +43,7 @@ Most commands that take an increment id accept the short number (`0042`) and fal
 
 | Command | Purpose | Useful flags |
 |---------|---------|--------------|
-| `specweave create-increment [title]` | Create `.specweave/increments/NNNN-slug/` with `metadata.json` and `spec.md`. The number is reserved atomically. | `--with-plan` (also `plan.md`), `--planned` (create as planned, not active), `--supersedes <id>`, `--parent <id>`, `--type <type>`, `--priority <P1\|P2\|P3>`, `--json` |
+| `specweave create-increment [title]` | Create `.specweave/increments/NNNN-slug/` with `metadata.json` and `spec.md`. The number is reserved atomically. | `--with-plan` (also `plan.md`), `--planned` (create as planned, not active), `--supersedes <id>`, `--parent <id>`, `--type <type>`, `--priority <P1\|P2\|P3>`, `--parallel` (records `planning.parallel: true` in `metadata.json`, a hint that planning may fan out to parallel agents; single-agent planning is the default), `--json` |
 | `specweave next-id` | Print the next free increment number. Prefer `create-increment`. | `--name <slug>`, `--project <id>` |
 | `specweave start <id>` | Move a planned or paused increment to active. | |
 | `specweave pause <id>` | Pause an active increment. | `-r, --reason <text>` |
@@ -89,6 +96,8 @@ Status changes never call GitHub, Jira or Azure DevOps. See [increment status re
 
 See [cross-tool handoff](/docs/guides/cross-tool-handoff) for the full flow.
 
+Inside a SpecWithCode thread, every ledger write (`task claim`, `task done`, `task block`, `task skip`, `task release`, auto-claim, `pickup`, `note` and `handoff`) also records the thread's increment in `~/.specweave/studio/threads/<thread>.json`. SpecWithCode reads it to show the thread's plan card. The file lives outside the repository, holds no task state, and a failed write never fails the command (since 3.0.18).
+
 ## Autonomy
 
 | Command | Purpose | Useful flags |
@@ -135,7 +144,7 @@ Flags are in the [`specweave sync` reference](/docs/reference/sync-cli).
 
 ## Removed in 3.0
 
-These commands no longer exist. Living docs are gone as a feature.
+These commands no longer exist. Living docs are optional and off by default; with `livingDocs: "onDone"` in config they regenerate when an increment closes, with no command of their own.
 
 `living-docs`, `jobs`, `sync-living-docs`, `docs`, the `sync-progress`, `sync-retry`, `sync-status`, `sync-health`, `sync-gaps` and `sync-setup` aliases (use `specweave sync`), `validate-jira`, `analytics`, `analytics-push`, `cache`, `commits`, `interview`, `decision-log`, `export-skills`, `detect-intent`, `detect-project`, `scan-skill`, `scan-plugins`, `judge-skill`, `session`, `health` (use `doctor`), `status-line`, `evaluate-completion`, `install`, `list`, `hook`, `resolve-structure`, `migrate-to-umbrella`.
 

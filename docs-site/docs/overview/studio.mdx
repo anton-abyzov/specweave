@@ -1,6 +1,6 @@
 ---
 title: "SpecWithCode overview: every AI agent in one workspace you own"
-description: "What SpecWithCode is: one local workspace for project agents, personal agents and coding agents from every lab, where a coordinator and workers run Claude Code, Codex, Grok and others on machines you own, with memory, plans, routines and SpecWeave handoff."
+description: "What SpecWithCode is: one local workspace where a project coordinator and its workers run Claude Code, Codex, Cursor, Grok Build, Gemini CLI, GitHub Copilot, OpenCode and other agents on machines you own, with memory, plans, routines, usage limits and SpecWeave handoff."
 ---
 
 import StudioProjectMock from '@site/src/components/ecosystem/StudioProjectMock';
@@ -9,9 +9,9 @@ import { SPECWITHCODE_RELEASE as release } from '@site/src/data/specwithcodeRele
 
 # SpecWithCode
 
-SpecWithCode is one workspace for the agents that are otherwise spread across many products: projects like Claude Code Projects, a personal agent like OpenAI Dots or Hermes, and the coding agents from Anthropic, OpenAI, xAI, Google, GitHub and Cursor. It runs them as one project on your own machines and gives each job the model that fits it.
+SpecWithCode is one workspace for the agents that are otherwise spread across many products: projects like Claude Code Projects, a personal agent like OpenAI Dots or Hermes, and the coding agents from Anthropic, OpenAI, xAI, Google, GitHub, Cursor and Meta. It runs them as one project on your own machines and gives each job the model that fits it.
 
-You give a project a goal; a coordinator splits it into tasks and hands them to workers. The coordinator and every worker can use a different coding agent and model: Claude Code, Codex, Grok Build, Cursor, OpenCode, GitHub Copilot and others. They run on machines you own, next to your code, skills and accounts.
+You give a project a goal; a coordinator splits it into tasks and hands them to workers. The coordinator and every worker can use a different coding agent and model: Claude Code, Codex, Cursor, Grok Build, Gemini CLI, GitHub Copilot, OpenCode, Muse Code, Pi, Antigravity, or any agent from the ACP Registry. They run on machines you own, next to your code, skills and accounts.
 
 Underneath, the open-source [SpecWeave CLI](/docs/getting-started/) keeps the spec, the task evidence and the handoff in git. That record is what lets any agent continue work that another one started.
 
@@ -38,7 +38,7 @@ SpecWithCode is not a cloud service, so a personal project works while the machi
 | Memory and settings | Per-project memory and instructions. A decision you give the coordinator reaches every new worker. |
 | Plan (optional) | Spec, acceptance criteria, tasks, assignments and evidence. It can be a native SpecWithCode plan or read an existing SpecWeave increment. **Reported done** and **Verified** are separate: a task is verified only when its saved check runs and passes. |
 | Folders and repositories | A main folder on a machine, extra folders you approve, and several repository URLs. SpecWithCode clones only when you ask it to, using that machine's own Git sign-in. |
-| Connections | Local MCP servers per project. SpecWithCode discovers their tools and you grant each tool explicitly. |
+| Connections | Local MCP servers per project. SpecWithCode discovers their tools and you grant each tool explicitly. The [Connections library](/docs/studio/connections-library) compares what Codex and Claude Code have declared on each machine. |
 | Routines | Scheduled work that runs inside the project. |
 | Personal projects | A project with its own working folder and no Git, for research, notes and everyday tasks. |
 
@@ -55,28 +55,44 @@ The trade-off is simple. Cloud project agents keep running when every one of you
 SpecWithCode runs as a small service on each machine, at `localhost:8319`. You use it from the desktop app for Apple silicon Macs (macOS 13 or later) or from a browser. Windows and Intel Macs are not built yet.
 
 - **One machine** needs nothing else.
-- **Other machines on your home or office network** can be paired directly once their network access is on.
-- **A machine you already reach over SSH** can be connected through an SSH tunnel that the desktop app opens; it can also start SpecWithCode there.
-- **Away from that network**, or from a phone, Tailscale Serve gives private HTTPS to each machine. SpecWithCode never uses Tailscale Funnel, which would make it public.
+- **More machines for workers.** Install Tailscale on each machine, run `fleet invite` on the new one and paste the line it prints under **Settings > Connections > Add a machine** on your main machine. Coordinators can then start workers there. See [Add a machine](/docs/studio/add-a-machine).
+- **A Linux server or VPS** on x64 or arm64 runs the same server from the release's Linux archive, as a systemd user service. See [Linux worker](/docs/studio/linux-worker).
+- **Opening a machine from a browser or a phone** uses its own pairing, over the local network, an SSH tunnel the desktop app opens, or Tailscale Serve. SpecWithCode never uses Tailscale Funnel, which would make it public.
 
-Tailscale is optional. One machine can keep several routes and use the first that answers.
+We recommend one machine per AI-provider subscription: each machine stays signed in to one account per provider for good, and you add machines for more capacity instead of switching accounts by hand.
 
 Being reachable is not permission. Every machine and every browser is paired with SpecWithCode separately, and native sign-ins for Claude Code, Codex and the others stay on the machine that owns them. See [the architecture and its boundaries](/docs/overview/studio-architecture/).
 
 ## Usage limits and handoff
 
-SpecWithCode reads the limits of the accounts on each machine. When you start new work, a capacity policy (Reset first, Balanced or Spend first) picks a fresh eligible subscription. When a conversation hits a limit, **Resume when available** continues it on the same account once the provider allows it again.
+SpecWithCode reads the limits of every account on each machine and shows them under **Usage > Limits**, one pooled number per provider and window, with each account's share and reset time. When you start new work, a capacity policy (Balanced, Reset first or Spend first) picks an eligible account on that machine.
 
-You can also switch a thread to another provider yourself. SpecWithCode passes a budgeted part of the conversation to the new agent, which keeps working in the same checkout. When a provider runs out, the project’s rule decides whether the thread asks you, waits and resumes on the same account, or switches to another provider on its own. Moving work outside SpecWithCode is a [SpecWeave handoff](/docs/guides/cross-tool-handoff/): the spec, ledger and work in progress are committed, and the next agent, in SpecWithCode or anywhere else, runs `specweave pickup`. Between turns, [automatic checkpoints](/docs/guides/auto-handoff/) keep a local recovery point.
+When a thread hits a limit, the project's **When a provider runs out** rule decides:
+
+| Rule | What happens |
+|---|---|
+| Switch automatically (default) | The turn continues on the fallback provider and model, in the same worktree, without asking. |
+| Offer the fallback | The banner offers **Continue with** the fallback; nothing switches by itself. |
+| Wait for the reset | The banner keeps its resume actions only. |
+
+The banner also offers **Auto-continue when the limit resets**, **Continue on** another machine of the project that has room on a different account, and, from 1.0.43, continuing on API credits in one click. Codex and Claude accounts with banked reset credits show **Use reset** in their account details. A Claude instance billed per token is never picked as the fallback on its own, because its turns cost money.
+
+Moving work outside SpecWithCode is a [SpecWeave handoff](/docs/guides/cross-tool-handoff/): the spec, ledger and work in progress are committed, and the next agent, in SpecWithCode or anywhere else, runs `specweave pickup`. Between turns, [automatic checkpoints](/docs/guides/auto-handoff/) keep a local recovery point. The [Status page](/docs/studio/status-page) shows whether a failure is the provider's, GitHub's, your network's or the app's.
 
 ## Optional pieces
 
 | Piece | Do you need it? | What it is for |
 |---|---|---|
-| Tailscale | Only for private HTTPS beyond your local network or from a phone | Private HTTPS transport. SpecWithCode pairing is still required. |
+| Tailscale | For a second machine running workers, and for private HTTPS away from your local network or from a phone | Each machine's private name and HTTPS address. SpecWithCode pairing is still required. |
 | CLIProxyAPI | No | If you already run a CLIProxyAPI hub, SpecWithCode can show its pooled accounts' limits and redeem Codex reset credits. Native sessions never pass through it. Keep the hub on loopback: its management key reaches every pooled account. Check each provider's terms before pooling subscriptions. |
 | AnyModel | No | An adapter for API and local models that a native agent does not support. |
 | Switch | Optional, installed separately from SpecWeave’s `contrib/subscription-switch` | Reads account sign-in and limit observations on each machine for the capacity policy. |
+
+## More you can do
+
+- [Finish a thread](/docs/studio/finish-a-thread) with a branch, a pull request, or a pull request that merges itself once checks pass.
+- Let agents use your Mac with [computer use](/docs/studio/computer-use), and the web with the [in-app browser or the SpecWithCode Browser extension](/docs/studio/browser).
+- Talk to a coordinator with [voice calls](/docs/studio/voice-calls), with speech recognized on the Mac.
 
 ## Questions
 

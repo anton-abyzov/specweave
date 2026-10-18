@@ -75,8 +75,7 @@ export default function CoordinatorFlow() {
   function select(index: number, focus = false) {
     setActive(index);
     if (focus) tabs.current[index]?.focus();
-    // The tabs stay pinned while a tall screenshot scrolls past; after a switch,
-    // bring the start of the new step back into view instead of leaving the reader mid-image.
+    // After a switch from far down a tall screenshot, bring the start of the new step back into view.
     const box = story.current;
     if (box && box.getBoundingClientRect().top < 0) {
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -101,10 +100,10 @@ export default function CoordinatorFlow() {
     {name: 'Claude Code', model: 'claude-opus-5-5', status: status.claude[active], worker: true},
   ];
 
-  return <section className={styles.flow} id="workflow" aria-labelledby="workflow-title">
+  return <section className={styles.flow} id="real-run" aria-labelledby="workflow-title">
     <div className={styles.intro}>
-      <h2 id="workflow-title">One conversation, a coordinated team</h2>
-      <p>A coordinator hands parts of the job to workers on different models, then brings their results back to you. Step through a real run.</p>
+      <h2 id="workflow-title">Step through a real run</h2>
+      <p>A coordinator hands two parts of a small job to Codex and Claude Code, then brings their results back. Every screenshot below comes from that recorded run on SpecWithCode 1.0.21, 15 October 2026. It opens on the last step, the finished run; choose step 1 to replay it.</p>
     </div>
 
     <div className={styles.tabs} role="tablist" aria-label="Steps of the recorded run" onKeyDown={onKeyDown}>

@@ -3,6 +3,8 @@ title: Plans and project routines
 description: Use an optional plan for acceptance and evidence, preserve existing SpecWeave ledgers, and manage routines within their project and host.
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # Plans and project routines
 
 Start with a conversation. Add a plan when work needs acceptance criteria, owners or verification. Ordinary SpecWithCode chat does not require a SpecWeave increment or CLI installation.
@@ -51,13 +53,9 @@ The separate [SpecWeave CLI project hub](../guides/portable-projects.md) stores 
 
 ### Plan, verify and schedule
 
-<video controls playsInline preload="metadata" aria-label="Plan, verify and schedule: captioned SpecWithCode walkthrough" poster="/video/studio-projects/plans-and-routines.jpg" width="1920" height="1080" style={{width: '100%', height: 'auto'}}>
-  <source src="/video/studio-projects/plans-and-routines.mp4" type="video/mp4" />
-  <track kind="captions" src="/video/studio-projects/plans-and-routines.vtt" srcLang="en" label="English" />
-  Your browser does not support embedded video. Read the transcript below or <a href="/video/studio-projects/plans-and-routines.mp4">download the video</a>.
-</video>
+<TutorialEmbed slug="plans-and-routines" />
 
-Silent walkthrough with visible English captions and a selectable English caption track. The application uses synthetic project data. Use fullscreen or the transcript for the dense desktop interface on a phone.
+Silent walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
 
 <details>
 <summary>Read the transcript: Plan, verify and schedule</summary>

@@ -3,7 +3,7 @@
   Only --wv-* tokens from src/css/weave.css; both themes come from the tokens.
   Type: h1 48 (44 on phones), h2 32, h3 21, lead 21, body 17, ui 15, caption 13.
   Radius by role: 4 chips, 6 buttons, 10 notes and panels, 14 screenshot frames.
-  No motion on this page.
+  The one scroll sequence lives in components/ecosystem/FleetSequence.module.css.
 */
 
 /* ---------- Page ---------- */
@@ -265,9 +265,73 @@
   color: var(--wv-muted);
 }
 
-/* ---------- Network ---------- */
+/* ---------- Heading beside a hairline list ---------- */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--wv-space-12);
+  align-items: start;
+}
+
+.split > .sectionHead {
+  margin-bottom: 0;
+}
+
+.list {
+  min-width: 0;
+}
+
+.list > li {
+  padding-block: var(--wv-space-4);
+}
+
+.finish {
+  max-width: 560px;
+}
+
+/* ---------- Machines ---------- */
 .route {
-  max-width: 960px;
+  max-width: 1080px;
+}
+
+.machineGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--wv-space-12);
+  align-items: start;
+  margin-top: var(--wv-space-16);
+}
+
+.machineCmd {
+  min-width: 0;
+}
+
+.cmdLabel {
+  margin-bottom: var(--wv-space-2);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--wv-muted);
+}
+
+.cmd {
+  max-width: 440px;
+}
+
+.machineCmd > .fine {
+  margin-top: var(--wv-space-3);
+}
+
+.recommend {
+  margin-top: var(--wv-space-8);
+}
+
+.recommend p {
+  color: var(--wv-muted);
+}
+
+.recommend strong {
+  color: var(--wv-ink);
 }
 
 .boundary {
@@ -370,9 +434,15 @@
     gap: var(--wv-space-12);
   }
 
-  .faq {
+  .faq,
+  .split,
+  .machineGrid {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--wv-space-6);
+  }
+
+  .machineGrid {
+    margin-top: var(--wv-space-12);
   }
 }
 
@@ -415,9 +485,9 @@
   }
 }
 
-/* End the thread at the last machine instead of the edge of its column. */
+/* End the thread at the last step instead of the edge of its column. */
 @media (min-width: 900px) {
   .route::before {
-    right: calc((100% - 2 * var(--wv-space-6)) / 3 - 7px);
+    right: calc((100% - 3 * var(--wv-space-6)) / 4 - 7px);
   }
 }

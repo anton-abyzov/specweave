@@ -3,6 +3,8 @@ title: Project memory and usage
 description: Understand shared memory, independent native conversations, cache reporting and the difference between token usage and billed spend in SpecWithCode.
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # Project memory and usage
 
 Share durable facts across your project. Keep each worker's conversation and provider cache with the provider that owns it.
@@ -51,13 +53,9 @@ Return to [SpecWithCode projects](./projects.md) or continue with [plans and rou
 
 ### Shared facts, honest usage
 
-<video controls playsInline preload="metadata" aria-label="Shared facts, honest usage: captioned SpecWithCode walkthrough" poster="/video/studio-projects/memory-and-usage.jpg" width="1920" height="1080" style={{width: '100%', height: 'auto'}}>
-  <source src="/video/studio-projects/memory-and-usage.mp4" type="video/mp4" />
-  <track kind="captions" src="/video/studio-projects/memory-and-usage.vtt" srcLang="en" label="English" />
-  Your browser does not support embedded video. Read the transcript below or <a href="/video/studio-projects/memory-and-usage.mp4">download the video</a>.
-</video>
+<TutorialEmbed slug="memory-and-usage" />
 
-Silent walkthrough with visible English captions and a selectable English caption track. The application uses synthetic project data. Use fullscreen or the transcript for the dense desktop interface on a phone.
+Silent walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
 
 <details>
 <summary>Read the transcript: Shared facts, honest usage</summary>

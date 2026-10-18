@@ -3,6 +3,8 @@ title: SpecWithCode projects
 description: Organize ongoing work with a coordinator, independent Claude Code and Codex threads, shared memory and project settings.
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # SpecWithCode projects
 
 A project groups work around an outcome, shared memory and tools. Code projects can combine a working folder with several repository URLs; Personal projects start without choosing a folder or creating a Git repository. Its coordinator keeps the conversation together; worker threads carry out individual assignments. Choose a provider and model for each thread, including the coordinator. A project can contain both Claude Code and Codex workers.
@@ -106,13 +108,9 @@ If another window changed the settings, reload the current version before saving
 
 ### One project, independent threads
 
-<video controls playsInline preload="metadata" aria-label="One project, independent threads: captioned SpecWithCode walkthrough" poster="/video/studio-projects/projects-and-threads.jpg" width="1920" height="1080" style={{width: '100%', height: 'auto'}}>
-  <source src="/video/studio-projects/projects-and-threads.mp4" type="video/mp4" />
-  <track kind="captions" src="/video/studio-projects/projects-and-threads.vtt" srcLang="en" label="English" />
-  Your browser does not support embedded video. Read the transcript below or <a href="/video/studio-projects/projects-and-threads.mp4">download the video</a>.
-</video>
+<TutorialEmbed slug="projects-and-threads" />
 
-Silent walkthrough with visible English captions and a selectable English caption track. The application uses synthetic project data. Use fullscreen or the transcript for the dense desktop interface on a phone.
+Silent walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
 
 This walkthrough verifies native project coordination with Claude and Codex, including thread reuse, project memory and usage. It does not establish byte-for-byte preservation of global account metadata. Device deployment is checked separately.
 
@@ -133,13 +131,9 @@ This walkthrough verifies native project coordination with Claude and Codex, inc
 
 ### Personal projects, folders and tools
 
-<video controls playsInline preload="metadata" aria-label="Personal projects, folders and tools: captioned SpecWithCode walkthrough" poster="/video/studio-projects/personal-and-connections.jpg" width="1920" height="1080" style={{width: '100%', height: 'auto'}}>
-  <source src="/video/studio-projects/personal-and-connections.mp4" type="video/mp4" />
-  <track kind="captions" src="/video/studio-projects/personal-and-connections.vtt" srcLang="en" label="English" />
-  Your browser does not support embedded video. Read the transcript below or <a href="/video/studio-projects/personal-and-connections.mp4">download the video</a>.
-</video>
+<TutorialEmbed slug="personal-and-connections" />
 
-Silent walkthrough with visible English captions and a selectable English caption track. The application uses synthetic project data. Use fullscreen or the transcript for the dense desktop interface on a phone.
+Silent walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
 
 <details>
 <summary>Read the transcript: Personal projects, folders and tools</summary>

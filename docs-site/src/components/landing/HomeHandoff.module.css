@@ -1,27 +1,166 @@
 /*
-  #how on the homepage: three offset planes and one iris thread.
-  The only scroll-driven motion on spec-weave.com. Static layout first; the animation
-  only runs inside @supports (animation-timeline: view()) and prefers-reduced-motion:
-  no-preference, and ends on the static layout, so screenshots and reduced motion
-  show the complete picture. Transform and opacity only.
+  #how on the homepage: four layers (spec, agents, ledger, handoff) in one column on one iris spine.
+  Static layout first. Motion runs only inside @supports (animation-timeline: view()) and
+  prefers-reduced-motion: no-preference, starts at entry 0%, fills both ways and ends on the
+  static layout, so no-JS, reduced motion and full-page screenshots show the complete picture.
+  Only opacity and transform animate: the handoff switch crossfades a stacked earlier state.
+  What moves explains the structure: the spine draws through the four layers, each layer's node
+  lights as it is reached, and the handoff node and its agent line switch from claude@cloud to
+  codex@laptop. Content blocks do not slide or fade.
 */
 
 .stage {
+  --spine-x: 7px;
+  --spine-pad: var(--wv-space-8);
+  position: relative;
   display: grid;
-  gap: var(--wv-space-12);
-  /* Planes slide in from the right; never let that widen the page. */
-  overflow-x: clip;
+  gap: var(--wv-space-16);
+  margin: 0;
+  padding: 0 0 0 var(--spine-pad);
+  list-style: none;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The spine joins the four layers. */
+.stage::before {
+  content: "";
+  position: absolute;
+  left: var(--spine-x);
+  top: 12px;
+  bottom: 12px;
+  width: var(--wv-thread-width);
+  background: var(--wv-line);
+}
+
+.stage::after {
+  content: "";
+  position: absolute;
+  left: var(--spine-x);
+  top: 12px;
+  bottom: 12px;
+  width: var(--wv-thread-width);
+  background: var(--wv-iris);
+  transform-origin: top;
 }
 
 .plane {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--wv-space-4);
   min-width: 0;
+  margin: 0;
+}
+
+/* One node per layer, on the spine. */
+.plane::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: calc(var(--spine-x) + var(--wv-thread-width) / 2 - 7.5px - var(--spine-pad));
+  width: 15px;
+  height: 15px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--wv-canvas);
+  border: var(--wv-thread-width) solid var(--wv-iris);
+}
+
+.handoff::before {
+  background: var(--wv-iris);
+}
+
+/* The open node from before the handoff, stacked on the filled one; hidden at rest. */
+.handoff::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: calc(var(--spine-x) + var(--wv-thread-width) / 2 - 7.5px - var(--spine-pad));
+  width: 15px;
+  height: 15px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--wv-canvas);
+  border: var(--wv-thread-width) solid var(--wv-iris);
+  opacity: 0;
 }
 
 .label {
   min-width: 0;
+  max-width: var(--wv-measure);
+}
+
+/* The handoff point: who held the task before, and who holds it now. At rest codex@laptop is
+   the current holder and claude@cloud is the one that stopped. */
+.plane .switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--wv-space-2);
+  margin-top: var(--wv-space-3);
+  font: 500 13px/20px var(--wv-font-mono);
+}
+
+.from,
+.to {
+  position: relative;
+  padding: 0 var(--wv-space-2);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-xs);
+}
+
+/* Each holder's state before the handoff, stacked on its resting state; hidden at rest.
+   The text comes from data-label and is hidden from assistive tech. */
+.from::before,
+.to::before {
+  content: attr(data-label);
+  content: attr(data-label) / "";
+  position: absolute;
+  inset: -1px;
+  box-sizing: border-box;
+  padding: 0 var(--wv-space-2);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-canvas);
+  color: var(--wv-muted);
+  text-decoration: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.from::before {
+  border-color: var(--wv-iris);
+  background: var(--wv-iris-tint);
+  color: var(--wv-ink);
+}
+
+.from {
+  color: var(--wv-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--wv-muted);
+}
+
+.to {
+  border-color: var(--wv-iris);
+  background: var(--wv-iris-tint);
+  color: var(--wv-iris-strong);
+}
+
+.switchRule {
+  display: inline-block;
+  width: var(--wv-space-8);
+  height: var(--wv-thread-width);
+  background: var(--wv-iris);
+  transform-origin: left;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .plane .label p {
@@ -31,7 +170,8 @@
   color: var(--wv-muted);
 }
 
-.label code {
+.label code,
+.thread :global(.wv-thread__body) code {
   display: inline-block;
   padding: 0 var(--wv-space-1);
   border: 0;
@@ -41,6 +181,11 @@
   font-size: 13px;
   line-height: 20px;
   color: var(--wv-ink);
+  overflow-wrap: anywhere;
+}
+
+.body {
+  min-width: 0;
 }
 
 .plane .code {
@@ -50,12 +195,20 @@
   overflow-wrap: anywhere;
 }
 
-.record .code {
+/* Ledger lines stay one per row on wide screens; on phones they wrap so no field is cut off. */
+.plane .ledgerCode {
   white-space: pre;
   overflow-wrap: normal;
 }
 
-.thread code {
+@media (max-width: 600px) {
+  .plane .ledgerCode {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
+
+.thread :global(.wv-thread__title) code {
   padding: 0;
   border: 0;
   background: none;
@@ -63,6 +216,7 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--wv-ink);
+  overflow-wrap: anywhere;
 }
 
 .thread :global(.wv-thread__body) {
@@ -74,20 +228,9 @@
 }
 
 @media (min-width: 900px) {
-  .plane {
-    grid-template-columns: 200px minmax(0, 1fr);
-    gap: var(--wv-space-8);
-    align-items: start;
+  .stage {
+    --spine-pad: var(--wv-space-12);
   }
-
-  /* Offset planes: each layer sits one step further in. */
-  .record { margin-left: var(--wv-space-12); }
-  .agents { margin-left: var(--wv-space-24); }
-}
-
-@keyframes planeIn {
-  from { transform: translateX(var(--plane-from, 0)); opacity: 0.35; }
-  to { transform: none; opacity: 1; }
 }
 
 @keyframes drawDown {
@@ -100,38 +243,55 @@
   to { transform: scaleX(1); }
 }
 
+@keyframes nodeOn {
+  from { transform: scale(0.4); }
+  to { transform: none; }
+}
+
+/* The handoff: the earlier state (open node, claude@cloud holding the task) shows until the
+   switch, then crossfades out to the resting state underneath. */
+@keyframes earlierStateOut {
+  0%, 45% { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .stage { view-timeline: --wv-handoff block; }
-
-    /* Fill forwards only: before the range starts (stage still below the fold, or a
-       full-page capture) the planes keep their static, final layout. */
-    .plane {
-      animation: planeIn linear forwards;
-      animation-timeline: --wv-handoff;
-      animation-range: entry 0% cover 45%;
-    }
-
-    .plan { animation: none; }
-    .record { --plane-from: 16px; }
-    .agents { --plane-from: 32px; }
-
-    .thread::before {
-      animation: drawDown linear forwards;
-      animation-timeline: --wv-handoff;
+    /* The spine draws as the stage scrolls through. Ranges start at entry 0% and fill both
+       ways, so nothing shows its final state and then snaps back to the first frame. */
+    .stage::after {
+      animation: drawDown linear both;
+      animation-timeline: view();
       animation-range: entry 0% cover 60%;
     }
-  }
-}
 
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
-    .record { --plane-from: 24px; }
-    .agents { --plane-from: 48px; }
-  }
-}
+    .plane::before {
+      animation: nodeOn linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
 
-@supports (animation-timeline: view()) {
+    .handoff::after,
+    .switch .from::before,
+    .switch .to::before {
+      animation: earlierStateOut linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+
+    .switchRule {
+      animation: drawAcross linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+
+    .thread::before {
+      animation: drawDown linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+  }
+
   @media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
     .thread::before { animation-name: drawAcross; }
   }

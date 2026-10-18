@@ -1,349 +1,1226 @@
 {
-  "schemaVersion": 1,
-  "requiredAgents": ["claude-code", "codex", "opencode", "antigravity", "grok", "cursor"],
+  "schemaVersion": 2,
+  "requiredAgents": [
+    "claude-code",
+    "codex",
+    "opencode",
+    "antigravity",
+    "grok",
+    "cursor"
+  ],
   "tutorials": [
     {
-      "slug": "how-specwithcode-works",
-      "title": "How SpecWithCode works",
-      "summary": "Each of your machines can hold several AI subscriptions, and every session runs on the machine itself. SpecWithCode connects the machines over Tailscale, watches every limit, and lets one coordinator per project start threads that open their own pull requests. Auto-resolve closes a thread only once it is merged, green and approved.",
-      "status": "published",
-      "agent": "multi",
-      "agentsShown": ["claude-code", "codex"],
-      "durationSeconds": 174.9,
-      "src": "/video/explainers/how-specwithcode-works.mp4",
-      "poster": "/img/studio/poster-explainer-20261015.jpg",
-      "captionsVtt": "/video/explainers/how-specwithcode-works.en.vtt",
-      "captionsBurnedIn": false,
-      "audio": "narrated",
-      "uploadDate": "2026-10-13",
-      "publishedAt": "2026-10-12T22:46:23Z",
-      "guide": "/docs/studio/projects",
-      "chapters": [
-        {"start": 0, "title": "More AI than you can use"},
-        {"start": 13.8, "title": "One machine, many subscriptions"},
-        {"start": 31.7, "title": "Only one subscription? Pick its host"},
-        {"start": 44.1, "title": "Connect your machines"},
-        {"start": 59.5, "title": "Limits, CLIProxyAPI and fallbacks"},
-        {"start": 78.2, "title": "One coordinator, many threads"},
-        {"start": 90, "title": "A real project: EasyChamp"},
-        {"start": 104.8, "title": "Inside a thread"},
-        {"start": 114.7, "title": "Verified, and auto-resolve"},
-        {"start": 131.9, "title": "Which machines: Linux, Windows, Mac"},
-        {"start": 148.2, "title": "A good worker machine"},
-        {"start": 162.3, "title": "Get it"}
+      "slug": "specweave-workflow",
+      "product": "cli",
+      "title": "Plan, prove and hand off a task with the CLI",
+      "seoTitle": "SpecWeave CLI workflow: increment, claim, done and handoff",
+      "summary": "A real SpecWeave run in a disposable repository: create an increment, claim its task, prove it with tests, hand off, and pick up the next task in a clean clone.",
+      "outcome": "You see the whole loop once: the plan, the claim, the test evidence and the handoff all travel with the repository.",
+      "prerequisites": [
+        "Node.js 20.12 or later and git",
+        "SpecWeave installed with `npm i -g specweave`"
       ],
-      "note": "Recorded on SpecWithCode 1.0.5 with the author's real EasyChamp project, 12 October 2026, through a read-only session; the thread pane is sped up 1.6x and hostnames are masked. Stock footage is from Pexels, the diagrams are animated, the music is AI-generated, and the narration is AI in the author's cloned voice."
+      "testedOn": "SpecWeave 3.0.6",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/workflow-tutorial.mp4",
+        "poster": "/img/studio/workflow-tutorial-cover.jpg",
+        "captionsVtt": "/img/studio/workflow-tutorial.vtt",
+        "audio": "narrated",
+        "durationSeconds": 60.1,
+        "uploadDate": "2026-10-12",
+        "publishedAt": "2026-10-12T03:23:04Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "A disposable demo repository"
+          },
+          {
+            "start": 7.1,
+            "title": "Create an increment"
+          },
+          {
+            "start": 15.3,
+            "title": "Claim the task"
+          },
+          {
+            "start": 18.4,
+            "title": "Implement and test"
+          },
+          {
+            "start": 25.9,
+            "title": "Commit and mark done"
+          },
+          {
+            "start": 33.6,
+            "title": "Hand off"
+          },
+          {
+            "start": 43.2,
+            "title": "Pick up in a clean clone"
+          }
+        ]
+      },
+      "steps": [
+        "Create an increment with `specweave create-increment \"title\"`, then write the problem, the acceptance criteria and a task with its exact files and test command in spec.md.",
+        "Claim the task with `specweave task claim T-01`, so everyone can see who owns it.",
+        "Implement the change and run the tests. In the recording, both tests pass.",
+        "Commit, then run `specweave task done T-01 --run \"<test command>\"`. SpecWeave runs the command again and keeps its output as evidence.",
+        "Stop with `specweave handoff --reason \"<why>\"`. The recording keeps everything local instead of pushing.",
+        "In another clone, run `specweave pickup`. It prints the next task with its acceptance criteria."
+      ],
+      "transcript": "captions",
+      "note": "Actual CLI output from a disposable repository, SpecWeave 3.0.6: two passing tests, one of two tasks complete, and a local handoff into a clean clone. No remote push or production changes. AI narration in the author’s cloned voice; music: “Make Funk” by HoliznaCC0, CC0.",
+      "action": {
+        "label": "Plan your first increment",
+        "to": "/docs/getting-started/first-increment"
+      },
+      "guide": "/docs/getting-started/first-increment",
+      "related": [
+        "how-specwithcode-works",
+        "plans-and-routines"
+      ]
     },
     {
-      "slug": "specwithcode-tour",
-      "title": "SpecWithCode in 60 seconds",
-      "summary": "A project coordinator splits work between Codex and Claude workers, the results come back to one conversation, and a Claude thread at its usage limit continues on Codex with its context.",
-      "status": "published",
+      "slug": "how-specwithcode-works",
+      "product": "specwithcode",
+      "title": "See how SpecWithCode runs your agents",
+      "seoTitle": "How SpecWithCode works: machines, subscriptions, limits and threads",
+      "summary": "Each of your machines can hold several AI subscriptions, and every session runs on the machine itself. SpecWithCode connects the machines over Tailscale, watches every limit, and lets one coordinator per project start threads that open their own pull requests. Auto-resolve closes a thread only once it is merged, green and approved.",
+      "outcome": "You know how machines, subscriptions, usage limits, the coordinator and its threads fit together before you install.",
+      "prerequisites": [],
+      "testedOn": "SpecWithCode 1.0.5",
       "agent": "multi",
-      "agentsShown": ["claude-code", "codex"],
-      "durationSeconds": 61,
-      "src": "/video/studio-tutorial.mp4",
-      "poster": "/img/studio/poster-tour-20261015.jpg",
-      "captionsVtt": "/video/studio-tutorial.vtt",
-      "captionsOn": true,
-      "audio": "silent",
-      "uploadDate": "2026-10-10",
-      "publishedAt": "2026-10-10T05:08:31Z",
-      "guide": "/code/",
-      "chapters": [
-        {"start": 0, "title": "Every agent, one workspace"},
-        {"start": 4, "title": "A coordinator and its workers"},
-        {"start": 15, "title": "Each job gets the model that fits"},
-        {"start": 25, "title": "Results come back to one conversation"},
-        {"start": 31, "title": "Hit a limit, continue on Codex"},
-        {"start": 48, "title": "One record in git"},
-        {"start": 56, "title": "Bring your agents"}
+      "agentsShown": [
+        "claude-code",
+        "codex"
       ],
-      "note": "Screen recordings on a Mac, 10 October 2026. No sound; the usage limit in the handoff clip is simulated."
+      "video": {
+        "src": "/video/explainers/how-specwithcode-works.mp4",
+        "poster": "/img/studio/poster-explainer-20261015.jpg",
+        "captionsVtt": "/video/explainers/how-specwithcode-works.en.vtt",
+        "audio": "narrated",
+        "durationSeconds": 174.9,
+        "uploadDate": "2026-10-13",
+        "publishedAt": "2026-10-12T22:46:23Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "More AI than you can use"
+          },
+          {
+            "start": 13.8,
+            "title": "One machine, many subscriptions"
+          },
+          {
+            "start": 31.7,
+            "title": "Only one subscription? Pick its host"
+          },
+          {
+            "start": 44.1,
+            "title": "Connect your machines"
+          },
+          {
+            "start": 59.5,
+            "title": "Limits, CLIProxyAPI and fallbacks"
+          },
+          {
+            "start": 78.2,
+            "title": "One coordinator, many threads"
+          },
+          {
+            "start": 90,
+            "title": "A real project: EasyChamp"
+          },
+          {
+            "start": 104.8,
+            "title": "Inside a thread"
+          },
+          {
+            "start": 114.7,
+            "title": "Verified, and auto-resolve"
+          },
+          {
+            "start": 131.9,
+            "title": "Which machines: Linux, Windows, Mac"
+          },
+          {
+            "start": 148.2,
+            "title": "A good worker machine"
+          },
+          {
+            "start": 162.3,
+            "title": "Get it"
+          }
+        ],
+        "captionsBurnedIn": false
+      },
+      "steps": [
+        "Sign each machine in with the official tools. Keep every machine signed in to one account per provider for good, for example Claude Code on one account and Codex on another, and add machines when you need more capacity instead of switching subscriptions by hand.",
+        "If you have one subscription, run it on the machine with the most free memory and disk, because every session runs on that machine.",
+        "Connect your machines privately. Each machine runs its own SpecWithCode server.",
+        "Watch the limits: SpecWithCode shows session and weekly usage, banked resets and credits for every account. When one runs out, a thread waits for the reset or moves to another provider or machine.",
+        "In a project, talk to one coordinator. It plans, then starts threads for the work, each on the machine and model that fits, and each thread opens its own pull request.",
+        "Open a thread to see what it ran and what it is waiting on. A thread resolves itself only when its pull requests are merged, checks pass and the review is approved."
+      ],
+      "transcript": "captions",
+      "note": "Recorded on SpecWithCode 1.0.5 with the author's real EasyChamp project, 12 October 2026, through a read-only session; the thread pane is sped up 1.6x and hostnames are masked. Stock footage is from Pexels, the diagrams are animated, the music is AI-generated, and the narration is AI in the author's cloned voice. Since this recording, machines join over Tailscale with an invite line made in the app, and the other connection routes the video mentions are no longer the setup path. The limits chapter (Limits, CLIProxyAPI and fallbacks) also predates the current advice: keep each machine signed in to one account per provider, and add a machine for more capacity instead of switching subscriptions on one.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/projects",
+      "related": [
+        "projects-and-threads",
+        "specwithcode-tour"
+      ]
     },
     {
       "slug": "projects-and-threads",
-      "title": "One project, independent threads",
+      "product": "specwithcode",
+      "title": "Run a project with a coordinator and workers",
+      "seoTitle": "SpecWithCode projects: a Codex coordinator and a Claude worker",
       "summary": "A Codex coordinator and a Claude worker in one project: model defaults, routing history, resolving and reopening threads, and token usage by model.",
-      "status": "published",
+      "outcome": "You can tell the coordinator and worker models apart, follow the routing history, resolve and reopen a thread, and read token usage by model.",
+      "prerequisites": [
+        "SpecWithCode installed",
+        "Claude Code and Codex signed in"
+      ],
+      "testedOn": "SpecWithCode 0.2.0",
       "agent": "multi",
-      "agentsShown": ["claude-code", "codex"],
-      "durationSeconds": 89.9,
-      "src": "/video/studio-projects/projects-and-threads.mp4",
-      "poster": "/video/studio-projects/projects-and-threads.jpg",
-      "captionsVtt": "/video/studio-projects/projects-and-threads.vtt",
-      "audio": "silent",
-      "uploadDate": "2026-10-09",
-      "publishedAt": "2026-10-10T22:59:42Z",
+      "agentsShown": [
+        "claude-code",
+        "codex"
+      ],
+      "video": {
+        "src": "/video/studio-projects/projects-and-threads.mp4",
+        "poster": "/video/studio-projects/projects-and-threads.jpg",
+        "captionsVtt": "/video/studio-projects/projects-and-threads.vtt",
+        "audio": "silent",
+        "durationSeconds": 89.9,
+        "uploadDate": "2026-10-09",
+        "publishedAt": "2026-10-10T22:59:42Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What this run verifies"
+          },
+          {
+            "start": 9.5,
+            "title": "Coordinator and worker models"
+          },
+          {
+            "start": 18.7,
+            "title": "The Codex coordinator"
+          },
+          {
+            "start": 30.8,
+            "title": "A Claude worker thread"
+          },
+          {
+            "start": 43.1,
+            "title": "Routing history and worker details"
+          },
+          {
+            "start": 53.2,
+            "title": "Resolve and reopen a thread"
+          },
+          {
+            "start": 69.5,
+            "title": "Usage by model"
+          }
+        ]
+      },
+      "steps": [
+        "Set the coordinator and worker defaults separately. Existing threads keep their own model choices.",
+        "Talk to the coordinator. Its conversation stays in the project and keeps the routing history.",
+        "Open a worker thread on the right to see its details while the coordinator stays in view.",
+        "Choose Resolve when work is finished. History is kept, and Reopen brings the same thread back when related work returns.",
+        "Open Usage to compare coordinator and worker token totals by model. Cache reporting can be incomplete, and an API-equivalent cost is not money paid."
+      ],
+      "transcript": "captions",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "action": {
+        "label": "Read the projects guide",
+        "to": "/docs/studio/projects"
+      },
       "guide": "/docs/studio/projects",
-      "chapters": [
-        {"start": 0, "title": "What this run verifies"},
-        {"start": 9.5, "title": "Coordinator and worker models"},
-        {"start": 18.7, "title": "The Codex coordinator"},
-        {"start": 30.8, "title": "A Claude worker thread"},
-        {"start": 43.1, "title": "Routing history and worker details"},
-        {"start": 53.2, "title": "Resolve and reopen a thread"},
-        {"start": 69.5, "title": "Usage by model"}
-      ],
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound."
-    },
-    {
-      "slug": "memory-and-usage",
-      "title": "Shared facts, honest usage",
-      "summary": "Keep a project's goal, instructions and durable decisions in small memory files, then read usage that comes only from recorded provider turns.",
-      "status": "published",
-      "agent": "any",
-      "agentsShown": [],
-      "durationSeconds": 66.9,
-      "src": "/video/studio-projects/memory-and-usage.mp4",
-      "poster": "/video/studio-projects/memory-and-usage.jpg",
-      "captionsVtt": "/video/studio-projects/memory-and-usage.vtt",
-      "audio": "silent",
-      "uploadDate": "2026-10-09",
-      "publishedAt": "2026-10-10T22:59:42Z",
-      "guide": "/docs/studio/memory-and-usage",
-      "chapters": [
-        {"start": 0, "title": "Goal, instructions and facts"},
-        {"start": 14.9, "title": "Project memory files"},
-        {"start": 29.4, "title": "Save and confirm a decision"},
-        {"start": 44.1, "title": "One memory per project"},
-        {"start": 51.4, "title": "Usage from recorded turns"}
-      ],
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound."
+      "related": [
+        "how-specwithcode-works",
+        "memory-and-usage"
+      ]
     },
     {
       "slug": "plans-and-routines",
-      "title": "Plan, verify and schedule",
+      "product": "specwithcode",
+      "title": "Plan, verify and schedule project work",
+      "seoTitle": "SpecWithCode plans and routines: verification receipts and scheduling",
       "summary": "Write a short plan with one acceptance criterion, run a real verification that fails and then passes, and keep routines scoped to their project.",
-      "status": "published",
+      "outcome": "You add a plan with one acceptance criterion, see a failed verification stay failed, record a passing attempt, and keep routines scoped to their project.",
+      "prerequisites": [
+        "SpecWithCode installed",
+        "A project open"
+      ],
+      "testedOn": "SpecWithCode 0.2.0",
       "agent": "any",
       "agentsShown": [],
-      "durationSeconds": 95.1,
-      "src": "/video/studio-projects/plans-and-routines.mp4",
-      "poster": "/video/studio-projects/plans-and-routines.jpg",
-      "captionsVtt": "/video/studio-projects/plans-and-routines.vtt",
-      "audio": "silent",
-      "uploadDate": "2026-10-09",
-      "publishedAt": "2026-10-10T22:59:42Z",
-      "guide": "/docs/studio/plans-and-routines",
-      "chapters": [
-        {"start": 0, "title": "Add a plan"},
-        {"start": 14.9, "title": "Save a verification command"},
-        {"start": 22.3, "title": "A failed run stays failed"},
-        {"start": 36.8, "title": "A new attempt passes"},
-        {"start": 51.4, "title": "The specweave ledger stays authoritative"},
-        {"start": 58.7, "title": "Routines and pausing"},
-        {"start": 80.5, "title": "Delete a project safely"}
+      "video": {
+        "src": "/video/studio-projects/plans-and-routines.mp4",
+        "poster": "/video/studio-projects/plans-and-routines.jpg",
+        "captionsVtt": "/video/studio-projects/plans-and-routines.vtt",
+        "audio": "silent",
+        "durationSeconds": 95.1,
+        "uploadDate": "2026-10-09",
+        "publishedAt": "2026-10-10T22:59:42Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Add a plan"
+          },
+          {
+            "start": 14.9,
+            "title": "Save a verification command"
+          },
+          {
+            "start": 22.3,
+            "title": "A failed run stays failed"
+          },
+          {
+            "start": 36.8,
+            "title": "A new attempt passes"
+          },
+          {
+            "start": 51.4,
+            "title": "The specweave ledger stays authoritative"
+          },
+          {
+            "start": 58.7,
+            "title": "Routines and pausing"
+          },
+          {
+            "start": 80.5,
+            "title": "Delete a project safely"
+          }
+        ]
+      },
+      "steps": [
+        "Add a plan when acceptance needs evidence: a short spec, one acceptance criterion and a task. Ordinary chat does not need one.",
+        "Review the executable and its literal arguments before saving the verification command. Saving does not run it.",
+        "Run verification. A nonzero exit stays failed, and that receipt is kept unchanged.",
+        "Fix the cause, then choose a new attempt. The new receipt records the successful exit; Recheck reads the same receipt without running it again.",
+        "If the repository already has a SpecWeave ledger, it stays authoritative.",
+        "Routines keep their project and host. Pause the project to refuse new work; a turn already running is not killed.",
+        "Deleting a project needs its exact name and leaves its source folder intact."
       ],
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound."
+      "transcript": "captions",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "action": {
+        "label": "Read the plans guide",
+        "to": "/docs/studio/plans-and-routines"
+      },
+      "guide": "/docs/studio/plans-and-routines",
+      "related": [
+        "specweave-workflow",
+        "projects-and-threads"
+      ]
+    },
+    {
+      "slug": "memory-and-usage",
+      "product": "specwithcode",
+      "title": "Keep project memory and read honest usage",
+      "seoTitle": "SpecWithCode project memory and usage from recorded turns",
+      "summary": "Keep a project's goal, instructions and durable decisions in small memory files, then read usage that comes only from recorded provider turns.",
+      "outcome": "You keep a project goal, instructions and decisions in small memory files and read usage that comes only from recorded provider turns.",
+      "prerequisites": [
+        "SpecWithCode installed",
+        "A project open"
+      ],
+      "testedOn": "SpecWithCode 0.2.0",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/studio-projects/memory-and-usage.mp4",
+        "poster": "/video/studio-projects/memory-and-usage.jpg",
+        "captionsVtt": "/video/studio-projects/memory-and-usage.vtt",
+        "audio": "silent",
+        "durationSeconds": 66.9,
+        "uploadDate": "2026-10-09",
+        "publishedAt": "2026-10-10T22:59:42Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Goal, instructions and facts"
+          },
+          {
+            "start": 14.9,
+            "title": "Project memory files"
+          },
+          {
+            "start": 29.4,
+            "title": "Save and confirm a decision"
+          },
+          {
+            "start": 44.1,
+            "title": "One memory per project"
+          },
+          {
+            "start": 51.4,
+            "title": "Usage from recorded turns"
+          }
+        ]
+      },
+      "steps": [
+        "Keep the project goal, instructions and durable facts together. Instructions guide future turns; they do not replace a provider’s own history.",
+        "Give a lasting decision its own small Markdown file and save it. SpecWithCode checks the file revision before replacing it.",
+        "Reload and reopen the file to confirm the decision persisted. Another project keeps its own memory.",
+        "Read usage, which comes from recorded provider turns. Missing data stays visible, and a cost estimate is not a bill."
+      ],
+      "transcript": "captions",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "action": {
+        "label": "Read the memory and usage guide",
+        "to": "/docs/studio/memory-and-usage"
+      },
+      "guide": "/docs/studio/memory-and-usage",
+      "related": [
+        "projects-and-threads",
+        "plans-and-routines"
+      ]
+    },
+    {
+      "slug": "specwithcode-tour",
+      "product": "specwithcode",
+      "title": "Continue a thread on Codex at a usage limit",
+      "seoTitle": "SpecWithCode tour: coordinator, workers and continuing on Codex",
+      "summary": "A project coordinator splits work between Codex and Claude workers, the results come back to one conversation, and a Claude thread at its usage limit continues on Codex with its context.",
+      "outcome": "You see a coordinator split work between Codex and Claude, and a Claude thread at its limit continue on Codex with its context.",
+      "prerequisites": [],
+      "testedOn": null,
+      "agent": "multi",
+      "agentsShown": [
+        "claude-code",
+        "codex"
+      ],
+      "video": {
+        "src": "/video/studio-tutorial.mp4",
+        "poster": "/img/studio/poster-tour-20261015.jpg",
+        "captionsVtt": "/video/studio-tutorial.vtt",
+        "audio": "silent",
+        "durationSeconds": 61,
+        "uploadDate": "2026-10-10",
+        "publishedAt": "2026-10-10T05:08:31Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Every agent, one workspace"
+          },
+          {
+            "start": 4,
+            "title": "A coordinator and its workers"
+          },
+          {
+            "start": 15,
+            "title": "Each job gets the model that fits"
+          },
+          {
+            "start": 25,
+            "title": "Results come back to one conversation"
+          },
+          {
+            "start": 31,
+            "title": "Hit a limit, continue on Codex"
+          },
+          {
+            "start": 48,
+            "title": "One record in git"
+          },
+          {
+            "start": 56,
+            "title": "Bring your agents"
+          }
+        ],
+        "captionsOn": true
+      },
+      "steps": [
+        "Give the coordinator a goal. It starts a worker for each part and lists them with the threads.",
+        "Each job gets the model that fits: in the recording, Codex writes tip.py while Claude writes the README.",
+        "Results come back to one conversation, where the coordinator checks each worker’s output against the goal.",
+        "When Claude runs out, Continue with Codex carries the conversation over."
+      ],
+      "transcript": "captions",
+      "note": "Screen recordings on a Mac, 10 October 2026. No sound; the usage limit in the handoff clip is simulated. Recorded before SpecWithCode 1.0.0, so some labels have changed.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/code",
+      "related": [
+        "how-specwithcode-works",
+        "specweave-workflow"
+      ]
     },
     {
       "slug": "personal-and-connections",
-      "title": "Personal projects, folders and tools",
+      "product": "specwithcode",
+      "title": "Set up a personal project with folders and tools",
+      "seoTitle": "SpecWithCode personal projects, folders, repositories and MCP tools",
       "summary": "A Personal project with app-managed storage: add a folder, link a repository, discover a local MCP command and grant exactly the tools it may use.",
-      "status": "published",
+      "outcome": "You create a personal project, add a folder and a repository, and grant a local MCP command exactly the tools it may use.",
+      "prerequisites": [
+        "SpecWithCode installed"
+      ],
+      "testedOn": "SpecWithCode 0.2.0",
       "agent": "any",
       "agentsShown": [],
-      "durationSeconds": 81.6,
-      "src": "/video/studio-projects/personal-and-connections.mp4",
-      "poster": "/video/studio-projects/personal-and-connections.jpg",
-      "captionsVtt": "/video/studio-projects/personal-and-connections.vtt",
-      "audio": "silent",
-      "uploadDate": "2026-10-09",
-      "publishedAt": "2026-10-10T22:59:42Z",
-      "guide": "/docs/studio/projects",
-      "chapters": [
-        {"start": 0, "title": "A Personal project"},
-        {"start": 14.8, "title": "Storage and extra folders"},
-        {"start": 29.5, "title": "Link a repository"},
-        {"start": 44.1, "title": "Add a local MCP command"},
-        {"start": 58.8, "title": "Grant and revoke tools"},
-        {"start": 73.5, "title": "What ran on the device"}
+      "video": {
+        "src": "/video/studio-projects/personal-and-connections.mp4",
+        "poster": "/video/studio-projects/personal-and-connections.jpg",
+        "captionsVtt": "/video/studio-projects/personal-and-connections.vtt",
+        "audio": "silent",
+        "durationSeconds": 81.6,
+        "uploadDate": "2026-10-09",
+        "publishedAt": "2026-10-10T22:59:42Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "A Personal project"
+          },
+          {
+            "start": 14.8,
+            "title": "Storage and extra folders"
+          },
+          {
+            "start": 29.5,
+            "title": "Link a repository"
+          },
+          {
+            "start": 44.1,
+            "title": "Add a local MCP command"
+          },
+          {
+            "start": 58.8,
+            "title": "Grant and revoke tools"
+          },
+          {
+            "start": 73.5,
+            "title": "What ran on the device"
+          }
+        ]
+      },
+      "steps": [
+        "Start a Personal project. It uses app-managed storage on its device and needs no Git repository.",
+        "Add an existing folder and save its access grant. The folder is not moved.",
+        "Add a repository URL and associate your local checkout. Match checks the checkout’s actual remote.",
+        "Save a local MCP command, then choose Check to discover its tools. Check does not verify an external account.",
+        "Grant exactly the tools this project may use. Revoke removes future access; restoring needs a new check and new grants."
       ],
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound."
+      "transcript": "captions",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "action": {
+        "label": "Read the projects guide",
+        "to": "/docs/studio/projects"
+      },
+      "guide": "/docs/studio/projects",
+      "related": [
+        "projects-and-threads",
+        "memory-and-usage"
+      ]
     },
     {
       "slug": "agent-result-walkthrough",
-      "title": "Read an agent's result",
+      "product": "specwithcode",
+      "title": "Check what an agent actually did",
+      "seoTitle": "Read an agent result in SpecWithCode: tool output, exit code and diff",
       "summary": "Ask the agent for the result, inspect the recorded tool call and its exit code, review the file change, and preview the provider-switch warning.",
-      "status": "published",
+      "outcome": "You can find the recorded tool call, its exit code and the file change behind an agent’s answer.",
+      "prerequisites": [],
+      "testedOn": null,
       "agent": "any",
       "agentsShown": [],
-      "durationSeconds": 43.7,
-      "src": "/img/studio/agent-driven-demo.mp4",
-      "poster": "/img/studio/agent-driven-demo-cover.jpg",
-      "captionsVtt": "/img/studio/agent-driven-demo.vtt",
-      "audio": "silent",
-      "uploadDate": "2026-10-08",
-      "publishedAt": "2026-10-11T04:43:11Z",
-      "guide": "/docs/overview/studio-architecture",
-      "chapters": [
-        {"start": 0, "title": "Ask the agent for the result"},
-        {"start": 6.1, "title": "One file changed and verified"},
-        {"start": 12.3, "title": "Inspect the tool output"},
-        {"start": 19.4, "title": "Exit code zero, evidence kept"},
-        {"start": 26.6, "title": "Review the file change"},
-        {"start": 34.1, "title": "Switching providers (UI preview)"}
+      "video": {
+        "src": "/img/studio/agent-driven-demo.mp4",
+        "poster": "/img/studio/agent-driven-demo-cover.jpg",
+        "captionsVtt": "/img/studio/agent-driven-demo.vtt",
+        "audio": "silent",
+        "durationSeconds": 43.7,
+        "uploadDate": "2026-10-08",
+        "publishedAt": "2026-10-11T04:43:11Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Ask the agent for the result"
+          },
+          {
+            "start": 6.1,
+            "title": "One file changed and verified"
+          },
+          {
+            "start": 12.3,
+            "title": "Inspect the tool output"
+          },
+          {
+            "start": 19.4,
+            "title": "Exit code zero, evidence kept"
+          },
+          {
+            "start": 26.6,
+            "title": "Review the file change"
+          },
+          {
+            "start": 34.1,
+            "title": "Switching providers (UI preview)"
+          }
+        ]
+      },
+      "steps": [
+        "Ask the agent for the result.",
+        "Expand the recorded work to see the actual tool and its output. The recorded command returned exit code 0.",
+        "Inspect the recorded file change.",
+        "Before switching providers, read the warning: prompt caches and runtime state do not transfer, and the portable chat context does."
       ],
-      "note": "Actual browser recording of a synthetic task completed on 7 October 2026 in a disposable repository. The model-switching scene previews the confirmation UI in an isolated fixture."
+      "transcript": "captions",
+      "note": "Actual browser recording of a synthetic task completed on 7 October 2026 in a disposable repository. The model-switching scene previews the confirmation UI in an isolated fixture.",
+      "action": {
+        "label": "Read how SpecWithCode works",
+        "to": "/docs/overview/studio-architecture"
+      },
+      "guide": "/docs/overview/studio-architecture",
+      "related": [
+        "projects-and-threads",
+        "specwithcode-tour"
+      ]
     },
     {
       "slug": "specwithcode-claude-code",
-      "title": "SpecWithCode with Claude Code",
+      "product": "specwithcode",
+      "title": "Run your first task with Claude Code",
+      "seoTitle": "SpecWithCode with Claude Code: plan, build and review one task",
       "summary": "Set up SpecWithCode with Claude Code, run one real task through a project, and review the result.",
-      "status": "published",
+      "outcome": "You end with Claude Code having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "prerequisites": [
+        "SpecWeave installed with `npm i -g specweave`",
+        "SpecWithCode installed on a Mac",
+        "Claude Code signed in"
+      ],
+      "testedOn": "SpecWithCode 0.2.6",
       "agent": "claude-code",
       "agentsShown": [],
-      "durationSeconds": 66.7,
-      "src": "/video/tutorials/claude-code.mp4",
-      "poster": "/video/tutorials/claude-code.jpg",
-      "captionsVtt": "/video/tutorials/claude-code.en.vtt",
-      "captionsBurnedIn": true,
-      "audio": "narrated",
-      "uploadDate": "2026-10-11",
-      "publishedAt": "2026-10-11T15:01:16Z",
-      "guide": null,
-      "chapters": [
-        {"start": 0, "title": "Intro"},
-        {"start": 4, "title": "Set up the repo"},
-        {"start": 10.5, "title": "Connect Claude Code"},
-        {"start": 22, "title": "Add the project"},
-        {"start": 33, "title": "Plan"},
-        {"start": 44, "title": "Build"},
-        {"start": 54.7, "title": "Review"},
-        {"start": 62.7, "title": "Next"}
+      "video": {
+        "src": "/video/tutorials/claude-code.mp4",
+        "poster": "/video/tutorials/claude-code.jpg",
+        "captionsVtt": "/video/tutorials/claude-code.en.vtt",
+        "audio": "narrated",
+        "durationSeconds": 66.7,
+        "uploadDate": "2026-10-11",
+        "publishedAt": "2026-10-11T15:01:16Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Intro"
+          },
+          {
+            "start": 4,
+            "title": "Set up the repo"
+          },
+          {
+            "start": 10.5,
+            "title": "Connect Claude Code"
+          },
+          {
+            "start": 22,
+            "title": "Add the project"
+          },
+          {
+            "start": 33,
+            "title": "Plan"
+          },
+          {
+            "start": 44,
+            "title": "Build"
+          },
+          {
+            "start": 54.7,
+            "title": "Review"
+          },
+          {
+            "start": 62.7,
+            "title": "Next"
+          }
+        ],
+        "captionsBurnedIn": true
+      },
+      "steps": [
+        "In your repository, run `specweave init`. It adds AGENTS.md and the SpecWeave skills.",
+        "Open SpecWithCode. In setup, keep this computer and choose Continue. The Claude card should say Ready to code; if it does not, run `claude auth login` in a terminal first.",
+        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
+        "Pick Claude Code in the model picker. The recording sets Full access for the demo only.",
+        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
+        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
+        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
       ],
-      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in."
+      "transcript": "captions",
+      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": null,
+      "related": [
+        "projects-and-threads",
+        "specwithcode-codex"
+      ]
     },
     {
       "slug": "specwithcode-codex",
-      "title": "SpecWithCode with Codex",
+      "product": "specwithcode",
+      "title": "Run your first task with Codex",
+      "seoTitle": "SpecWithCode with Codex: plan, build and review one task",
       "summary": "Set up SpecWithCode with Codex, run one real task through a project, and review the result.",
-      "status": "published",
+      "outcome": "You end with Codex having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "prerequisites": [
+        "SpecWeave installed with `npm i -g specweave`",
+        "SpecWithCode installed on a Mac",
+        "Codex signed in"
+      ],
+      "testedOn": "SpecWithCode 0.2.6",
       "agent": "codex",
       "agentsShown": [],
-      "durationSeconds": 72.7,
-      "src": "/video/tutorials/codex.mp4",
-      "poster": "/video/tutorials/codex.jpg",
-      "captionsVtt": "/video/tutorials/codex.en.vtt",
-      "captionsBurnedIn": true,
-      "audio": "narrated",
-      "uploadDate": "2026-10-11",
-      "publishedAt": "2026-10-11T15:01:16Z",
-      "guide": null,
-      "chapters": [
-        {"start": 0, "title": "Intro"},
-        {"start": 4, "title": "Set up the repo"},
-        {"start": 10.5, "title": "Connect Codex"},
-        {"start": 28, "title": "Add the project"},
-        {"start": 39, "title": "Plan"},
-        {"start": 50, "title": "Build"},
-        {"start": 60.7, "title": "Review"},
-        {"start": 68.7, "title": "Next"}
+      "video": {
+        "src": "/video/tutorials/codex.mp4",
+        "poster": "/video/tutorials/codex.jpg",
+        "captionsVtt": "/video/tutorials/codex.en.vtt",
+        "audio": "narrated",
+        "durationSeconds": 72.7,
+        "uploadDate": "2026-10-11",
+        "publishedAt": "2026-10-11T15:01:16Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Intro"
+          },
+          {
+            "start": 4,
+            "title": "Set up the repo"
+          },
+          {
+            "start": 10.5,
+            "title": "Connect Codex"
+          },
+          {
+            "start": 28,
+            "title": "Add the project"
+          },
+          {
+            "start": 39,
+            "title": "Plan"
+          },
+          {
+            "start": 50,
+            "title": "Build"
+          },
+          {
+            "start": 60.7,
+            "title": "Review"
+          },
+          {
+            "start": 68.7,
+            "title": "Next"
+          }
+        ],
+        "captionsBurnedIn": true
+      },
+      "steps": [
+        "In your repository, run `specweave init`. It adds AGENTS.md and the SpecWeave skills.",
+        "Open SpecWithCode. In setup, keep this computer and choose Continue. On the Codex card, choose Continue with ChatGPT, or run `codex login` and then Use existing CLI. The card says Ready to code.",
+        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
+        "Pick Codex in the model picker. The recording sets Full access for the demo only.",
+        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
+        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
+        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
       ],
-      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in."
+      "transcript": "captions",
+      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": null,
+      "related": [
+        "projects-and-threads",
+        "specwithcode-claude-code"
+      ]
     },
     {
       "slug": "specwithcode-opencode",
-      "title": "SpecWithCode with OpenCode",
+      "product": "specwithcode",
+      "title": "Run your first task with OpenCode",
+      "seoTitle": "SpecWithCode with OpenCode: plan, build and review one task",
       "summary": "Set up SpecWithCode with OpenCode, run one real task through a project, and review the result.",
-      "status": "published",
+      "outcome": "You end with OpenCode having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "prerequisites": [
+        "SpecWeave installed with `npm i -g specweave`",
+        "SpecWithCode installed on a Mac",
+        "OpenCode signed in to a model provider"
+      ],
+      "testedOn": "SpecWithCode 0.2.6 with OpenCode 2.0.26",
       "agent": "opencode",
       "agentsShown": [],
-      "durationSeconds": 70.9,
-      "src": "/video/tutorials/opencode.mp4",
-      "poster": "/video/tutorials/opencode.jpg",
-      "captionsVtt": "/video/tutorials/opencode.en.vtt",
-      "captionsBurnedIn": true,
-      "audio": "narrated",
-      "uploadDate": "2026-10-11",
-      "publishedAt": "2026-10-11T15:01:16Z",
-      "guide": null,
-      "chapters": [
-        {"start": 0, "title": "Intro"},
-        {"start": 4, "title": "Set up the repo"},
-        {"start": 10.5, "title": "Connect OpenCode"},
-        {"start": 26.2, "title": "Add the project"},
-        {"start": 37.2, "title": "Plan"},
-        {"start": 48.2, "title": "Build"},
-        {"start": 58.9, "title": "Review"},
-        {"start": 66.9, "title": "Next"}
+      "video": {
+        "src": "/video/tutorials/opencode.mp4",
+        "poster": "/video/tutorials/opencode.jpg",
+        "captionsVtt": "/video/tutorials/opencode.en.vtt",
+        "audio": "narrated",
+        "durationSeconds": 70.9,
+        "uploadDate": "2026-10-11",
+        "publishedAt": "2026-10-11T15:01:16Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Intro"
+          },
+          {
+            "start": 4,
+            "title": "Set up the repo"
+          },
+          {
+            "start": 10.5,
+            "title": "Connect OpenCode"
+          },
+          {
+            "start": 26.2,
+            "title": "Add the project"
+          },
+          {
+            "start": 37.2,
+            "title": "Plan"
+          },
+          {
+            "start": 48.2,
+            "title": "Build"
+          },
+          {
+            "start": 58.9,
+            "title": "Review"
+          },
+          {
+            "start": 66.9,
+            "title": "Next"
+          }
+        ],
+        "captionsBurnedIn": true
+      },
+      "steps": [
+        "In your repository, run `specweave init`. It adds AGENTS.md and the SpecWeave skills.",
+        "Run `opencode auth login` in a terminal to sign OpenCode in to a model provider.",
+        "Open SpecWithCode, then Settings, Providers. Choose Add provider, pick OpenCode, choose Next twice, then Add instance.",
+        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
+        "Pick OpenCode in the model picker. The recording sets Full access for the demo only.",
+        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
+        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
+        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
       ],
-      "note": "Recorded on SpecWithCode 0.2.6 with OpenCode 2.0.26 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in."
+      "transcript": "captions",
+      "note": "Recorded on SpecWithCode 0.2.6 with OpenCode 2.0.26 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": null,
+      "related": [
+        "projects-and-threads",
+        "specwithcode-claude-code"
+      ]
     },
     {
       "slug": "specwithcode-antigravity",
-      "title": "SpecWithCode with Antigravity",
+      "product": "specwithcode",
+      "title": "Run your first task with Antigravity and Gemini",
+      "seoTitle": "SpecWithCode with Antigravity: plan, build and review one task",
       "summary": "Set up SpecWithCode with Antigravity and Gemini, run one real task through a project, and review the result.",
-      "status": "published",
+      "outcome": "You end with Antigravity having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "prerequisites": [
+        "SpecWeave installed with `npm i -g specweave`",
+        "SpecWithCode installed on a Mac",
+        "A Google account for Antigravity"
+      ],
+      "testedOn": "SpecWithCode 0.2.8 with Antigravity 1.3.0",
       "agent": "antigravity",
       "agentsShown": [],
-      "durationSeconds": 74.7,
-      "src": "/video/tutorials/antigravity.mp4",
-      "poster": "/video/tutorials/antigravity.jpg",
-      "captionsVtt": "/video/tutorials/antigravity.en.vtt",
-      "captionsBurnedIn": true,
-      "audio": "narrated",
-      "uploadDate": "2026-10-11",
-      "publishedAt": "2026-10-12T02:34:23Z",
-      "guide": null,
-      "chapters": [
-        {"start": 0, "title": "Intro"},
-        {"start": 4, "title": "Set up the repo"},
-        {"start": 11.2, "title": "Connect Antigravity"},
-        {"start": 25.4, "title": "Add the project"},
-        {"start": 40.1, "title": "Plan"},
-        {"start": 53.2, "title": "Build"},
-        {"start": 62.7, "title": "Review"},
-        {"start": 70.7, "title": "Next"}
+      "video": {
+        "src": "/video/tutorials/antigravity.mp4",
+        "poster": "/video/tutorials/antigravity.jpg",
+        "captionsVtt": "/video/tutorials/antigravity.en.vtt",
+        "audio": "narrated",
+        "durationSeconds": 74.7,
+        "uploadDate": "2026-10-11",
+        "publishedAt": "2026-10-12T02:34:23Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Intro"
+          },
+          {
+            "start": 4,
+            "title": "Set up the repo"
+          },
+          {
+            "start": 11.2,
+            "title": "Connect Antigravity"
+          },
+          {
+            "start": 25.4,
+            "title": "Add the project"
+          },
+          {
+            "start": 40.1,
+            "title": "Plan"
+          },
+          {
+            "start": 53.2,
+            "title": "Build"
+          },
+          {
+            "start": 62.7,
+            "title": "Review"
+          },
+          {
+            "start": 70.7,
+            "title": "Next"
+          }
+        ],
+        "captionsBurnedIn": true
+      },
+      "steps": [
+        "In your repository, run `specweave init` with the Antigravity adapter. It adds AGENTS.md and the SpecWeave skills.",
+        "Open SpecWithCode, then Settings, Providers. Choose Add provider and pick Antigravity; SpecWithCode installs its own Antigravity agent.",
+        "Choose Sign in and finish with your Google account in the browser.",
+        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
+        "Pick Antigravity in the model picker. The recording sets Full access for the demo only.",
+        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
+        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
+        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
       ],
-      "note": "Recorded on SpecWithCode 0.2.8 with Antigravity 1.3.0 and Gemini 3.8 Flash (High) with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own Google account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in."
+      "transcript": "captions",
+      "note": "Recorded on SpecWithCode 0.2.8 with Antigravity 1.3.0 and Gemini 3.8 Flash (High) with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own Google account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": null,
+      "related": [
+        "projects-and-threads",
+        "specwithcode-claude-code"
+      ]
     },
     {
       "slug": "specwithcode-grok",
-      "title": "SpecWithCode with Grok",
+      "product": "specwithcode",
+      "title": "Run your first task with Grok",
+      "seoTitle": "SpecWithCode with Grok: plan, build and review one task",
       "summary": "Set up SpecWithCode with Grok, run one real task through a project, and review the result.",
-      "status": "published",
+      "outcome": "You end with Grok having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "prerequisites": [
+        "SpecWeave installed with `npm i -g specweave`",
+        "SpecWithCode installed on a Mac",
+        "Grok signed in"
+      ],
+      "testedOn": "SpecWithCode 0.2.6",
       "agent": "grok",
       "agentsShown": [],
-      "durationSeconds": 83.6,
-      "src": "/video/tutorials/grok.mp4",
-      "poster": "/video/tutorials/grok.jpg",
-      "captionsVtt": "/video/tutorials/grok.en.vtt",
-      "captionsBurnedIn": true,
-      "audio": "narrated",
-      "uploadDate": "2026-10-11",
-      "publishedAt": "2026-10-11T15:01:16Z",
-      "guide": null,
-      "chapters": [
-        {"start": 0, "title": "Intro"},
-        {"start": 4, "title": "Set up the repo"},
-        {"start": 22.6, "title": "Connect Grok"},
-        {"start": 36.3, "title": "Add the project"},
-        {"start": 48.3, "title": "Plan"},
-        {"start": 61.3, "title": "Build"},
-        {"start": 71.6, "title": "Review"},
-        {"start": 79.6, "title": "Next"}
+      "video": {
+        "src": "/video/tutorials/grok.mp4",
+        "poster": "/video/tutorials/grok.jpg",
+        "captionsVtt": "/video/tutorials/grok.en.vtt",
+        "audio": "narrated",
+        "durationSeconds": 83.6,
+        "uploadDate": "2026-10-11",
+        "publishedAt": "2026-10-11T15:01:16Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Intro"
+          },
+          {
+            "start": 4,
+            "title": "Set up the repo"
+          },
+          {
+            "start": 22.6,
+            "title": "Connect Grok"
+          },
+          {
+            "start": 36.3,
+            "title": "Add the project"
+          },
+          {
+            "start": 48.3,
+            "title": "Plan"
+          },
+          {
+            "start": 61.3,
+            "title": "Build"
+          },
+          {
+            "start": 71.6,
+            "title": "Review"
+          },
+          {
+            "start": 79.6,
+            "title": "Next"
+          }
+        ],
+        "captionsBurnedIn": true
+      },
+      "steps": [
+        "In your repository, run `specweave init` with the generic adapter. It adds AGENTS.md and the SpecWeave skills.",
+        "In the repository, run `grok --trust` once, because Grok skips project skills in folders it does not trust. If you are signed out, run `grok login` first.",
+        "Open SpecWithCode, then Settings, Providers. Grok is off by default: choose Add provider, pick Grok and existing CLI, choose Next twice, then Add instance.",
+        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
+        "Pick Grok in the model picker. The recording sets Full access for the demo only.",
+        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
+        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
+        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
       ],
-      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in."
+      "transcript": "captions",
+      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": null,
+      "related": [
+        "projects-and-threads",
+        "specwithcode-claude-code"
+      ]
+    }
+  ],
+  "planned": [
+    {
+      "slug": "handoff-at-a-usage-limit",
+      "product": "cli",
+      "title": "Hand off from Claude Code to Codex at a usage limit",
+      "outcome": "You end with Codex running the next task from the ledger.",
+      "beats": [
+        "A limit warning in suggest mode",
+        "specweave handoff --reason",
+        "What handoff.md carries",
+        "specweave pickup in Codex",
+        "The next task with its acceptance criteria",
+        "task done --run"
+      ],
+      "targetSeconds": 90
+    },
+    {
+      "slug": "install-and-plan",
+      "product": "cli",
+      "title": "Install SpecWeave and plan your first increment",
+      "outcome": "You end with an increment whose problem, acceptance criteria and tasks are written down.",
+      "beats": [
+        "npm i -g specweave",
+        "specweave init",
+        "create-increment \"title\"",
+        "Problem, acceptance criteria and tasks",
+        "specweave pickup"
+      ],
+      "targetSeconds": 100
+    },
+    {
+      "slug": "claim-prove-verify-complete",
+      "product": "cli",
+      "title": "Claim, prove, verify and complete a task",
+      "outcome": "You end with a completed increment that has its test evidence and a passing verify report.",
+      "beats": [
+        "task claim T-01",
+        "task done --run with its evidence file",
+        "specweave verify",
+        "complete blocked, then passing"
+      ],
+      "targetSeconds": 100
+    },
+    {
+      "slug": "start-specwithcode",
+      "product": "specwithcode",
+      "title": "Start SpecWithCode with a coordinator and two workers",
+      "outcome": "You end with a project whose coordinator has started two workers and returned a report.",
+      "beats": [
+        "Install the current release",
+        "New project or adopt a folder",
+        "Ask the coordinator",
+        "Workers in the right panel",
+        "Report card and plan chips"
+      ],
+      "targetSeconds": 110,
+      "replaces": "how-specwithcode-works"
+    },
+    {
+      "slug": "review-with-another-model",
+      "product": "cli",
+      "title": "Review with the other model before you ship",
+      "outcome": "You end with a review report from a model of another family and a clean second run.",
+      "beats": [
+        "specweave review",
+        "Codex reviews a Claude diff",
+        "reports/review-codex.md",
+        "Exit 3, fix, exit 0"
+      ],
+      "targetSeconds": 75
+    },
+    {
+      "slug": "provider-runs-out",
+      "product": "specwithcode",
+      "title": "Keep working when a provider runs out",
+      "outcome": "You end with a thread that continued on another provider under a rule you set for the project.",
+      "beats": [
+        "A limit is hit",
+        "Continue on another provider",
+        "Per-project rule",
+        "Credits and banked resets",
+        "Usage limits per account",
+        "Undo the failover"
+      ],
+      "targetSeconds": 90
+    },
+    {
+      "slug": "find-and-install-a-skill",
+      "product": "verified-skill",
+      "title": "Find and install a verified skill",
+      "outcome": "You end with a scanned skill installed in your agent.",
+      "beats": [
+        "vskill find",
+        "The skill page: tier, scan and evaluations",
+        "vskill install",
+        "vskill list",
+        "update --global"
+      ],
+      "targetSeconds": 80
+    },
+    {
+      "slug": "finish-a-thread",
+      "product": "specwithcode",
+      "title": "Finish a thread with a pull request and auto-merge",
+      "outcome": "You end with a thread whose pull request merged after review.",
+      "beats": [
+        "Thread done",
+        "Open PR and auto-merge",
+        "Code Review view",
+        "A conflict resolved in its thread",
+        "Merged"
+      ],
+      "targetSeconds": 80
+    },
+    {
+      "slug": "test-a-skill-in-studio",
+      "product": "verified-skill",
+      "title": "Test a skill in Skill Studio",
+      "outcome": "You end with a test run and a blind comparison verdict for your skill.",
+      "beats": [
+        "vskill studio",
+        "A plain-English test",
+        "Run",
+        "A/B with a blind judge",
+        "Cross-model sweep"
+      ],
+      "targetSeconds": 110
+    },
+    {
+      "slug": "add-a-machine",
+      "product": "specwithcode",
+      "title": "Add a second machine",
+      "outcome": "You end with a worker thread running on your second machine.",
+      "beats": [
+        "Tailscale on both machines",
+        "Invite this machine",
+        "Paste the line on your main machine",
+        "A worker runs there"
+      ],
+      "targetSeconds": 75
+    },
+    {
+      "slug": "publish-a-skill",
+      "product": "verified-skill",
+      "title": "Publish a skill, public or private",
+      "outcome": "You end with a published skill and its first version.",
+      "beats": [
+        "Publish drawer",
+        "Scan",
+        "Public submit and queue",
+        "Private with the tenant picker",
+        "Versions and diff"
+      ],
+      "targetSeconds": 100
+    },
+    {
+      "slug": "agents-use-your-mac-and-chrome",
+      "product": "specwithcode",
+      "title": "Let agents use your Mac and Chrome",
+      "outcome": "You end with an agent acting in an app and in isolated browser tabs, or in a profile you chose for the project.",
+      "beats": [
+        "Turn on computer use",
+        "Screen Recording and Accessibility",
+        "The agent acts",
+        "SpecWithCode Browser tab group",
+        "Isolated tabs or a project profile"
+      ],
+      "targetSeconds": 80
     },
     {
       "slug": "specwithcode-cursor",
-      "title": "SpecWithCode with Cursor",
-      "summary": "Set up SpecWithCode with Cursor, run one real task through a project, and review the result.",
-      "status": "coming-soon",
-      "agent": "cursor",
-      "agentsShown": [],
-      "durationSeconds": null,
-      "src": null,
-      "poster": null,
-      "captionsVtt": null,
-      "audio": null,
-      "uploadDate": null,
-      "publishedAt": null,
-      "guide": null,
-      "chapters": [],
-      "outline": ["Set up", "One real task", "The result"]
+      "product": "specwithcode",
+      "title": "Run your first task with Cursor",
+      "outcome": "You end with Cursor having planned, built and tested one change in your repository.",
+      "beats": [
+        "Set up",
+        "One real task",
+        "The result"
+      ],
+      "targetSeconds": 80,
+      "agent": "cursor"
+    }
+  ],
+  "paths": [
+    {
+      "id": "run-work-across-agents",
+      "product": "cli",
+      "title": "Run work across agents",
+      "summary": "Plan an increment, prove each task, hand off between tools and get a review from another model.",
+      "steps": [
+        "specweave-workflow",
+        "install-and-plan",
+        "claim-prove-verify-complete",
+        "handoff-at-a-usage-limit",
+        "review-with-another-model"
+      ]
+    },
+    {
+      "id": "run-specwithcode",
+      "product": "specwithcode",
+      "title": "Run SpecWithCode",
+      "summary": "Understand the setup, run a project through its coordinator, then add plans, memory and a second provider.",
+      "steps": [
+        "how-specwithcode-works",
+        "projects-and-threads",
+        "plans-and-routines",
+        "memory-and-usage",
+        "specwithcode-tour",
+        "start-specwithcode",
+        "provider-runs-out",
+        "add-a-machine",
+        "finish-a-thread",
+        "agents-use-your-mac-and-chrome"
+      ]
+    },
+    {
+      "id": "ship-a-skill",
+      "product": "verified-skill",
+      "title": "Ship a skill",
+      "summary": "Find and install a scanned skill, test your own in Skill Studio, then publish it.",
+      "url": "https://verified-skill.com/watch",
+      "steps": [
+        "find-and-install-a-skill",
+        "test-a-skill-in-studio",
+        "publish-a-skill"
+      ]
     }
   ]
 }

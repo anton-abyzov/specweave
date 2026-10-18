@@ -1,7 +1,7 @@
 import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
 /**
- * SpecWeave 3.0 documentation.
+ * SpecWeave 3.x and SpecWithCode documentation.
  *
  * Ordered the way a new reader needs it: what it is, install, the concepts,
  * the daily loop, switching tools, integrations, then reference. Pages that
@@ -27,9 +27,19 @@ const sidebars: SidebarsConfig = {
       label: 'SpecWithCode',
       collapsed: false,
       items: [
+        {type: 'doc', id: 'overview/studio', label: 'SpecWithCode overview'},
         {type: 'doc', id: 'studio/projects', label: 'Projects and threads'},
         {type: 'doc', id: 'studio/memory-and-usage', label: 'Memory and usage'},
         {type: 'doc', id: 'studio/plans-and-routines', label: 'Plans and routines'},
+        {type: 'doc', id: 'studio/finish-a-thread', label: 'Finish a thread'},
+        {type: 'doc', id: 'studio/add-a-machine', label: 'Add a machine'},
+        {type: 'doc', id: 'studio/linux-worker', label: 'Linux worker'},
+        {type: 'doc', id: 'studio/computer-use', label: 'Computer use'},
+        {type: 'doc', id: 'studio/browser', label: 'SpecWithCode Browser'},
+        {type: 'doc', id: 'studio/voice-calls', label: 'Voice calls'},
+        {type: 'doc', id: 'studio/status-page', label: 'Status page'},
+        {type: 'doc', id: 'studio/connections-library', label: 'Connections library'},
+        {type: 'doc', id: 'overview/studio-architecture', label: 'Architecture and boundaries'},
       ],
     },
     {
@@ -37,9 +47,7 @@ const sidebars: SidebarsConfig = {
       label: 'Concepts',
       collapsed: false,
       items: [
-        {type: 'doc', id: 'overview/studio', label: 'SpecWithCode overview'},
         {type: 'doc', id: 'overview/how-it-works', label: 'How it works'},
-        {type: 'doc', id: 'overview/studio-architecture', label: 'SpecWithCode architecture'},
         {type: 'doc', id: 'guides/core-concepts/what-is-an-increment', label: 'Increments'},
         {type: 'doc', id: 'guides/increment-status-reference', label: 'Increment status'},
         {type: 'doc', id: 'overview/why-specweave', label: 'Why SpecWeave'},
@@ -69,6 +77,9 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         {type: 'doc', id: 'workflows/overview', label: 'The daily loop'},
+        {type: 'doc', id: 'guides/decide-step', label: 'Decide step'},
+        {type: 'doc', id: 'guides/grill-and-glossary', label: 'Grill me and glossary'},
+        {type: 'doc', id: 'guides/cross-model-review', label: 'Review with another model'},
         {type: 'doc', id: 'workflows/brownfield', label: 'Existing codebases'},
         {type: 'doc', id: 'guides/autonomous-execution', label: 'Autonomous mode'},
         {type: 'doc', id: 'guides/agent-teams-and-swarms', label: 'Agent teams'},
