@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import clsx from 'clsx';
 import styles from './CoordinatorFlow.module.css';
 
@@ -70,9 +70,7 @@ export default function CoordinatorFlow() {
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   // The final step is the resting state: no-JS, screenshots and first paint show the finished run.
   const [active, setActive] = useState(3);
-  const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => setHydrated(true), []);
 
   function select(index: number, focus = false) {
     setActive(index);
@@ -132,7 +130,7 @@ export default function CoordinatorFlow() {
           role="tabpanel"
           aria-labelledby={`flow-tab-${index}`}
           className={styles.beat}
-          hidden={hydrated && active !== index}>
+          hidden={active !== index}>
           <h3>{beat.title}</h3>
           <p>{beat.body}</p>
           <figure className={clsx(styles.shot, beat.back && styles.pair)}>
