@@ -81,6 +81,30 @@ describe.skipIf(!built)('plugins/specweave/hooks/run.mjs (requires npm run build
     }
   });
 
+  it('stop reminds a session once to close an increment whose last task was just finished', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-runmjs-close-'));
+    try {
+      fs.mkdirSync(path.join(repo, '.specweave', 'state'), { recursive: true });
+      fs.writeFileSync(path.join(repo, '.specweave', 'config.json'), '{}');
+      const inc = path.join(repo, '.specweave', 'increments', '0002-finished');
+      fs.mkdirSync(inc, { recursive: true });
+      fs.writeFileSync(path.join(inc, 'metadata.json'), JSON.stringify({ status: 'active' }));
+      fs.writeFileSync(path.join(inc, 'tasks.md'), '### T-001: First\n**Status**: [x] completed\n');
+      fs.writeFileSync(path.join(inc, 'spec.md'), '# Finished\n');
+      fs.writeFileSync(
+        path.join(repo, '.specweave', 'state', 'close-pending.json'),
+        JSON.stringify({ '0002-finished': { at: new Date().toISOString() } }),
+      );
+      const first = run('stop', { hook_event_name: 'Stop', session_id: 'thread-a' }, {}, repo);
+      expect(first.status).toBe(0);
+      expect(validateHookOutput('stop', first.json)).toBeNull();
+      expect(first.json).toMatchObject({ decision: 'block', reason: expect.stringContaining('specweave complete 0002-finished') });
+      expect(run('stop', { hook_event_name: 'Stop', session_id: 'thread-a' }, {}, repo).json).toEqual({});
+    } finally {
+      fs.rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
   it('prints {} for an unknown event and for garbage stdin, exit 0', () => {
     expect(run('bogus', '{}')).toMatchObject({ status: 0, out: '{}' });
     expect(run('stop', '{{{{')).toMatchObject({ status: 0, out: '{}' });
