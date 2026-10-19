@@ -48,12 +48,17 @@ const config: Config = {
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'Organization',
+        '@id': 'https://spec-weave.com/#org',
         name: 'SpecWeave',
         url: 'https://spec-weave.com',
         logo: 'https://spec-weave.com/img/logo.svg?v=079fbdd1',
         sameAs: [
           'https://github.com/anton-abyzov/specweave',
           'https://www.npmjs.com/package/specweave',
+          'https://github.com/anton-abyzov/specwithcode',
+          'https://verified-skill.com',
+          'https://www.youtube.com/@antonabyzov',
+          'https://x.com/aabyzov',
         ],
       }),
     },
@@ -223,15 +228,17 @@ const config: Config = {
           },
           editUrl: `https://github.com/anton-abyzov/specweave/tree/${process.env.DOCS_SOURCE_REF || 'develop'}/docs-site/`,
           blogTitle: 'SpecWeave Blog',
-          blogDescription: 'Spec-Driven Development insights, tutorials, and updates',
+          blogDescription: 'SpecWeave and SpecWithCode releases, tutorials and notes on running Claude Code, Codex and other coding agents together.',
           postsPerPage: 10,
           blogSidebarTitle: 'Recent posts',
           blogSidebarCount: 5,
         },
         sitemap: {
+          lastmod: 'date',
           // Search results are navigational, not a page we want indexed.
           // Keep this explicit as well as the rendered noindex directive.
-          ignorePatterns: ['/search', '/search/**'],
+          // Tag, archive and author lists are thin pages, so they stay out too.
+          ignorePatterns: ['/search', '/search/**', '/docs/tags/**', '/blog/tags/**', '/blog/archive/**', '/blog/authors/**'],
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -262,6 +269,7 @@ const config: Config = {
         // Pages removed or merged over time, pointed at the page that replaced them.
         redirects: [
           {from: ['/studio'], to: '/code'},
+          {from: ['/docs/guides/specweave-vs-speckit'], to: '/docs/compare/specweave-vs-github-spec-kit'},
           {from: ['/docs', '/docs/overview'], to: '/docs/overview/introduction'},
           {from: ['/docs/intro', '/docs/quick-start', '/docs/features', '/docs/overview/features', '/docs/guides/life-automation', '/docs/guides/meta-capability'], to: '/docs/overview/introduction'},
           {from: ['/docs/guides/programmable-skills', '/docs/guides/extensible-skills', '/docs/skills/extensible-skills', '/docs/guides/claude-skills-deep-dive', '/docs/guides/self-improving-skills', '/docs/skills/extensible/self-improving-skills', '/docs/skills/extensible/skill-generation', '/docs/skills/extensible/extensible-skills-guide', '/docs/guides/agent-skills-extensibility-analysis'], to: '/docs/skills/extensible/extensible-skills'},

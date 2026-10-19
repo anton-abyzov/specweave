@@ -1,5 +1,6 @@
 ---
-title: "SpecWeave vs GitHub Spec Kit: what happens after the spec"
+title: "SpecWeave vs GitHub Spec Kit: a Spec Kit alternative with handoff"
+slug: /compare/specweave-vs-github-spec-kit
 description: "GitHub Spec Kit and SpecWeave 3.0 compared: where they overlap, how they differ after the spec is written, and what happens when you switch from Claude Code to Codex mid-feature."
 keywords: [github spec kit, spec kit, spec kit vs specweave, spec kit alternative, speckit, specify cli, spec kit claude code, spec kit codex, spec-driven development]
 sidebar_position: 5
