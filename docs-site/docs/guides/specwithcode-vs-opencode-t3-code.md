@@ -1,6 +1,6 @@
 ---
-title: "SpecWithCode vs OpenCode, T3 Code and cloud agents"
-description: "How SpecWithCode compares with OpenCode, T3 Code and cloud coding agents: what runs the agent, where your code runs, subscription use, other machines, apps and price."
+title: "SpecWithCode vs T3 Code and OpenCode"
+description: "SpecWithCode compared with OpenCode, T3 Code and cloud coding agents: what runs the agent, where code runs, subscriptions, other machines and price."
 slug: /compare/specwithcode-vs-opencode-t3-code
 keywords: [opencode alternative, t3 code alternative, codex cloud alternative, claude max for coding agents, local coding agents, specwithcode]
 ---

@@ -63,4 +63,4 @@ A rule of thumb: if someone else will continue the work, including you next week
 
 - [Quick start](/docs/getting-started)
 - [How it works](/docs/overview/how-it-works)
-- [SpecWeave vs Spec Kit](/docs/guides/specweave-vs-speckit)
+- [SpecWeave vs Spec Kit](/docs/compare/specweave-vs-github-spec-kit/)

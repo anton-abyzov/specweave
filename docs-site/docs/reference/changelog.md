@@ -44,7 +44,16 @@ The current release is **SpecWeave 3.1.0**, published 17 October 2026. Install o
 
 ## SpecWithCode releases
 
-SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.44, published 18 October 2026.
+SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.50, published 18 October 2026.
+
+### 1.0.45 to 1.0.50, 18 October 2026
+
+- **Updates.** New releases show within minutes and install from the update button; a stopped update agent is shown.
+- **Full access workers.** Workers started by a Full access coordinator stay on Full access and no longer wait on approvals.
+- **Connections.** Add, turn off, remove and undo MCP servers.
+- **Chrome.** Threads can share a Chrome profile, and an agent can use Chrome paired on another machine of the fleet.
+- **Threads.** Shell code blocks in replies run inline, and thread images open in a viewer beside the thread.
+- **Linux workers.** An own-VPS Linux worker installs and shows up in the fleet, and installing the service from the npm package pins that version.
 
 ### 1.0.44, 18 October 2026
 
