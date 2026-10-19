@@ -1,0 +1,46 @@
+{
+  "video": "video/narration/work/agent-result-walkthrough/silent-extended.mp4",
+  "out": "docs-site/static/img/studio/agent-driven-demo.mp4",
+  "vtt": "docs-site/static/img/studio/agent-driven-demo.vtt",
+  "work": "video/narration/work/agent-result-walkthrough",
+  "lines": [
+    {
+      "start": 0.3,
+      "end": 6.0,
+      "text": "Recorded run / 7 Oct 2026. Ask the agent for the result.",
+      "say": "Recorded run, the seventh of October, twenty twenty-six. Ask the agent for the result."
+    },
+    {
+      "start": 6.4,
+      "end": 12.11,
+      "text": "The agent changed one file and verified its exact contents."
+    },
+    {
+      "start": 12.51,
+      "end": 19.29,
+      "text": "Expand the recorded work to inspect the actual tool and its successful output."
+    },
+    {
+      "start": 19.69,
+      "end": 26.42,
+      "text": "The recorded command returned exit code zero. SpecWithCode retained the evidence.",
+      "say": "The recorded command returned exit code zero. Spec With Code retained the evidence."
+    },
+    {
+      "start": 26.82,
+      "end": 33.96,
+      "text": "Inspect the recorded file change in the browser."
+    },
+    {
+      "start": 34.3,
+      "end": 41.5,
+      "text": "Switching UI demonstration / no provider turn. Review the warning before changing providers.",
+      "say": "Switching U I demonstration, with no provider turn. Review the warning before changing providers."
+    },
+    {
+      "start": 41.85,
+      "end": 49.85,
+      "text": "Prompt caches and native runtime state do not transfer between providers; portable chat context is passed."
+    }
+  ]
+}

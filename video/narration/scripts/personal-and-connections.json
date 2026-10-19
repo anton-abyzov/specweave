@@ -1,0 +1,67 @@
+{
+  "video": "video/narration/work/personal-and-connections/silent-source.mp4",
+  "out": "docs-site/static/video/studio-projects/personal-and-connections.mp4",
+  "vtt": "docs-site/static/video/studio-projects/personal-and-connections.vtt",
+  "work": "video/narration/work/personal-and-connections",
+  "lines": [
+    {
+      "start": 0.3,
+      "end": 7.32,
+      "text": "This Personal project uses app-managed storage and starts without a Git repository."
+    },
+    {
+      "start": 7.72,
+      "end": 14.67,
+      "text": "Personal projects keep the same project-specific memory, routines and usage views."
+    },
+    {
+      "start": 15.07,
+      "end": 21.95,
+      "text": "Its execution device owns the storage. Extra folders and repositories are optional."
+    },
+    {
+      "start": 22.35,
+      "end": 29.32,
+      "text": "Add an existing synthetic folder and save its access grant. This does not move the folder."
+    },
+    {
+      "start": 29.72,
+      "end": 36.66,
+      "text": "A repository URL can coexist with that folder. Associate the owned local checkout before saving.",
+      "say": "A repository U R L can coexist with that folder. Associate the owned local checkout before saving."
+    },
+    {
+      "start": 37.06,
+      "end": 43.96,
+      "text": "Match checks the checkout's actual remote identity. This walkthrough performs no network clone."
+    },
+    {
+      "start": 44.36,
+      "end": 51.27,
+      "text": "Save a local MCP command separately. This example is an owned, inert discovery fixture.",
+      "say": "Save a local M C P command separately. This example is an owned, inert discovery fixture."
+    },
+    {
+      "start": 51.52,
+      "end": 58.7,
+      "text": "Check discovers MCP tools. It does not verify a Gmail, Calendar or other external service account.",
+      "say": "Check discovers M C P tools. It does not verify a Gmail, Calendar or other external service account."
+    },
+    {
+      "start": 58.86,
+      "end": 66.1,
+      "text": "Choose and save exactly the tools this project may use. Calls still follow SpecWithCode's approval rules.",
+      "say": "Choose and save exactly the tools this project may use. Calls still follow Spec With Code's approval rules."
+    },
+    {
+      "start": 66.42,
+      "end": 73.3,
+      "text": "Revoke removes future access. Restoring requires a new discovery check and fresh tool grants."
+    },
+    {
+      "start": 73.7,
+      "end": 81.48,
+      "text": "The command runs as the device's user. No external account or AI provider was contacted in this walkthrough."
+    }
+  ]
+}
