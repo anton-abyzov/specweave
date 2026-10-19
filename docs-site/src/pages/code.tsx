@@ -191,7 +191,7 @@ export default function Code() {
             <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for Mac</a>
             <a className="wv-btn wv-btn--secondary wv-btn--lg" href="#workflow">See how it works</a>
           </div>
-          <p className={styles.requirements}>Version {release.version}, {release.size}. Apple silicon, macOS 13 or later, early access. Signed with Developer ID and notarized by Apple. Linux machines can join as workers. <Link className="wv-link" to="/docs/reference/changelog#specwithcode-releases">What is new in {release.version}</Link></p>
+          <p className={styles.requirements}>Version {release.version}, {release.size}. Apple silicon, macOS 13 or later, early access. Signed with Developer ID and notarized by Apple. Linux machines can join as workers. <Link className="wv-link" to="/docs/reference/changelog#specwithcode-releases">What is new in {release.version}</Link> · <Link className="wv-link" to="/code/download/">Download and install steps</Link></p>
           <div className={clsx('wv-note', styles.qualification)}>
             <Info {...icon} />
             <p><strong>Cloud models still receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>
