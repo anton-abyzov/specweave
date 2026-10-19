@@ -1,17 +1,25 @@
 /**
- * Stop hook handler — the `/sw:auto` loop driver, and nothing else (Stop
- * fires on every turn; handoff automation lives in PreCompact).
+ * Stop hook handler — the `/sw:auto` loop driver, plus a one-time close
+ * reminder for ordinary sessions (Stop fires on every turn; handoff automation
+ * lives in PreCompact).
  *
  * Decision table (any throw short-circuits to `{}` so ordinary sessions are
  * never trapped):
  *
- *   no auto-mode.json | active !== true          -> reset counter;  {}
+ *   no auto-mode.json | active !== true          -> reset counter;  close reminder below
+ *   every auto increment completed/abandoned     -> reset;          {}
  *   stale session (auto.maxSessionAge, 7200 s)   -> reset;          {}
  *   turns > auto.maxTurns (default 20)           -> reset;          {}   // safety stop
  *   stop_hook_active + no progress for 3 turns   -> reset;          {}   // loop guard
  *   no increment to work on                      -> reset;          {}
  *   0 pending tasks AND all ACs satisfied        -> reset;          block: all_complete_needs_closure
  *   otherwise (work remains)                     -> counter + 1;    block: <P> task(s) / <A> AC(s) remain
+ *
+ * Close reminder (no auto session): `task done`/`skip` leaves a marker in
+ * `.specweave/state/close-pending.json` when an increment's last task turns
+ * terminal. The first stop of each session after that blocks once with the
+ * close chain; the session is recorded so it is never asked again. Entries go
+ * once the increment is closed, gets new open tasks, or is a day old.
  *
  * Output shapes: pass = `{}`; block = top-level `decision:"block"` + `reason`.
  *
@@ -27,6 +35,12 @@ import { logHook, readActiveIncrements, readJsonSafe } from './utils.js';
 import { loadTaskBoard } from '../../tasks/task-board.js';
 import { hasTasksFile } from '../../tasks/tasks-source.js';
 import { readSpecAcs, deriveAcStatus } from '../../tasks/verify-runner.js';
+import {
+  CLOSE_PENDING_MAX_AGE_MS,
+  closeChain,
+  readClosePending,
+  writeClosePending,
+} from '../../increment/close-pending.js';
 
 const TURNS_FILE = '.stop-auto-turns';
 
@@ -124,6 +138,62 @@ function computeRemaining(
   return { pendingTasks, pendingAcs, unresolvedIds };
 }
 
+/** Statuses after which there is nothing left to work on or close. */
+const CLOSED_STATUSES = new Set(['completed', 'abandoned', 'archived', 'cancelled']);
+
+function isClosed(dir: string): boolean {
+  const status = readJsonSafe<{ status?: unknown }>(path.join(dir, 'metadata.json'))?.status;
+  return typeof status === 'string' && CLOSED_STATUSES.has(status);
+}
+
+/** Sessions remembered per increment; enough for a day of threads in one folder. */
+const MAX_NUDGED_SESSIONS = 50;
+
+/**
+ * Outside auto mode: remind this session, once, to close an increment whose
+ * last task was just finished. The wording is conditional because sessions
+ * in one folder share the marker and only the one that did the work should act.
+ */
+function closeReminder(input: Parameters<HandlerFn>[0], context: HookContext): ReturnType<typeof pass> {
+  const { projectRoot } = context;
+  const pending = readClosePending(projectRoot);
+  const ids = Object.keys(pending);
+  if (ids.length === 0) return pass();
+  const session =
+    (typeof input.session_id === 'string' && input.session_id) ||
+    (typeof input.transcript_path === 'string' && input.transcript_path) ||
+    'unknown-session';
+  const now = Date.now();
+  const due: string[] = [];
+  let changed = false;
+  for (const id of ids) {
+    const entry = pending[id];
+    const dir = findIncrementDir(projectRoot, id);
+    const at = Date.parse(entry.at);
+    const stale = !Number.isFinite(at) || now - at > CLOSE_PENDING_MAX_AGE_MS;
+    // A task added after the finish reopens the work; the next `task done` re-marks it.
+    if (!dir || stale || isClosed(dir) || computeRemaining(projectRoot, [id]).pendingTasks > 0) {
+      delete pending[id];
+      changed = true;
+      continue;
+    }
+    if (entry.nudged?.includes(session)) continue;
+    entry.nudged = [...(entry.nudged ?? []), session].slice(-MAX_NUDGED_SESSIONS);
+    changed = true;
+    due.push(id);
+  }
+  if (changed) writeClosePending(projectRoot, pending);
+  if (due.length === 0) return pass();
+  logHook(context, 'stop', `close reminder: ${due.join(', ')}`, 'block');
+  const steps = due.map((id) => closeChain(id)).join('; and ');
+  return stopBlock(
+    `${due.join(', ')}: every task is done but the increment is still open. ` +
+      `If this session did that work, close it now, without asking: ${steps}. ` +
+      'If a close gate stops you (verify fails, a check only the user can do), say which in your reply. ' +
+      'If it is not your increment, ignore this.',
+  );
+}
+
 /** The loop is ending under an auto session: reset the counter and let Claude stop. */
 function exitLoop(context: HookContext, why: string): ReturnType<typeof pass> {
   resetTurns(context.stateDir);
@@ -138,7 +208,7 @@ export const handle: HandlerFn = async (input, context) => {
     const session = fs.existsSync(sessionPath) ? readJsonSafe(sessionPath) : null;
     if (!session || session.active !== true) {
       resetTurns(stateDir);
-      return pass();
+      return closeReminder(input, context);
     }
 
     const config = readJsonSafe<{ auto?: { maxSessionAge?: number; maxTurns?: number } }>(configPath);
@@ -151,7 +221,11 @@ export const handle: HandlerFn = async (input, context) => {
       return exitLoop(context, `safety stop: turns ${state.turns} > auto.maxTurns ${maxTurns}`);
     }
 
-    const incrementIds = resolveIncrementIds(session, projectRoot);
+    // A closed increment has nothing left to loop on, even while the marker still names it.
+    const incrementIds = resolveIncrementIds(session, projectRoot).filter((id) => {
+      const dir = findIncrementDir(projectRoot, id);
+      return !dir || !isClosed(dir);
+    });
     if (incrementIds.length === 0) return exitLoop(context, 'no increment to work on');
 
     const { pendingTasks, pendingAcs, unresolvedIds } = computeRemaining(projectRoot, incrementIds);
