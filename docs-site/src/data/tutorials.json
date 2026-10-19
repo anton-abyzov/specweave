@@ -1860,7 +1860,7 @@
       "title": "Run your first task with Cursor",
       "outcome": "You end with Cursor having planned, built and tested one change in your repository.",
       "beats": [
-        "Set up",
+        "Sign in and pick a Grok model",
         "One real task",
         "The result"
       ],
