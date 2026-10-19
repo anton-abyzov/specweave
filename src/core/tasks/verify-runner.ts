@@ -37,7 +37,12 @@ export interface VerifyReport {
   skipped: Array<{ id: string; by?: string; reason?: string }>;
   /** Ledger lines that could not be parsed (BOM/CRLF are tolerated; this counts real junk). */
   ledgerMalformed: number;
+  /** Why verify passed with no commands to run (`specweave verify --reason`). */
+  reason?: string;
 }
+
+/** Message (and verify.md line) when there is nothing to run. */
+export const NO_COMMANDS_MESSAGE = 'no test commands configured';
 
 export interface AcEntry {
   id: string;
@@ -130,6 +135,8 @@ export interface RunVerifyOptions {
   timeoutMs?: number;
   leaseHours?: number;
   onCommand?: (cmd: string) => void;
+  /** Accept an empty command list; recorded in verify.json as `reason`. */
+  reason?: string;
 }
 
 export interface RunVerifyResult {
@@ -160,7 +167,10 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
   // when every task covering it is done in the ledger. Specs with no AC lines
   // at all stay non-blocking (legacy increments); they are surfaced as a
   // notice by the closure gate instead.
-  const commandsOk = results.every((r) => r.exit === 0);
+  // An empty command list verifies nothing, so it fails unless a reason is
+  // recorded (`specweave verify --reason "<why>"`).
+  const reason = opts.reason?.trim() || undefined;
+  const commandsOk = results.length > 0 ? results.every((r) => r.exit === 0) : reason !== undefined;
   const acsOk = acs.length === 0 || acs.every((a) => a.done);
 
   const report: VerifyReport = {
@@ -174,6 +184,7 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
       .filter((t) => t.state.status === 'skipped')
       .map((t) => ({ id: t.id, by: t.state.by, reason: t.state.note })),
     ledgerMalformed: board.fold.malformed,
+    ...(reason ? { reason } : {}),
   };
 
   const reportsDir = path.join(incrementDir, 'reports');
@@ -194,7 +205,10 @@ export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResul
   L.push('');
   L.push('## Commands');
   L.push('');
-  if (results.length === 0) L.push('_No verification commands found. Set `testing.commands` in .specweave/config.json._');
+  if (results.length === 0) {
+    L.push(`_${NO_COMMANDS_MESSAGE}. Set \`testing.commands\` in .specweave/config.json._`);
+    if (report.reason) L.push('', `Accepted without commands — reason: ${report.reason}`);
+  }
   for (const r of results) {
     L.push(`### \`${r.cmd}\` → exit ${r.exit} (${Math.round(r.ms / 1000)}s)`);
     L.push('');

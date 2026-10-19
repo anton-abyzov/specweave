@@ -160,7 +160,8 @@ describe('e2e: complete separates a passing check from real warnings', () => {
     expect(sw('task', 'skip', 'T-02', '--reason', 'not needed').code).toBe(0);
     const specPath = path.join(workDir, '.specweave', 'increments', INC, 'spec.md');
     fs.writeFileSync(specPath, fs.readFileSync(specPath, 'utf-8').replace(/^- \[ \] AC-/gm, '- [x] AC-'));
-    expect(sw('verify', INC).code).toBe(0);
+    // `init --quick` writes no testing.commands and verify refuses an empty list.
+    expect(sw('verify', INC, '--cmd', 'echo ok').code).toBe(0);
   }
 
   it('does not print the verify PASS under the warnings header', () => {

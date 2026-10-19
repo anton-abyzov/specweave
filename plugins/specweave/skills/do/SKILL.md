@@ -19,7 +19,7 @@ hold, and notes left for you. No increment yet? Run sw-increment first.
 ## The loop
 
 1. `specweave task next` prints the next claimable task with its AC text.
-2. `specweave task claim T-03`. Exit 3: someone holds it (your own earlier claim from
+2. `specweave task claim T-03 --line "Writing the ledger fold"`. Exit 3: someone holds it (your own earlier claim from
    a crashed session: say so, then `--force`); 4: its Files overlap a live claim;
    6: its dependencies are not done. Otherwise pick another. Never edit before claiming.
 3. Implement inside that task's `Files` only. Need another file? Claim the task that
@@ -30,13 +30,17 @@ hold, and notes left for you. No increment yet? Run sw-increment first.
    project's `testing` config or conventions require them): check the AC end to end,
    the way a user would hit it.
 5. Commit with the increment id first: `git commit -m "0042: fold the ledger"`.
-6. `specweave task done T-03 --run "npm run test:e2e -- double-claim"`. Exit 5: the
-   command failed and the task stays open. No `Test`? `--evidence "<sha> + what you checked"`.
+6. `specweave task done T-03 --run "npm run test:e2e -- double-claim" --line "Wrote the ledger fold" --link <PR URL>`.
+   Exit 5: the command failed and the task stays open. No `Test`? `--evidence "<sha> + what you checked"`.
+   `--line` is the card text (one line, past tense when done, at most 100 characters);
+   `--link` is the PR, report or artifact behind it.
 7. Stuck: `specweave task block T-03 --reason "<what is missing>"`. Not needed:
    `specweave task skip T-03 --reason "<why>"`. Then back to 1.
 
 Commands take the increment id last (`specweave task next 0042`) when more than one
-increment is active. `specweave task list` shows the whole board.
+increment is active. `specweave task list` shows the whole board. For a status, print
+`specweave cards --md`: one `✓ / ✱ / ○ text (link)` line per task. Work with no
+increment: `specweave card add "<text>"`, then `card start|done|wait C-01`.
 
 ## Unattended (auto mode)
 
@@ -105,7 +109,7 @@ $line = '{"t":"T-01","e":"done","by":"codex@win","at":"2026-09-02T11:30:00Z","ev
 
 PowerShell never uses `>>` here: it writes UTF-16 and every other tool fails to read it.
 Events: `claim`, `done` (needs `evidence`), `release`, `block` and `skip` (both need
-`note`), for example
+`note`); any of them may carry `"line"` (card text) and `"link"`, for example
 `{"t":"T-02","e":"skip","by":"codex@mbp","at":"2026-09-02T12:00:00Z","note":"covered by T-01"}`.
 `by` is `SPECWEAVE_AGENT` if set, else `<tool>@<host>`. Unattended or in lanes, follow
 the same steps by hand: there is no hook and no session file.

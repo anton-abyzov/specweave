@@ -16,6 +16,8 @@ commands=(
     'abandon:Abandon an increment'
     'complete:Complete one or more increments (triggers GitHub/JIRA/ADO sync)'
     'task:Task ledger\: list | next | claim | done | release | block | skip | render | whoami'
+    'card:Cards\: add "<text>" | start <id> | done <id> | wait <id> | list. T-NN ids alias `task`; C-NN cards live in .specweave/cards/<branch>.jsonl'
+    'cards:Print the card checklist\: a header, a blank line, then one ✓ / ✱ / ○ line per card with its link'
     'verify:'
     'review:Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md'
     'skills:List the project'\''s SpecWeave skills, or enable/disable optional ones (grill-me, glossary, sync, project, jev)'
@@ -135,6 +137,27 @@ _specweave() {
                         '--reason[Reason (required for skip / block)]' \
                         '--all-mine[With `release`\: release every task claimed by this agent]' \
                         '--write[With `render`\: refresh a legacy tasks.md from the ledger]' \
+                        '--line[Card text for claim/done/block (max 100 chars, longer text is truncated)]' \
+                        '--link[Card link for claim/done/block (PR URL, report path, artifact URL)]' \
+                        '--json[Machine-readable output]' \
+                        '--workspace[Select the planning workspace explicitly]' \
+                        '--help[Show help]'
+                    ;;
+                card)
+                    _arguments \
+                        '--line[Card text (max 100 chars)]' \
+                        '--link[Card link (PR URL, report path, artifact URL)]' \
+                        '--evidence[Evidence for `done`]' \
+                        '--run[With `done` on a T-NN card\: run <cmd>, exit 0 required]' \
+                        '--reason[Why the card waits (`wait`)]' \
+                        '--force[Override a live claim (T-NN cards)]' \
+                        '--json[Machine-readable output]' \
+                        '--workspace[Select the planning workspace explicitly]' \
+                        '--help[Show help]'
+                    ;;
+                cards)
+                    _arguments \
+                        '--md[Markdown checklist (the default output)]' \
                         '--json[Machine-readable output]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
@@ -143,6 +166,7 @@ _specweave() {
                     _arguments \
                         '--cmd[Command to run (repeatable; overrides config/auto-detection)]' \
                         '--json[Print the verify report as JSON]' \
+                        '--reason[Pass with no test commands configured; the reason is recorded in verify.json]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
