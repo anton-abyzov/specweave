@@ -902,6 +902,82 @@
       ]
     },
     {
+      "slug": "specwithcode-browser",
+      "product": "specwithcode",
+      "title": "One Chrome extension for every agent",
+      "seoTitle": "SpecWithCode Browser: one Chrome extension for every agent",
+      "summary": "A real run of SpecWithCode with SpecWithCode Browser 1.0.1 from the Chrome Web Store: Settings, Chrome links to the store, the extension pairs a Chrome profile named Work with a pairing code, GitHub Copilot opens greet-app's demo page in that Chrome, types Ada and reads back Hello, Ada, Codex does the same with Grace in a tab of its own, and Pause in the extension stops every agent from using the profile.",
+      "seoDescription": "Install SpecWithCode Browser from the Chrome Web Store, pair a Chrome profile, and watch GitHub Copilot and Codex use the same extension.",
+      "outcome": "You end with one paired Chrome profile that every agent in SpecWithCode can use, in tabs of their own, and a Pause button that stops them all.",
+      "prerequisites": [
+        "SpecWithCode for Mac",
+        "Google Chrome",
+        "a signed-in coding agent (GitHub Copilot and Codex in this video)"
+      ],
+      "testedOn": "SpecWithCode built from main after 1.0.50, SpecWithCode Browser 1.0.1, 19 October 2026",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/specwithcode-browser.mp4",
+        "poster": "/video/tutorials/specwithcode-browser.jpg",
+        "captionsVtt": "/video/tutorials/specwithcode-browser.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 69.8,
+        "uploadDate": "2026-10-19",
+        "publishedAt": "2026-10-19T05:53:00Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will see"
+          },
+          {
+            "start": 5.9,
+            "title": "Install from the Chrome Web Store"
+          },
+          {
+            "start": 14.18,
+            "title": "Pair a Chrome profile"
+          },
+          {
+            "start": 25.22,
+            "title": "GitHub Copilot uses your Chrome"
+          },
+          {
+            "start": 41.86,
+            "title": "Codex uses the same extension"
+          },
+          {
+            "start": 53.68,
+            "title": "Stay in control"
+          },
+          {
+            "start": 63.8,
+            "title": "Get SpecWithCode Browser"
+          }
+        ]
+      },
+      "steps": [
+        "Open Settings, Chrome and click Add to Chrome: it opens SpecWithCode Browser in the Chrome Web Store, and Chrome keeps it up to date.",
+        "Click Show pairing code and copy it.",
+        "In Chrome, click the SpecWithCode icon, paste the code, name the profile (Work in this video) and click Pair this profile.",
+        "Start a chat with any provider and ask it to use your Chrome. It opens its own tab in the blue SpecWithCode tab group, and each Chrome step shows in the chat.",
+        "Other chats and providers use the same extension, each in tabs of its own.",
+        "Drag a tab out of the group to take it back, or click Pause in the extension so no agent can use the profile."
+      ],
+      "transcript": "captions",
+      "note": "Recorded headlessly in one take on a private SpecWithCode server built from main (the Chrome Web Store install, GitHub Copilot over http and the popup computer name), with a disposable home and a sample repo, 19 October 2026. SpecWithCode Browser 1.0.1 came from the Chrome Web Store and ran in a separate headless Chrome profile; headless Chrome has no toolbar or tab strip, so the popup is shown as a zoomed tab and the tab group is described rather than shown. GitHub Copilot ran Claude Sonnet 5.5 and Codex ran GPT-6.1-Sol. Off camera, the welcome wizard was finished and greet-app was added with Full access. The pairing code is blurred. Agent waits are sped up or cut where the video says so. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Get SpecWithCode Browser",
+        "to": "https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb"
+      },
+      "guide": "/docs/studio/browser",
+      "related": [
+        "agents-use-a-browser",
+        "start-specwithcode"
+      ]
+    },
+    {
       "slug": "projects-and-threads",
       "product": "specwithcode",
       "title": "Run a project with a coordinator and workers",
@@ -1822,6 +1898,7 @@
         "add-a-machine",
         "finish-a-thread",
         "agents-use-a-browser",
+        "specwithcode-browser",
         "agents-use-your-mac-and-chrome"
       ]
     },

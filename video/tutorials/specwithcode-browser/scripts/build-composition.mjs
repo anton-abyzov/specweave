@@ -1,0 +1,512 @@
+// Build the HyperFrames composition and caption files for an app tutorial with terminal beats.
+// Based on handoff-claude-to-codex/scripts/build-composition.mjs (CLI tutorials). App beats use the framed-window
+// layout of start-specwithcode/scripts/build-composition.mjs: footage sits inside a rounded wv-window card with
+// margins (the largest box of the shot's aspect inside 1280x720), the step chip and speed badge above it, a
+// known-issue note and the captions below it, so nothing covers app UI. An app beat is a list of shots, each with
+// `aspect`, `segments` [srcStart, srcEnd, rate] in take.mp4 (`fit` on the beat's last one fills the beat), camera
+// keyframes {src, x, y, w} (h = w / aspect, crops end on panel edges), `chip` (optional `chipAt`) and `note`.
+// Rates: 0.75x-1.15x carry no badge; >=1.5x shows "Sped up", below 0.75x (only down to minRate) "Slowed to".
+// A hold segment [src, src, "hold", seconds|"fit"] shows the take's frame at src as a still image (extracted with
+// ffmpeg into hyperframes/assets/stills/) with a "Still frame" badge, for a screen where nothing moves.
+// Usage: node build-composition.mjs <episodeDir> <outDir> [slug]
+// Reads <episodeDir>/edit.json, captures/session.json (real command output), vo-timing/*.json (ElevenLabs
+// character timings turned into cue and word times) and the VO WAVs in hyperframes/assets/media (for the
+// pause snap). Writes <episodeDir>/hyperframes/index.html, <outDir>/<slug>.en.vtt, .chapters.vtt and timeline.json.
+//
+// Rules this file enforces (see ../../CLI-PIPELINE.md):
+// - terminal: JetBrains Mono 28 px, 42 px rows (1.5), wrapped at termCols on word boundaries; the card grows
+//   with its content up to visibleRows, then scrolls by whole rows inside a clip box (no half rows);
+// - every on-screen event is anchored to a beat, a caption chunk or a spoken word, never to a fixed time;
+// - caption cues start at the nearest pause found by ffmpeg silencedetect (-40 dB, 0.18 s), clamped to ±0.4 s.
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { basename, resolve, join } from "node:path";
+
+const [ep, outDir, slugArg] = process.argv.slice(2);
+if (!ep || !outDir) { console.error("usage: build-composition.mjs <episodeDir> <outDir> [slug]"); process.exit(2); }
+const SLUG = slugArg ?? basename(resolve(ep));
+const edit = JSON.parse(readFileSync(`${ep}/edit.json`, "utf8"));
+// This episode has no terminal beats, so captures/session.json is optional.
+const session = existsSync(`${ep}/captures/session.json`) ? JSON.parse(readFileSync(`${ep}/captures/session.json`, "utf8")) : { shots: [], specweave: "" };
+const vo = Object.fromEntries(edit.beats.map((b) => [b.id, JSON.parse(readFileSync(`${ep}/vo-timing/${b.id}.json`, "utf8"))]));
+const r3 = (n) => Math.round(n * 1000) / 1000;
+const segDur = (seg) => (seg[2] === "hold" ? seg[3] : (seg[1] - seg[0]) / seg[2]);
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const keepTogether = (s) => s.replace(/Claude Code/g, "Claude Code");
+const codeMarks = (s) => keepTogether(esc(s)).replace(/`([^`]+)`/g, "<code>$1</code>");
+const COLS = edit.termCols, VIS = edit.visibleRows, FONT = edit.termFont ?? 28, ROW = Math.round(FONT * 1.5), PROMPT = "greet-app % ";
+
+// ── Beat times ─────────────────────────────────────────────────────────────
+let t = 0;
+const beats = edit.beats.map((b) => {
+  const voOffset = b.voOffset ?? edit.voOffset, tail = b.tail ?? edit.tailAfterVo;
+  const dur = r3(voOffset + vo[b.id].duration + tail + (b.extra ?? 0));
+  const out = { ...b, voOffset, start: r3(t), dur };
+  t += dur;
+  return out;
+});
+const total = r3(t);
+const beatById = Object.fromEntries(beats.map((b) => [b.id, b]));
+for (const b of beats) if (b.captionTop) throw new Error(`${b.id}: captionTop is gone; captions sit below the window`);
+
+// ── Pause snap for caption cues ───────────────────────────────────────────
+function silenceEnds(id) {
+  const wav = `${ep}/hyperframes/assets/media/${id}.wav`;
+  if (!existsSync(wav)) throw new Error(`missing ${wav}`);
+  const r = execFileSync("/bin/sh", ["-c", `ffmpeg -hide_banner -nostats -i "${wav}" -af silencedetect=n=-40dB:d=0.18 -f null - 2>&1`], { encoding: "utf8" });
+  return [...r.matchAll(/silence_end: ([\d.]+)/g)].map((m) => Number(m[1]));
+}
+const snapped = {};
+for (const b of beats) {
+  const ends = silenceEnds(b.id);
+  snapped[b.id] = vo[b.id].cues.map((c, i) => {
+    if (i === 0) return c.start;
+    let best = c.start, bestD = 0.4001;
+    for (const e of ends) { const d = Math.abs(e - c.start); if (d < bestD) { best = e; bestD = d; } }
+    return r3(best);
+  });
+}
+
+// ── Anchors ──────────────────────────────────────────────────────────────
+function at(a) {
+  const [id, cue, x, y] = a;
+  const b = beatById[id];
+  if (!b) throw new Error(`unknown beat in anchor ${JSON.stringify(a)}`);
+  if (cue === null) return r3(b.start + x);
+  if (typeof x === "string") {
+    const [word, nth = "1"] = x.split("#");
+    const hits = vo[id].words.filter((w) => w[0] === cue && w[1] === word);
+    const w = hits[Number(nth) - 1];
+    if (!w) throw new Error(`word "${x}" not in ${id} chunk ${cue}`);
+    return r3(b.start + b.voOffset + w[2] + (y ?? 0));
+  }
+  return r3(b.start + b.voOffset + snapped[id][cue] + (x ?? 0));
+}
+
+// Wrap like a terminal that breaks at spaces (or after "/"), hard-breaking only a token longer than a row.
+function wrap(line, cols) {
+  const out = [];
+  let rest = line;
+  while (rest.length > cols) {
+    let cut = -1;
+    for (let i = cols; i > cols * 0.45; i--) {
+      if (rest[i] === " ") { cut = i; break; }
+      if (rest[i - 1] === "/") { cut = i; break; }
+    }
+    if (cut < 0) cut = cols;
+    out.push(rest.slice(0, cut).replace(/\s+$/, ""));
+    rest = rest.slice(cut).replace(/^ /, "");
+  }
+  out.push(rest);
+  return out;
+}
+
+const toolLabel = { claude: "Terminal as Claude Code", codex: "Terminal as Codex", ...(edit.toolLabels ?? {}) };
+const toolCode = (tool) => (tool === "claude" || tool === "codex" ? `<code>SPECWEAVE_TOOL=${tool}</code>` : "");
+for (const k of ["title", "outro"]) if (!edit[k]) throw new Error(`edit.json needs "${k}"`);
+const els = [];
+const tl = [];
+let n = 0;
+
+for (const [screenId, screen] of Object.entries(edit.screens ?? {})) {
+  const sb = beats.filter((b) => b.screen === screenId);
+  const s0 = sb[0].start, s1 = r3(sb[sb.length - 1].start + sb[sb.length - 1].dur);
+  const rows = []; // {id, html, at, kind}
+  const events = []; // {at, kind: "count", count, keepTopRow} | {at, kind: "hl", first, last}
+  const hls = [];
+  screen.items.forEach((item, itemIdx) => {
+    const shot = session.shots[item.shot];
+    if (!shot) throw new Error(`shot ${item.shot} missing`);
+    const tCmd = at(item.at);
+    const segs = wrap(PROMPT + shot.cmd, COLS).map((r, i) => (i === 0 ? r.slice(PROMPT.length) : r));
+    const typeDur = r3(Math.min(1.0, shot.cmd.length / 60));
+    const cmdIds = [];
+    const firstCmdRow = rows.length;
+    // The first prompt of a screen is there when the screen opens, like a fresh terminal.
+    const shownAt = itemIdx === 0 ? s0 : tCmd;
+    segs.forEach((seg, i) => {
+      const id = `r${++n}`;
+      cmdIds.push(id);
+      const html = i === 0 ? `<span class="prompt">greet-app %</span> <span class="cmd"></span>` : `<span class="cmd"></span>`;
+      rows.push({ id, html, at: i === 0 ? shownAt : tCmd, kind: "cmd" });
+    });
+    events.push({ at: shownAt, kind: "count", count: firstCmdRow + 1 });
+    events.push({ at: tCmd, kind: "count", count: rows.length });
+    tl.push(`typeCmd(${JSON.stringify(cmdIds)}, ${JSON.stringify(segs)}, ${tCmd}, ${typeDur});`);
+    const lines = shot.out.split("\n");
+    const ranges = item.lines ?? [[0, lines.length - 1]];
+    const tOut0 = r3(tCmd + typeDur + 0.25);
+    let tOut = tOut0;
+    const rowsByLine = {};
+    let prevEnd = -1;
+    const pushElide = () => { rows.push({ id: `r${++n}`, html: "…", at: tOut, kind: "elide" }); tOut = r3(tOut + 0.04); };
+    for (const [a, b] of ranges) {
+      if (a > prevEnd + 1) pushElide();
+      for (let li = a; li <= b; li++) {
+        rowsByLine[li] = [];
+        for (const seg of wrap(lines[li], COLS)) {
+          const idx = rows.length;
+          rows.push({ id: `r${++n}`, html: esc(seg) || "&#8203;", at: tOut, kind: "out" });
+          rowsByLine[li].push(idx);
+        }
+        tOut = r3(tOut + 0.04);
+      }
+      prevEnd = b;
+    }
+    if (prevEnd < lines.length - 1) pushElide();
+    events.push({ at: tOut0, kind: "count", count: rows.length, keepTopRow: item.keepTop ? firstCmdRow : undefined });
+    for (const h of item.hl ?? []) {
+      const idxs = h.lines.flatMap((li) => {
+        if (!rowsByLine[li]) throw new Error(`highlight line ${li} is not shown in shot ${item.shot}`);
+        return rowsByLine[li];
+      });
+      const appear = Math.max(...idxs.map((i) => rows[i].at)) + 0.1;
+      const from = r3(Math.max(at(h.from), appear)), to = at(h.to);
+      if (to - from < 0.5) throw new Error(`highlight in shot ${item.shot} is shorter than 0.5 s`);
+      hls.push({ ids: idxs.map((i) => rows[i].id), from, to });
+      events.push({ at: from, kind: "hl", first: Math.min(...idxs), last: Math.max(...idxs) });
+    }
+  });
+
+  // Card height and scroll, in whole rows. The card grows with its content; past visibleRows it scrolls so the
+  // newest row is in view, keeps the top of a long `cat` in view (keepTop), and brings highlighted rows into view.
+  events.sort((a, b) => a.at - b.at || (a.kind === "count" ? -1 : 1));
+  let count = 0, top = 0, lastTop = 0, lastH = 1;
+  const motion = [];
+  for (const e of events) {
+    if (e.kind === "count") {
+      count = Math.max(count, e.count);
+      top = e.keepTopRow !== undefined ? Math.min(e.keepTopRow, Math.max(0, count - VIS)) : Math.max(0, count - VIS);
+    } else if (e.first < top || e.last >= top + VIS) {
+      top = Math.max(0, Math.min(e.first - 1, count - VIS));
+      if (e.last >= top + VIS) top = e.last - VIS + 1;
+    }
+    const h = Math.min(VIS, Math.max(1, count));
+    if (h !== lastH) { motion.push(`tl.to("#clip-${screenId}", { height: ${h * ROW}, duration: 0.2, ease: "power2.out" }, ${r3(e.at)});`); lastH = h; }
+    if (top !== lastTop) { motion.push(`tl.to("#rows-${screenId}", { y: ${-top * ROW}, duration: 0.3, ease: "power2.inOut" }, ${r3(e.at)});`); lastTop = top; }
+  }
+
+  els.push(`
+      <section id="scr-${screenId}" class="clip stage" data-start="${s0}" data-duration="${r3(s1 - s0)}" data-track-index="1">
+        <div class="tool-label"><span class="dot"></span>${toolLabel[screen.tool] ?? screen.tool}${toolCode(screen.tool)}</div>
+        <div class="window"><div class="viewport"><div class="clipbox" id="clip-${screenId}" data-layout-allow-overflow><div class="rows" id="rows-${screenId}" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
+${rows.map((r) => `          <div class="row ${r.kind}" id="${r.id}">${r.html}</div>`).join("\n")}
+        </div></div></div></div>
+      </section>`);
+  for (const r of rows) {
+    if (r.kind === "cmd") tl.push(`tl.set("#${r.id}", { opacity: 1 }, ${r.at});`);
+    else tl.push(`tl.fromTo("#${r.id}", { opacity: 0 }, { opacity: ${r.kind === "elide" ? 0.5 : 1}, duration: 0.1, ease: "none" }, ${r.at});`);
+  }
+  tl.push(...motion);
+  for (const h of hls) {
+    const sel = h.ids.map((id) => `#${id}`).join(",");
+    tl.push(`tl.to("${sel}", { backgroundColor: "rgba(109,79,181,0.10)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,1)", duration: 0.2, ease: "none" }, ${h.from});`);
+    tl.push(`tl.to("${sel}", { backgroundColor: "rgba(109,79,181,0)", boxShadow: "inset 4px 0 0 0 rgba(109,79,181,0)", duration: 0.2, ease: "none" }, ${r3(h.to - 0.2)});`);
+  }
+}
+
+// ── App beats: framed windows, footage, cameras, chips, notes, speed badges ──
+// Ported from start-specwithcode/scripts/build-composition.mjs (the Weave framed-window look).
+const W = 1920, H = 1080;
+const BOX = { w: 1280, h: 720, top: 112 };
+const BOX_LEFT = (W - BOX.w) / 2;
+const NOTE_TOP = BOX.top + BOX.h + 18;
+const badges = [];
+const timelineShots = [];
+const appBeats = beats.filter((b) => b.kind === "app");
+appBeats.forEach((b, bi) => {
+  const shots = b.shots.map((s) => ({ ...s, segments: s.segments.map((x) => [...x]) }));
+  // A shot may come from another recording (`take`, on the same cue clock with its own `syncOffset`).
+  const takeOf = (s) => s.take ?? edit.take;
+  const flat = shots.flatMap((s, si) => s.segments.map((seg) => ({ seg, si, take: takeOf(s) })));
+  const fixed = flat.slice(0, -1).reduce((a, { seg }) => a + segDur(seg), 0);
+  const last = flat[flat.length - 1].seg;
+  if (last[2] === "hold" && last[3] === "fit") last[3] = r3(b.dur - fixed);
+  else if (last[2] === "fit") last[2] = r3((last[1] - last[0]) / (b.dur - fixed));
+  for (const { seg } of flat) {
+    const [ss, se, rate] = seg;
+    if (rate === "hold") {
+      if (ss !== se || !(seg[3] >= 0.3)) throw new Error(`${b.id}: hold at ${ss} needs equal ends and at least 0.3 s`);
+      continue;
+    }
+    if (!(se > ss)) throw new Error(`${b.id}: empty segment ${ss}-${se}`);
+    if (rate < (b.minRate ?? 0.75)) throw new Error(`${b.id}: rate ${rate} below ${b.minRate ?? 0.75}x at ${ss}`);
+    if (rate > 1.15 && rate < 1.5) throw new Error(`${b.id}: rate ${rate} at ${ss} is a hidden speed-up; use <=1.15 or >=1.5`);
+  }
+  for (let i = 1; i < flat.length; i++) {
+    const prev = flat.slice(0, i).reverse().find((f) => f.take === flat[i].take);
+    if (prev && flat[i].seg[0] < prev.seg[1] - 0.001) throw new Error(`${b.id}: source goes backwards at ${flat[i].seg[0]}`);
+  }
+  const sum = flat.reduce((a, { seg }) => a + segDur(seg), 0);
+  if (Math.abs(sum - b.dur) > 0.02) throw new Error(`${b.id}: segments last ${sum.toFixed(3)} s, beat is ${b.dur} s`);
+  const next = appBeats[bi + 1];
+  if (next && takeOf(next.shots[0]) === flat[flat.length - 1].take && last[1] > next.shots[0].segments[0][0] + 0.001) throw new Error(`${b.id} ends after ${next.id} starts in the source`);
+
+  // Source time -> composition time inside this beat.
+  const map = (src) => {
+    let at = b.start;
+    for (const { seg } of flat) {
+      const [ss, se, rate] = seg;
+      if (rate !== "hold" && src <= se) return r3(at + Math.max(0, src - ss) / rate);
+      at += segDur(seg);
+    }
+    return r3(b.start + b.dur);
+  };
+
+  let at = b.start;
+  let chipText = null, chipStart = null;
+  const chips = [];
+  shots.forEach((s, si) => {
+    const aspect = s.aspect ?? 16 / 9;
+    const ww = aspect >= BOX.w / BOX.h ? BOX.w : BOX.h * aspect;
+    const wh = ww / aspect;
+    const left = (W - ww) / 2, top = BOX.top + (BOX.h - wh) / 2;
+    const shotStart = r3(at);
+    const shotDur = r3(s.segments.reduce((a, seg) => a + segDur(seg), 0));
+    const id = `${b.id}-${si}`;
+    const cls = `cam-${id}`;
+    const take = takeOf(s), sync = s.take ? (s.syncOffset ?? 0) : edit.syncOffset;
+    els.push(`      <div id="win-${id}" class="clip win" data-start="${shotStart}" data-duration="${shotDur}" data-track-index="1" style="left:${r3(left - 12)}px;top:${r3(top - 12)}px;width:${r3(ww + 24)}px;height:${r3(wh + 24)}px"></div>`);
+    s.segments.forEach((seg, i) => {
+      const [ss, se, rate] = seg;
+      const d = r3(segDur(seg));
+      if (rate === "hold") {
+        const still = `assets/stills/${b.id}-${String(ss).replace(".", "_")}.png`;
+        mkdirSync(`${ep}/hyperframes/assets/stills`, { recursive: true });
+        execFileSync("ffmpeg", ["-v", "error", "-y", "-ss", String(r3(ss + sync)), "-i", `${ep}/hyperframes/${take}`, "-frames:v", "1", `${ep}/hyperframes/${still}`]);
+        els.push(`      <img id="v-${id}-${i}" class="clip footage ${cls}" src="${still}" alt="" data-start="${r3(at)}" data-duration="${d}" data-track-index="0">`);
+        badges.push({ start: r3(at), dur: d, label: "Still frame" });
+        at += d;
+        return;
+      }
+      els.push(`      <video id="v-${id}-${i}" class="clip footage ${cls}" src="${take}" muted playsinline data-start="${r3(at)}" data-duration="${d}" data-media-start="${r3(ss + sync)}" data-playback-rate="${rate}" data-track-index="0"></video>`);
+      if (rate >= 1.5 || rate < 0.75) {
+        const label = rate >= 1.5 ? `Sped up ${rate >= 2 ? Math.round(rate) : Math.round(rate * 10) / 10}×` : `Slowed to ${Math.round(rate * 100) / 100}×`;
+        const prev = badges[badges.length - 1];
+        if (prev && prev.label === label && Math.abs(prev.start + prev.dur - at) < 0.01) prev.dur = r3(prev.dur + d);
+        else badges.push({ start: r3(at), dur: d, label });
+      }
+      at += d;
+    });
+    const cams = s.cam ?? [{ src: s.segments[0][0], x: 0, y: 0, w: W }];
+    const camVars = (c) => {
+      const h = c.w / aspect;
+      if (c.x < 0 || c.y < 0 || c.x + c.w > W + 0.5 || c.y + h > H + 0.5) throw new Error(`${id}: camera ${JSON.stringify(c)} (h ${h.toFixed(1)}) leaves the frame`);
+      const sc = ww / c.w;
+      if (sc > 2.65) throw new Error(`${id}: camera ${JSON.stringify(c)} magnifies ${sc.toFixed(2)}x (max 2.65)`);
+      const rad = 6 / sc;
+      const clip = `inset(${r3(c.y)}px ${r3(W - c.x - c.w)}px ${r3(H - c.y - h)}px ${r3(c.x)}px round ${r3(rad)}px)`;
+      return `{ scale: ${r3(sc)}, x: ${r3(left - c.x * sc)}, y: ${r3(top - c.y * sc)}, clipPath: "${clip}" }`;
+    };
+    tl.push(`tl.set(".${cls}", ${camVars(cams[0]).replace(/ }$/, ', transformOrigin: "0 0" }')}, ${shotStart});`);
+    for (const c of cams.slice(1)) {
+      const tc = map(c.src);
+      tl.push(`tl.to(".${cls}", { ...${camVars(c)}, duration: ${c.dur ?? 0.6}, ease: "power2.inOut" }, ${r3(Math.min(tc, shotStart + shotDur - 0.3))});`);
+    }
+    if (s.chip !== undefined && s.chip !== chipText) {
+      const cs = s.chipAt !== undefined ? map(s.chipAt) : shotStart;
+      if (chipText) chips.push({ text: chipText, start: chipStart, end: cs });
+      chipText = s.chip; chipStart = cs;
+    }
+    if (s.note) {
+      const ns = s.note.from !== undefined ? map(s.note.from) : shotStart;
+      const ne = s.note.to !== undefined ? map(s.note.to) : r3(shotStart + shotDur);
+      const nid = `note-${id}`;
+      els.push(`      <div id="${nid}" class="clip note" data-start="${ns}" data-duration="${r3(ne - ns)}" data-track-index="4"><span class="note-inner" id="${nid}-i"><b>${esc(s.note.label ?? edit.noteLabel ?? "Known issue:")}</b> ${codeMarks(s.note.text)}</span></div>`);
+      tl.push(`tl.fromTo("#${nid}-i", { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25, ease: "power2.out" }, ${r3(ns + 0.05)});`);
+    }
+    timelineShots.push({ beat: b.id, shot: si, start: shotStart, dur: shotDur, window: { left: r3(left), top: r3(top), w: r3(ww), h: r3(wh) }, scale: r3(ww / cams[0].w), segments: s.segments, cam: cams });
+  });
+  if (chipText) chips.push({ text: chipText, start: chipStart, end: r3(b.start + b.dur) });
+  chips.forEach((c, ci) => {
+    const cid = `chip-${b.id}-${ci}`;
+    els.push(`      <div id="${cid}" class="clip chip appchip" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="2"><span class="chip-inner" id="${cid}-i">${codeMarks(c.text)}</span></div>`);
+    tl.push(`tl.fromTo("#${cid}-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${r3(c.start + 0.05)});`);
+  });
+  b.chips = chips;
+  b.resolved = flat.map((f) => f.seg);
+});
+badges.forEach((s, i) => {
+  els.push(`      <div id="speed-${i}" class="clip speed" data-start="${s.start}" data-duration="${s.dur}" data-track-index="3"><span class="speed-inner">${s.label}</span></div>`);
+});
+
+// ── Step chips, diff panel and VO per beat ───────────────────────────────
+for (const b of beats) {
+  els.push(`      <audio id="vo-${b.id}" src="assets/media/${b.id}.wav" data-start="${r3(b.start + b.voOffset)}" data-duration="${vo[b.id].duration}" data-track-index="6" data-volume="1"></audio>`);
+  if (b.stepChip) {
+    els.push(`      <div id="chip-${b.id}" class="clip chip" data-start="${b.start}" data-duration="${b.dur}" data-track-index="2"><span class="chip-inner" id="chipi-${b.id}">${codeMarks(b.stepChip)}</span></div>`);
+    tl.push(`tl.fromTo("#chipi-${b.id}", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${r3(b.start + 0.1)});`);
+  }
+  if (b.diffPanel) {
+    const from = at(b.diffPanel.from), to = at(b.diffPanel.to);
+    if (to - from > 2.5) throw new Error(`diff panel in ${b.id} is longer than 2.5 s`);
+    const lines = session.offCameraDiff.split("\n").slice(4);
+    const body = lines.map((l) => `<div class="dl ${l.startsWith("+") ? "add" : l.startsWith("-") ? "del" : ""}">${esc(l) || "&#8203;"}</div>`).join("");
+    els.push(`      <div id="diff-${b.id}" class="clip diffpanel" data-layout-allow-overlap data-start="${from}" data-duration="${r3(to - from)}" data-track-index="3"><div class="diff-inner" id="diffi-${b.id}" data-layout-allow-overlap><div class="diff-head">${codeMarks(b.diffPanel.head)}</div><div class="diff-body">${body}</div></div></div>`);
+    tl.push(`tl.fromTo("#diffi-${b.id}", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${from});`);
+    tl.push(`tl.to("#diffi-${b.id}", { opacity: 0, duration: 0.2, ease: "none" }, ${r3(to - 0.2)});`);
+  }
+}
+
+// ── Cards ────────────────────────────────────────────────────────────────
+const intro = beats[0], outro = beats[beats.length - 1];
+els.push(`
+      <section id="intro" class="clip card" data-start="${intro.start}" data-duration="${intro.dur}" data-track-index="1">
+        <div class="card-inner">
+          <div class="wordmark rise">${edit.wordmark ?? "SpecWeave"}</div>
+          <h1 class="title rise">${codeMarks(edit.title)}</h1>
+          <div class="thread" id="intro-thread"></div>
+          <p class="subtitle rise">${esc((edit.subtitle ?? "A real run of the SpecWeave {version} CLI in a sample repo.").replace("{version}", session.specweave))}</p>
+          <div class="footer rise">spec-weave.com/tutorials</div>
+        </div>
+      </section>`);
+tl.push(`tl.fromTo("#intro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, ${intro.start});`);
+tl.push(`tl.fromTo("#intro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, ${r3(intro.start + 0.2)});`);
+tl.push(`tl.to("#intro .card-inner", { opacity: 0, duration: 0.25, ease: "none" }, ${r3(intro.start + intro.dur - 0.25)});`);
+els.push(`
+      <section id="outro" class="clip card" data-start="${outro.start}" data-duration="${outro.dur}" data-track-index="1">
+        <div class="card-inner">
+          <div class="wordmark rise">${edit.wordmark ?? "SpecWeave"}</div>
+          <div class="outro-l1 rise">${codeMarks(edit.outro.next)}</div>
+          <div class="thread" id="outro-thread"></div>
+          <p class="outro-l2 rise">${esc(edit.outro.note)}</p>
+          <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
+        </div>
+      </section>`);
+tl.push(`tl.fromTo("#outro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, ${outro.start});`);
+tl.push(`tl.fromTo("#outro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, ${r3(outro.start + 0.3)});`);
+
+// ── Captions: snapped cue starts, extended to meet the next cue inside the beat ──
+const caps = [];
+for (const b of beats) {
+  const cues = vo[b.id].cues;
+  cues.forEach((c, i) => {
+    const s = r3(b.start + b.voOffset + snapped[b.id][i]);
+    const end = cues[i + 1] ? r3(b.start + b.voOffset + snapped[b.id][i + 1]) : r3(Math.min(b.start + b.dur, b.start + b.voOffset + c.end + 0.4));
+    caps.push({ start: s, end, text: c.text });
+  });
+}
+// At most two lines of at most 42 characters, broken at the space that balances them best, never inside
+// backticks (a command or file name) or inside "Claude Code".
+function captionLines(text) {
+  const len = (s) => s.replace(/`/g, "").length;
+  if (len(text) <= 42) return [text];
+  let best = null;
+  let inCode = false;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === "`") inCode = !inCode;
+    if (text[i] !== " " || inCode || text.slice(i - 6, i + 5) === "Claude Code") continue;
+    const a = text.slice(0, i), b = text.slice(i + 1), score = Math.max(len(a), len(b));
+    if (!best || score < best.score) best = { a, b, score };
+  }
+  if (!best || best.score > 42) console.warn(`caption needs more than two 42-character lines: ${text}`);
+  return best ? [best.a, best.b] : [text];
+}
+for (const c of caps) {
+  const d = c.end - c.start, plainLen = c.text.replace(/`/g, "").length;
+  if (d < 1 || d > 6) console.warn(`cue ${d.toFixed(2)} s outside 1–6 s: ${c.text}`);
+  if (plainLen > 84) console.warn(`cue longer than two 42-character lines: ${c.text}`);
+}
+caps.forEach((c, i) => {
+  els.push(`      <div id="cap-${i + 1}" class="clip caption" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="5"><span class="pill">${captionLines(c.text).map(codeMarks).join("<br>")}</span></div>`);
+});
+
+const html = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>${esc(edit.title)}</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 400 900; src: url(assets/fonts/schibsted-grotesk-latin.woff2) format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; src: url(assets/fonts/jetbrains-mono-latin.woff2) format("woff2"); }
+      :root {
+        --canvas: #f8f7f9; --panel: #ffffff; --sunken: #efedf2; --ink: #241523; --muted: #675d69; --line: #dedae5;
+        --iris: #6d4fb5; --iris-strong: #4a3678; --iris-tint: #ece6f8; --pass: #1d7348; --fail: #b4232c;
+        --sans: "Schibsted Grotesk", sans-serif; --mono: "JetBrains Mono", monospace;
+        --shadow-window: 0 1px 2px rgba(36, 21, 35, 0.06), 0 12px 32px rgba(36, 21, 35, 0.08);
+      }
+      body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--sans); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--canvas); }
+      .clip { position: absolute; }
+      .card, .stage { inset: 0; background: var(--canvas); }
+      .card-inner { position: absolute; inset: 120px 160px 230px; }
+      .wordmark { font: 700 34px/1 var(--sans); color: var(--ink); letter-spacing: -0.01em; }
+      .title { margin: 170px 0 0; max-width: 1400px; font: 600 92px/1.04 var(--sans); letter-spacing: -0.025em; color: var(--ink); text-wrap: balance; }
+      .thread { height: 4px; width: 0; background: var(--iris); margin-top: 44px; border-radius: 2px; }
+      .subtitle { margin: 40px 0 0; font: 400 36px/1.35 var(--sans); color: var(--muted); }
+      .footer { position: absolute; left: 0; bottom: 0; font: 500 26px/1.2 var(--sans); color: var(--muted); }
+      .outro-l1 { margin-top: 190px; font: 600 72px/1.1 var(--sans); letter-spacing: -0.02em; color: var(--ink); }
+      .outro-l1 code { font: 500 0.86em var(--mono); color: var(--ink); white-space: nowrap; }
+      .outro-l2 { margin: 44px 0 0; max-width: 1300px; font: 400 32px/1.45 var(--sans); color: var(--muted); }
+      .tool-label { position: absolute; right: 140px; top: 60px; font: 600 28px/1.2 var(--sans); color: var(--ink); }
+      .tool-label code { font: 400 22px var(--mono); color: var(--muted); background: var(--sunken); border-radius: 4px; padding: 3px 8px; margin-left: 14px; vertical-align: 2px; }
+      .tool-label .dot { display: inline-block; width: 12px; height: 12px; border-radius: 6px; background: var(--iris); margin-right: 12px; vertical-align: 3px; }
+      .window { position: absolute; left: 140px; right: 140px; top: 136px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-window); padding: 18px; }
+      .viewport { background: var(--sunken); border-radius: 8px; padding: 22px 30px; }
+      .clipbox { height: ${ROW}px; overflow: hidden; margin: 0 -14px; padding: 0 14px; }
+      .rows { will-change: transform; }
+      .row { font: 400 ${FONT}px/${ROW}px var(--mono); height: ${ROW}px; white-space: pre; color: var(--ink); border-radius: 4px; margin: 0 -10px; padding: 0 10px; opacity: 0; background-color: rgba(109,79,181,0); box-shadow: inset 4px 0 0 0 rgba(109,79,181,0); }
+      .row.cmd { font-weight: 500; }
+      .prompt { color: var(--muted); font-weight: 400; }
+      .chip { left: 140px; top: 48px; z-index: 10; }
+      .chip-inner { display: inline-block; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 20px; font: 600 30px/1.25 var(--sans); color: var(--ink); white-space: nowrap; }
+      .chip-inner code { font: 500 0.86em var(--mono); color: var(--iris-strong); }
+      .diffpanel { left: 0; right: 0; top: 300px; z-index: 12; text-align: center; }
+      .diff-inner { display: inline-block; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 2px 6px rgba(36,21,35,0.08), 0 24px 60px rgba(36,21,35,0.16); padding: 24px 32px; }
+      .diff-head { font: 600 30px/1.3 var(--sans); color: var(--ink); margin-bottom: 16px; }
+      .diff-head code { font: 500 0.86em var(--mono); }
+      .diff-body { background: var(--sunken); border-radius: 8px; padding: 16px 24px; }
+      .dl { font: 400 30px/45px var(--mono); white-space: pre; color: var(--ink); }
+      .dl.add { color: var(--pass); } .dl.del { color: var(--fail); }
+      .win { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-window); box-sizing: border-box; }
+      .footage { left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; transform-origin: 0 0; z-index: 2; }
+      .chip.appchip { left: ${BOX_LEFT}px; top: 36px; }
+      .speed { right: ${BOX_LEFT}px; top: 36px; z-index: 10; }
+      .speed-inner { display: inline-block; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 18px; font: 600 28px/1.25 var(--sans); color: var(--muted); }
+      .note { left: 0; right: 0; top: ${NOTE_TOP}px; z-index: 12; text-align: center; }
+      .note-inner { display: inline-block; background: var(--iris-tint); border-left: 4px solid var(--iris); border-radius: 6px; padding: 6px 18px; font: 400 26px/1.3 var(--sans); color: var(--ink); white-space: nowrap; }
+      .note-inner b { font-weight: 700; color: var(--iris-strong); }
+      .caption { left: 0; right: 0; bottom: 30px; z-index: 20; text-align: center; }
+      .caption .pill { display: inline-block; white-space: nowrap; background: rgba(255, 255, 255, 0.96); border: 1px solid var(--line); color: var(--ink);
+        padding: 10px 26px; border-radius: 8px; font: 600 38px/1.28 var(--sans); }
+      .caption code { font: 500 0.86em var(--mono); background: var(--sunken); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="${total}">
+${els.join("\n")}
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // Types a command across its wrapped rows; segs are the row texts after the prompt.
+      function typeCmd(ids, segs, start, dur) {
+        const o = { n: 0 };
+        const els = ids.map((id) => document.querySelector("#" + id + " .cmd"));
+        const total = segs.reduce((a, s) => a + s.length, 0);
+        tl.to(o, { n: total, duration: dur, ease: "none", onUpdate: () => {
+          let left = Math.round(o.n);
+          segs.forEach((s, i) => { els[i].textContent = s.slice(0, Math.max(0, left)); left -= s.length; });
+        } }, start);
+      }
+${tl.map((l) => "      " + l).join("\n")}
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
+`;
+writeFileSync(`${ep}/hyperframes/index.html`, html);
+
+// ── VTT files and timeline ───────────────────────────────────────────────
+mkdirSync(outDir, { recursive: true });
+const ts = (s) => { const ms = Math.round(s * 1000); const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, sec = Math.floor(ms / 1000) % 60; return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}.${String(ms % 1000).padStart(3, "0")}`; };
+const plain = (s) => s.replace(/`/g, "");
+writeFileSync(`${outDir}/${SLUG}.en.vtt`, "WEBVTT\n\n" + caps.map((c, i) => `${i + 1}\n${ts(c.start)} --> ${ts(c.end)}\n${plain(c.text)}\n`).join("\n"));
+const chapters = beats.map((b) => ({ start: b.start, title: b.chapter }));
+writeFileSync(`${outDir}/${SLUG}.chapters.vtt`, "WEBVTT\n\n" + chapters.map((c, i) => `${i + 1}\n${ts(c.start)} --> ${ts(chapters[i + 1]?.start ?? total)}\n${c.title}\n`).join("\n"));
+writeFileSync(`${outDir}/timeline.json`, JSON.stringify({ total, posterAt: edit.posterAt, beats: beats.map(({ id, start, dur, chapter, resolved, chips }) => ({ id, start, dur, chapter, mid: r3(start + dur / 2), ...(resolved ? { segments: resolved, chips } : {}) })), shots: timelineShots, badges, captions: caps }, null, 2) + "\n");
+console.log("total", total, "s;", caps.length, "captions;", beats.map((b) => `${b.id}@${b.start}`).join(" "));
+for (const b of appBeats) console.log(" ", b.id, JSON.stringify(b.resolved));
+for (const s of timelineShots) console.log("   shot", s.beat, s.shot, "at", s.start, "scale", s.scale, "window", JSON.stringify(s.window));
+console.log("  badges", JSON.stringify(badges));
