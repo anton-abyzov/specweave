@@ -26,6 +26,7 @@ import { branchCards, branchCardsPath, currentBranch } from '../tasks/branch-car
 import { readIntentContext } from '../intent/portable-context.js';
 import { resolveHandoffPointer } from './handoff-pointer.js';
 import { latestCheckpointFor } from './session-checkpoint.js';
+import { closeChain, isClosedStatus } from '../increment/close-pending.js';
 
 export const MEMORY_INDEX_PATH = '.specweave/memory/MEMORY.md';
 
@@ -99,7 +100,7 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
   if (memory.length) L.push(...memory);
 
   if (opts.compact && L.length && ids.length) {
-    L.push('Run `specweave pickup` for the next task\'s acceptance criteria, claims and branch state.');
+    L.push('Run `specweave pickup` for the next task\'s acceptance criteria, claims and branch state. When the last task is done, verify and close it in the same session (sw-done).');
   }
   if (!opts.compact && ids.length === 0) {
     const branch = currentBranch(projectRoot);
@@ -141,8 +142,8 @@ function describeFocus(projectRoot: string, dir: string, id: string, agent: stri
       for (const acId of next.acs ?? []) L.push(`  ${acId}: ${byId.get(acId)?.text || '(text not found in spec.md)'}`);
       L.push(`  Files: ${(next.filesAffected ?? []).join(', ') || '-'} | Test: ${next.test ?? '-'}`);
       L.push(`  claim: specweave task claim ${next.id} ${id}`);
-    } else if (!next && counts && counts.total > 0 && counts.done + counts.skipped === counts.total) {
-      L.push(`All tasks done. Next: specweave verify ${id}, then specweave complete ${id}`);
+    } else if (!next && counts && counts.total > 0 && counts.done + counts.skipped === counts.total && !isClosedStatus(status)) {
+      L.push(`All tasks done. Next, without asking: ${closeChain(id)}`);
     }
     const others = board.tasks.filter((t) =>
       (t.state.status === 'claimed' || t.state.status === 'blocked' || t.state.status === 'stale') && t.state.by !== agent);
@@ -168,7 +169,7 @@ function summaryLine(dir: string, id: string, leaseHours: number): string {
     const c = board.counts;
     const pending = Math.max(0, c.total - c.done - c.skipped);
     if (pending === 0) {
-      line += ` (all ${c.total} tasks done — run /sw:done ${id})`;
+      line += ` (all ${c.total} tasks done — run /sw:done ${id} now, without asking)`;
     } else {
       const next = nextTask(board);
       line += ` (${pending}/${c.total} tasks pending${next ? `; next: ${next.id}${next.title ? ' ' + next.title : ''}` : ''})`;

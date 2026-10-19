@@ -1,0 +1,97 @@
+WEBVTT
+
+1
+00:00:00.100 --> 00:00:03.049
+Add another Mac to SpecWithCode with one line.
+
+2
+00:00:03.049 --> 00:00:04.780
+It takes about two minutes.
+
+3
+00:00:06.200 --> 00:00:07.749
+The new Mac makes a line.
+
+4
+00:00:07.749 --> 00:00:11.840
+Your main machine accepts it, over your private Tailscale network.
+
+5
+00:00:13.267 --> 00:00:18.507
+On the new Mac, open SpecWithCode and choose Join my existing machines.
+
+6
+00:00:19.933 --> 00:00:23.273
+SpecWithCode checks that Tailscale is connected.
+
+7
+00:00:23.273 --> 00:00:26.613
+Give this Mac a name, then choose Make the line.
+
+8
+00:00:28.033 --> 00:00:29.001
+Copy the line.
+
+9
+00:00:29.001 --> 00:00:30.730
+Treat it like a password:
+
+10
+00:00:30.730 --> 00:00:32.943
+anyone with it can add this Mac.
+
+11
+00:00:32.943 --> 00:00:36.953
+Once it's pasted on your main machine, choose I pasted it.
+
+12
+00:00:38.367 --> 00:00:39.524
+This Mac is done.
+
+13
+00:00:39.524 --> 00:00:43.607
+Leave SpecWithCode running, and finish on your main machine.
+
+14
+00:00:45.033 --> 00:00:51.153
+On your main machine, open Settings, Connections, and paste the line into Add a machine.
+
+15
+00:00:52.567 --> 00:00:57.820
+When the Mac appears under Your private machines, choose Allow workers on its card.
+
+16
+00:00:57.820 --> 00:01:01.807
+If it doesn't connect on its own, choose Connect machine first.
+
+17
+00:01:03.233 --> 00:01:05.095
+Already set up the new Mac?
+
+18
+00:01:05.095 --> 00:01:08.473
+Use Invite this machine in Settings, Connections.
+
+19
+00:01:09.900 --> 00:01:11.065
+No desktop app?
+
+20
+00:01:11.065 --> 00:01:12.385
+Install from npm.
+
+21
+00:01:12.385 --> 00:01:16.422
+Run specwithcode service install to keep it running.
+
+22
+00:01:16.422 --> 00:01:19.140
+Then run specwithcode fleet invite.
+
+23
+00:01:20.567 --> 00:01:24.169
+Join, make the line, add it, allow workers.
+
+24
+00:01:24.169 --> 00:01:25.007
+That's it.

@@ -1,0 +1,105 @@
+{
+ "voiceId": "0Ki1af67ybTaTu4TNmO8",
+ "modelId": "eleven_v4",
+ "voiceSettings": {
+  "stability": 0.5,
+  "similarity_boost": 0.75,
+  "use_speaker_boost": true,
+  "speed": 1.0
+ },
+ "lines": [
+  {
+   "id": "01-intro",
+   "chunks": [
+    [
+     "Add a second machine.",
+     "Add a second machine."
+    ],
+    [
+     "Both machines need Tailscale, signed in to the same account,",
+     " Both machines need Tailscale, signed in to the same account,"
+    ],
+    [
+     "with MagicDNS and HTTPS certificates turned on.",
+     " with magic D N S and H T T P S certificates turned on."
+    ]
+   ]
+  },
+  {
+   "id": "02-invite",
+   "chunks": [
+    [
+     "On the new machine, here a Mac mini, open Settings, then Connections.",
+     "On the new machine, here a Mac mini, open settings, then connections."
+    ],
+    [
+     "Choose Invite this machine, give it a name, and choose Make the line.",
+     " Choose, invite this machine, give it a name, and choose, make the line."
+    ],
+    [
+     "SpecWithCode publishes itself on the Mac mini's private Tailscale name,",
+     " Spec with code publishes itself on the Mac mini's private Tailscale name,"
+    ],
+    [
+     "never on the public internet.",
+     " never on the public internet."
+    ],
+    [
+     "The line works like a password, so it stays blurred here.",
+     " The line works like a password, so it stays blurred here."
+    ]
+   ]
+  },
+  {
+   "id": "03-add",
+   "chunks": [
+    [
+     "On your main machine, open the same Connections page.",
+     "On your main machine, open the same connections page."
+    ],
+    [
+     "Paste the line under Add a machine, and choose Add machine.",
+     " Paste the line under, add a machine, and choose, add machine."
+    ],
+    [
+     "The main machine checks that the address answers as that Mac,",
+     " The main machine checks that the address answers as that Mac,"
+    ],
+    [
+     "then lists it as reachable. Its address is blurred too.",
+     " then lists it as reachable. Its address is blurred too."
+    ]
+   ]
+  },
+  {
+   "id": "04-allow",
+   "chunks": [
+    [
+     "Pick the most a worker there may do.",
+     "Pick the most a worker there may do."
+    ],
+    [
+     "Version 1.0.47 also asks for a one-time pairing code from the Mac mini,",
+     " Version one point oh point forty-seven also asks for a one-time pairing code from the Mac mini,"
+    ],
+    [
+     "made there beforehand with `specwithcode pair`.",
+     " made there beforehand with spec with code pair."
+    ],
+    [
+     "Then choose Allow workers. The card now reads Allowed: Full access.",
+     " Then choose, allow workers. The card now reads, allowed, full access."
+    ]
+   ]
+  },
+  {
+   "id": "05-outro",
+   "chunks": [
+    [
+     "Next: add a Linux server you rent, with the Linux worker guide.",
+     "Next: add a Linux server you rent, with the Linux worker guide."
+    ]
+   ]
+  }
+ ]
+}

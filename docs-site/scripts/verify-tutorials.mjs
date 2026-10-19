@@ -65,6 +65,12 @@ function verifyTutorial(siteRoot, t, slugs, {probe}) {
   assert(PRODUCTS.includes(t.product), `${label}: unknown product ${t.product}`);
   for (const key of ['title', 'seoTitle', 'summary', 'outcome', 'note']) copy(t[key], `${label}.${key}`);
   assert(t.title.length <= 70, `${label}: title over 70 characters`);
+  assert(t.seoTitle.length <= 60, `${label}: seoTitle over 60 characters (the page adds " | SpecWeave")`);
+  if (t.seoDescription !== undefined) {
+    copy(t.seoDescription, `${label}.seoDescription`);
+    assert(t.seoDescription.length <= 155, `${label}: seoDescription over 155 characters`);
+  }
+  assert(t.summary.length <= 160 || t.seoDescription !== undefined, `${label}: summary over 160 characters needs a seoDescription`);
   assert(Array.isArray(t.prerequisites) && t.prerequisites.every(p => typeof p === 'string' && p.trim()), `${label}: prerequisites must be strings`);
   assert(t.testedOn === null || (typeof t.testedOn === 'string' && t.testedOn.trim()), `${label}: testedOn must be a string or null`);
   assert([...AGENTS, 'multi', 'any'].includes(t.agent), `${label}: unknown agent`);

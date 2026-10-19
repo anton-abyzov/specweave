@@ -11,6 +11,27 @@
 - `specweave complete` refuses an increment whose spec.md declares no acceptance criteria, unless `--reason` is given.
 - On completion, living docs are skipped with one log line for a spec without user stories; the JIRA/ADO closure runs whether living docs synced, were skipped or failed.
 
+## [3.1.2] - 2026-10-19
+
+### Changed
+
+- 0940: threads verify and close the increment they finish (#2108)
+- 0939: Cursor copy for the X Subscription and SDK sign-in (#2107)
+- docs: SpecWithCode Browser tutorial (Copilot and Codex share Chrome) (#2105)
+- Docs: install SpecWithCode Browser from the Chrome Web Store (#2100)
+- 0938: SpecWithCode SEO fix batch (#2103)
+- Explain how to restore the silent sources for narration reruns (#2104)
+- Narrate the six silent site videos (#2102)
+- docs: SpecWithCode runs Cursor through its SDK, not a CLI (#2101)
+- Set the publish time for agents-use-a-browser (#2099)
+- Add the agents-use-a-browser tutorial (#2098)
+- Set publish times for add-a-machine and finish-a-thread (#2097)
+- Add the add-a-machine and finish-a-thread tutorials (#2096)
+- docs(site): cover the iPhone app in privacy, add a support page (#2094)
+- Embed SpecWithCode tutorials in their docs and set publish times (#2093)
+- Add narrated SpecWithCode tutorials: start, provider fallback (#2092)
+- verify-live: check hidden tab images by fetching them (#2091)
+
 ## [3.1.1] - 2026-10-18
 
 ### Changed

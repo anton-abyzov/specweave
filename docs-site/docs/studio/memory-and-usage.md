@@ -59,7 +59,7 @@ Return to [SpecWithCode projects](./projects.md) or continue with [plans and rou
 
 <TutorialEmbed slug="memory-and-usage" />
 
-Silent walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
+Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
 
 <details>
 <summary>Read the transcript: Shared facts, honest usage</summary>

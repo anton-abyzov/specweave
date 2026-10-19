@@ -1,0 +1,49 @@
+WEBVTT
+
+1
+00:00:01.100 --> 00:00:05.900
+One Chrome extension, for every agent you run in SpecWithCode.
+
+2
+00:00:05.950 --> 00:00:08.035
+Open Settings, Chrome.
+
+3
+00:00:08.035 --> 00:00:14.180
+Add to Chrome opens SpecWithCode Browser in the Chrome Web Store, and Chrome keeps it up to date.
+
+4
+00:00:14.230 --> 00:00:17.263
+Choose Show pairing code, and copy it.
+
+5
+00:00:17.263 --> 00:00:24.470
+In Chrome, click the SpecWithCode icon, paste the code, name this profile Work, and pair it.
+
+6
+00:00:25.270 --> 00:00:30.621
+Start a chat with GitHub Copilot, and ask it to check the demo page in your Chrome.
+
+7
+00:00:30.621 --> 00:00:36.710
+It opens a tab, types Ada, presses Greet, and reads back Hello, Ada.
+
+8
+00:00:41.910 --> 00:00:46.583
+In another chat, Codex uses the same extension, in tabs of its own.
+
+9
+00:00:46.583 --> 00:00:49.830
+You install it once, for every provider.
+
+10
+00:00:53.730 --> 00:00:59.957
+Agent tabs stay in the blue SpecWithCode tab group. Drag a tab out to take it back.
+
+11
+00:00:59.957 --> 00:01:03.800
+Or press Pause, and no agent can use this profile.
+
+12
+00:01:03.850 --> 00:01:08.650
+Get SpecWithCode Browser from the Chrome Web Store. The link is below.

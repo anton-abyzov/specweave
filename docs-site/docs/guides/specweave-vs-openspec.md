@@ -52,6 +52,7 @@ They don't conflict. Keep OpenSpec's `openspec/specs/` as the description of the
 ## See also
 
 - [SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro](/docs/compare/spec-driven-development-tools/)
-- [SpecWeave vs GitHub Spec Kit](/docs/guides/specweave-vs-speckit/)
+- [SpecWeave vs GitHub Spec Kit](/docs/compare/specweave-vs-github-spec-kit/)
 - [SpecWeave vs the BMAD Method](/docs/compare/specweave-vs-bmad-method/)
 - [Handoff and pickup](/docs/guides/cross-tool-handoff/)
+- [SpecWithCode](/code/): run several coding agents on your own machines

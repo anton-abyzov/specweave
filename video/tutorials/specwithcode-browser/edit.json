@@ -1,0 +1,42 @@
+{
+ "comment": "App tutorial edit, framed-window layout. Segments are [srcStart, srcEnd, rate] in cue-clock seconds. The app take: syncOffset = blackdetect 6.367 minus black-on cue 6.246. Chrome shots come from the separately recorded Chrome profile (chrome-N.mp4, page-N.webm padded right to 1920x1080 so crops keep their pixel coordinates); each one's syncOffset is minus the cue time its recording started (cues.json chromeVideos). Crops: the Settings content pane (x 626-1550, above Claude in Chrome), the popup (x 0-820, zoomed 2.2x), the demo page card (x 215-1225), the new-chat composer and the thread column. Agent waits are sped up and marked; in 05-codex the wait before Codex types (Chrome 129.6-151.2) and the app wait (94.3-166.4) are cut.",
+ "title": "One Chrome extension for every agent",
+ "subtitle": "A real run of SpecWithCode with GitHub Copilot and Codex.",
+ "wordmark": "SpecWithCode",
+ "outro": {
+  "next": "Next: get SpecWithCode Browser from the Chrome Web Store (link below)",
+  "note": "Recorded headlessly in one take on a private SpecWithCode server built from main, with SpecWithCode Browser 1.0.1 from the Chrome Web Store. The popup is shown as a zoomed tab. Off camera: the welcome wizard and adding greet-app. Waits are sped up or cut where marked. AI narration."
+ },
+ "take": "assets/media/take.mp4",
+ "syncOffset": 0.121,
+ "voOffset": 0.05,
+ "tailAfterVo": 0.15,
+ "posterAt": 1.0,
+ "beats": [
+  {"id": "01-intro", "kind": "card", "chapter": "What you will see", "voOffset": 1.1, "tail": 0.4},
+  {"id": "02-install", "kind": "app", "chapter": "Install from the Chrome Web Store", "shots": [
+    {"chip": "Settings → Chrome → Add to Chrome", "aspect": 1.32, "segments": [[6.7, 13.75, "fit"]], "cam": [{"src": 6.7, "x": 626, "y": 157, "w": 924}]}
+  ]},
+  {"id": "03-pair", "kind": "app", "chapter": "Pair a Chrome profile", "extra": 1.0, "shots": [
+    {"chip": "Show pairing code → Copy", "aspect": 1.32, "segments": [[14.0, 17.9, 1.0]], "cam": [{"src": 14.0, "x": 626, "y": 157, "w": 924}]},
+    {"chip": "Chrome → SpecWithCode icon → paste, name Work, Pair", "take": "assets/media/chrome-1.mp4", "syncOffset": -18.469, "aspect": 0.82, "segments": [[19.7, 24.4, 1.0]], "cam": [{"src": 19.7, "x": 0, "y": 10, "w": 820}]},
+    {"chip": "Settings lists the Work profile", "aspect": 1.32, "segments": [[25.0, 27.6, "fit"]], "cam": [{"src": 25.0, "x": 626, "y": 157, "w": 924}]}
+  ]},
+  {"id": "04-copilot", "kind": "app", "chapter": "GitHub Copilot uses your Chrome", "extra": 5.4, "shots": [
+    {"chip": "New chat → model → GitHub Copilot", "aspect": 1.7778, "segments": [[29.0, 36.0, 2.0]], "cam": [{"src": 29.0, "x": 0, "y": 0, "w": 1920}, {"src": 30.4, "x": 560, "y": 360, "w": 1100}]},
+    {"chip": "Ask it to use your Chrome", "aspect": 2.6, "segments": [[37.3, 42.6, 2.0]], "cam": [{"src": 37.3, "x": 700, "y": 380, "w": 780}]},
+    {"chip": "Each Chrome step shows in the chat", "aspect": 1.7778, "segments": [[44.0, 56.0, 4.0]], "cam": [{"src": 44.0, "x": 700, "y": 40, "w": 780}]},
+    {"chip": "Copilot's tab in your Chrome", "take": "assets/media/chrome-2.mp4", "syncOffset": -50.27, "aspect": 1.616, "segments": [[55.6, 59.6, 1.0]], "cam": [{"src": 55.6, "x": 215, "y": 228, "w": 1010}]},
+    {"chip": "Copilot reads back the page", "aspect": 1.7778, "segments": [[77.3, 80.8, "fit"]], "cam": [{"src": 77.3, "x": 700, "y": 40, "w": 780}]}
+  ]},
+  {"id": "05-codex", "kind": "app", "chapter": "Codex uses the same extension", "extra": 4.1, "shots": [
+    {"chip": "New chat → Codex → the same ask", "aspect": 1.7778, "segments": [[81.5, 94.3, 3.0]], "cam": [{"src": 81.5, "x": 0, "y": 0, "w": 1920}, {"src": 82.5, "x": 560, "y": 360, "w": 1100}]},
+    {"chip": "Codex works in a tab of its own (wait cut)", "take": "assets/media/chrome-3.mp4", "syncOffset": -104.551, "aspect": 1.616, "segments": [[127.6, 129.6, 1.0], [151.2, 153.7, 1.0]], "cam": [{"src": 127.6, "x": 215, "y": 228, "w": 1010}]},
+    {"chip": "Codex reads back the page", "aspect": 1.7778, "segments": [[166.4, 169.9, "fit"]], "cam": [{"src": 166.4, "x": 700, "y": 40, "w": 780}]}
+  ]},
+  {"id": "06-control", "kind": "app", "chapter": "Stay in control", "shots": [
+    {"chip": "SpecWithCode icon → Pause", "take": "assets/media/chrome-1.mp4", "syncOffset": -18.469, "aspect": 0.82, "segments": [[169.6, 169.6, "hold", 1.5], [169.6, 178.2, "fit"]], "cam": [{"src": 169.6, "x": 0, "y": 10, "w": 820}]}
+  ]},
+  {"id": "07-outro", "kind": "card", "chapter": "Get SpecWithCode Browser", "tail": 1.5}
+ ]
+}

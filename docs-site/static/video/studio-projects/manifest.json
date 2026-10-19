@@ -11,7 +11,7 @@
       "media": {
         "video": {
           "file": "projects-and-threads.mp4",
-          "sha256": "3de8e5f662f3f0a1d0cdf3ec63a6e4d1135deb9d184a1cf6401ef64cff3494c3"
+          "sha256": "03e3f28606cc11723965ff3fe82a0184aeff701b3dc2c7b4d6946ce2221d5623"
         },
         "poster": {
           "file": "projects-and-threads.jpg",
@@ -19,11 +19,11 @@
         },
         "captions": {
           "file": "projects-and-threads.vtt",
-          "sha256": "0dba486da8ae993d8e05039f2cbec3071c5e4e30729038cf8ea62d603324712f"
+          "sha256": "811a53648943758169ec71b387e238692c7fc3150889b34e7d3145b63a95c479"
         },
         "receipt": {
           "file": "projects-and-threads.receipt.json",
-          "sha256": "e730d9c3e805de73a0b162aac646ccff954d957f3e0439e4d466bc80d5e0a7bb"
+          "sha256": "ded38e11ede12b8deea31352cce62fd47d20d5bf0051cc5db59b250101908882"
         }
       }
     },
@@ -35,7 +35,7 @@
       "media": {
         "video": {
           "file": "memory-and-usage.mp4",
-          "sha256": "e3f3f7bf854c2d15cb246aa73ecc65d1875588552b05ccca54aba53c35746571"
+          "sha256": "0b1da58e4745fac928d5d46fa343614b4b41275846cc88b3879d2155f2c894e3"
         },
         "poster": {
           "file": "memory-and-usage.jpg",
@@ -43,11 +43,11 @@
         },
         "captions": {
           "file": "memory-and-usage.vtt",
-          "sha256": "109f327eb9cc5836ccbf2078966bb599163f7f88f0951e13268b7dd9d07a592d"
+          "sha256": "2159f260adab1aa94429c266db9c41efa2d9c8e8e99dcb643c934b5c296dbcc8"
         },
         "receipt": {
           "file": "memory-and-usage.receipt.json",
-          "sha256": "da4f2ebbfd90d9195cdbcad056b851eb1bfd68f0f1eecfe1c75b09858fa3683b"
+          "sha256": "046bdffb01a53e57fa73d4375dac9893c5a27fe495dfae8bfbdbf00211257b64"
         }
       }
     },
@@ -59,7 +59,7 @@
       "media": {
         "video": {
           "file": "plans-and-routines.mp4",
-          "sha256": "1723f32170284ade87738d40e3e22955ef379e1eef66a45a8f59a319b91a1fad"
+          "sha256": "3236b2902a022b0488c458ebba9c9589ed1ec51915b2efd66d9e2e3a39663876"
         },
         "poster": {
           "file": "plans-and-routines.jpg",
@@ -67,11 +67,11 @@
         },
         "captions": {
           "file": "plans-and-routines.vtt",
-          "sha256": "813201e10a0b3d22ce6a99e3f3598cfd9a073d7746a763e965c07af126ad51c5"
+          "sha256": "5116003811e7d401f8cede6dba9d57016e107da3f60abd93367194a6890a87f7"
         },
         "receipt": {
           "file": "plans-and-routines.receipt.json",
-          "sha256": "ac50a319e1c80b051d9fe7688c6c62bb2e67e36793ec04ae18b67f6b4c2cec12"
+          "sha256": "e8fb9741d23e08d6d888fb31a2f19177bf146625da3632bccb532399cef46848"
         }
       }
     },
@@ -83,7 +83,7 @@
       "media": {
         "video": {
           "file": "personal-and-connections.mp4",
-          "sha256": "99eaf8f6637fce01f9fbd26985f54ac635d8594b53b0121e56fad60373433005"
+          "sha256": "449c4df76bf4b3e08c7049f4b1901a0662484e08c9138726af2b1b92e0a81b78"
         },
         "poster": {
           "file": "personal-and-connections.jpg",
@@ -91,11 +91,11 @@
         },
         "captions": {
           "file": "personal-and-connections.vtt",
-          "sha256": "da729933188473754cd42f32dd11c628c46553aa8002f52d25f67f79d744a309"
+          "sha256": "942d12bab34e7fc680ce2ebf6fb88db4f5e61489b4e534503c132277841982c4"
         },
         "receipt": {
           "file": "personal-and-connections.receipt.json",
-          "sha256": "0bb2188e752fc0967d74a0891a29d41c2293a19d317aafccc2ea67764e753760"
+          "sha256": "baa515eab5219bf9912bdcaff15836358f902c884a18d9467a5773b09cad67ea"
         }
       }
     }

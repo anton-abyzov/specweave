@@ -4,6 +4,8 @@ sidebar_label: SpecWithCode Browser
 description: "Agents in SpecWithCode can use a browser beside each thread, with separate profiles per account, or your real Chrome through the SpecWithCode Browser extension, in a visible tab group, on this computer only."
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # Browsers for agents
 
 Agents often need the web: a dashboard to read, a form to fill, a page to check after a deploy. SpecWithCode gives them two ways in, and you can watch and take over in both.
@@ -13,7 +15,13 @@ Agents often need the web: a dashboard to read, a form to fill, a page to check 
 | Where it runs | Inside SpecWithCode, beside the thread | In your own Chrome profile |
 | Signed in as | An in-app profile: imported cookies or a fresh login | You, with that Chrome profile's logins |
 | Agents of | Every provider | Every provider |
-| Turn it on | **Settings > Integrations > Agent browser access**, per project | **Settings > Chrome**, per machine |
+| Turn it on | **Settings > Integrations > Agent browser access**, for every project, with a per-project override | **Settings > Chrome**, per machine |
+
+## Watch it
+
+A real Codex worker in SpecWithCode 1.0.47 opens a sample app in the in-app browser beside its thread and fills in a form; then you take over, type, hand back, and the agent's screenshot lands in the chat.
+
+<TutorialEmbed slug="agents-use-a-browser" />
 
 ## The in-app browser
 
@@ -36,7 +44,7 @@ Cookie import works for Chrome, Edge, Brave, Vivaldi, Opera, Arc, Helium, Firefo
 The extension lets agents use one of your real Chrome profiles: your tabs, your logins, on this computer only. Agents of every provider can use it. It is the way SpecWithCode recommends for agents to work in Chrome.
 
 1. Open **Settings > Chrome** and pick the machine; each machine has its own Chrome.
-2. Install the extension. While it is in Chrome Web Store review, choose **Load unpacked**: open `chrome://extensions` in the profile agents should use, turn on Developer mode, click **Load unpacked** and pick the folder SpecWithCode shows.
+2. Install [SpecWithCode Browser from the Chrome Web Store](https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb) in the Chrome profile agents should use: choose **Add to Chrome** in SpecWithCode, or open the link in that profile, then **Add extension**. Chrome keeps it up to date.
 3. Choose **Show pairing code** and copy it.
 4. Click the SpecWithCode icon in Chrome's toolbar, paste the code, name the profile (for example Work or Marketing) and click **Pair**.
 

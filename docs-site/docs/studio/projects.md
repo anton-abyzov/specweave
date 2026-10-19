@@ -114,7 +114,7 @@ If another window changed the settings, reload the current version before saving
 
 <TutorialEmbed slug="projects-and-threads" />
 
-Silent walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
+Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
 
 This walkthrough verifies native project coordination with Claude and Codex, including thread reuse, project memory and usage. It does not establish byte-for-byte preservation of global account metadata. Device deployment is checked separately.
 
@@ -137,7 +137,7 @@ This walkthrough verifies native project coordination with Claude and Codex, inc
 
 <TutorialEmbed slug="personal-and-connections" />
 
-Silent walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
+Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
 
 <details>
 <summary>Read the transcript: Personal projects, folders and tools</summary>

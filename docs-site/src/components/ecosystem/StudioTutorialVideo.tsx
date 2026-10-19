@@ -17,6 +17,6 @@ export default function StudioTutorialVideo() {
     chapters={tour.chapters}
     style={{marginTop: 40}}
     ariaLabel="SpecWithCode tour, screen recordings: a project coordinator splits work between Codex and Claude workers, then a Claude thread at its usage limit continues on Codex and still knows the code word it was told"
-    caption={<>Screen recordings of SpecWithCode on a Mac, 10 October 2026, with descriptive captions and no sound. The usage limit in the handoff clip is simulated. <Link to="/tutorials">All tutorials</Link></>}
+    caption={<>Screen recordings of SpecWithCode on a Mac, 10 October 2026, with AI narration in Anton’s voice and captions; music: “Make Funk” by HoliznaCC0, CC0. The usage limit in the handoff clip is simulated. <Link to="/tutorials">All tutorials</Link></>}
   />;
 }

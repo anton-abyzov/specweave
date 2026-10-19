@@ -23,7 +23,7 @@ export default function TutorialGuide({slug, transcript = []}: {slug: string; tr
   const origin = siteConfig.url;
 
   return (
-    <Layout title={tutorial.seoTitle} description={tutorial.summary}>
+    <Layout title={tutorial.seoTitle} description={tutorial.seoDescription ?? tutorial.summary}>
       <Head>
         <meta property="og:type" content="article" />
         <meta property="og:image" content={`${origin}${tutorial.poster}`} />
