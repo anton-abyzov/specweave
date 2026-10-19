@@ -70,7 +70,7 @@ export const Window: React.FC<{w: number; h: number; title?: string; delay?: num
 type Rect = [x: number, y: number, w: number];
 export type CamKey = {f: number; r: Rect};
 
-const ScaleCtx = createContext(1);
+export const ScaleCtx = createContext(1);
 
 /** Plays a screen recording through a moving camera. Keys are source-pixel rects; height follows the frame's aspect. */
 export const Shot: React.FC<{src: string; w: number; h: number; keys: CamKey[]; children?: React.ReactNode; srcW?: number; srcH?: number; opacity?: number; trimBefore?: number; rate?: number}> = ({src, w, h, keys, children, srcW = 1920, srcH = 1080, opacity = 1, trimBefore, rate = 1}) => {

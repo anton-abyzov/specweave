@@ -743,8 +743,89 @@
       },
       "guide": "/docs/studio/add-a-machine",
       "related": [
+        "join-a-mac",
         "start-specwithcode",
         "provider-runs-out"
+      ]
+    },
+    {
+      "slug": "join-a-mac",
+      "product": "specwithcode",
+      "title": "Join a new Mac to your main machine",
+      "seoTitle": "Join a new Mac to SpecWithCode with one line",
+      "summary": "Screenshots of SpecWithCode 1.0.47 on a new Mac: the welcome screen's Join my existing machines checks Tailscale and makes one line, the main machine pastes it under Settings, Connections, Add a machine, and Allow workers lets coordinators start work there. It also shows Invite this machine for a Mac that is already set up, and specwithcode fleet invite for a Mac without the desktop app.",
+      "seoDescription": "Join a new Mac to SpecWithCode from its welcome screen: make one line, paste it on your main machine, allow workers. Also the npm path.",
+      "outcome": "You end with the new Mac listed under Your private machines on your main machine and allowed to run workers.",
+      "prerequisites": [
+        "SpecWithCode on both Macs (the desktop app, or the npm package with Node.js 22.16 or later)",
+        "Tailscale on both Macs, signed in to the same account, with MagicDNS and HTTPS certificates on"
+      ],
+      "testedOn": "SpecWithCode 1.0.47, 18 October 2026",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/join-a-mac.mp4",
+        "poster": "/video/tutorials/join-a-mac.jpg",
+        "captionsVtt": "/video/tutorials/join-a-mac.en.vtt",
+        "captionsBurnedIn": false,
+        "audio": "narrated",
+        "durationSeconds": 86.6,
+        "uploadDate": "2026-10-19",
+        "publishedAt": "2026-10-19T13:33:12Z",
+        "chapters": [
+          {
+            "start": 0.0,
+            "title": "What you need"
+          },
+          {
+            "start": 13.17,
+            "title": "Join on the new Mac"
+          },
+          {
+            "start": 27.93,
+            "title": "Copy the line"
+          },
+          {
+            "start": 44.93,
+            "title": "Add it on the main machine"
+          },
+          {
+            "start": 52.47,
+            "title": "Allow workers"
+          },
+          {
+            "start": 63.13,
+            "title": "Already set up: Invite this machine"
+          },
+          {
+            "start": 69.8,
+            "title": "From a terminal: fleet invite"
+          },
+          {
+            "start": 80.47,
+            "title": "Recap"
+          }
+        ]
+      },
+      "steps": [
+        "On the new Mac, open SpecWithCode. On How will you use this Mac, choose Join my existing machines.",
+        "SpecWithCode checks that Tailscale is installed and signed in. Give this Mac the name your main machine will show, then choose Make the line.",
+        "Copy the line. It works like a password, so paste it only on your main machine. Revoke this line cancels it.",
+        "On your main machine, open Settings, Connections, paste the line under Add a machine and choose Add machine.",
+        "When the Mac appears under Your private machines, choose Allow workers on its card. If it does not connect on its own, choose Connect machine first.",
+        "Back on the new Mac, choose I pasted it and leave SpecWithCode running.",
+        "Already set up the new Mac? Use Invite this machine under Settings, Connections. Without the desktop app, run `npm i -g specwithcode`, `specwithcode service install` and `specwithcode fleet invite`."
+      ],
+      "transcript": "captions",
+      "note": "Built in Remotion from real screenshots of the released SpecWithCode 1.0.47 npm package, run as a private headless test server with a disposable home, 18 October 2026. The invitation line is masked in every screenshot and was revoked right after capture; the owner's machine name and the version row are blurred. Two scenes are not screenshots and say so on screen: the machine card under Your private machines is drawn over a real Connections screenshot, and the terminal is a styled graphic with abridged output, a placeholder address and a hidden line. In 1.0.47, Allow workers can also ask for a one-time pairing code made on the new Mac; Add a second machine shows where it goes. Narration is an AI voice (ElevenLabs); captions are timed from the narration clips.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/add-a-machine",
+      "related": [
+        "add-a-machine",
+        "start-specwithcode"
       ]
     },
     {
@@ -1896,6 +1977,7 @@
         "specwithcode-tour",
         "provider-runs-out",
         "add-a-machine",
+        "join-a-mac",
         "finish-a-thread",
         "agents-use-a-browser",
         "specwithcode-browser",
