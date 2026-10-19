@@ -1,29 +1,58 @@
 WEBVTT
 
+NOTE Captions match the narration. Times follow the spoken words.
+
 1
-00:00:00.000 --> 00:00:06.147
-Recorded run / 7 Oct 2026. Ask the agent for the result.
+00:00:00.300 --> 00:00:04.417
+Recorded run / 7 Oct 2026.
 
 2
-00:00:06.147 --> 00:00:12.262
-The agent changed one file and verified its exact contents.
+00:00:04.417 --> 00:00:06.400
+Ask the agent for the result.
 
 3
-00:00:12.262 --> 00:00:19.443
-Expand the recorded work to inspect the actual tool and its successful output.
+00:00:06.400 --> 00:00:11.720
+The agent changed one file and
+verified its exact contents.
 
 4
-00:00:19.443 --> 00:00:26.565
-The recorded command returned exit code zero. SpecWithCode retained the evidence.
+00:00:12.510 --> 00:00:16.990
+Expand the recorded work to inspect
+the actual tool and its successful
 
 5
-00:00:26.565 --> 00:00:34.112
-Inspect the recorded file change in the browser.
+00:00:16.990 --> 00:00:18.470
+output.
 
 6
-00:00:34.112 --> 00:00:38.912
-Switching UI demonstration / no provider turn. Review the warning before changing providers.
+00:00:19.690 --> 00:00:23.423
+The recorded command
+returned exit code zero.
 
 7
-00:00:38.912 --> 00:00:43.672
-Prompt caches and native runtime state do not transfer between providers; portable chat context is passed.
+00:00:23.423 --> 00:00:26.450
+SpecWithCode retained the evidence.
+
+8
+00:00:26.820 --> 00:00:30.780
+Inspect the recorded file
+change in the browser.
+
+9
+00:00:34.300 --> 00:00:38.500
+Switching UI demonstration
+/ no provider turn.
+
+10
+00:00:38.500 --> 00:00:41.850
+Review the warning before
+changing providers.
+
+11
+00:00:41.850 --> 00:00:47.130
+Prompt caches and native runtime state
+do not transfer between providers;
+
+12
+00:00:47.130 --> 00:00:50.000
+portable chat context is passed.

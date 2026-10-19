@@ -912,7 +912,7 @@
         "src": "/video/studio-projects/projects-and-threads.mp4",
         "poster": "/video/studio-projects/projects-and-threads.jpg",
         "captionsVtt": "/video/studio-projects/projects-and-threads.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "durationSeconds": 89.9,
         "uploadDate": "2026-10-09",
         "publishedAt": "2026-10-10T22:59:42Z",
@@ -955,7 +955,7 @@
         "Open Usage to compare coordinator and worker token totals by model. Cache reporting can be incomplete, and an API-equivalent cost is not money paid."
       ],
       "transcript": "captions",
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. AI narration in Anton’s voice, with captions.",
       "action": {
         "label": "Read the projects guide",
         "to": "/docs/studio/projects"
@@ -984,7 +984,7 @@
         "src": "/video/studio-projects/plans-and-routines.mp4",
         "poster": "/video/studio-projects/plans-and-routines.jpg",
         "captionsVtt": "/video/studio-projects/plans-and-routines.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "durationSeconds": 95.1,
         "uploadDate": "2026-10-09",
         "publishedAt": "2026-10-10T22:59:42Z",
@@ -1029,7 +1029,7 @@
         "Deleting a project needs its exact name and leaves its source folder intact."
       ],
       "transcript": "captions",
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. AI narration in Anton’s voice, with captions.",
       "action": {
         "label": "Read the plans guide",
         "to": "/docs/studio/plans-and-routines"
@@ -1058,7 +1058,7 @@
         "src": "/video/studio-projects/memory-and-usage.mp4",
         "poster": "/video/studio-projects/memory-and-usage.jpg",
         "captionsVtt": "/video/studio-projects/memory-and-usage.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "durationSeconds": 66.9,
         "uploadDate": "2026-10-09",
         "publishedAt": "2026-10-10T22:59:42Z",
@@ -1092,7 +1092,7 @@
         "Read usage, which comes from recorded provider turns. Missing data stays visible, and a cost estimate is not a bill."
       ],
       "transcript": "captions",
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. AI narration in Anton’s voice, with captions.",
       "action": {
         "label": "Read the memory and usage guide",
         "to": "/docs/studio/memory-and-usage"
@@ -1121,7 +1121,7 @@
         "src": "/video/studio-tutorial.mp4",
         "poster": "/img/studio/poster-tour-20261015.jpg",
         "captionsVtt": "/video/studio-tutorial.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "durationSeconds": 61,
         "uploadDate": "2026-10-10",
         "publishedAt": "2026-10-10T05:08:31Z",
@@ -1164,7 +1164,7 @@
         "When Claude runs out, Continue with Codex carries the conversation over."
       ],
       "transcript": "captions",
-      "note": "Screen recordings on a Mac, 10 October 2026. No sound; the usage limit in the handoff clip is simulated. Recorded before SpecWithCode 1.0.0, so some labels have changed.",
+      "note": "Screen recordings on a Mac, 10 October 2026, with AI narration in Anton’s voice and music by HoliznaCC0 (CC0). The usage limit in the handoff clip is simulated. Recorded before SpecWithCode 1.0.0, so some labels have changed.",
       "action": {
         "label": "Download SpecWithCode for Mac",
         "to": "/code"
@@ -1192,7 +1192,7 @@
         "src": "/video/studio-projects/personal-and-connections.mp4",
         "poster": "/video/studio-projects/personal-and-connections.jpg",
         "captionsVtt": "/video/studio-projects/personal-and-connections.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "durationSeconds": 81.6,
         "uploadDate": "2026-10-09",
         "publishedAt": "2026-10-10T22:59:42Z",
@@ -1231,7 +1231,7 @@
         "Grant exactly the tools this project may use. Revoke removes future access; restoring needs a new check and new grants."
       ],
       "transcript": "captions",
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. AI narration in Anton’s voice, with captions.",
       "action": {
         "label": "Read the projects guide",
         "to": "/docs/studio/projects"
@@ -1257,8 +1257,8 @@
         "src": "/img/studio/agent-driven-demo.mp4",
         "poster": "/img/studio/agent-driven-demo-cover.jpg",
         "captionsVtt": "/img/studio/agent-driven-demo.vtt",
-        "audio": "silent",
-        "durationSeconds": 43.7,
+        "audio": "narrated",
+        "durationSeconds": 50,
         "uploadDate": "2026-10-08",
         "publishedAt": "2026-10-11T04:43:11Z",
         "chapters": [
@@ -1295,7 +1295,7 @@
         "Before switching providers, read the warning: prompt caches and runtime state do not transfer, and the portable chat context does."
       ],
       "transcript": "captions",
-      "note": "Actual browser recording of a synthetic task completed on 7 October 2026 in a disposable repository. The model-switching scene previews the confirmation UI in an isolated fixture.",
+      "note": "Actual browser recording of a synthetic task completed on 7 October 2026 in a disposable repository. The model-switching scene previews the confirmation UI in an isolated fixture. AI narration in Anton’s voice, with captions.",
       "action": {
         "label": "Read how SpecWithCode works",
         "to": "/docs/overview/studio-architecture"

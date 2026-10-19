@@ -1,37 +1,80 @@
 WEBVTT
 
+NOTE Captions match the narration. Times follow the spoken words.
+
 1
-00:00:00.000 --> 00:00:09.485
-Verified here: native project coordination. Device deployment is checked separately.
+00:00:00.300 --> 00:00:04.340
+Verified here: native
+project coordination.
 
 2
-00:00:09.486 --> 00:00:18.718
-Coordinator and worker defaults are independent. Existing threads retain their own model choices.
+00:00:04.340 --> 00:00:07.140
+Device deployment is checked separately.
 
 3
-00:00:18.723 --> 00:00:30.816
-This Codex coordinator completed the verified native run. Its conversation stays in the project.
+00:00:09.740 --> 00:00:13.180
+Coordinator and worker
+defaults are independent.
 
 4
-00:00:30.817 --> 00:00:43.041
-This Claude conversation completed in the verified native run. No new inference starts in this recording.
+00:00:13.180 --> 00:00:17.300
+Existing threads retain
+their own model choices.
 
 5
-00:00:43.078 --> 00:00:53.184
-The coordinator keeps the routing history while worker details open on the right.
+00:00:18.970 --> 00:00:23.290
+This Codex coordinator completed
+the verified native run.
 
 6
-00:00:53.185 --> 00:01:01.317
-Resolve organizes finished work without deleting its history.
+00:00:23.290 --> 00:00:26.690
+Its conversation stays in the project.
 
 7
-00:01:01.317 --> 00:01:09.449
-Reopen the same thread when related work returns.
+00:00:31.070 --> 00:00:35.470
+This Claude conversation completed
+in the verified native run.
 
 8
-00:01:09.450 --> 00:01:19.654
-Open Usage to compare the actual coordinator and worker token totals by model.
+00:00:35.470 --> 00:00:38.950
+No new inference starts in this recording.
 
 9
-00:01:19.655 --> 00:01:29.844
-Thread shares explain where tokens went. Cache reporting can be incomplete, and API-equivalent cost is not money paid.
+00:00:43.330 --> 00:00:48.010
+The coordinator keeps the routing
+history while worker details open on the
+
+10
+00:00:48.010 --> 00:00:49.210
+right.
+
+11
+00:00:53.440 --> 00:00:58.440
+Resolve organizes finished work
+without deleting its history.
+
+12
+00:01:01.570 --> 00:01:06.170
+Reopen the same thread
+when related work returns.
+
+13
+00:01:09.700 --> 00:01:14.420
+Open Usage to compare the actual
+coordinator and worker token totals by
+
+14
+00:01:14.420 --> 00:01:15.980
+model.
+
+15
+00:01:19.910 --> 00:01:23.270
+Thread shares explain where tokens went.
+
+16
+00:01:23.270 --> 00:01:25.670
+Cache reporting can be incomplete,
+
+17
+00:01:25.670 --> 00:01:29.867
+and API-equivalent cost is not money paid.

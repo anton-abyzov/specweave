@@ -55,7 +55,7 @@ The separate [SpecWeave CLI project hub](../guides/portable-projects.md) stores 
 
 <TutorialEmbed slug="plans-and-routines" />
 
-Silent walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
+Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
 
 <details>
 <summary>Read the transcript: Plan, verify and schedule</summary>
