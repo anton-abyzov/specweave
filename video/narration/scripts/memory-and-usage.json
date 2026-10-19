@@ -1,0 +1,54 @@
+{
+  "video": "video/narration/work/memory-and-usage/silent-source.mp4",
+  "out": "docs-site/static/video/studio-projects/memory-and-usage.mp4",
+  "vtt": "docs-site/static/video/studio-projects/memory-and-usage.vtt",
+  "work": "video/narration/work/memory-and-usage",
+  "lines": [
+    {
+      "start": 0.3,
+      "end": 7.34,
+      "text": "Keep the project goal, instructions and durable facts together."
+    },
+    {
+      "start": 7.74,
+      "end": 14.73,
+      "text": "Instructions guide future turns. They do not replace a provider's native history."
+    },
+    {
+      "start": 15.13,
+      "end": 21.96,
+      "text": "Memory belongs to this project. Open a file to review its contents."
+    },
+    {
+      "start": 22.36,
+      "end": 29.21,
+      "text": "Give a lasting decision its own small Markdown file."
+    },
+    {
+      "start": 29.61,
+      "end": 36.41,
+      "text": "Save the decision. SpecWithCode checks the file revision before replacing it.",
+      "say": "Save the decision. Spec With Code checks the file revision before replacing it."
+    },
+    {
+      "start": 36.81,
+      "end": 43.95,
+      "text": "Reload and reopen the file to confirm that the decision persisted."
+    },
+    {
+      "start": 44.35,
+      "end": 51.28,
+      "text": "A different project keeps a different memory collection."
+    },
+    {
+      "start": 51.68,
+      "end": 58.59,
+      "text": "Usage comes from recorded provider turns. Missing data remains visible."
+    },
+    {
+      "start": 58.99,
+      "end": 66.71,
+      "text": "No provider turn ran in this walkthrough. An equivalent cost estimate is not a bill."
+    }
+  ]
+}
