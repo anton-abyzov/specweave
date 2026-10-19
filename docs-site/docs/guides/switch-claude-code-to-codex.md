@@ -1,6 +1,6 @@
 ---
-title: "Switch from Claude Code to Codex without losing your place"
-description: "A step-by-step guide to moving a half-finished task from Claude Code to Codex, and back: what carries over, the two commands that do it, and what to check before you switch."
+title: "Continue a Claude Code task in Codex"
+description: "Move a half-finished task from Claude Code to Codex and back: what carries over, the two commands that do it, and what to check before you switch."
 slug: /guides/switch-claude-code-to-codex
 keywords: [switch from claude code to codex, move from claude code to codex, continue claude code session in codex, claude code to codex handoff, codex to claude code, switch ai coding tools mid task, claude code out of usage switch to codex]
 ---
@@ -8,6 +8,8 @@ keywords: [switch from claude code to codex, move from claude code to codex, con
 import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
 
 # Switch from Claude Code to Codex without losing your place
+
+Run `specweave handoff` in Claude Code: it writes `handoff.md`, releases your task claims and pushes your branch with a snapshot of your uncommitted edits. Open Codex in the same repository and run `specweave pickup`: it applies those edits and prints the next task with its acceptance criteria.
 
 Switching tools at the start of a task is easy. Switching halfway through is where work gets lost: Codex can't read Claude Code's session, so the plan, the decisions and your uncommitted edits stay behind. This guide moves all of that through git in two commands, and works the same in the other direction.
 
@@ -114,6 +116,10 @@ npx vskill i handoff
 
 It needs only `git` and a shell. If `specweave` is installed it uses it; otherwise it writes a compatible `handoff.md` from your git state.
 
+:::tip Prefer a desktop app?
+[SpecWithCode](/code/) is a free, open-source Mac app that runs Claude Code and Codex side by side. When one subscription hits its limit, the thread continues on another signed-in provider by default. Watch [Keep working when a provider runs out](/tutorials/provider-runs-out/).
+:::
+
 ## Common questions
 
 **Can I paste the Claude Code conversation into Codex instead?** You can, but a transcript is long, full of dead ends, and doesn't include your uncommitted edits or which tasks really passed their tests. The spec plus the handoff is a few hundred lines Codex can act on.
@@ -128,3 +134,4 @@ It needs only `git` and a shell. If `specweave` is installed it uses it; otherwi
 - [Auto-handoff rules](/docs/guides/auto-handoff/)
 - [Claude Code vs Codex: use both](/docs/guides/claude-code-vs-codex/)
 - [Claude Code usage limit reached: what to do next](/docs/guides/claude-code-usage-limit/)
+- [SpecWithCode](/code/): run several coding agents on your own machines
