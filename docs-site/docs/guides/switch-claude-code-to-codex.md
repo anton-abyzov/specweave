@@ -1,6 +1,6 @@
 ---
-title: "How to continue a Claude Code task in Codex when you hit the limit"
-description: "A step-by-step guide to moving a half-finished task from Claude Code to Codex, and back: what carries over, the two commands that do it, and what to check before you switch."
+title: "Continue a Claude Code task in Codex"
+description: "Move a half-finished task from Claude Code to Codex and back: what carries over, the two commands that do it, and what to check before you switch."
 slug: /guides/switch-claude-code-to-codex
 keywords: [switch from claude code to codex, move from claude code to codex, continue claude code session in codex, claude code to codex handoff, codex to claude code, switch ai coding tools mid task, claude code out of usage switch to codex]
 ---
@@ -9,7 +9,7 @@ import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
 
 # Switch from Claude Code to Codex without losing your place
 
-**Short answer: yes.** Run `specweave handoff` in Claude Code: it writes `handoff.md`, releases your task claims and pushes your branch with a snapshot of your uncommitted edits. Open Codex in the same repository and run `specweave pickup`: it applies those edits and prints the next task with its acceptance criteria.
+Run `specweave handoff` in Claude Code: it writes `handoff.md`, releases your task claims and pushes your branch with a snapshot of your uncommitted edits. Open Codex in the same repository and run `specweave pickup`: it applies those edits and prints the next task with its acceptance criteria.
 
 Switching tools at the start of a task is easy. Switching halfway through is where work gets lost: Codex can't read Claude Code's session, so the plan, the decisions and your uncommitted edits stay behind. This guide moves all of that through git in two commands, and works the same in the other direction.
 

@@ -114,7 +114,12 @@ const SPECWITHCODE_LD = {
       image: `${SITE}/img/studio/code-hero-worker-20261015.webp`,
       screenshot: `${SITE}/img/studio/code-hero-worker-20261015.webp`,
       offers: {'@type': 'Offer', price: '0', priceCurrency: 'USD'},
-      author: {'@type': 'Person', name: 'Anton Abyzov', url: 'https://github.com/anton-abyzov'},
+      author: {
+        '@type': 'Person',
+        name: 'Anton Abyzov',
+        url: 'https://github.com/anton-abyzov',
+        sameAs: ['https://www.youtube.com/@antonabyzov', 'https://x.com/aabyzov'],
+      },
       publisher: {'@id': `${SITE}/#org`},
     },
     ...(tourVideo ? [tourVideo] : []),
