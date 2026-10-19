@@ -7,7 +7,7 @@ keywords: [opencode alternative, t3 code alternative, codex cloud alternative, c
 
 # SpecWithCode vs OpenCode, T3 Code and cloud agents
 
-SpecWithCode is a free, open-source Mac app that runs Claude Code, Codex, Cursor and other coding agents on your own machines, signed in with the plans you already pay for. A coordinator splits work across worker threads, and the app tracks each subscription's limits.
+SpecWithCode is a free, open-source Mac app that runs Claude Code, Codex, Cursor and other coding agents on your own machines, signed in with the plans you already pay for. A coordinator splits work across worker threads, and the app tracks each subscription's limits where the provider reports them.
 
 The facts about other products below come from their own sites, docs and GitHub repositories, checked on 16 October 2026. They change quickly, so follow the links for the current state. SpecWithCode is our product, so read this page with that in mind.
 
