@@ -12,7 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { readVerifyReport, describeUncheckedAcs } from './verify-runner.js';
+import { readVerifyReport, describeUncheckedAcs, readSpecAcs } from './verify-runner.js';
 import { loadTaskBoard } from './task-board.js';
 import { parseVerdict } from '../review/reviewer.js';
 
@@ -64,7 +64,15 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
     // AC lines at all, or a hand-edited verify.json. Say so out loud.
     const unchecked = describeUncheckedAcs(verify.acs);
     if (unchecked) notices.push(`${unchecked} — verify.json still reports ok; check reports/verify.json`);
-    if (verify.acs.total === 0) notices.push('spec.md declares no acceptance criteria — nothing was verified against');
+  }
+
+  // 0933: an increment with no acceptance criteria has no definition of done.
+  if (fs.existsSync(path.join(incrementDir, 'spec.md')) && readSpecAcs(incrementDir).length === 0) {
+    if (!reason) {
+      errors.push('spec.md declares no acceptance criteria — add `- [ ] AC-01: …` lines, or pass --reason "<why closing without them>"');
+    } else {
+      notices.push(`spec.md declares no acceptance criteria — closing anyway, reason: ${reason}`);
+    }
   }
 
   try {

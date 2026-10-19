@@ -24,6 +24,10 @@ edits to the `specweave-handoff` branch (and `wip/<branch>`). Your working tree,
 index and branch are untouched. Relay its two or three lines as they are, then tell
 the user: say "pick up" in the other tool.
 
+Before handing off, make sure your last `task claim` / `task done` carried `--line`
+(the card text) and, for done work, `--link` (PR, report or artifact); the next agent
+reads the checklist, not your transcript.
+
 Add `--next "<exact next step>"`, `--gotcha "..."` or `--decision "..."` only for what
 the files cannot tell the next agent. No Git remote and another machine:
 `--inline` prints a prompt to paste instead. `--no-push` keeps it local.
@@ -92,7 +96,8 @@ the thread to another provider between turns, and a handoff would release its cl
 When the user says "pick up", "pick up here", "continue" or "continue from the other
 account", run `specweave pickup`. It fetches the last handoff, moves this branch
 forward to it and applies the handed-off edits (only on a clean tree), then prints the
-increment, the next task with its acceptance criteria and any notes. If it reports
+increment's card checklist, the next task with its acceptance criteria and any notes.
+For a status at any time, `specweave cards --md` prints the same checklist. If it reports
 uncommitted changes or a diverged branch, do what it says; never discard the user's
 edits. Then continue with sw-do, which closes the increment through sw-done once its
 last task is done.

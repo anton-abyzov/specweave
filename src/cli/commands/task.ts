@@ -12,6 +12,10 @@
  *   task skip T-01 [inc] --reason "…"   (terminal; reason mandatory)
  *   task render [inc] [--write]         print the board; --write refreshes a legacy tasks.md
  *
+ * `claim`, `done` and `block` accept `--line "<card text>"` (max 100 chars,
+ * longer text is truncated with a warning) and `--link <url or path>`; they
+ * feed the card checklist (`specweave cards --md`).
+ *
  * `inc` defaults to the single active increment. Every command is read+append
  * only on ledger.jsonl. Task definitions (spec.md `## Tasks`, or a legacy
  * tasks.md) are never rewritten, so bookkeeping does not dirty the tree.
@@ -27,7 +31,7 @@ import * as path from 'path';
 import { runShell, isShellCommand } from '../../core/tasks/run-shell.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { closeChain, currentSessionId, markClosePending } from '../../core/increment/close-pending.js';
-import { appendEvent, recordSessionOnce, getAgentId, ledgerPath, describeState, DEFAULT_LEASE_HOURS, type LedgerEvent, type LedgerEventType } from '../../core/tasks/ledger.js';
+import { appendEvent, clampCardLine, recordSessionOnce, getAgentId, ledgerPath, describeState, DEFAULT_LEASE_HOURS, type LedgerEvent, type LedgerEventType } from '../../core/tasks/ledger.js';
 import {
   loadTaskBoard,
   nextTask,
@@ -58,6 +62,10 @@ export interface TaskCommandOptions {
   cwd?: string;
   /** Override agent id (tests). */
   agent?: string;
+  /** Card text for claim/done/block (max 100 chars). */
+  line?: string;
+  /** Card link (PR URL, report path, artifact URL) for claim/done/block. */
+  link?: string;
 }
 
 export const EXIT_LOST_RACE = 3;
@@ -107,6 +115,14 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   const acsOf = (): AcEntry[] => (specAcs ??= readSpecAcs(inc.dir));
   /** `--reason` is the documented spelling for skip/block; `--note` stays as an alias. */
   const note = (opts.note ?? opts.reason)?.trim() || undefined;
+  /** `--line` / `--link`, for the events that move a card. */
+  const card: Partial<LedgerEvent> = {};
+  if (opts.line?.trim()) {
+    const { line, truncated } = clampCardLine(opts.line);
+    if (truncated) err(`warning: --line is longer than 100 characters; stored as "${line}"`);
+    card.line = line;
+  }
+  if (opts.link?.trim()) card.link = opts.link.trim();
   /** A live claim held by somebody else (stale claims are takeable). */
   const heldByOther = (t: BoardTask): boolean =>
     (t.state.status === 'claimed' || t.state.status === 'blocked') && t.state.by !== agent;
@@ -191,7 +207,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       const overlap = fileOverlaps(board, task, agent);
       if (overlap.length && !opts.force) { err(`${taskId} shares Files with live claim(s) ${overlap.join(', ')}. Pick another task or --force.`); return EXIT_FILES_OVERLAP; }
       recordSessionOnce(ledger, agent);
-      append('claim', taskId, note ? { note } : {});
+      append('claim', taskId, { ...(note ? { note } : {}), ...card });
       // Re-read: the earliest live claim wins; confirm we own it.
       const after = board.tasks.find((t) => t.id === taskId)!;
       if (after.state.by !== agent || (after.state.status !== 'claimed')) {
@@ -222,6 +238,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
         }
         evidence = [`${cmd} → exit 0`, `log: ${rel(projectRoot, logPath)}`, tail, evidence].filter(Boolean).join('\n');
       }
+      if (!evidence && card.link) evidence = card.link;
       if (!evidence) { err(`done needs evidence: --evidence "<sha or test output>" or --run "<cmd>" (task Test: ${task.test ?? 'none'})`); return 2; }
       const sha = headSha(projectRoot);
       if (sha && !evidence.includes(sha)) evidence = `${evidence}\nHEAD ${sha}`;
@@ -243,7 +260,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
         append('claim', taskId);
         if (!opts.json) out(`Auto-claimed ${taskId} as ${agent}`);
       }
-      append('done', taskId, { evidence, ...(note ? { note } : {}) });
+      append('done', taskId, { evidence, ...(note ? { note } : {}), ...card });
       const doneState = stateOf(taskId);
       if (doneState.status !== 'done') {
         err(`${taskId} was NOT recorded as done — ${describeState(doneState)}. The ledger keeps the earliest live claim; ask that agent to release it.`);
@@ -265,7 +282,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
     case 'block': {
       if (!note) { err('block needs --reason "<why it is blocked>"'); return 2; }
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
-      append('block', taskId, { note });
+      append('block', taskId, { note, ...card });
       out(`Blocked ${taskId}: ${note}`);
       return 0;
     }

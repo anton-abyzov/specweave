@@ -56,6 +56,20 @@ export interface LedgerEvent {
   note?: string;
   /** Evidence for `done`: commit sha, test command + tail, … Required for `done`. */
   evidence?: string;
+  /** Card text: one line, at most {@link MAX_CARD_LINE} chars (longer text is truncated). */
+  line?: string;
+  /** Card link: PR URL, report path, artifact URL … */
+  link?: string;
+}
+
+/** Longest card line kept in the ledger; longer text is truncated with `…`. */
+export const MAX_CARD_LINE = 100;
+
+/** One-line card text capped at {@link MAX_CARD_LINE}. `truncated` lets callers warn. */
+export function clampCardLine(text: string): { line: string; truncated: boolean } {
+  const flat = text.replace(/\s+/g, ' ').trim();
+  if (flat.length <= MAX_CARD_LINE) return { line: flat, truncated: false };
+  return { line: flat.slice(0, MAX_CARD_LINE - 1).trimEnd() + '…', truncated: true };
 }
 
 export type TaskLedgerStatus = 'open' | 'claimed' | 'stale' | 'blocked' | 'done' | 'skipped';
@@ -79,6 +93,12 @@ export interface LedgerFold {
   malformed: number;
   /** Events the fold ignored (lost races, done without evidence, …). */
   ignored: Array<{ event: LedgerEvent; reason: string }>;
+  /**
+   * Card text and link per id: the latest `line` / `link` carried by an
+   * accepted event (ignored events change nothing). Ids appear in the order
+   * they first show up in the sorted ledger; see core/tasks/cards.ts.
+   */
+  cards: Map<string, { line?: string; link?: string }>;
 }
 
 export const LEDGER_FILE = 'ledger.jsonl';
@@ -145,6 +165,11 @@ export function formatLedgerLine(event: LedgerEvent): string {
   const ordered: Record<string, string> = { t: event.t, e: event.e, by: event.by, at: event.at };
   if (event.note) ordered.note = event.note;
   if (event.evidence) ordered.evidence = event.evidence;
+  if (event.line) {
+    const { line } = clampCardLine(event.line);
+    if (line) ordered.line = line;
+  }
+  if (event.link?.trim()) ordered.link = event.link.trim();
   return JSON.stringify(ordered) + '\n';
 }
 
@@ -191,6 +216,8 @@ export function parseLedger(content: string): { events: LedgerEvent[]; malformed
           at: obj.at,
           ...(typeof obj.note === 'string' ? { note: obj.note } : {}),
           ...(typeof obj.evidence === 'string' ? { evidence: obj.evidence } : {}),
+          ...(typeof obj.line === 'string' && obj.line.trim() ? { line: clampCardLine(obj.line).line } : {}),
+          ...(typeof obj.link === 'string' && obj.link.trim() ? { link: obj.link.trim() } : {}),
         });
       } else {
         malformed++;
@@ -242,13 +269,26 @@ export function foldLedger(events: LedgerEvent[], opts: FoldOptions = {}): Ledge
 
   const tasks = new Map<string, TaskLedgerState>();
   const ignored: LedgerFold['ignored'] = [];
+  const cards: LedgerFold['cards'] = new Map();
+  const recordCard = (ev: LedgerEvent) => {
+    if (ev.t === INCREMENT_EVENT_TASK) return;
+    const card = cards.get(ev.t) ?? {};
+    if (ev.line) card.line = ev.line;
+    if (ev.link) card.link = ev.link;
+    cards.set(ev.t, card);
+  };
 
   const isStaleAt = (state: TaskLedgerState, atMs: number): boolean =>
     state.since !== undefined && atMs - Date.parse(state.since) > leaseMs;
 
   for (const ev of sorted) {
     // Increment-level events (notes, sessions, handoffs) never touch task state.
-    if (INCREMENT_EVENTS.has(ev.e)) continue;
+    // A note on a card id (`C-01`) still declares the card and carries its line.
+    if (INCREMENT_EVENTS.has(ev.e)) {
+      if (ev.e === 'note') recordCard(ev);
+      continue;
+    }
+    const ignoredBefore = ignored.length;
     const cur = tasks.get(ev.t) ?? { status: 'open' as TaskLedgerStatus };
     const atMs = Date.parse(ev.at);
     const heldByOther =
@@ -288,6 +328,7 @@ export function foldLedger(events: LedgerEvent[], opts: FoldOptions = {}): Ledge
         break;
       }
     }
+    if (ignored.length === ignoredBefore) recordCard(ev);
   }
 
   for (const [t, state] of tasks) {
@@ -296,7 +337,7 @@ export function foldLedger(events: LedgerEvent[], opts: FoldOptions = {}): Ledge
     }
   }
 
-  return { tasks, malformed: 0, ignored };
+  return { tasks, malformed: 0, ignored, cards };
 }
 
 /** Read + fold a ledger file in one call. */

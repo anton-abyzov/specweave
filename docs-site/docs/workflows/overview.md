@@ -59,6 +59,27 @@ specweave task done T-01 --run "npm test -- draft"
 
 `done` runs the command itself and only records the task when it exits 0, storing the output as evidence. If a task cannot be finished, `specweave task block T-01 --reason "..."` or `task skip` records why. You can watch progress with `specweave status` or the [dashboard](/docs/guides/dashboard).
 
+### Task cards
+
+Each task is also a card: one line in the right tense with a link to the PR, report or artifact behind it. Pass the line and link when you claim or finish a task:
+
+```bash
+specweave task claim T-01 --line "Saving the checkout draft"
+specweave task done T-01 --run "npm test -- draft" --line "Saved the checkout draft" --link https://github.com/acme/shop/pull/42
+```
+
+`specweave cards --md` prints the checklist, and `specweave pickup` prints it first:
+
+```text
+0042-checkout-draft Checkout draft
+
+✓ Saved the checkout draft (https://github.com/acme/shop/pull/42)
+✱ Validating the address
+○ Error message
+```
+
+Without `--line` the card shows the task title. Without `--link` it links the first PR URL, `log:` report or commit found in the evidence. Lines are capped at 100 characters. Work that has no increment gets cards too: `specweave card add "Fix the login redirect"` writes `C-01` to `.specweave/cards/<branch>.jsonl`, and `specweave card start|done|wait C-01` moves it. On an increment, `card start|done|wait T-01` are the same as `task claim|done|block`.
+
 To let the agent work through every task unattended, use [autonomous mode](/docs/guides/autonomous-execution). To split a large increment across several agents, use [agent teams](/docs/guides/agent-teams-and-swarms).
 
 ## 3. Verify
@@ -67,7 +88,7 @@ To let the agent work through every task unattended, use [autonomous mode](/docs
 specweave verify
 ```
 
-runs the build, test and lint commands from the Commands table in `AGENTS.md` and writes `reports/verify.md` and `reports/verify.json`, including which acceptance criteria the ledger shows as met.
+runs the build, test and lint commands from the Commands table in `AGENTS.md` and writes `reports/verify.md` and `reports/verify.json`, including which acceptance criteria the ledger shows as met. With no commands configured or detected, verify fails with "no test commands configured"; `specweave verify --reason "docs only"` passes and records the reason in `verify.json`.
 
 ## 4. Review
 
@@ -81,7 +102,7 @@ A different model is a good reviewer. `specweave review` reads from the ledger w
 specweave complete 0042
 ```
 
-closes the increment when the verify report passes. If you must close without a passing report, `--reason` records why in `metadata.json`. Completing never creates issues. It closes an issue that an earlier `specweave sync push` linked only when the close-on-complete setting is on, which `specweave sync setup` turns on. Push progress with `specweave sync push` when you want a tracker updated. See [GitHub](/docs/guides/github-sync).
+closes the increment when the verify report passes. It refuses a spec.md that declares no acceptance criteria. If you must close without a passing report or without criteria, `--reason` records why in `metadata.json`. Completing never creates issues. It closes an issue that an earlier `specweave sync push` linked only when the close-on-complete setting is on, which `specweave sync setup` turns on. Push progress with `specweave sync push` when you want a tracker updated. See [GitHub](/docs/guides/github-sync).
 
 ## When you have to stop
 

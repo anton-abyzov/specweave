@@ -78,10 +78,15 @@ describe('runVerify', () => {
   it('stays ok for a spec that declares no ACs at all (legacy increments)', async () => {
     const { root, incDir } = mkProject();
     fs.writeFileSync(path.join(incDir, 'spec.md'), '# Demo\n\nNo acceptance criteria here.\n');
-    const r = await runVerify(root, '0001-demo', incDir, { commands: [] });
+    const r = await runVerify(root, '0001-demo', incDir, { commands: [], reason: 'fixture runs nothing' });
     expect(r.report.acs).toEqual({ total: 0, done: 0 });
     expect(r.report.ok).toBe(true);
-    expect(checkClosureGate(incDir, '0001-demo').notices.join('\n')).toMatch(/declares no acceptance criteria/);
+    expect(r.report.reason).toBe('fixture runs nothing');
+    // 0933: complete refuses a spec with no ACs unless --reason is given.
+    const gate = checkClosureGate(incDir, '0001-demo');
+    expect(gate.ok).toBe(false);
+    expect(gate.errors.join('\n')).toMatch(/declares no acceptance criteria/);
+    expect(checkClosureGate(incDir, '0001-demo', { reason: 'legacy' }).notices.join('\n')).toMatch(/declares no acceptance criteria/);
   });
 });
 
@@ -101,14 +106,14 @@ describe('checkClosureGate', () => {
 
     // Commands pass but an AC is still open → still blocked, and the message
     // has to name the real blocker instead of a generic "failed".
-    await runVerify(root, '0001-demo', incDir, { commands: [] });
+    await runVerify(root, '0001-demo', incDir, { commands: [], reason: 'fixture runs nothing' });
     const openAcs = checkClosureGate(incDir, '0001-demo');
     expect(openAcs.ok).toBe(false);
     expect(openAcs.errors[0]).toMatch(/1 of 3 acceptance criteria not met/);
     expect(checkClosureGate(incDir, '0001-demo', { reason: 'shipping anyway' }).ok).toBe(true);
 
     tickAllAcs(incDir);
-    await runVerify(root, '0001-demo', incDir, { commands: [] });
+    await runVerify(root, '0001-demo', incDir, { commands: [], reason: 'fixture runs nothing' });
     const ok = checkClosureGate(incDir, '0001-demo');
     expect(ok.ok).toBe(true);
     expect(ok.notices.join('\n')).toMatch(/no reports\/review\.md/);

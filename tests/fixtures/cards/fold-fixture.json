@@ -1,0 +1,534 @@
+[
+  {
+    "name": "no events: every card is todo with the task title",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      },
+      {
+        "id": "T-02",
+        "title": "Card fold"
+      },
+      {
+        "id": "T-03",
+        "title": "Docs"
+      }
+    ],
+    "ledger": [],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "todo",
+        "line": "Ledger fields",
+        "link": null
+      },
+      {
+        "id": "T-02",
+        "state": "todo",
+        "line": "Card fold",
+        "link": null
+      },
+      {
+        "id": "T-03",
+        "state": "todo",
+        "line": "Docs",
+        "link": null
+      }
+    ]
+  },
+  {
+    "name": "claim without line falls back to the title",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      },
+      {
+        "id": "T-02",
+        "title": "Card fold"
+      },
+      {
+        "id": "T-03",
+        "title": "Docs"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "claim",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "doing",
+        "line": "Ledger fields",
+        "link": null
+      },
+      {
+        "id": "T-02",
+        "state": "todo",
+        "line": "Card fold",
+        "link": null
+      },
+      {
+        "id": "T-03",
+        "state": "todo",
+        "line": "Docs",
+        "link": null
+      }
+    ]
+  },
+  {
+    "name": "latest line and explicit link win",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "claim",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "line": "Writing the ledger fields"
+      },
+      {
+        "t": "T-01",
+        "e": "done",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:20:00Z",
+        "evidence": "HEAD abc1234",
+        "line": "Wrote the ledger fields",
+        "link": "https://github.com/anton-abyzov/specweave/pull/7"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "done",
+        "line": "Wrote the ledger fields",
+        "link": "https://github.com/anton-abyzov/specweave/pull/7"
+      }
+    ]
+  },
+  {
+    "name": "line from the claim survives a done without line",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "claim",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "line": "Writing the ledger fields"
+      },
+      {
+        "t": "T-01",
+        "e": "done",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:20:00Z",
+        "evidence": "manual check"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "done",
+        "line": "Writing the ledger fields",
+        "link": null
+      }
+    ]
+  },
+  {
+    "name": "derivation: a PR URL beats log and HEAD",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "done",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "evidence": "npm test -> exit 0\nlog: .specweave/increments/0933-cards/reports/task-T-01.txt\nmerged https://github.com/anton-abyzov/specweave/pull/12\nHEAD abc1234"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "done",
+        "line": "Ledger fields",
+        "link": "https://github.com/anton-abyzov/specweave/pull/12"
+      }
+    ]
+  },
+  {
+    "name": "derivation: log path beats HEAD and is relative to the increment dir",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "done",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "evidence": "npm test -> exit 0\nlog: .specweave/increments/0933-cards/reports/task-T-01.txt\nHEAD abc1234"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "done",
+        "line": "Ledger fields",
+        "link": "reports/task-T-01.txt"
+      }
+    ]
+  },
+  {
+    "name": "derivation: HEAD without a GitHub origin is the bare sha",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "done",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "evidence": "checked by hand\nHEAD abc1234"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "done",
+        "line": "Ledger fields",
+        "link": "abc1234"
+      }
+    ]
+  },
+  {
+    "name": "derivation: HEAD with a GitHub origin is a commit URL",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "origin": "git@github.com:anton-abyzov/specweave.git",
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "done",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "evidence": "checked by hand\nHEAD abc1234"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "done",
+        "line": "Ledger fields",
+        "link": "https://github.com/anton-abyzov/specweave/commit/abc1234"
+      }
+    ]
+  },
+  {
+    "name": "line longer than 100 chars is truncated to 99 plus an ellipsis",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "claim",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "line": "Wrote the ledger fields, the card fold, the shared fixture and the tests that load it from both repositories"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "doing",
+        "line": "Wrote the ledger fields, the card fold, the shared fixture and the tests that load it from both rep…",
+        "link": null
+      }
+    ]
+  },
+  {
+    "name": "blocked is waiting and skipped is skipped",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      },
+      {
+        "id": "T-02",
+        "title": "Card fold"
+      },
+      {
+        "id": "T-03",
+        "title": "Docs"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "block",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "note": "needs the owner",
+        "line": "Waiting on the owner for the token"
+      },
+      {
+        "t": "T-02",
+        "e": "skip",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:05:00Z",
+        "note": "not needed"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "waiting",
+        "line": "Waiting on the owner for the token",
+        "link": null
+      },
+      {
+        "id": "T-02",
+        "state": "skipped",
+        "line": "Card fold",
+        "link": null
+      },
+      {
+        "id": "T-03",
+        "state": "todo",
+        "line": "Docs",
+        "link": null
+      }
+    ]
+  },
+  {
+    "name": "an ignored event changes nothing",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "claim",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "line": "Claude writes the fields"
+      },
+      {
+        "t": "T-01",
+        "e": "claim",
+        "by": "codex@mbp",
+        "at": "2026-10-18T10:30:00Z",
+        "line": "Codex writes the fields",
+        "link": "https://example.com/x"
+      },
+      {
+        "t": "T-01",
+        "e": "done",
+        "by": "codex@mbp",
+        "at": "2026-10-18T10:40:00Z",
+        "line": "Nope",
+        "link": "https://example.com/y"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "doing",
+        "line": "Claude writes the fields",
+        "link": null
+      }
+    ]
+  },
+  {
+    "name": "done without evidence is ignored",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "done",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "line": "Done",
+        "link": "https://github.com/anton-abyzov/specweave/pull/1"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "todo",
+        "line": "Ledger fields",
+        "link": null
+      }
+    ]
+  },
+  {
+    "name": "release returns the card to todo",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-01",
+        "e": "claim",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z"
+      },
+      {
+        "t": "T-01",
+        "e": "release",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:10:00Z",
+        "note": "switching"
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "todo",
+        "line": "Ledger fields",
+        "link": null
+      }
+    ]
+  },
+  {
+    "name": "branch cards C-NN are declared by notes and follow ledger order",
+    "tasks": [],
+    "ledger": [
+      {
+        "t": "C-01",
+        "e": "note",
+        "by": "claude@mbp",
+        "at": "2026-10-18T09:00:00Z",
+        "line": "Fix the login redirect"
+      },
+      {
+        "t": "C-02",
+        "e": "note",
+        "by": "claude@mbp",
+        "at": "2026-10-18T09:01:00Z",
+        "line": "Ship the docs page"
+      },
+      {
+        "t": "C-02",
+        "e": "claim",
+        "by": "claude@mbp",
+        "at": "2026-10-18T09:05:00Z"
+      },
+      {
+        "t": "C-01",
+        "e": "done",
+        "by": "claude@mbp",
+        "at": "2026-10-18T09:30:00Z",
+        "evidence": "HEAD def5678",
+        "line": "Fixed the login redirect"
+      },
+      {
+        "t": "*",
+        "e": "note",
+        "by": "claude@mbp",
+        "at": "2026-10-18T09:40:00Z",
+        "note": "increment note, not a card"
+      }
+    ],
+    "expected": [
+      {
+        "id": "C-01",
+        "state": "done",
+        "line": "Fixed the login redirect",
+        "link": "def5678"
+      },
+      {
+        "id": "C-02",
+        "state": "doing",
+        "line": "Ship the docs page",
+        "link": null
+      }
+    ]
+  },
+  {
+    "name": "ledger-only ids come after spec tasks; unknown keys are ignored",
+    "tasks": [
+      {
+        "id": "T-01",
+        "title": "Ledger fields"
+      }
+    ],
+    "ledger": [
+      {
+        "t": "T-09",
+        "e": "claim",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:00:00Z",
+        "line": "Extra task",
+        "foo": "bar"
+      },
+      {
+        "t": "T-01",
+        "e": "claim",
+        "by": "claude@mbp",
+        "at": "2026-10-18T10:05:00Z",
+        "extra": 1
+      }
+    ],
+    "expected": [
+      {
+        "id": "T-01",
+        "state": "doing",
+        "line": "Ledger fields",
+        "link": null
+      },
+      {
+        "id": "T-09",
+        "state": "doing",
+        "line": "Extra task",
+        "link": null
+      }
+    ]
+  }
+]

@@ -1,3 +1,16 @@
+## [Unreleased]
+
+### Added
+
+- Task cards. Ledger events may carry `line` (one line, at most 100 characters; longer text is truncated with a warning) and `link`. `specweave task claim|done|block` take `--line` and `--link`; `specweave cards [id] --md` prints a header, a blank line and one `✓ / ✱ / ○ / ⏸ / –` line per task with its link, falling back to the task title and to the first PR URL, `log:` report or `HEAD` commit in the evidence. `specweave pickup` prints the checklist before the next task.
+- `specweave card add|start|done|wait|list`. On an increment, `start|done|wait T-NN` are `task claim|done|block`; without one, `card add "<text>"` writes `C-NN` cards to `.specweave/cards/<branch>.jsonl`.
+
+### Changed
+
+- `specweave verify` fails with "no test commands configured" when there is nothing to run, unless `--reason` is given (recorded in `verify.json`).
+- `specweave complete` refuses an increment whose spec.md declares no acceptance criteria, unless `--reason` is given.
+- On completion, living docs are skipped with one log line for a spec without user stories; the JIRA/ADO closure runs whether living docs synced, were skipped or failed.
+
 ## [3.1.2] - 2026-10-19
 
 ### Changed

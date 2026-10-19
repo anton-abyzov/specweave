@@ -267,3 +267,31 @@ describe('buildWorkHandoff', () => {
     expect(fs.readFileSync(path.join(dir, 'ledger.jsonl'), 'utf-8')).toBe(before);
   });
 });
+
+describe('buildPickup card checklist (0933)', () => {
+  it('prints the checklist first, then the next task, then the notes', () => {
+    writeIncrement('0001-login', 'active', [
+      { t: 'T-01', e: 'claim', by: 'codex@mbp', at: ago(30), line: 'Wiring the sign-in form' },
+      { t: 'T-01', e: 'done', by: 'codex@mbp', at: ago(20), evidence: 'npm test → exit 0', line: 'Wired the sign-in form', link: 'https://github.com/o/r/pull/9' },
+      { t: '*', e: 'note', by: 'codex@mbp', at: ago(15), note: 'Error copy is in error.js' },
+    ]);
+    const { text } = buildPickup(root, { agent: 'claude@cloud' });
+    const lines = text.split('\n');
+    const header = lines.findIndex((l) => l.startsWith('Increment 0001-login'));
+    expect(lines[header + 1]).toBe('');
+    expect(lines[header + 2]).toBe('✓ Wired the sign-in form (https://github.com/o/r/pull/9)');
+    expect(lines[header + 3]).toBe('○ Error message');
+    const next = lines.findIndex((l) => l.startsWith('Next: T-02'));
+    const notes = lines.findIndex((l) => l === 'Notes:');
+    expect(next).toBeGreaterThan(header + 3);
+    expect(notes).toBeGreaterThan(next);
+  });
+
+  it('prints branch cards when no increment is open', () => {
+    const file = path.join(root, '.specweave', 'cards', 'no-branch.jsonl');
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify({ t: 'C-01', e: 'note', by: 'a@b', at: ago(5), line: 'Fix the redirect' }) + '\n');
+    const { text } = buildPickup(root, { agent: 'claude@cloud' });
+    expect(text).toContain('Cards on no branch\n\n○ Fix the redirect');
+  });
+});
