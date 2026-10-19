@@ -16,10 +16,11 @@
  *   otherwise (work remains)                     -> counter + 1;    block: <P> task(s) / <A> AC(s) remain
  *
  * Close reminder (no auto session): `task done`/`skip` leaves a marker in
- * `.specweave/state/close-pending.json` when an increment's last task turns
- * terminal. The first stop of each session after that blocks once with the
- * close chain; the session is recorded so it is never asked again. Entries go
- * once the increment is closed, gets new open tasks, or is a day old.
+ * `.specweave/state/close-pending.json`, naming its session, when an
+ * increment's last task turns terminal. That session's next stop blocks once
+ * with the close chain and the entry is removed; other sessions never see it.
+ * Entries also go once the increment is closed, gets new open tasks, or is a
+ * day old.
  *
  * Output shapes: pass = `{}`; block = top-level `decision:"block"` + `reason`.
  *
@@ -38,8 +39,9 @@ import { readSpecAcs, deriveAcStatus } from '../../tasks/verify-runner.js';
 import {
   CLOSE_PENDING_MAX_AGE_MS,
   closeChain,
+  isClosedStatus,
   readClosePending,
-  writeClosePending,
+  removeClosePending,
 } from '../../increment/close-pending.js';
 
 const TURNS_FILE = '.stop-auto-turns';
@@ -138,59 +140,45 @@ function computeRemaining(
   return { pendingTasks, pendingAcs, unresolvedIds };
 }
 
-/** Statuses after which there is nothing left to work on or close. */
-const CLOSED_STATUSES = new Set(['completed', 'abandoned', 'archived', 'cancelled']);
-
 function isClosed(dir: string): boolean {
-  const status = readJsonSafe<{ status?: unknown }>(path.join(dir, 'metadata.json'))?.status;
-  return typeof status === 'string' && CLOSED_STATUSES.has(status);
+  return isClosedStatus(readJsonSafe<{ status?: unknown }>(path.join(dir, 'metadata.json'))?.status);
 }
 
-/** Sessions remembered per increment; enough for a day of threads in one folder. */
-const MAX_NUDGED_SESSIONS = 50;
-
 /**
- * Outside auto mode: remind this session, once, to close an increment whose
- * last task was just finished. The wording is conditional because sessions
- * in one folder share the marker and only the one that did the work should act.
+ * Outside auto mode: remind the session that finished an increment's last
+ * task, once, to verify and close it. Only the session named in the marker is
+ * reminded; every other session in the folder passes untouched. The entry is
+ * removed before blocking, and a stop that a Stop hook already continued is
+ * never blocked again, so a failed write can never trap a session.
  */
 function closeReminder(input: Parameters<HandlerFn>[0], context: HookContext): ReturnType<typeof pass> {
+  if (input.stop_hook_active === true) return pass();
+  const session = typeof input.session_id === 'string' ? input.session_id : '';
+  if (!session) return pass();
   const { projectRoot } = context;
   const pending = readClosePending(projectRoot);
-  const ids = Object.keys(pending);
-  if (ids.length === 0) return pass();
-  const session =
-    (typeof input.session_id === 'string' && input.session_id) ||
-    (typeof input.transcript_path === 'string' && input.transcript_path) ||
-    'unknown-session';
   const now = Date.now();
   const due: string[] = [];
-  let changed = false;
-  for (const id of ids) {
-    const entry = pending[id];
+  const drop: string[] = [];
+  for (const [id, entry] of Object.entries(pending)) {
     const dir = findIncrementDir(projectRoot, id);
     const at = Date.parse(entry.at);
     const stale = !Number.isFinite(at) || now - at > CLOSE_PENDING_MAX_AGE_MS;
     // A task added after the finish reopens the work; the next `task done` re-marks it.
     if (!dir || stale || isClosed(dir) || computeRemaining(projectRoot, [id]).pendingTasks > 0) {
-      delete pending[id];
-      changed = true;
-      continue;
+      drop.push(id);
+    } else if (entry.session === session) {
+      due.push(id);
+      drop.push(id);
     }
-    if (entry.nudged?.includes(session)) continue;
-    entry.nudged = [...(entry.nudged ?? []), session].slice(-MAX_NUDGED_SESSIONS);
-    changed = true;
-    due.push(id);
   }
-  if (changed) writeClosePending(projectRoot, pending);
-  if (due.length === 0) return pass();
+  if (!removeClosePending(projectRoot, drop) || due.length === 0) return pass();
   logHook(context, 'stop', `close reminder: ${due.join(', ')}`, 'block');
-  const steps = due.map((id) => closeChain(id)).join('; and ');
   return stopBlock(
-    `${due.join(', ')}: every task is done but the increment is still open. ` +
-      `If this session did that work, close it now, without asking: ${steps}. ` +
+    `${due.join(', ')}: you finished every task, and the increment is still open. ` +
+      `Close it now, without asking: ${due.map((id) => closeChain(id)).join('; and ')}. ` +
       'If a close gate stops you (verify fails, a check only the user can do), say which in your reply. ' +
-      'If it is not your increment, ignore this.',
+      'A lane agent leaves the close to its lead.',
   );
 }
 

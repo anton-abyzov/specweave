@@ -223,60 +223,72 @@ describe('stop (close reminder outside auto mode)', () => {
   });
   const marker = (root: string) => stateFile(root, 'close-pending.json');
   const writeMarker = (root: string, body: Record<string, unknown>) => fs.writeFileSync(marker(root), JSON.stringify(body));
+  const readMarker = (root: string) => (fs.existsSync(marker(root)) ? JSON.parse(fs.readFileSync(marker(root), 'utf8')) : null);
   const setStatus = (root: string, id: string, status: string) =>
     fs.writeFileSync(path.join(root, '.specweave', 'increments', id, 'metadata.json'), JSON.stringify({ increment: id, status }));
+  const now = () => new Date().toISOString();
 
-  it('reminds a session once to verify, review and complete a finished increment', async () => {
+  it('reminds the session that finished the work, once, to verify, review and complete', async () => {
     repo = mkRepo();
     mkIncrement(repo, '0009-done', { tasksDone: 2, tasksPending: 0, acsTotal: 1, acsDone: 1 });
-    writeMarker(repo, { '0009-done': { at: new Date().toISOString() } });
+    writeMarker(repo, { '0009-done': { at: now(), session: 'thread-a' } });
     process.chdir(repo);
 
     const first = await stop({ session_id: 'thread-a' });
     expect(validateHookOutput('stop', first)).toBeNull();
     expect(first.decision).toBe('block');
-    expect(first.reason).toContain('0009-done: every task is done but the increment is still open');
+    expect(first.reason).toContain('0009-done: you finished every task, and the increment is still open');
     expect(first.reason).toContain('specweave verify 0009-done');
     expect(first.reason).toContain('specweave complete 0009-done');
     expect(first.reason).toContain('without asking');
-
-    // The same session is never asked twice; another session is asked once.
-    expect(await stop({ session_id: 'thread-a', stop_hook_active: true })).toEqual({});
+    expect(readMarker(repo)).toBeNull();
     expect(await stop({ session_id: 'thread-a' })).toEqual({});
-    expect((await stop({ session_id: 'thread-b' })).decision).toBe('block');
-    expect(await stop({ session_id: 'thread-b' })).toEqual({});
   });
 
-  it('drops the marker once the increment is closed, and never blocks for it again', async () => {
+  it('never blocks another session in the same folder', async () => {
     repo = mkRepo();
     mkIncrement(repo, '0009-done', { tasksDone: 1, tasksPending: 0, acsTotal: 1, acsDone: 1 });
-    writeMarker(repo, { '0009-done': { at: new Date().toISOString() } });
-    setStatus(repo, '0009-done', 'completed');
+    writeMarker(repo, { '0009-done': { at: now(), session: 'thread-a' } });
     process.chdir(repo);
-    expect(await stop({ session_id: 'thread-a' })).toEqual({});
-    expect(fs.existsSync(marker(repo))).toBe(false);
+    expect(await stop({ session_id: 'thread-b' })).toEqual({});
+    expect(await stop({})).toEqual({});
+    expect(readMarker(repo)).toEqual({ '0009-done': expect.objectContaining({ session: 'thread-a' }) });
   });
 
-  it('drops a marker that is a day old or whose increment has open tasks again', async () => {
+  it('never blocks a stop that a Stop hook already continued', async () => {
     repo = mkRepo();
-    mkIncrement(repo, '0010-old', { tasksDone: 1, tasksPending: 0, acsTotal: 1, acsDone: 1 });
-    mkIncrement(repo, '0011-reopened', { tasksDone: 1, tasksPending: 1, acsTotal: 1, acsDone: 1 });
+    mkIncrement(repo, '0009-done', { tasksDone: 1, tasksPending: 0, acsTotal: 1, acsDone: 1 });
+    writeMarker(repo, { '0009-done': { at: now(), session: 'thread-a' } });
+    process.chdir(repo);
+    expect(await stop({ session_id: 'thread-a', stop_hook_active: true })).toEqual({});
+  });
+
+  it('drops markers for closed, legacy-closed, reopened or day-old increments without blocking', async () => {
+    repo = mkRepo();
+    mkIncrement(repo, '0010-closed', { tasksDone: 1, tasksPending: 0, acsTotal: 1, acsDone: 1 });
+    mkIncrement(repo, '0011-legacy', { tasksDone: 1, tasksPending: 0, acsTotal: 1, acsDone: 1 });
+    mkIncrement(repo, '0012-reopened', { tasksDone: 1, tasksPending: 1, acsTotal: 1, acsDone: 1 });
+    mkIncrement(repo, '0013-old', { tasksDone: 1, tasksPending: 0, acsTotal: 1, acsDone: 1 });
+    setStatus(repo, '0010-closed', 'completed');
+    setStatus(repo, '0011-legacy', 'superseded');
     writeMarker(repo, {
-      '0010-old': { at: new Date(Date.now() - 25 * 3600 * 1000).toISOString() },
-      '0011-reopened': { at: new Date().toISOString() },
+      '0010-closed': { at: now(), session: 'thread-a' },
+      '0011-legacy': { at: now(), session: 'thread-a' },
+      '0012-reopened': { at: now(), session: 'thread-a' },
+      '0013-old': { at: new Date(Date.now() - 25 * 3600 * 1000).toISOString(), session: 'thread-a' },
     });
     process.chdir(repo);
     expect(await stop({ session_id: 'thread-a' })).toEqual({});
-    expect(fs.existsSync(marker(repo))).toBe(false);
+    expect(readMarker(repo)).toBeNull();
   });
 
   it('auto loop stops blocking once its increment is completed', async () => {
     repo = mkRepo();
-    mkIncrement(repo, '0012-auto', { tasksDone: 2, tasksPending: 0, acsTotal: 1, acsDone: 1 });
-    writeAutoMode(repo, { active: true, incrementIds: ['0012-auto'] });
+    mkIncrement(repo, '0014-auto', { tasksDone: 2, tasksPending: 0, acsTotal: 1, acsDone: 1 });
+    writeAutoMode(repo, { active: true, incrementIds: ['0014-auto'] });
     process.chdir(repo);
     expect((await stop()).reason).toContain('all_complete_needs_closure');
-    setStatus(repo, '0012-auto', 'completed');
+    setStatus(repo, '0014-auto', 'completed');
     expect(await stop()).toEqual({});
   });
 });

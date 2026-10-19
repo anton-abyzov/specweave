@@ -24,7 +24,7 @@ import { readSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
 import { readIntentContext } from '../intent/portable-context.js';
 import { resolveHandoffPointer } from './handoff-pointer.js';
 import { latestCheckpointFor } from './session-checkpoint.js';
-import { closeChain } from '../increment/close-pending.js';
+import { closeChain, isClosedStatus } from '../increment/close-pending.js';
 
 export const MEMORY_INDEX_PATH = '.specweave/memory/MEMORY.md';
 
@@ -130,7 +130,7 @@ function describeFocus(projectRoot: string, dir: string, id: string, agent: stri
       for (const acId of next.acs ?? []) L.push(`  ${acId}: ${byId.get(acId)?.text || '(text not found in spec.md)'}`);
       L.push(`  Files: ${(next.filesAffected ?? []).join(', ') || '-'} | Test: ${next.test ?? '-'}`);
       L.push(`  claim: specweave task claim ${next.id} ${id}`);
-    } else if (!next && counts && counts.total > 0 && counts.done + counts.skipped === counts.total) {
+    } else if (!next && counts && counts.total > 0 && counts.done + counts.skipped === counts.total && !isClosedStatus(status)) {
       L.push(`All tasks done. Next, without asking: ${closeChain(id)}`);
     }
     const others = board.tasks.filter((t) =>
