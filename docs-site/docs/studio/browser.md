@@ -44,7 +44,7 @@ Cookie import works for Chrome, Edge, Brave, Vivaldi, Opera, Arc, Helium, Firefo
 The extension lets agents use one of your real Chrome profiles: your tabs, your logins, on this computer only. Agents of every provider can use it. It is the way SpecWithCode recommends for agents to work in Chrome.
 
 1. Open **Settings > Chrome** and pick the machine; each machine has its own Chrome.
-2. Install the extension. While it is in Chrome Web Store review, choose **Load unpacked**: open `chrome://extensions` in the profile agents should use, turn on Developer mode, click **Load unpacked** and pick the folder SpecWithCode shows.
+2. Install [SpecWithCode Browser from the Chrome Web Store](https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb) in the Chrome profile agents should use: choose **Add to Chrome** in SpecWithCode, or open the link in that profile, then **Add extension**. Chrome keeps it up to date.
 3. Choose **Show pairing code** and copy it.
 4. Click the SpecWithCode icon in Chrome's toolbar, paste the code, name the profile (for example Work or Marketing) and click **Pair**.
 

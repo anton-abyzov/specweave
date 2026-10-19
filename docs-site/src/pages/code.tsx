@@ -62,7 +62,7 @@ const FINISH: {title: string; body: React.ReactNode}[] = [
 
 const REACH: {name: string; detail: React.ReactNode}[] = [
   {name: 'Computer use', detail: <>Agents can see and control the Mac the app runs on: take screenshots, click, type and scroll in any native app. Every provider gets it. It is set per machine, and macOS asks once for Screen Recording and Accessibility.</>},
-  {name: 'SpecWithCode Browser', detail: <>A Chrome extension, version 1.0.1, that lets an agent open, read, click and screenshot pages in your own Chrome profile, inside a tab group you can see and close. It is not in the Chrome Web Store yet; the app prepares it for you to load unpacked.</>},
+  {name: 'SpecWithCode Browser', detail: <>A Chrome extension that lets an agent open, read, click and screenshot pages in your own Chrome profile, inside a tab group you can see and close. Install it from the <a href="https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb">Chrome Web Store</a> and pair it in Settings › Chrome.</>},
   {name: 'Isolated agent tabs', detail: <>Agents open pages in the app’s browser signed out by default: an isolated session that keeps no logins and is cleared when the app closes. To let agents use saved logins, choose a SpecWithCode browser profile for them, for every project or per project.</>},
   {name: 'Voice calls with the coordinator', detail: <>Talk to the coordinator out loud. Speech recognition and speech run on your Mac; an ElevenLabs voice is optional and uses your own key.</>},
 ];
