@@ -2,7 +2,7 @@
  * Finishing the last task through the CLI says how to close the increment and
  * leaves the close-pending marker the Stop hook reminds the session with.
  */
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -26,7 +26,12 @@ const SPEC = `# Close it
 `;
 
 const tmp: string[] = [];
+beforeEach(() => {
+  vi.stubEnv('CLAUDE_CODE_SESSION_ID', 'thread-a');
+  vi.stubEnv('CLAUDE_SESSION_ID', '');
+});
 afterEach(() => {
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
   while (tmp.length) fs.rmSync(tmp.pop()!, { recursive: true, force: true });
 });
@@ -63,7 +68,36 @@ describe('closing after the last task', () => {
     const text = read();
     expect(text).toContain('All tasks done. Next, in this session and without asking: specweave verify 0001-close');
     expect(text).toContain('then specweave complete 0001-close');
-    expect(Object.keys(readClosePending(root))).toEqual(['0001-close']);
+    expect(readClosePending(root)).toEqual({ '0001-close': { at: expect.any(String), session: 'thread-a' } });
+  });
+
+  it('writes no marker outside a Claude Code session, but still prints the close chain', async () => {
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', '');
+    const root = mkProject();
+    const read = captureStdout();
+    await taskCommand('done', 'T-01', undefined, { ...opts(root), evidence: 'a' });
+    await taskCommand('done', 'T-02', undefined, { ...opts(root), evidence: 'b' });
+    expect(read()).toContain('then specweave complete 0001-close');
+    expect(fs.existsSync(closePendingPath(root))).toBe(false);
+  });
+
+  it('task done --json carries the close chain on the last task', async () => {
+    const root = mkProject();
+    const read = captureStdout();
+    await taskCommand('done', 'T-01', undefined, { ...opts(root), evidence: 'a', json: true });
+    expect(JSON.parse(read().trim().split('\n').pop()!).close).toBeUndefined();
+    await taskCommand('done', 'T-02', undefined, { ...opts(root), evidence: 'b', json: true });
+    expect(JSON.parse(read().trim().split('\n').pop()!).close).toContain('specweave complete 0001-close');
+  });
+
+  it('re-skipping an already skipped task does not re-arm the reminder', async () => {
+    const root = mkProject();
+    captureStdout();
+    await taskCommand('done', 'T-01', undefined, { ...opts(root), evidence: 'a' });
+    await taskCommand('skip', 'T-02', undefined, { ...opts(root), reason: 'not needed' });
+    fs.rmSync(closePendingPath(root));
+    await taskCommand('skip', 'T-02', undefined, { ...opts(root), reason: 'again' });
+    expect(fs.existsSync(closePendingPath(root))).toBe(false);
   });
 
   it('task skip on the last open task closes the same way', async () => {

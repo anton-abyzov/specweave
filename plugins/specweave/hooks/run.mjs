@@ -31,14 +31,24 @@ function hasActiveAutoSession(data) {
   }
   return false;
 }
-// `specweave task done`/`skip` leaves this marker when an increment's last task
-// turns terminal; Stop then reminds the session once to verify and close it.
-// Every ancestor is checked, since the CLI writes at the umbrella-aware root.
+// `specweave task done`/`skip` leaves this marker, naming its session, when an
+// increment's last task turns terminal; Stop then reminds that session once to
+// verify and close it. Only that session spawns the worker: every other stop
+// stays on the fast path. Ancestors are checked because the CLI writes at the
+// umbrella-aware root; the walk stops at the first marker it finds.
 const CLOSE_PENDING = path.join('.specweave', 'state', 'close-pending.json');
-function hasClosePending(data) {
+function hasClosePendingFor(data) {
+  const session = typeof data.session_id === 'string' ? data.session_id : '';
+  if (!session || data.stop_hook_active === true) return false;
   let current = path.resolve(typeof data.cwd === 'string' ? data.cwd : process.cwd());
   for (let depth = 0; depth < 100; depth++) {
-    try { if (existsSync(path.join(current, CLOSE_PENDING))) return true; } catch { return false; }
+    const marker = path.join(current, CLOSE_PENDING);
+    if (existsSync(marker)) {
+      try {
+        const entries = JSON.parse(readFileSync(marker, 'utf8'));
+        return Object.values(entries ?? {}).some(entry => entry && entry.session === session);
+      } catch { return false; }
+    }
     const parent = path.dirname(current);
     if (parent === current) break;
     current = parent;
@@ -114,7 +124,7 @@ process.stdin.on('end',()=>{
   catch {return finish({},'invalid_input');}
   if(!['session-start','pre-tool-use','pre-compact','stop'].includes(event))return finish({});
   if(process.env.SPECWEAVE_DISABLE_HOOKS === '1')return finish({});
-  if(event === 'stop' && !hasActiveAutoSession(data) && !hasClosePending(data))return finish({});
+  if(event === 'stop' && !hasActiveAutoSession(data) && !hasClosePendingFor(data))return finish({});
   if(event === 'pre-tool-use' && skipPreToolUse(data))return finish({});
   const env={...process.env};
   child=spawn(process.execPath,[worker,event],{env,detached:process.platform !== 'win32',stdio:['pipe','pipe','pipe']});

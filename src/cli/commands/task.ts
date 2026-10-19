@@ -26,7 +26,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { runShell, isShellCommand } from '../../core/tasks/run-shell.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
-import { closeChain, markClosePending } from '../../core/increment/close-pending.js';
+import { closeChain, currentSessionId, markClosePending } from '../../core/increment/close-pending.js';
 import { appendEvent, recordSessionOnce, getAgentId, ledgerPath, describeState, DEFAULT_LEASE_HOURS, type LedgerEvent, type LedgerEventType } from '../../core/tasks/ledger.js';
 import {
   loadTaskBoard,
@@ -115,7 +115,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
    * marker so the Stop hook reminds this session to close before it ends.
    */
   const finishedAll = (id: string): void => {
-    markClosePending(projectRoot, id);
+    markClosePending(projectRoot, id, currentSessionId());
     if (!opts.json) out(`All tasks done. ${closeNext(id)}`);
   };
   /** Current state of a task after the last append. */
@@ -250,8 +250,9 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
         return EXIT_LOST_RACE;
       }
       const c = board.counts;
-      out(opts.json ? JSON.stringify({ done: taskId, evidence, log: logPath ? rel(projectRoot, logPath) : undefined, counts: c }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
-      if (c.done + c.skipped === c.total && c.total > 0) finishedAll(inc.id);
+      const allDone = c.done + c.skipped === c.total && c.total > 0;
+      out(opts.json ? JSON.stringify({ done: taskId, evidence, log: logPath ? rel(projectRoot, logPath) : undefined, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}) }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
+      if (allDone) finishedAll(inc.id);
       return 0;
     }
     case 'release': {
@@ -272,6 +273,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       if (!note) { err('skip needs --reason "<why this task is not needed>"'); return 2; }
       if (task.state.status === 'done') { err(`${taskId} is already done by ${task.state.by} — skip is for work that will not happen`); return 1; }
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
+      const wasSkipped = task.state.status === 'skipped';
       append('skip', taskId, { note });
       const skipState = stateOf(taskId);
       if (skipState.status !== 'skipped') {
@@ -279,8 +281,10 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
         return EXIT_LOST_RACE;
       }
       const c = board.counts;
-      out(opts.json ? JSON.stringify({ skipped: taskId, reason: note, counts: c }) : `Skipped ${taskId} (terminal): ${note}`);
-      if (c.done + c.skipped === c.total && c.total > 0) finishedAll(inc.id);
+      // Re-skipping a task that was already skipped finishes nothing new.
+      const allDone = !wasSkipped && c.done + c.skipped === c.total && c.total > 0;
+      out(opts.json ? JSON.stringify({ skipped: taskId, reason: note, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}) }) : `Skipped ${taskId} (terminal): ${note}`);
+      if (allDone) finishedAll(inc.id);
       return 0;
     }
   }
@@ -289,7 +293,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
 
 /** What to do once every task is done or skipped. */
 function closeNext(id: string): string {
-  return `Next, in this session and without asking: ${closeChain(id)}.`;
+  return `Next, in this session and without asking: ${closeChain(id)}. A lane agent leaves the close to its lead.`;
 }
 
 /** Refusal text that reads as an instruction, not a status code. */
