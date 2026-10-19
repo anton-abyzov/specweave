@@ -2,7 +2,7 @@ import React from 'react';
 import Link from '@docusaurus/Link';
 import styles from './WhySpecWithCode.module.css';
 
-// SpecWithCode claims were checked against the app at 1.0.44 on 18 October 2026; competitor cells
+// SpecWithCode claims were checked against the app at 1.0.44 on 18 October 2026 (Cursor runs through @cursor/sdk, not its CLI); competitor cells
 // against the vendors' own pages on 16 October 2026.
 // Competitor cells must keep a source link; update CHECKED when you re-verify them.
 const CHECKED = '16 October 2026';
@@ -11,7 +11,7 @@ type Cell = React.ReactNode;
 const COLUMNS = ['SpecWithCode', 'OpenCode', 'T3 Code', 'Cloud agents'];
 const ROWS: {label: string; cells: Cell[]}[] = [
   {label: 'What runs the agent', cells: [
-    'Each vendor’s own CLI: Claude Code, Codex, Cursor, Grok and more',
+    'Each vendor’s own agent: the Claude Code, Codex and Grok CLIs, Cursor through its official SDK, and more',
     <>Its own agent loop with build and plan agents, across 75+ model providers <Src href="https://opencode.ai/docs/providers/" /></>,
     <>Vendor CLIs: Claude Code, Codex, Cursor, Grok Build, OpenCode, Antigravity <Src href="https://github.com/pingdotgg/t3code" /></>,
     <>The vendor’s agent in the vendor’s environment <Src href="https://code.claude.com/docs/en/claude-code-on-the-web" /></>,

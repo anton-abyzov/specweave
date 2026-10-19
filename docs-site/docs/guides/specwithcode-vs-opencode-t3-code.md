@@ -7,7 +7,7 @@ keywords: [opencode alternative, t3 code alternative, codex cloud alternative, c
 
 # SpecWithCode vs OpenCode, T3 Code and cloud agents
 
-SpecWithCode is a free, open-source Mac app that runs Claude Code, Codex and other coding agent CLIs on your own machines, signed in with the plans you already pay for. A coordinator splits work across worker threads, and the app tracks each subscription's limits.
+SpecWithCode is a free, open-source Mac app that runs Claude Code, Codex, Cursor and other coding agents on your own machines, signed in with the plans you already pay for. A coordinator splits work across worker threads, and the app tracks each subscription's limits.
 
 The facts about other products below come from their own sites, docs and GitHub repositories, checked on 16 October 2026. They change quickly, so follow the links for the current state. SpecWithCode is our product, so read this page with that in mind.
 
@@ -15,7 +15,7 @@ The facts about other products below come from their own sites, docs and GitHub 
 
 | | SpecWithCode | OpenCode | T3 Code | Cloud agents |
 |---|---|---|---|---|
-| **What runs the agent** | Each vendor's own CLI: Claude Code, Codex, Cursor, Grok, OpenCode, Muse Code, Antigravity, Pi, plus GitHub Copilot CLI and Gemini CLI through the ACP registry | Its own agent loop with build and plan agents, across 75+ model providers ([providers](https://opencode.ai/docs/providers/), [README](https://github.com/anomalyco/opencode)) | Vendor CLIs: Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity ([README](https://github.com/pingdotgg/t3code)) | The vendor's agent in the vendor's environment |
+| **What runs the agent** | Each vendor's own agent: the Claude Code, Codex, Grok, OpenCode, Muse Code, Antigravity and Pi CLIs, Cursor through its official SDK ([Cursor SDK](https://cursor.com/docs/api/sdk/typescript)), plus GitHub Copilot CLI and Gemini CLI through the ACP registry | Its own agent loop with build and plan agents, across 75+ model providers ([providers](https://opencode.ai/docs/providers/), [README](https://github.com/anomalyco/opencode)) | Vendor CLIs: Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity ([README](https://github.com/pingdotgg/t3code)) | The vendor's agent in the vendor's environment |
 | **Where your code runs** | Your Macs | Your machine | Your machine | A vendor-hosted container or VM that clones your repo (sources below) |
 | **Claude Pro or Max plan** | Through Claude Code's own sign-in on each machine | Its docs say Anthropic prohibits this and the plugin has not been bundled since v1.3.0 ([providers](https://opencode.ai/docs/providers/)) | Through Claude Code: "Works with your subscriptions" ([README](https://github.com/pingdotgg/t3code)) | Billed through each vendor's own plan |
 | **Other machines** | Pair Macs over your network, SSH or Tailscale; move a project or continue a thread on another machine | `opencode serve` and `opencode web` listen on 127.0.0.1 by default and can bind a network address ([server](https://opencode.ai/docs/server/), [web](https://opencode.ai/docs/web/)) | Network, Tailscale, SSH or the T3 Connect relay ([remote access](https://github.com/pingdotgg/t3code/blob/main/docs/user/remote-access.md)) | Runs in the vendor's cloud |
