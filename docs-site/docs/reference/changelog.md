@@ -44,7 +44,15 @@ The current release is **SpecWeave 3.1.0**, published 17 October 2026. Install o
 
 ## SpecWithCode releases
 
-SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.50, published 18 October 2026.
+SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.53, published 19 October 2026. [Download SpecWithCode for Mac](/code/download/).
+
+### 1.0.51 to 1.0.53, 19 October 2026
+
+- **Chrome.** The SpecWithCode extension now installs from the Chrome Web Store, and GitHub Copilot can use Chrome.
+- **Busy Macs.** The server stays responsive under load, threads nothing is driving no longer stay running, and a low disk shows one banner instead of a cascade of errors.
+- **Pairing.** Pair an iPhone from Settings, and Add a machine connects on the first try.
+- **Providers.** Clearer Cursor messages for retired models, expired CLI logins and X Subscription limits. A Claude Console sign-in on API credits counts as ready.
+- **Safety.** Agents are kept out of the app's secrets folder and fleet file.
 
 ### 1.0.45 to 1.0.50, 18 October 2026
 
