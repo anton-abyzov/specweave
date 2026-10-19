@@ -1,0 +1,65 @@
+{
+  "video": "video/narration/work/specwithcode-tour/silent-source.mp4",
+  "out": "docs-site/static/video/studio-tutorial.mp4",
+  "vtt": "docs-site/static/video/studio-tutorial.vtt",
+  "work": "video/narration/work/specwithcode-tour",
+  "music": {
+    "file": "/Users/antonabyzov/Projects/research/specweave-launch-video-20261008/assets/tutorial-music.wav",
+    "db": -22
+  },
+  "lines": [
+    {
+      "start": 0.3,
+      "end": 3.9,
+      "text": "Every AI agent. One workspace you own."
+    },
+    {
+      "start": 4.2,
+      "end": 9.4,
+      "text": "In a project, you give the coordinator a goal."
+    },
+    {
+      "start": 9.6,
+      "end": 14.9,
+      "text": "It starts a worker for each part and lists them in the Threads rail."
+    },
+    {
+      "start": 15.2,
+      "end": 19.9,
+      "text": "Each job gets the model that fits."
+    },
+    {
+      "start": 20.1,
+      "end": 24.9,
+      "text": "Here Codex writes tip.py while Claude writes the README.",
+      "say": "Here, Codex writes tip dot p y, while Claude writes the read me."
+    },
+    {
+      "start": 25.2,
+      "end": 30.9,
+      "text": "Results come back to one conversation. The coordinator checks each worker's output against the goal."
+    },
+    {
+      "start": 31.2,
+      "end": 37.9,
+      "text": "Hit a limit? SpecWithCode shows every account's limits.",
+      "say": "Hit a limit? Spec With Code shows every account's limits."
+    },
+    {
+      "start": 38.2,
+      "end": 47.9,
+      "text": "When Claude runs out, Continue with Codex carries the conversation over, so Codex knows the word only Claude was told."
+    },
+    {
+      "start": 48.2,
+      "end": 55.9,
+      "text": "One record in git. The open-source CLI hands off at 90%, and any agent picks it up.",
+      "say": "One record in git. The open-source C L I hands off at ninety percent, and any agent picks it up."
+    },
+    {
+      "start": 56.2,
+      "end": 60.8,
+      "text": "Bring your agents. Keep your machines."
+    }
+  ]
+}
