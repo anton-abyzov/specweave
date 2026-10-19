@@ -16,11 +16,10 @@
  *   otherwise (work remains)                     -> counter + 1;    block: <P> task(s) / <A> AC(s) remain
  *
  * Close reminder (no auto session): `task done`/`skip` leaves a marker in
- * `.specweave/state/close-pending.json`, naming its session, when an
- * increment's last task turns terminal. That session's next stop blocks once
- * with the close chain and the entry is removed; other sessions never see it.
- * Entries also go once the increment is closed, gets new open tasks, or is a
- * day old.
+ * `~/.specweave/close-pending/<session>.json` when an increment's last task
+ * turns terminal. That session's next stop blocks once with the close chain
+ * and the entry is removed; other sessions never see it. Entries also go once
+ * the increment is closed, gets new open tasks, or is a day old.
  *
  * Output shapes: pass = `{}`; block = top-level `decision:"block"` + `reason`.
  *
@@ -155,24 +154,19 @@ function closeReminder(input: Parameters<HandlerFn>[0], context: HookContext): R
   if (input.stop_hook_active === true) return pass();
   const session = typeof input.session_id === 'string' ? input.session_id : '';
   if (!session) return pass();
-  const { projectRoot } = context;
-  const pending = readClosePending(projectRoot);
+  const pending = readClosePending(session);
   const now = Date.now();
   const due: string[] = [];
   const drop: string[] = [];
-  for (const [id, entry] of Object.entries(pending)) {
-    const dir = findIncrementDir(projectRoot, id);
+  for (const [key, entry] of Object.entries(pending)) {
+    drop.push(key);
+    const dir = findIncrementDir(entry.root, entry.id);
     const at = Date.parse(entry.at);
     const stale = !Number.isFinite(at) || now - at > CLOSE_PENDING_MAX_AGE_MS;
     // A task added after the finish reopens the work; the next `task done` re-marks it.
-    if (!dir || stale || isClosed(dir) || computeRemaining(projectRoot, [id]).pendingTasks > 0) {
-      drop.push(id);
-    } else if (entry.session === session) {
-      due.push(id);
-      drop.push(id);
-    }
+    if (dir && !stale && !isClosed(dir) && computeRemaining(entry.root, [entry.id]).pendingTasks === 0) due.push(entry.id);
   }
-  if (!removeClosePending(projectRoot, drop) || due.length === 0) return pass();
+  if (!removeClosePending(session, pending, drop) || due.length === 0) return pass();
   logHook(context, 'stop', `close reminder: ${due.join(', ')}`, 'block');
   return stopBlock(
     `${due.join(', ')}: you finished every task, and the increment is still open. ` +

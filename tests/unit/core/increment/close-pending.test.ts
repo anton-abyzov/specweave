@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { taskCommand } from '../../../../src/cli/commands/task.js';
-import { readClosePending, closePendingPath } from '../../../../src/core/increment/close-pending.js';
+import { readClosePending, closePendingFile } from '../../../../src/core/increment/close-pending.js';
 
 const SPEC = `# Close it
 
@@ -27,6 +27,10 @@ const SPEC = `# Close it
 
 const tmp: string[] = [];
 beforeEach(() => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'close-pending-home-'));
+  tmp.push(home);
+  vi.stubEnv('HOME', home);
+  vi.stubEnv('USERPROFILE', home);
   vi.stubEnv('CLAUDE_CODE_SESSION_ID', 'thread-a');
   vi.stubEnv('CLAUDE_SESSION_ID', '');
 });
@@ -62,13 +66,13 @@ describe('closing after the last task', () => {
     const read = captureStdout();
     expect(await taskCommand('done', 'T-01', undefined, { ...opts(root), evidence: 'checked a' })).toBe(0);
     expect(read()).not.toContain('All tasks done');
-    expect(fs.existsSync(closePendingPath(root))).toBe(false);
+    expect(fs.existsSync(closePendingFile('thread-a')!)).toBe(false);
 
     expect(await taskCommand('done', 'T-02', undefined, { ...opts(root), evidence: 'checked b' })).toBe(0);
     const text = read();
     expect(text).toContain('All tasks done. Next, in this session and without asking: specweave verify 0001-close');
     expect(text).toContain('then specweave complete 0001-close');
-    expect(readClosePending(root)).toEqual({ '0001-close': { at: expect.any(String), session: 'thread-a' } });
+    expect(Object.values(readClosePending('thread-a'))).toEqual([{ root, id: '0001-close', at: expect.any(String) }]);
   });
 
   it('writes no marker outside a Claude Code session, but still prints the close chain', async () => {
@@ -78,7 +82,7 @@ describe('closing after the last task', () => {
     await taskCommand('done', 'T-01', undefined, { ...opts(root), evidence: 'a' });
     await taskCommand('done', 'T-02', undefined, { ...opts(root), evidence: 'b' });
     expect(read()).toContain('then specweave complete 0001-close');
-    expect(fs.existsSync(closePendingPath(root))).toBe(false);
+    expect(fs.existsSync(closePendingFile('thread-a')!)).toBe(false);
   });
 
   it('task done --json carries the close chain on the last task', async () => {
@@ -95,9 +99,9 @@ describe('closing after the last task', () => {
     captureStdout();
     await taskCommand('done', 'T-01', undefined, { ...opts(root), evidence: 'a' });
     await taskCommand('skip', 'T-02', undefined, { ...opts(root), reason: 'not needed' });
-    fs.rmSync(closePendingPath(root));
+    fs.rmSync(closePendingFile('thread-a')!);
     await taskCommand('skip', 'T-02', undefined, { ...opts(root), reason: 'again' });
-    expect(fs.existsSync(closePendingPath(root))).toBe(false);
+    expect(fs.existsSync(closePendingFile('thread-a')!)).toBe(false);
   });
 
   it('task skip on the last open task closes the same way', async () => {
@@ -106,7 +110,7 @@ describe('closing after the last task', () => {
     expect(await taskCommand('done', 'T-01', undefined, { ...opts(root), evidence: 'checked a' })).toBe(0);
     expect(await taskCommand('skip', 'T-02', undefined, { ...opts(root), reason: 'not needed' })).toBe(0);
     expect(read()).toContain('specweave complete 0001-close');
-    expect(readClosePending(root)['0001-close']).toBeDefined();
+    expect(Object.values(readClosePending('thread-a')).map((e) => e.id)).toEqual(['0001-close']);
   });
 
   it('task next with nothing left prints the close chain', async () => {
