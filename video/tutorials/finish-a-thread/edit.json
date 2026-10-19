@@ -1,0 +1,308 @@
+{
+ "comment": "App tutorial edit, framed-window layout (from provider-runs-out). take.mp4 = take A (shots 02-03, cues from cuesA.json) followed by take B (shots 04-06, cuesB.json), both recorded on the same server minutes apart. Source times are take A cue seconds; a take B cue t sits at t + 106.106 (take A lasts 106.066 s, B's sync offset -0.010 vs A's -0.050). Crops: thread column x 708-1468 below the opening message (y 380, so the coordinator's long prompt with its paths stays out), the project settings dialog, the Code Review detail pane x 636-1920. No crop shows the Code Review list, where the owner's name is blurred anyway. Review fixes: thread shot starts at 9.02, the first frame where the thread column below the opening message is painted (empty before); the Code Review punch-in lands on the status panel only (x 1282-1920, y 190-549), clear of the summary text and the header row.",
+ "title": "Finish a thread with a pull request and auto-merge",
+ "subtitle": "A real run of SpecWithCode 1.0.48 with Codex on a public demo repo.",
+ "wordmark": "SpecWithCode",
+ "outro": {
+  "next": "Next: `sw-done` verifies and closes the increment",
+  "note": "Real turns on a real GitHub repo; the conflicting commit on main was pushed off camera. Waits are sped up and marked. The narration is an AI voice."
+ },
+ "take": "assets/media/take.mp4",
+ "syncOffset": -0.05,
+ "voOffset": 0.05,
+ "tailAfterVo": 0.15,
+ "termCols": 96,
+ "termFont": 26,
+ "visibleRows": 14,
+ "posterAt": 1.0,
+ "toolLabels": {},
+ "screens": {},
+ "beats": [
+  {
+   "id": "01-intro",
+   "kind": "card",
+   "chapter": "What you will see",
+   "voOffset": 1.1,
+   "tail": 0.4
+  },
+  {
+   "id": "02-thread",
+   "kind": "app",
+   "chapter": "The thread finishes and opens a PR",
+   "extra": 0.4,
+   "shots": [
+    {
+     "chip": "Coordinator → Start a thread titled “Greet a team”",
+     "aspect": 1.4126,
+     "segments": [
+      [
+       4.35,
+       5.5,
+       0.75
+      ]
+     ],
+     "cam": [
+      {
+       "src": 4.35,
+       "x": 470,
+       "y": 90,
+       "w": 780
+      }
+     ]
+    },
+    {
+     "chip": "The thread runs `$sw-do` on Codex",
+     "aspect": 1.4126,
+     "segments": [
+      [
+       9.02,
+       12.6,
+       1.0
+      ],
+      [
+       12.6,
+       22.6,
+       1.5
+      ]
+     ],
+     "cam": [
+      {
+       "src": 9.02,
+       "x": 708,
+       "y": 380,
+       "w": 760
+      }
+     ]
+    },
+    {
+     "chip": "Thread done → Open PR and auto-merge",
+     "aspect": 1.4126,
+     "segments": [
+      [
+       22.6,
+       25.0,
+       1.0
+      ],
+      [
+       25.0,
+       29.4,
+       2.0
+      ],
+      [
+       29.4,
+       31.6,
+       1.0
+      ],
+      [
+       31.6,
+       60.3,
+       8.0
+      ],
+      [
+       60.3,
+       64.0,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "src": 22.6,
+       "x": 708,
+       "y": 380,
+       "w": 760
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "03-setting",
+   "kind": "app",
+   "chapter": "Open PR and auto-merge, per project",
+   "extra": 0.35,
+   "shots": [
+    {
+     "chip": "Project settings → greet-app",
+     "aspect": 2.05,
+     "segments": [
+      [
+       65.0,
+       66.9,
+       1.0
+      ]
+     ],
+     "cam": [
+      {
+       "src": 65.0,
+       "x": 650,
+       "y": 160,
+       "w": 880
+      }
+     ]
+    },
+    {
+     "chip": "Repositories → When a thread finishes",
+     "aspect": 2.05,
+     "segments": [
+      [
+       66.9,
+       76.0,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "src": 66.9,
+       "x": 650,
+       "y": 280,
+       "w": 880
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "04-review",
+   "kind": "app",
+   "chapter": "Code Review",
+   "extra": 0.3,
+   "shots": [
+    {
+     "chip": "Code Review → #2: Blocked, Auto-merge (squash and merge)",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       114.4,
+       118.6,
+       1.0
+      ]
+     ],
+     "cam": [
+      {
+       "src": 114.4,
+       "x": 636,
+       "y": 30,
+       "w": 1284
+      },
+      {
+       "src": 116.0,
+       "x": 1282,
+       "y": 190,
+       "w": 638,
+       "dur": 0.8
+      }
+     ]
+    },
+    {
+     "chip": "Code → src/greeting.js",
+     "aspect": 1.7778,
+     "segments": [
+      [
+       120.4,
+       125.5,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "src": 120.4,
+       "x": 640,
+       "y": 360,
+       "w": 1000
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "05-resolve",
+   "kind": "app",
+   "chapter": "Resolve the conflict in its thread",
+   "extra": 0.4,
+   "shots": [
+    {
+     "chip": "Thread composer → “main changed under this pull request…”",
+     "aspect": 2.0,
+     "segments": [
+      [
+       137.5,
+       142.3,
+       1.5
+      ]
+     ],
+     "cam": [
+      {
+       "src": 137.5,
+       "x": 708,
+       "y": 690,
+       "w": 760
+      }
+     ]
+    },
+    {
+     "chip": "Codex merges main, tests and pushes",
+     "aspect": 1.4126,
+     "segments": [
+      [
+       142.3,
+       177.3,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "src": 142.3,
+       "x": 708,
+       "y": 380,
+       "w": 760
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "06-merged",
+   "kind": "app",
+   "chapter": "Merged",
+   "extra": 0.35,
+   "shots": [
+    {
+     "chip": "Auto-merge on → required check `test` passes",
+     "aspect": 1.4126,
+     "segments": [
+      [
+       177.3,
+       179.5,
+       1.0
+      ],
+      [
+       179.5,
+       239.6,
+       15.0
+      ],
+      [
+       239.6,
+       243.0,
+       "fit"
+      ]
+     ],
+     "cam": [
+      {
+       "src": 177.3,
+       "x": 708,
+       "y": 380,
+       "w": 760
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "07-outro",
+   "kind": "card",
+   "chapter": "Next: sw-done",
+   "tail": 1.5
+  }
+ ],
+ "noteLabel": "Known issue in 1.0.48:"
+}

@@ -1,0 +1,61 @@
+WEBVTT
+
+1
+00:00:01.100 --> 00:00:04.780
+Finish a thread with a pull request and auto-merge.
+
+2
+00:00:04.830 --> 00:00:10.585
+In greet-app, the coordinator started a thread, Greet a team, in its own worktree.
+
+3
+00:00:10.585 --> 00:00:17.703
+Codex does T-01 of increment 0002, commits, and stops with a clean tree.
+
+4
+00:00:17.703 --> 00:00:24.190
+Then the project's finish rule runs: SpecWithCode opens pull request #2 into main,
+
+5
+00:00:24.190 --> 00:00:25.795
+and turns on auto-merge.
+
+6
+00:00:25.795 --> 00:00:31.630
+But main changed the same lines, so the thread reports a conflict and does not merge.
+
+7
+00:00:31.830 --> 00:00:37.439
+The rule is a project setting: When a thread finishes, Open PR and auto-merge.
+
+8
+00:00:37.439 --> 00:00:41.990
+This project squashes on merge and removes agent credit lines.
+
+9
+00:00:42.140 --> 00:00:47.221
+Code Review shows the pull request blocked by the conflict, with auto-merge armed.
+
+10
+00:00:47.221 --> 00:00:52.620
+No review is required in this repo. The Code tab shows the thread's change.
+
+11
+00:00:52.720 --> 00:00:56.179
+Send the conflict back to the thread that wrote the code.
+
+12
+00:00:56.179 --> 00:01:03.600
+Codex merges main, keeps the new Hi wording for teams, runs npm test, and pushes.
+
+13
+00:01:03.800 --> 00:01:09.431
+Auto-merge is still on. The required test check passes, and GitHub merges it.
+
+14
+00:01:09.431 --> 00:01:13.160
+The thread shows Merged #2 into main.
+
+15
+00:01:13.310 --> 00:01:18.110
+Next, sw-done verifies and closes the increment.

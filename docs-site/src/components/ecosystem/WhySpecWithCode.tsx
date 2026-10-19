@@ -2,7 +2,7 @@ import React from 'react';
 import Link from '@docusaurus/Link';
 import styles from './WhySpecWithCode.module.css';
 
-// SpecWithCode claims were checked against the app at 1.0.44 on 18 October 2026; competitor cells
+// SpecWithCode claims were checked against the app at 1.0.44 on 18 October 2026 (Cursor runs through @cursor/sdk, not its CLI); competitor cells
 // against the vendors' own pages on 16 October 2026.
 // Competitor cells must keep a source link; update CHECKED when you re-verify them.
 const CHECKED = '16 October 2026';
@@ -11,7 +11,7 @@ type Cell = React.ReactNode;
 const COLUMNS = ['SpecWithCode', 'OpenCode', 'T3 Code', 'Cloud agents'];
 const ROWS: {label: string; cells: Cell[]}[] = [
   {label: 'What runs the agent', cells: [
-    'Each vendor’s own CLI: Claude Code, Codex, Cursor, Grok and more',
+    'Each vendor’s own agent: the Claude Code, Codex and Grok CLIs, Cursor through its official SDK, and more',
     <>Its own agent loop with build and plan agents, across 75+ model providers <Src href="https://opencode.ai/docs/providers/" /></>,
     <>Vendor CLIs: Claude Code, Codex, Cursor, Grok Build, OpenCode, Antigravity <Src href="https://github.com/pingdotgg/t3code" /></>,
     <>The vendor’s agent in the vendor’s environment <Src href="https://code.claude.com/docs/en/claude-code-on-the-web" /></>,
@@ -78,7 +78,7 @@ export default function WhySpecWithCode() {
         <li><b>Pick SpecWithCode</b> to coordinate several agents across your own machines, watch every subscription’s limits, and keep code off anyone else’s servers.</li>
       </ul>
       <p className={styles.sources}>Cloud agent sources: <a href="https://learn.chatgpt.com/docs/environments/cloud-environment">Codex cloud</a>, <a href="https://code.claude.com/docs/en/claude-code-on-the-web">Claude Code on the web</a>, <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-environment">Copilot cloud agent</a>, <a href="https://cursor.com/docs/cloud-agent">Cursor cloud agents</a>, <a href="https://jules.google/docs">Jules</a>. Plan prices: <a href="https://support.claude.com/en/articles/11049741-what-is-the-max-plan">Claude Max</a>, <a href="https://learn.chatgpt.com/docs/pricing">ChatGPT and Codex</a>. Claude plan use in other apps: <a href="https://code.claude.com/docs/en/legal-and-compliance">Anthropic’s terms</a>.</p>
-      <p className={styles.more}><Link className="wv-link" to="/docs/compare/specwithcode-vs-opencode-t3-code">Full comparison with every source</Link></p>
+      <p className={styles.more}><Link className="wv-link" to="/docs/compare/specwithcode-vs-opencode-t3-code">Full comparison with every source</Link>, or <Link className="wv-link" to="/docs/compare/specwithcode-vs-bridgemind/">SpecWithCode vs BridgeMind</Link></p>
     </div>
   </section>;
 }

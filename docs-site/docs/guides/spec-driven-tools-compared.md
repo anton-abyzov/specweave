@@ -40,7 +40,7 @@ See [SpecWeave vs OpenSpec](/docs/compare/specweave-vs-openspec/) for a longer c
 
 **Pick Spec Kit** when one developer and one agent are building a feature in one sitting and you want a guided path through the design.
 
-See [SpecWeave vs GitHub Spec Kit](/docs/guides/specweave-vs-speckit) for a longer comparison.
+See [SpecWeave vs GitHub Spec Kit](/docs/compare/specweave-vs-github-spec-kit/) for a longer comparison.
 
 ## BMAD Method
 
@@ -78,3 +78,4 @@ These tools are not mutually exclusive. OpenSpec's living specs and Spec Kit's o
 - [Claude Code vs Codex: use both](/docs/guides/claude-code-vs-codex)
 - [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/)
 - [AGENTS.md vs CLAUDE.md](/docs/guides/agents-md-vs-claude-md)
+- [SpecWithCode](/code/): run several coding agents on your own machines

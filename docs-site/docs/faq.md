@@ -103,7 +103,7 @@ SpecWeave is open source under the MIT license and free. You pay for the AI tool
 
 ## How is it different from OpenSpec, Spec Kit or BMAD?
 
-All of them give the agent a written spec. SpecWeave adds what happens while the work is built: task claims for parallel agents, stored test output as proof a task is done, and handoff between tools and accounts. They also work well together. See [SpecWeave vs OpenSpec](/docs/compare/specweave-vs-openspec/), [SpecWeave vs GitHub Spec Kit](/docs/guides/specweave-vs-speckit/), [SpecWeave vs the BMAD Method](/docs/compare/specweave-vs-bmad-method/), or [all of them compared](/docs/compare/spec-driven-development-tools/).
+All of them give the agent a written spec. SpecWeave adds what happens while the work is built: task claims for parallel agents, stored test output as proof a task is done, and handoff between tools and accounts. They also work well together. See [SpecWeave vs OpenSpec](/docs/compare/specweave-vs-openspec/), [SpecWeave vs GitHub Spec Kit](/docs/compare/specweave-vs-github-spec-kit/), [SpecWeave vs the BMAD Method](/docs/compare/specweave-vs-bmad-method/), or [all of them compared](/docs/compare/spec-driven-development-tools/).
 
 ## Does it work on an existing codebase?
 

@@ -88,6 +88,7 @@
       "title": "Install SpecWeave and plan your first increment",
       "seoTitle": "Install the SpecWeave CLI and plan your first increment",
       "summary": "A real SpecWeave 3.1.0 run in a sample repo: npm i -g specweave, specweave init, specweave create-increment with a title, a filled-in spec.md with acceptance criteria, decisions and tasks, and specweave pickup naming the first task.",
+      "seoDescription": "A real SpecWeave 3.1.0 run: install the CLI, run specweave init, create an increment, fill in spec.md, and let specweave pickup name the first task.",
       "outcome": "You end with an increment whose spec.md lists numbered acceptance criteria and tasks with their files and test, and specweave pickup tells you which task to claim first.",
       "prerequisites": [
         "Node.js 20.12 or later and git",
@@ -169,8 +170,9 @@
       "slug": "claim-prove-verify-complete",
       "product": "cli",
       "title": "Claim, prove, verify and complete a task",
-      "seoTitle": "Claim, prove, verify and complete a task with the SpecWeave CLI",
+      "seoTitle": "Claim, prove, verify and complete a SpecWeave task",
       "summary": "A real SpecWeave 3.1.0 run in a sample repo: claim a task, prove it with task done --run and its evidence file, watch specweave complete refuse to close without a verify report, then run specweave verify and close the increment.",
+      "seoDescription": "A real SpecWeave 3.1.0 run: claim a task, prove it with task done --run, see complete refuse without a verify report, then verify and close.",
       "outcome": "You end with a completed increment that has its test evidence and a passing verify report.",
       "prerequisites": [
         "Node.js 20.12 or later and git",
@@ -253,8 +255,9 @@
       "slug": "handoff-claude-to-codex",
       "product": "cli",
       "title": "Hand off from Claude Code to Codex at a usage limit",
-      "seoTitle": "Hand off from Claude Code to Codex at a usage limit with SpecWeave",
+      "seoTitle": "Hand off from Claude Code to Codex at a usage limit",
       "summary": "A real SpecWeave 3.1.0 run in a sample repo: the usage guard warns at 95% of the 5-hour limit, specweave handoff writes handoff.md and releases the claim, and specweave pickup gives Codex the next task with its acceptance criteria. Codex proves the task with task done --run.",
+      "seoDescription": "A real SpecWeave 3.1.0 run: the usage guard warns at 95%, specweave handoff writes handoff.md, and specweave pickup gives Codex the next task.",
       "outcome": "You end with Codex running the next task from the ledger, and the ledger shows who handed off, who picked up and who finished.",
       "prerequisites": [
         "Node.js 20.12 or later and git",
@@ -336,8 +339,9 @@
       "slug": "review-with-another-model",
       "product": "cli",
       "title": "Review with the other model before you ship",
-      "seoTitle": "Review Claude Code's diff with Codex before you ship, with specweave review",
+      "seoTitle": "Review Claude Code's diff with Codex before you ship",
       "summary": "A real SpecWeave 3.1.0 run in a sample repo: specweave review --brief shows what a reviewer gets, then specweave review sees in the ledger that Claude Code finished the task and has Codex, a model from another family, review the diff. Codex saves reports/review-codex.md with a high finding and the command exits 3. After the fix, a second review says ship and exits 0. In 3.1.0, as recorded, it overwrote the first report; from 3.1.1 each run keeps its own.",
+      "seoDescription": "A real SpecWeave 3.1.0 run: specweave review has Codex review Claude Code's diff, report a high finding, then say ship after the fix.",
       "outcome": "You end with a review report from a model of another family and a clean second run.",
       "prerequisites": [
         "Node.js 20.12 or later and git",
@@ -421,8 +425,9 @@
       "slug": "how-specwithcode-works",
       "product": "specwithcode",
       "title": "See how SpecWithCode runs your agents",
-      "seoTitle": "How SpecWithCode works: machines, subscriptions, limits and threads",
+      "seoTitle": "How SpecWithCode works: machines, limits and threads",
       "summary": "Each of your machines can hold several AI subscriptions, and every session runs on the machine itself. SpecWithCode connects the machines over Tailscale, watches every limit, and lets one coordinator per project start threads that open their own pull requests. Auto-resolve closes a thread only once it is merged, green and approved.",
+      "seoDescription": "SpecWithCode connects your machines over Tailscale, watches every subscription's limits, and lets one coordinator per project start threads.",
       "outcome": "You know how machines, subscriptions, usage limits, the coordinator and its threads fit together before you install.",
       "prerequisites": [],
       "testedOn": "SpecWithCode 1.0.5",
@@ -515,8 +520,9 @@
       "slug": "start-specwithcode",
       "product": "specwithcode",
       "title": "Start SpecWithCode with a coordinator and two workers",
-      "seoTitle": "Start SpecWithCode: add a project, ask the coordinator, and watch two workers report back",
+      "seoTitle": "Start SpecWithCode: one coordinator, two workers",
       "summary": "A real run of SpecWithCode 1.0.45 on a sample repo: Settings shows the version, the plus next to Projects adopts the greet-app folder, and one request to the coordinator starts two Codex workers in parallel. They appear in the right panel, each finishes its SpecWeave task and ends with a report card saved in the increment, and the plan chip shows both tasks done and both acceptance criteria met.",
+      "seoDescription": "A real run of SpecWithCode 1.0.45: add a project, ask the coordinator once, and watch two Codex workers finish their tasks and report back.",
       "outcome": "You end with a project whose coordinator has started two workers and returned a report.",
       "prerequisites": [
         "SpecWithCode for Mac",
@@ -594,8 +600,9 @@
       "slug": "provider-runs-out",
       "product": "specwithcode",
       "title": "Keep working when a provider runs out",
-      "seoTitle": "Keep working when Claude Code hits its usage limit: SpecWithCode continues the thread on Codex",
+      "seoTitle": "Claude Code hit its usage limit? Continue on Codex",
       "summary": "A real run of SpecWithCode 1.0.43 on a sample repo. A thread on Claude Code has finished T-01 of the increment. The next request stops on a usage limit, simulated with the app's documented test switch. Under the project's default rule, Switch automatically, SpecWithCode hands the stopped turn to Codex with its context, in the same worktree, and Codex finishes T-02. The SpecWeave ledger then shows who did each task, and Project settings, Usage limits, shows where to choose the rule. The video also shows a known issue in this build: after the switch, the model picker returns to Claude Code.",
+      "seoDescription": "A real run of SpecWithCode 1.0.43: a Claude Code thread stops on a simulated usage limit and, under the default rule, Codex finishes the work.",
       "outcome": "You end with a thread that continued on another provider under a rule you set for the project.",
       "prerequisites": [
         "SpecWithCode for Mac",
@@ -674,10 +681,388 @@
       ]
     },
     {
+      "slug": "add-a-machine",
+      "product": "specwithcode",
+      "title": "Add a second machine",
+      "seoTitle": "Add a second Mac to SpecWithCode over Tailscale",
+      "summary": "A real run of SpecWithCode 1.0.47 on two Macs on one tailnet. On the Mac mini, Settings, Connections, Invite this machine makes a one-line invitation and publishes the app on the Mac mini's private Tailscale name. On the main Mac, the same page adds the machine from that line, checks it answers, and lists it as reachable. Allow workers then grants Full access for workers there; in 1.0.47 that also needs a one-time pairing code made on the Mac mini.",
+      "seoDescription": "A real run of SpecWithCode 1.0.47 on two Macs: invite the Mac mini, add it on the main Mac from the one-line invitation, and allow workers.",
+      "outcome": "You end with your second machine listed as reachable and allowed to run workers.",
+      "prerequisites": [
+        "SpecWithCode for Mac on both machines",
+        "Tailscale on both machines, signed in to the same account, with MagicDNS and HTTPS certificates on"
+      ],
+      "testedOn": "SpecWithCode 1.0.47 with SpecWeave 3.0.23, 18 October 2026",
+      "agent": "codex",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/add-a-machine.mp4",
+        "poster": "/video/tutorials/add-a-machine.jpg",
+        "captionsVtt": "/video/tutorials/add-a-machine.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 73.4,
+        "uploadDate": "2026-10-18",
+        "publishedAt": "2026-10-18T18:49:18Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you need"
+          },
+          {
+            "start": 11.0,
+            "title": "Make the line on the new machine"
+          },
+          {
+            "start": 32.6,
+            "title": "Add it on the main machine"
+          },
+          {
+            "start": 49.0,
+            "title": "Allow workers"
+          },
+          {
+            "start": 67.3,
+            "title": "Next: a Linux server"
+          }
+        ]
+      },
+      "steps": [
+        "Install Tailscale on both machines, sign in to the same account, and turn on MagicDNS and HTTPS certificates for the tailnet.",
+        "On the new machine, open Settings, then Connections, and choose Invite this machine. Give it a name and choose Make the line. SpecWithCode publishes itself on that machine's private Tailscale name, never on the public internet.",
+        "Copy the line. It works like a password, so paste it only on your main machine.",
+        "On the main machine, open Settings, Connections, paste the line under Add a machine and choose Add machine. It checks the address answers as that machine and lists it as Reachable.",
+        "Pick the most a worker there may do. In 1.0.47, also run `specwithcode pair --scope orchestration:read --scope orchestration:operate` on the new machine and paste its one-time code into the pairing code field.",
+        "Choose Allow workers. The card reads Allowed: Full access."
+      ],
+      "transcript": "captions",
+      "note": "Recorded headlessly in one take on two disposable SpecWithCode 1.0.47 servers with disposable homes, a Mac (main) and a Mac mini (new machine) on one tailnet, 18 October 2026. The invitation line, the Mac mini's Tailscale address and the pairing code are blurred. The one-time pairing code was made off camera on the Mac mini with `specwithcode pair` (Operate threads scopes); the welcome wizard, adding the sample project and choosing Full access happened off camera, and Full access was chosen for the demo only. Navigation is sped up 2x where marked and one frame is held as a still. Known issues in 1.0.47: Allow workers asks for a pairing code although the guide describes one click; Connect machine fails with 'Could not pair this machine'; and a coordinator could not yet start a worker on the added machine ('no execution binding'), so the video ends at Allowed rather than a running worker. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/add-a-machine",
+      "related": [
+        "join-a-mac",
+        "start-specwithcode",
+        "provider-runs-out"
+      ]
+    },
+    {
+      "slug": "join-a-mac",
+      "product": "specwithcode",
+      "title": "Join a new Mac to your main machine",
+      "seoTitle": "Join a new Mac to SpecWithCode with one line",
+      "summary": "Screenshots of SpecWithCode 1.0.47 on a new Mac: the welcome screen's Join my existing machines checks Tailscale and makes one line, the main machine pastes it under Settings, Connections, Add a machine, and Allow workers lets coordinators start work there. It also shows Invite this machine for a Mac that is already set up, and specwithcode fleet invite for a Mac without the desktop app.",
+      "seoDescription": "Join a new Mac to SpecWithCode from its welcome screen: make one line, paste it on your main machine, allow workers. Also the npm path.",
+      "outcome": "You end with the new Mac listed under Your private machines on your main machine and allowed to run workers.",
+      "prerequisites": [
+        "SpecWithCode on both Macs (the desktop app, or the npm package with Node.js 22.16 or later)",
+        "Tailscale on both Macs, signed in to the same account, with MagicDNS and HTTPS certificates on"
+      ],
+      "testedOn": "SpecWithCode 1.0.47, 18 October 2026",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/join-a-mac.mp4",
+        "poster": "/video/tutorials/join-a-mac.jpg",
+        "captionsVtt": "/video/tutorials/join-a-mac.en.vtt",
+        "captionsBurnedIn": false,
+        "audio": "narrated",
+        "durationSeconds": 86.6,
+        "uploadDate": "2026-10-19",
+        "publishedAt": "2026-10-19T13:33:12Z",
+        "chapters": [
+          {
+            "start": 0.0,
+            "title": "What you need"
+          },
+          {
+            "start": 13.17,
+            "title": "Join on the new Mac"
+          },
+          {
+            "start": 27.93,
+            "title": "Copy the line"
+          },
+          {
+            "start": 44.93,
+            "title": "Add it on the main machine"
+          },
+          {
+            "start": 52.47,
+            "title": "Allow workers"
+          },
+          {
+            "start": 63.13,
+            "title": "Already set up: Invite this machine"
+          },
+          {
+            "start": 69.8,
+            "title": "From a terminal: fleet invite"
+          },
+          {
+            "start": 80.47,
+            "title": "Recap"
+          }
+        ]
+      },
+      "steps": [
+        "On the new Mac, open SpecWithCode. On How will you use this Mac, choose Join my existing machines.",
+        "SpecWithCode checks that Tailscale is installed and signed in. Give this Mac the name your main machine will show, then choose Make the line.",
+        "Copy the line. It works like a password, so paste it only on your main machine. Revoke this line cancels it.",
+        "On your main machine, open Settings, Connections, paste the line under Add a machine and choose Add machine.",
+        "When the Mac appears under Your private machines, choose Allow workers on its card. If it does not connect on its own, choose Connect machine first.",
+        "Back on the new Mac, choose I pasted it and leave SpecWithCode running.",
+        "Already set up the new Mac? Use Invite this machine under Settings, Connections. Without the desktop app, run `npm i -g specwithcode`, `specwithcode service install` and `specwithcode fleet invite`."
+      ],
+      "transcript": "captions",
+      "note": "Built in Remotion from real screenshots of the released SpecWithCode 1.0.47 npm package, run as a private headless test server with a disposable home, 18 October 2026. The invitation line is masked in every screenshot and was revoked right after capture; the owner's machine name and the version row are blurred. Two scenes are not screenshots and say so on screen: the machine card under Your private machines is drawn over a real Connections screenshot, and the terminal is a styled graphic with abridged output, a placeholder address and a hidden line. In 1.0.47, Allow workers can also ask for a one-time pairing code made on the new Mac; Add a second machine shows where it goes. Narration is an AI voice (ElevenLabs); captions are timed from the narration clips.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/add-a-machine",
+      "related": [
+        "add-a-machine",
+        "start-specwithcode"
+      ]
+    },
+    {
+      "slug": "finish-a-thread",
+      "product": "specwithcode",
+      "title": "Finish a thread with a pull request and auto-merge",
+      "seoTitle": "Finish a SpecWithCode thread with a pull request",
+      "summary": "A real run of SpecWithCode 1.0.48 with Codex on a public demo repository. A worker thread does T-01 of a SpecWeave increment in its own worktree and stops with a clean tree. The project's finish rule, Open PR and auto-merge, then opens pull request #2 into main and turns on auto-merge. main had changed the same lines, so the thread reports a conflict and does not merge. Project settings show where the rule, the merge method and agent-credit removal are set. Code Review shows the pull request blocked by the conflict with auto-merge armed. The thread that wrote the code merges main, runs the tests and pushes, the required test check passes, and GitHub merges the pull request.",
+      "seoDescription": "A real run of SpecWithCode 1.0.48: a Codex thread opens a pull request with auto-merge, resolves the conflict in its own thread, and GitHub merges it.",
+      "outcome": "You end with a thread whose pull request merged automatically once its conflict was resolved and the required test check passed.",
+      "prerequisites": [
+        "SpecWithCode for Mac",
+        "a signed-in coding agent (Codex in this video)",
+        "a GitHub repository with Git and GitHub sign-in on the machine that runs the thread",
+        "a SpecWeave increment planned (optional)"
+      ],
+      "testedOn": "SpecWithCode 1.0.48 with SpecWeave 3.1.1, 18 October 2026",
+      "agent": "codex",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/finish-a-thread.mp4",
+        "poster": "/video/tutorials/finish-a-thread.jpg",
+        "captionsVtt": "/video/tutorials/finish-a-thread.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 79.3,
+        "uploadDate": "2026-10-18",
+        "publishedAt": "2026-10-18T18:49:18Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will see"
+          },
+          {
+            "start": 4.78,
+            "title": "The thread finishes and opens a PR"
+          },
+          {
+            "start": 31.78,
+            "title": "Open PR and auto-merge, per project"
+          },
+          {
+            "start": 42.09,
+            "title": "Code Review"
+          },
+          {
+            "start": 52.67,
+            "title": "Resolve the conflict in its thread"
+          },
+          {
+            "start": 63.75,
+            "title": "Merged"
+          },
+          {
+            "start": 73.26,
+            "title": "Next: sw-done"
+          }
+        ]
+      },
+      "steps": [
+        "Start a worker thread from the project coordinator, for example: Start a thread titled \"Greet a team\" in a new worktree from main. The thread gets its own worktree and branch (here greet/greet-a-team, from the branch prefix greet/).",
+        "Let the thread finish its work with a clean worktree and nothing queued. With the project's rule set to Open PR and auto-merge, SpecWithCode pushes the branch, opens a pull request into the default branch and turns on the host's auto-merge. The thread shows each step as a notice: Opened #2 into main, then Auto-merge on for #2; it merges into main when checks pass.",
+        "If the base branch changed the same lines, the thread shows #2 conflicts with main; not merging. Nothing is merged or force-pushed.",
+        "Set the rule per project: open the project's settings (Applying settings for greet-app) and, under Repositories, choose When a thread finishes: Leave branch, Open PR or Open PR and auto-merge. The same card sets Default merge method (Squash and merge here) and Remove agent credits when merging.",
+        "Open Code Review to see the pull request. Its summary shows Blocked, Conflicts with the base, and the armed Auto-merge (squash and merge); the Code tab shows the changed files.",
+        "Send the conflict back to the thread that wrote the code, for example: main changed under this pull request. Merge main in, resolve the conflicts, run npm test, then commit and push.",
+        "Auto-merge stays on. When the required checks pass, GitHub merges the pull request and the thread shows Merged #2 into main."
+      ],
+      "transcript": "captions",
+      "note": "Recorded headlessly on a private SpecWithCode 1.0.48 server with a disposable home, 18 October 2026, against the public demo repository anton-abyzov/greet-app-demo. main there is protected by one required status check, test (GitHub Actions running npm test), with admins included and no required reviews; auto-merge and delete-branch-on-merge are on. No review gated this merge: the pull request merged when the conflict was resolved and the test check passed. The thread's T-01 turn and its conflict-resolution turn are real Codex turns, signed in with the author's account through a short-lived token copied into that home; the GitHub sign-in was the author's own, held in memory only. Full access was chosen for the demo only. The conflicting commit on main, \"Say Hi in every greeting\", was pushed off camera right after the thread started. The take was recorded in two parts on the same server minutes apart (the recorder stopped once on the Code tab and was restarted from Code Review); nothing between the parts changed the pull request. Waits are sped up and marked on screen: the agent turns (1.5× to 4×), the wait for the conflict notice (8×) and the wait for the app's next pull-request sync after GitHub merged (15×). The Code Review list blurs the account owner's display name. Before the first pull request the project's merge method was set to Squash and merge and Remove agent credits when merging was turned on; the branch prefix greet/ was set on the Source Control page, the only place 1.0.48 offers it. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/finish-a-thread",
+      "related": [
+        "provider-runs-out",
+        "review-with-another-model"
+      ]
+    },
+    {
+      "slug": "agents-use-a-browser",
+      "product": "specwithcode",
+      "title": "Let agents use a browser",
+      "seoTitle": "Let SpecWithCode agents use a browser",
+      "summary": "A real run of SpecWithCode 1.0.47 on a sample repo: Settings, Integrations turns on Agent browser access, the coordinator starts a thread whose Codex agent opens greet-app's local demo page in an isolated tab with the preview tools, the tab is docked beside the thread while the agent types Ada and presses Greet, you take over the same tab to type Grace, and a screenshot of the tab comes back in the chat.",
+      "seoDescription": "A real run of SpecWithCode 1.0.47: turn on agent browser access, watch a Codex agent use a page in an isolated tab, take over, get a screenshot.",
+      "outcome": "You end with an agent that checks a local page in a tab beside its thread, which you can watch, take over and screenshot.",
+      "prerequisites": [
+        "SpecWithCode for Mac",
+        "a signed-in coding agent (Codex in this video)",
+        "a project with a web page served locally"
+      ],
+      "testedOn": "SpecWithCode 1.0.47, 18 October 2026",
+      "agent": "codex",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/agents-use-a-browser.mp4",
+        "poster": "/video/tutorials/agents-use-a-browser.jpg",
+        "captionsVtt": "/video/tutorials/agents-use-a-browser.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 70.0,
+        "uploadDate": "2026-10-18",
+        "publishedAt": "2026-10-18T19:50:41Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will see"
+          },
+          {
+            "start": 4.86,
+            "title": "Turn on Agent browser access"
+          },
+          {
+            "start": 14.98,
+            "title": "Ask for a browser check"
+          },
+          {
+            "start": 26.62,
+            "title": "Watch the agent drive"
+          },
+          {
+            "start": 42.5,
+            "title": "Take over the tab"
+          },
+          {
+            "start": 53.1,
+            "title": "A screenshot in the chat"
+          },
+          {
+            "start": 63.02,
+            "title": "Next: your real Chrome"
+          }
+        ]
+      },
+      "steps": [
+        "Open Settings, Integrations and turn on Agent browser access. Projects can override it, and the change applies when an agent session next starts.",
+        "Serve your page locally (greet-app's demo page runs on port 5173 in this video).",
+        "Ask the coordinator to check the page in the browser beside the thread, and say you want to watch; it starts a worker thread for the check.",
+        "Open the thread. Its agent opens an isolated tab with the `preview_*` tools; dock the floating tab to keep it beside the thread while the agent types and clicks.",
+        "Click Take over to drive the same tab yourself while the agent waits, then Hand back.",
+        "Ask for a screenshot: the agent captures the tab as you left it and shows it in the chat."
+      ],
+      "transcript": "captions",
+      "note": "Recorded headlessly in one take on a private SpecWithCode 1.0.47 server with a disposable home and a sample repo, 18 October 2026. Codex ran the coordinator and the worker, signed in through a short-lived token copied into that home. Off camera, the welcome wizard was finished, greet-app was added with Full access (for the demo only), Agent browser access was switched off so the video could turn it on, and the app page was reloaded and the thread reopened before Take over, because in 1.0.47 clicks in a tab right after Dock can land off target. Agent waits are sped up where the video says so. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Download SpecWithCode for Mac",
+        "to": "/code"
+      },
+      "guide": "/docs/studio/browser",
+      "related": [
+        "projects-and-threads",
+        "start-specwithcode"
+      ]
+    },
+    {
+      "slug": "specwithcode-browser",
+      "product": "specwithcode",
+      "title": "One Chrome extension for every agent",
+      "seoTitle": "SpecWithCode Browser: one Chrome extension for every agent",
+      "summary": "A real run of SpecWithCode with SpecWithCode Browser 1.0.1 from the Chrome Web Store: Settings, Chrome links to the store, the extension pairs a Chrome profile named Work with a pairing code, GitHub Copilot opens greet-app's demo page in that Chrome, types Ada and reads back Hello, Ada, Codex does the same with Grace in a tab of its own, and Pause in the extension stops every agent from using the profile.",
+      "seoDescription": "Install SpecWithCode Browser from the Chrome Web Store, pair a Chrome profile, and watch GitHub Copilot and Codex use the same extension.",
+      "outcome": "You end with one paired Chrome profile that every agent in SpecWithCode can use, in tabs of their own, and a Pause button that stops them all.",
+      "prerequisites": [
+        "SpecWithCode for Mac",
+        "Google Chrome",
+        "a signed-in coding agent (GitHub Copilot and Codex in this video)"
+      ],
+      "testedOn": "SpecWithCode built from main after 1.0.50, SpecWithCode Browser 1.0.1, 19 October 2026",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/specwithcode-browser.mp4",
+        "poster": "/video/tutorials/specwithcode-browser.jpg",
+        "captionsVtt": "/video/tutorials/specwithcode-browser.en.vtt",
+        "captionsBurnedIn": true,
+        "audio": "narrated",
+        "durationSeconds": 69.8,
+        "uploadDate": "2026-10-19",
+        "publishedAt": "2026-10-19T05:53:00Z",
+        "chapters": [
+          {
+            "start": 0,
+            "title": "What you will see"
+          },
+          {
+            "start": 5.9,
+            "title": "Install from the Chrome Web Store"
+          },
+          {
+            "start": 14.18,
+            "title": "Pair a Chrome profile"
+          },
+          {
+            "start": 25.22,
+            "title": "GitHub Copilot uses your Chrome"
+          },
+          {
+            "start": 41.86,
+            "title": "Codex uses the same extension"
+          },
+          {
+            "start": 53.68,
+            "title": "Stay in control"
+          },
+          {
+            "start": 63.8,
+            "title": "Get SpecWithCode Browser"
+          }
+        ]
+      },
+      "steps": [
+        "Open Settings, Chrome and click Add to Chrome: it opens SpecWithCode Browser in the Chrome Web Store, and Chrome keeps it up to date.",
+        "Click Show pairing code and copy it.",
+        "In Chrome, click the SpecWithCode icon, paste the code, name the profile (Work in this video) and click Pair this profile.",
+        "Start a chat with any provider and ask it to use your Chrome. It opens its own tab in the blue SpecWithCode tab group, and each Chrome step shows in the chat.",
+        "Other chats and providers use the same extension, each in tabs of its own.",
+        "Drag a tab out of the group to take it back, or click Pause in the extension so no agent can use the profile."
+      ],
+      "transcript": "captions",
+      "note": "Recorded headlessly in one take on a private SpecWithCode server built from main (the Chrome Web Store install, GitHub Copilot over http and the popup computer name), with a disposable home and a sample repo, 19 October 2026. SpecWithCode Browser 1.0.1 came from the Chrome Web Store and ran in a separate headless Chrome profile; headless Chrome has no toolbar or tab strip, so the popup is shown as a zoomed tab and the tab group is described rather than shown. GitHub Copilot ran Claude Sonnet 5.5 and Codex ran GPT-6.1-Sol. Off camera, the welcome wizard was finished and greet-app was added with Full access. The pairing code is blurred. Agent waits are sped up or cut where the video says so. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "action": {
+        "label": "Get SpecWithCode Browser",
+        "to": "https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb"
+      },
+      "guide": "/docs/studio/browser",
+      "related": [
+        "agents-use-a-browser",
+        "start-specwithcode"
+      ]
+    },
+    {
       "slug": "projects-and-threads",
       "product": "specwithcode",
       "title": "Run a project with a coordinator and workers",
-      "seoTitle": "SpecWithCode projects: a Codex coordinator and a Claude worker",
+      "seoTitle": "SpecWithCode projects: Codex coordinator, Claude worker",
       "summary": "A Codex coordinator and a Claude worker in one project: model defaults, routing history, resolving and reopening threads, and token usage by model.",
       "outcome": "You can tell the coordinator and worker models apart, follow the routing history, resolve and reopen a thread, and read token usage by model.",
       "prerequisites": [
@@ -694,7 +1079,7 @@
         "src": "/video/studio-projects/projects-and-threads.mp4",
         "poster": "/video/studio-projects/projects-and-threads.jpg",
         "captionsVtt": "/video/studio-projects/projects-and-threads.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "durationSeconds": 89.9,
         "uploadDate": "2026-10-09",
         "publishedAt": "2026-10-10T22:59:42Z",
@@ -737,7 +1122,7 @@
         "Open Usage to compare coordinator and worker token totals by model. Cache reporting can be incomplete, and an API-equivalent cost is not money paid."
       ],
       "transcript": "captions",
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. AI narration in Anton’s voice, with captions.",
       "action": {
         "label": "Read the projects guide",
         "to": "/docs/studio/projects"
@@ -752,7 +1137,7 @@
       "slug": "plans-and-routines",
       "product": "specwithcode",
       "title": "Plan, verify and schedule project work",
-      "seoTitle": "SpecWithCode plans and routines: verification receipts and scheduling",
+      "seoTitle": "SpecWithCode plans, verification receipts and routines",
       "summary": "Write a short plan with one acceptance criterion, run a real verification that fails and then passes, and keep routines scoped to their project.",
       "outcome": "You add a plan with one acceptance criterion, see a failed verification stay failed, record a passing attempt, and keep routines scoped to their project.",
       "prerequisites": [
@@ -766,7 +1151,7 @@
         "src": "/video/studio-projects/plans-and-routines.mp4",
         "poster": "/video/studio-projects/plans-and-routines.jpg",
         "captionsVtt": "/video/studio-projects/plans-and-routines.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "durationSeconds": 95.1,
         "uploadDate": "2026-10-09",
         "publishedAt": "2026-10-10T22:59:42Z",
@@ -811,7 +1196,7 @@
         "Deleting a project needs its exact name and leaves its source folder intact."
       ],
       "transcript": "captions",
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. AI narration in Anton’s voice, with captions.",
       "action": {
         "label": "Read the plans guide",
         "to": "/docs/studio/plans-and-routines"
@@ -840,7 +1225,7 @@
         "src": "/video/studio-projects/memory-and-usage.mp4",
         "poster": "/video/studio-projects/memory-and-usage.jpg",
         "captionsVtt": "/video/studio-projects/memory-and-usage.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "durationSeconds": 66.9,
         "uploadDate": "2026-10-09",
         "publishedAt": "2026-10-10T22:59:42Z",
@@ -874,7 +1259,7 @@
         "Read usage, which comes from recorded provider turns. Missing data stays visible, and a cost estimate is not a bill."
       ],
       "transcript": "captions",
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. AI narration in Anton’s voice, with captions.",
       "action": {
         "label": "Read the memory and usage guide",
         "to": "/docs/studio/memory-and-usage"
@@ -889,8 +1274,9 @@
       "slug": "specwithcode-tour",
       "product": "specwithcode",
       "title": "Continue a thread on Codex at a usage limit",
-      "seoTitle": "SpecWithCode tour: coordinator, workers and continuing on Codex",
+      "seoTitle": "SpecWithCode tour: a coordinator and its workers",
       "summary": "A project coordinator splits work between Codex and Claude workers, the results come back to one conversation, and a Claude thread at its usage limit continues on Codex with its context.",
+      "seoDescription": "A coordinator splits work between Codex and Claude workers, results return to one conversation, and a Claude thread at its limit continues on Codex.",
       "outcome": "You see a coordinator split work between Codex and Claude, and a Claude thread at its limit continue on Codex with its context.",
       "prerequisites": [],
       "testedOn": null,
@@ -903,7 +1289,7 @@
         "src": "/video/studio-tutorial.mp4",
         "poster": "/img/studio/poster-tour-20261015.jpg",
         "captionsVtt": "/video/studio-tutorial.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "durationSeconds": 61,
         "uploadDate": "2026-10-10",
         "publishedAt": "2026-10-10T05:08:31Z",
@@ -946,7 +1332,7 @@
         "When Claude runs out, Continue with Codex carries the conversation over."
       ],
       "transcript": "captions",
-      "note": "Screen recordings on a Mac, 10 October 2026. No sound; the usage limit in the handoff clip is simulated. Recorded before SpecWithCode 1.0.0, so some labels have changed.",
+      "note": "Screen recordings on a Mac, 10 October 2026, with AI narration in Anton’s voice and music by HoliznaCC0 (CC0). The usage limit in the handoff clip is simulated. Recorded before SpecWithCode 1.0.0, so some labels have changed.",
       "action": {
         "label": "Download SpecWithCode for Mac",
         "to": "/code"
@@ -961,7 +1347,7 @@
       "slug": "personal-and-connections",
       "product": "specwithcode",
       "title": "Set up a personal project with folders and tools",
-      "seoTitle": "SpecWithCode personal projects, folders, repositories and MCP tools",
+      "seoTitle": "SpecWithCode personal projects, folders and MCP tools",
       "summary": "A Personal project with app-managed storage: add a folder, link a repository, discover a local MCP command and grant exactly the tools it may use.",
       "outcome": "You create a personal project, add a folder and a repository, and grant a local MCP command exactly the tools it may use.",
       "prerequisites": [
@@ -974,7 +1360,7 @@
         "src": "/video/studio-projects/personal-and-connections.mp4",
         "poster": "/video/studio-projects/personal-and-connections.jpg",
         "captionsVtt": "/video/studio-projects/personal-and-connections.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "durationSeconds": 81.6,
         "uploadDate": "2026-10-09",
         "publishedAt": "2026-10-10T22:59:42Z",
@@ -1013,7 +1399,7 @@
         "Grant exactly the tools this project may use. Revoke removes future access; restoring needs a new check and new grants."
       ],
       "transcript": "captions",
-      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. Captioned, no sound.",
+      "note": "Actual application footage with synthetic projects, recorded headlessly on 9 October 2026. AI narration in Anton’s voice, with captions.",
       "action": {
         "label": "Read the projects guide",
         "to": "/docs/studio/projects"
@@ -1028,7 +1414,7 @@
       "slug": "agent-result-walkthrough",
       "product": "specwithcode",
       "title": "Check what an agent actually did",
-      "seoTitle": "Read an agent result in SpecWithCode: tool output, exit code and diff",
+      "seoTitle": "Read an agent result in SpecWithCode: output and diff",
       "summary": "Ask the agent for the result, inspect the recorded tool call and its exit code, review the file change, and preview the provider-switch warning.",
       "outcome": "You can find the recorded tool call, its exit code and the file change behind an agent’s answer.",
       "prerequisites": [],
@@ -1039,8 +1425,8 @@
         "src": "/img/studio/agent-driven-demo.mp4",
         "poster": "/img/studio/agent-driven-demo-cover.jpg",
         "captionsVtt": "/img/studio/agent-driven-demo.vtt",
-        "audio": "silent",
-        "durationSeconds": 43.7,
+        "audio": "narrated",
+        "durationSeconds": 50,
         "uploadDate": "2026-10-08",
         "publishedAt": "2026-10-11T04:43:11Z",
         "chapters": [
@@ -1077,7 +1463,7 @@
         "Before switching providers, read the warning: prompt caches and runtime state do not transfer, and the portable chat context does."
       ],
       "transcript": "captions",
-      "note": "Actual browser recording of a synthetic task completed on 7 October 2026 in a disposable repository. The model-switching scene previews the confirmation UI in an isolated fixture.",
+      "note": "Actual browser recording of a synthetic task completed on 7 October 2026 in a disposable repository. The model-switching scene previews the confirmation UI in an isolated fixture. AI narration in Anton’s voice, with captions.",
       "action": {
         "label": "Read how SpecWithCode works",
         "to": "/docs/overview/studio-architecture"
@@ -1092,7 +1478,7 @@
       "slug": "specwithcode-claude-code",
       "product": "specwithcode",
       "title": "Run your first task with Claude Code",
-      "seoTitle": "SpecWithCode with Claude Code: plan, build and review one task",
+      "seoTitle": "SpecWithCode with Claude Code: plan, build, review",
       "summary": "Set up SpecWithCode with Claude Code, run one real task through a project, and review the result.",
       "outcome": "You end with Claude Code having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
       "prerequisites": [
@@ -1333,7 +1719,7 @@
       "slug": "specwithcode-antigravity",
       "product": "specwithcode",
       "title": "Run your first task with Antigravity and Gemini",
-      "seoTitle": "SpecWithCode with Antigravity: plan, build and review one task",
+      "seoTitle": "SpecWithCode with Antigravity: plan, build, review",
       "summary": "Set up SpecWithCode with Antigravity and Gemini, run one real task through a project, and review the result.",
       "outcome": "You end with Antigravity having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
       "prerequisites": [
@@ -1508,20 +1894,6 @@
       "targetSeconds": 80
     },
     {
-      "slug": "finish-a-thread",
-      "product": "specwithcode",
-      "title": "Finish a thread with a pull request and auto-merge",
-      "outcome": "You end with a thread whose pull request merged after review.",
-      "beats": [
-        "Thread done",
-        "Open PR and auto-merge",
-        "Code Review view",
-        "A conflict resolved in its thread",
-        "Merged"
-      ],
-      "targetSeconds": 80
-    },
-    {
       "slug": "test-a-skill-in-studio",
       "product": "verified-skill",
       "title": "Test a skill in Skill Studio",
@@ -1534,19 +1906,6 @@
         "Cross-model sweep"
       ],
       "targetSeconds": 110
-    },
-    {
-      "slug": "add-a-machine",
-      "product": "specwithcode",
-      "title": "Add a second machine",
-      "outcome": "You end with a worker thread running on your second machine.",
-      "beats": [
-        "Tailscale on both machines",
-        "Invite this machine",
-        "Paste the line on your main machine",
-        "A worker runs there"
-      ],
-      "targetSeconds": 75
     },
     {
       "slug": "publish-a-skill",
@@ -1582,7 +1941,7 @@
       "title": "Run your first task with Cursor",
       "outcome": "You end with Cursor having planned, built and tested one change in your repository.",
       "beats": [
-        "Set up",
+        "Sign in and pick a Grok model",
         "One real task",
         "The result"
       ],
@@ -1618,7 +1977,10 @@
         "specwithcode-tour",
         "provider-runs-out",
         "add-a-machine",
+        "join-a-mac",
         "finish-a-thread",
+        "agents-use-a-browser",
+        "specwithcode-browser",
         "agents-use-your-mac-and-chrome"
       ]
     },

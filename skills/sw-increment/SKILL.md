@@ -107,3 +107,7 @@ Files that change and in what order, decisions, rejected alternatives, risks.
 
 Show the ACs and tasks. Unless the user asked to review the plan first, carry on with
 sw-do (one agent, or parallel lanes for three or more disjoint groups of tasks).
+Opening an increment makes closing it part of the same job: any plan or checklist you
+show ends with "Verify and close 0042", and sw-do closes it through sw-done once the last
+task is done. When the plan waits for the user's review, say the increment stays open
+until they answer.

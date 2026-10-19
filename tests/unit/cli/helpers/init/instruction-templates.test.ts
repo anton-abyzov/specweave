@@ -87,6 +87,10 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     expect(agents).toContain('`specweave handoff --reason');
     expect(agents).toMatch(/says "hand off"/);
     expect(agents).toMatch(/says "pick up"/);
+    // An increment's opener also owns its close, in the same session and without asking.
+    expect(agents).toContain('Close what you open: its plan ends with "Verify and close NNNN"');
+    expect(agents).toMatch(/When the last task is done or skipped, without asking: `specweave verify`.*`specweave complete NNNN`/);
+    expect(agents).toContain('Stopping with tasks left, or switching tools: `specweave handoff');
     expect(agents).toContain('.specweave/memory/');
     expect(agents).not.toContain('tasks.md');
   });
@@ -127,8 +131,9 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     const t = parseTemplate(content);
     const unconditional = t.sections.filter(s => !s.when);
     const rendered = [...unconditional.map(s => s.content), t.tail].join('\n\n');
-    // About 890 tokens for AGENTS.md (it was 1,860 in 2.x); the Decide line added ~40.
-    expect(rendered.length).toBeLessThanOrEqual(3600);
+    // About 940 tokens for AGENTS.md (it was 1,860 in 2.x); the Decide line added ~40,
+    // and the close trigger in steps 2 and 4 (verify and complete when the last task is done) ~185.
+    expect(rendered.length).toBeLessThanOrEqual(3800);
     expect(t.tail).toContain('## Project notes');
     expect(t.sections.map(s => s.content).join('\n')).not.toContain('## Commands');
   });

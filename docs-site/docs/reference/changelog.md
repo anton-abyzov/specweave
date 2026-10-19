@@ -44,7 +44,24 @@ The current release is **SpecWeave 3.1.0**, published 17 October 2026. Install o
 
 ## SpecWithCode releases
 
-SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.44, published 18 October 2026.
+SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.53, published 19 October 2026. [Download SpecWithCode for Mac](/code/download/).
+
+### 1.0.51 to 1.0.53, 19 October 2026
+
+- **Chrome.** The SpecWithCode extension now installs from the Chrome Web Store, and GitHub Copilot can use Chrome.
+- **Busy Macs.** The server stays responsive under load, threads nothing is driving no longer stay running, and a low disk shows one banner instead of a cascade of errors.
+- **Pairing.** Pair an iPhone from Settings, and Add a machine connects on the first try.
+- **Providers.** Clearer Cursor messages for retired models, expired CLI logins and X Subscription limits. A Claude Console sign-in on API credits counts as ready.
+- **Safety.** Agents are kept out of the app's secrets folder and fleet file.
+
+### 1.0.45 to 1.0.50, 18 October 2026
+
+- **Updates.** New releases show within minutes and install from the update button; a stopped update agent is shown.
+- **Full access workers.** Workers started by a Full access coordinator stay on Full access and no longer wait on approvals.
+- **Connections.** Add, turn off, remove and undo MCP servers.
+- **Chrome.** Threads can share a Chrome profile, and an agent can use Chrome paired on another machine of the fleet.
+- **Threads.** Shell code blocks in replies run inline, and thread images open in a viewer beside the thread.
+- **Linux workers.** An own-VPS Linux worker installs and shows up in the fleet, and installing the service from the npm package pins that version.
 
 ### 1.0.44, 18 October 2026
 

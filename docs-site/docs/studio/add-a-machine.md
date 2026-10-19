@@ -4,15 +4,25 @@ sidebar_label: Add a machine
 description: "Let coordinators on your main Mac start workers on a second Mac, a Linux box or a VPS. Install Tailscale on both, make an invitation line with fleet invite on the new machine, paste it under Settings > Connections, and allow workers. Why we recommend one machine per AI-provider subscription."
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # Add a machine
 
-Coordinators on your main machine can start workers on your other computers: a second Mac, a Linux box at home or a rented VPS. Each worker runs in its own checkout on that machine, with that machine's own provider sign-ins. This page covers SpecWithCode 1.0.44, the current release (18 October 2026, [release notes](https://github.com/anton-abyzov/specwithcode/releases/tag/v1.0.44)).
+Coordinators on your main machine can start workers on your other computers: a second Mac, a Linux box at home or a rented VPS. Each worker runs in its own checkout on that machine, with that machine's own provider sign-ins. This page covers SpecWithCode 1.0.44 and later ([1.0.44 release notes](https://github.com/anton-abyzov/specwithcode/releases/tag/v1.0.44)).
 
 Joining takes three steps:
 
 1. On the machine you are adding (the **worker**), make an invitation line. It starts with `swc-machine-`.
 2. On your **main machine**, paste the line under **Settings > Connections > Your private machines > Add a machine** and choose **Add machine**.
 3. On the worker's card, choose **Allow workers**.
+
+## Watch it
+
+Two Macs on one tailnet, recorded with SpecWithCode 1.0.47: the invitation line on the Mac mini, adding it on the main Mac, and allowing workers. In 1.0.47, **Allow workers** also asks for a one-time pairing code; the video shows where it goes.
+
+<TutorialEmbed slug="add-a-machine" />
+
+Setting up a new Mac from scratch? [Join a new Mac to your main machine](/tutorials/join-a-mac/) shows the same line made from the welcome screen's **Join my existing machines**, and the `specwithcode fleet invite` path for a Mac without the desktop app.
 
 ## One machine per subscription
 

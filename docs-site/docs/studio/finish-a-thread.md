@@ -4,9 +4,17 @@ sidebar_label: Finish a thread
 description: "What happens to a thread's worktree branch when its work is done: Leave branch, Open PR or Open PR and auto-merge, how merging waits for checks and branch protection, resolving conflicts in the owning thread, and reviewing on the Pull requests page."
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # Finish a thread
 
 Every worker thread runs in its own worktree on its own branch. When the thread finishes its work with nothing queued, SpecWithCode does one of three things with that branch, set per project.
+
+## Watch it
+
+A real thread on a public demo repository, recorded with SpecWithCode 1.0.48: it opens a pull request with auto-merge, hits a conflict, resolves it in the same thread, and GitHub merges it once the required check passes.
+
+<TutorialEmbed slug="finish-a-thread" />
 
 ## Choose what happens
 

@@ -52,5 +52,6 @@ Plan with BMAD, build with SpecWeave. When a BMAD epic is ready, create an incre
 
 - [SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro](/docs/compare/spec-driven-development-tools/)
 - [SpecWeave vs OpenSpec](/docs/compare/specweave-vs-openspec/)
-- [SpecWeave vs GitHub Spec Kit](/docs/guides/specweave-vs-speckit/)
+- [SpecWeave vs GitHub Spec Kit](/docs/compare/specweave-vs-github-spec-kit/)
 - [Switch from Claude Code to Codex without losing your place](/docs/guides/switch-claude-code-to-codex/)
+- [SpecWithCode](/code/): run several coding agents on your own machines

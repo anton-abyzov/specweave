@@ -57,6 +57,8 @@ export interface TutorialEntry {
   title: string;
   seoTitle: string;
   summary: string;
+  /** Meta description, at most 155 characters, for tutorials whose summary is longer than 160. */
+  seoDescription?: string;
   /** One sentence: what you have at the end. */
   outcome: string;
   prerequisites: string[];

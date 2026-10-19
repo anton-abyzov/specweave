@@ -1,0 +1,75 @@
+{
+  "video": "video/narration/work/plans-and-routines/silent-source.mp4",
+  "out": "docs-site/static/video/studio-projects/plans-and-routines.mp4",
+  "vtt": "docs-site/static/video/studio-projects/plans-and-routines.vtt",
+  "work": "video/narration/work/plans-and-routines",
+  "lines": [
+    {
+      "start": 0.3,
+      "end": 7.35,
+      "text": "Add a plan when acceptance needs evidence. Ordinary chat does not require the CLI.",
+      "say": "Add a plan when acceptance needs evidence. Ordinary chat does not require the C L I."
+    },
+    {
+      "start": 7.75,
+      "end": 14.73,
+      "text": "Write a short spec, one acceptance criterion and a task."
+    },
+    {
+      "start": 15.13,
+      "end": 22.18,
+      "text": "Review the executable and literal arguments. Saving the command does not run it."
+    },
+    {
+      "start": 22.59,
+      "end": 29.51,
+      "text": "Verification runs a real local process. A nonzero exit remains failed."
+    },
+    {
+      "start": 29.76,
+      "end": 36.72,
+      "text": "We now create ready.txt in the synthetic source folder. The previous failed receipt stays unchanged.",
+      "say": "We now create ready dot text in the synthetic source folder. The previous failed receipt stays unchanged."
+    },
+    {
+      "start": 37.03,
+      "end": 43.97,
+      "text": "Choose a new attempt deliberately. The new receipt records the successful exit."
+    },
+    {
+      "start": 44.37,
+      "end": 51.21,
+      "text": "Recheck reads the same receipt. It cannot launch that verification again."
+    },
+    {
+      "start": 51.46,
+      "end": 58.66,
+      "text": "An existing SpecWeave ledger stays authoritative. Its done entry remains external, unverified evidence."
+    },
+    {
+      "start": 58.98,
+      "end": 65.94,
+      "text": "Routines keep their project and host scope. This demonstration routine is disabled."
+    },
+    {
+      "start": 66.34,
+      "end": 73.21,
+      "text": "Pause the project to refuse new work. It does not kill an already running turn."
+    },
+    {
+      "start": 73.61,
+      "end": 80.39,
+      "text": "New routine runs remain blocked while the project is paused."
+    },
+    {
+      "start": 80.79,
+      "end": 87.78,
+      "text": "Deletion requires the exact project name. This is a disposable synthetic project."
+    },
+    {
+      "start": 88.18,
+      "end": 94.94,
+      "text": "Deleting project history leaves its source folder intact."
+    }
+  ]
+}

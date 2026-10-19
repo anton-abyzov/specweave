@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
+import Head from '@docusaurus/Head';
 import {Check, ChevronDown, Cloud, Copy, Download, Info, Users} from 'lucide-react';
 import FleetSequence from '../components/ecosystem/FleetSequence';
 import CoordinatorFlow from '../components/ecosystem/CoordinatorFlow';
@@ -10,6 +11,7 @@ import WhySpecWithCode from '../components/ecosystem/WhySpecWithCode';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import {SPECWITHCODE_RELEASE as release} from '../data/specwithcodeRelease';
 import {providerSummary} from '../data/tools';
+import {buildVideoObject, getTutorial} from '../data/tutorials';
 import styles from './code.module.css';
 
 /*
@@ -60,7 +62,7 @@ const FINISH: {title: string; body: React.ReactNode}[] = [
 
 const REACH: {name: string; detail: React.ReactNode}[] = [
   {name: 'Computer use', detail: <>Agents can see and control the Mac the app runs on: take screenshots, click, type and scroll in any native app. Every provider gets it. It is set per machine, and macOS asks once for Screen Recording and Accessibility.</>},
-  {name: 'SpecWithCode Browser', detail: <>A Chrome extension, version 1.0.1, that lets an agent open, read, click and screenshot pages in your own Chrome profile, inside a tab group you can see and close. It is not in the Chrome Web Store yet; the app prepares it for you to load unpacked.</>},
+  {name: 'SpecWithCode Browser', detail: <>A Chrome extension that lets an agent open, read, click and screenshot pages in your own Chrome profile, inside a tab group you can see and close. Install it from the <a href="https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb">Chrome Web Store</a> and pair it in Settings › Chrome.</>},
   {name: 'Isolated agent tabs', detail: <>Agents open pages in the app’s browser signed out by default: an isolated session that keeps no logins and is cleared when the app closes. To let agents use saved logins, choose a SpecWithCode browser profile for them, for every project or per project.</>},
   {name: 'Voice calls with the coordinator', detail: <>Talk to the coordinator out loud. Speech recognition and speech run on your Mac; an ElevenLabs voice is optional and uses your own key.</>},
 ];
@@ -72,6 +74,62 @@ const FAQ: {q: string; a: React.ReactNode}[] = [
   {q: 'Should one machine switch between accounts of the same provider?', a: <>We recommend against it. Keep each machine signed in to one account per provider and leave it that way. For more capacity, add a machine with its own subscriptions instead of switching accounts by hand.</>},
   {q: 'What is free?', a: <>SpecWithCode is free and open source. You bring your provider accounts and pay any provider charges directly. The <Link className="wv-link" to="/docs/getting-started/">SpecWeave CLI</Link> keeps specs, task evidence and handoffs in git so another tool can continue the work.</>},
 ];
+
+/** Plain-text copy of FAQ for the FAQPage structured data. Keep it in step with FAQ above. */
+const FAQ_TEXT: {q: string; a: string}[] = [
+  {q: FAQ[0].q, a: 'No. Agent processes and project files live on the selected machine, but cloud models receive prompts and relevant context, which can include code and file contents. Connected tools use their own services. Private machine connections do not make model inference local.'},
+  {q: FAQ[1].q, a: 'No. Use eligible plans through their supported coding agents. Limits, seat rules and provider terms still apply; API keys or extra usage may create separate charges. Enterprise billing may differ. Measure your own workload before claiming savings.'},
+  {q: FAQ[2].q, a: 'A Mac or a Linux machine (x64 or arm64) running SpecWithCode as a background service, Tailscale on every machine in the same tailnet, and that machine’s own project checkout and provider sign-ins. Then invite it and add the line on your main machine. Windows machines cannot run workers. Adding a machine does not add subscription entitlement or open your company network.'},
+  {q: FAQ[3].q, a: 'We recommend against it. Keep each machine signed in to one account per provider and leave it that way. For more capacity, add a machine with its own subscriptions instead of switching accounts by hand.'},
+  {q: FAQ[4].q, a: 'SpecWithCode is free and open source. You bring your provider accounts and pay any provider charges directly. The SpecWeave CLI keeps specs, task evidence and handoffs in git so another tool can continue the work.'},
+];
+
+const SITE = 'https://spec-weave.com';
+const PAGE_URL = `${SITE}/code/`;
+const TITLE = 'SpecWithCode: run Claude Code and Codex agents on your Mac';
+const DESCRIPTION = `Free, open-source Mac app that runs ${providerSummary(3)} on your own machines and subscriptions, and keeps going when one hits a usage limit.`;
+const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg`;
+const tour = getTutorial('specwithcode-tour');
+const tourVideo = tour ? buildVideoObject(tour, SITE) : null;
+
+const SPECWITHCODE_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'SoftwareApplication',
+      '@id': `${PAGE_URL}#app`,
+      name: 'SpecWithCode',
+      description: DESCRIPTION,
+      url: PAGE_URL,
+      applicationCategory: 'DeveloperApplication',
+      applicationSubCategory: 'AI coding agent workspace',
+      operatingSystem: 'macOS 13 or later (Apple silicon); Linux workers',
+      softwareVersion: release.version,
+      fileSize: release.size,
+      downloadUrl: release.dmgUrl,
+      releaseNotes: release.notesUrl,
+      codeRepository: release.repoUrl,
+      license: 'https://opensource.org/licenses/MIT',
+      isAccessibleForFree: true,
+      image: `${SITE}/img/studio/code-hero-worker-20261015.webp`,
+      screenshot: `${SITE}/img/studio/code-hero-worker-20261015.webp`,
+      offers: {'@type': 'Offer', price: '0', priceCurrency: 'USD'},
+      author: {
+        '@type': 'Person',
+        name: 'Anton Abyzov',
+        url: 'https://github.com/anton-abyzov',
+        sameAs: ['https://www.youtube.com/@antonabyzov', 'https://x.com/aabyzov'],
+      },
+      publisher: {'@id': `${SITE}/#org`},
+    },
+    ...(tourVideo ? [tourVideo] : []),
+    {
+      '@type': 'FAQPage',
+      '@id': `${PAGE_URL}#faq`,
+      mainEntity: FAQ_TEXT.map(({q, a}) => ({'@type': 'Question', name: q, acceptedAnswer: {'@type': 'Answer', text: a}})),
+    },
+  ],
+};
 
 const INVITE = 'specwithcode fleet invite';
 
@@ -105,7 +163,19 @@ function Evidence({items}: {items: {name: string; detail: React.ReactNode}[]}) {
 }
 
 export default function Code() {
-  return <Layout title="SpecWithCode: AI agents on your machines, under your control" description={`Coordinate ${providerSummary(3)} on your own Macs and Linux machines. Use eligible subscriptions, keep working at a usage limit, and finish each thread as a pull request.`}>
+  return <Layout title={TITLE} description={DESCRIPTION}>
+    <Head>
+      <title>{TITLE}</title>
+      <meta property="og:title" content={TITLE} />
+      <meta name="twitter:title" content={TITLE} />
+      <meta property="og:site_name" content="SpecWithCode" />
+      <meta property="og:image" content={OG_IMAGE} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own Macs. Free and open source." />
+      <meta name="twitter:image" content={OG_IMAGE} />
+      <script type="application/ld+json">{JSON.stringify(SPECWITHCODE_LD)}</script>
+    </Head>
     <main className={clsx('wv-root', styles.page)}>
       <header className={clsx(styles.shell, styles.hero)}>
         <div className={styles.heroCopy}>
@@ -114,13 +184,14 @@ export default function Code() {
             <span className={styles.productName}>SpecWithCode</span>
             <span className={styles.productNote}>Free and open source</span>
           </p>
-          <h1>Coding agents on your machines, under your control.</h1>
+          <h1>SpecWithCode: run Claude Code, Codex and Cursor agents on your own machines</h1>
+          <p className={styles.lead}>Coding agents on your machines, under your control.</p>
           <p className={styles.lead}>One coordinator per project starts worker threads in {providerSummary(6)}, each on its own branch or worktree.</p>
           <div className={styles.actions}>
-            <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl}><Download {...btnIcon} />Download for Mac</a>
+            <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for Mac</a>
             <a className="wv-btn wv-btn--secondary wv-btn--lg" href="#workflow">See how it works</a>
           </div>
-          <p className={styles.requirements}>Version {release.version}, {release.size}. Apple silicon, macOS 13 or later, early access. Signed with Developer ID and notarized by Apple. Linux machines can join as workers. <Link className="wv-link" to="/docs/reference/changelog#specwithcode-releases">What is new in {release.version}</Link></p>
+          <p className={styles.requirements}>Version {release.version}, {release.size}. Apple silicon, macOS 13 or later, early access. Signed with Developer ID and notarized by Apple. Linux machines can join as workers. <Link className="wv-link" to="/docs/reference/changelog#specwithcode-releases">What is new in {release.version}</Link> · <Link className="wv-link" to="/code/download/">Download and install steps</Link></p>
           <div className={clsx('wv-note', styles.qualification)}>
             <Info {...icon} />
             <p><strong>Cloud models still receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>
@@ -154,6 +225,7 @@ export default function Code() {
         <div className={styles.sectionHead}>
           <h2 id="limits-title">Keep working when a provider runs out</h2>
           <p>Every account’s session and weekly limits sit on one screen. When a thread stops on a limit, the rule you set for the project decides what happens next.</p>
+          <p className={styles.fine}>Watch <Link className="wv-link" to="/tutorials/provider-runs-out/">Keep working when a provider runs out</Link>, or read <Link className="wv-link" to="/docs/guides/claude-code-usage-limit/">what to do when Claude Code hits its usage limit</Link>.</p>
         </div>
         <Evidence items={LIMITS} />
       </section>
@@ -240,7 +312,7 @@ export default function Code() {
         <h2 id="final-title">Build with the agents you choose</h2>
         <p>Keep the work on machines you control. Link a thread to a SpecWeave increment and the <Link className="wv-link" to="/product">CLI</Link> can pick up the same work.</p>
         <div className={styles.actions}>
-          <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl}><Download {...btnIcon} />Download SpecWithCode</a>
+          <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="footer"><Download {...btnIcon} />Download SpecWithCode</a>
           <a className={clsx('wv-link', styles.finalLink)} href={release.repoUrl}>View source on GitHub</a>
         </div>
       </section>

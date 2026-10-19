@@ -1,0 +1,54 @@
+{
+  "video": "video/narration/work/projects-and-threads/silent-source.mp4",
+  "out": "docs-site/static/video/studio-projects/projects-and-threads.mp4",
+  "vtt": "docs-site/static/video/studio-projects/projects-and-threads.vtt",
+  "work": "video/narration/work/projects-and-threads",
+  "lines": [
+    {
+      "start": 0.3,
+      "end": 9.33,
+      "text": "Verified here: native project coordination. Device deployment is checked separately."
+    },
+    {
+      "start": 9.74,
+      "end": 18.57,
+      "text": "Coordinator and worker defaults are independent. Existing threads retain their own model choices."
+    },
+    {
+      "start": 18.97,
+      "end": 30.67,
+      "text": "This Codex coordinator completed the verified native run. Its conversation stays in the project."
+    },
+    {
+      "start": 31.07,
+      "end": 42.89,
+      "text": "This Claude conversation completed in the verified native run. No new inference starts in this recording."
+    },
+    {
+      "start": 43.33,
+      "end": 53.03,
+      "text": "The coordinator keeps the routing history while worker details open on the right."
+    },
+    {
+      "start": 53.44,
+      "end": 61.17,
+      "text": "Resolve organizes finished work without deleting its history."
+    },
+    {
+      "start": 61.57,
+      "end": 69.3,
+      "text": "Reopen the same thread when related work returns."
+    },
+    {
+      "start": 69.7,
+      "end": 79.5,
+      "text": "Open Usage to compare the actual coordinator and worker token totals by model."
+    },
+    {
+      "start": 79.91,
+      "end": 89.69,
+      "text": "Thread shares explain where tokens went. Cache reporting can be incomplete, and API-equivalent cost is not money paid.",
+      "say": "Thread shares explain where tokens went. Cache reporting can be incomplete, and A P I equivalent cost is not money paid."
+    }
+  ]
+}

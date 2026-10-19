@@ -1,0 +1,62 @@
+{
+  "voiceId": "0Ki1af67ybTaTu4TNmO8",
+  "modelId": "eleven_v4",
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "lines": [
+    {
+      "id": "01-intro",
+      "chunks": [
+        ["Let agents use a browser, right beside the thread.", "Let agents use a browser, right beside the thread."]
+      ]
+    },
+    {
+      "id": "02-settings",
+      "chunks": [
+        ["Open Settings, Integrations, and turn on Agent browser access.", "Open Settings, Integrations, and turn on Agent browser access."],
+        ["Projects can override it, and it applies when an agent session next starts.", " Projects can override it, and it applies when an agent session next starts."]
+      ]
+    },
+    {
+      "id": "03-ask",
+      "chunks": [
+        ["greet-app serves its demo page locally, on port 5173.", "greet app serves its demo page locally, on port fifty-one seventy-three."],
+        ["Ask the coordinator to check it in the browser beside the thread, so you can watch.", " Ask the coordinator to check it in the browser beside the thread, so you can watch."]
+      ]
+    },
+    {
+      "id": "04-watch",
+      "chunks": [
+        ["Open the new thread.", "Open the new thread."],
+        ["Its agent opens an isolated tab with the `preview_*` tools.", " Its agent opens an isolated tab with the preview tools."],
+        ["Dock the tab beside the thread and watch it type Ada and press Greet.", " Dock the tab beside the thread, and watch it type Ada and press Greet."],
+        ["The page says Hello, Ada.", " The page says: Hello, Ada."]
+      ]
+    },
+    {
+      "id": "05-takeover",
+      "chunks": [
+        ["To try something yourself, click Take over.", "To try something yourself, click Take over."],
+        ["It's the same tab, and the agent waits while you drive.", " It's the same tab, and the agent waits while you drive."],
+        ["Type Grace, press Enter, then Hand back.", " Type Grace, press Enter, then Hand back."]
+      ]
+    },
+    {
+      "id": "06-screenshot",
+      "chunks": [
+        ["Now ask for a screenshot.", "Now ask for a screenshot."],
+        ["The agent captures the tab as you left it and shows it in the chat.", " The agent captures the tab as you left it, and shows it in the chat."]
+      ]
+    },
+    {
+      "id": "07-outro",
+      "chunks": [
+        ["To use your real Chrome instead, see the SpecWithCode Browser extension docs.", "To use your real Chrome instead, see the spec with code Browser extension docs."]
+      ]
+    }
+  ]
+}

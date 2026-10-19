@@ -96,7 +96,7 @@ function MonitorIcon() {
 
 export default function Home() {
   const guides = featuredTutorials();
-  return <Layout title="Switch AI tools without losing your place" description="SpecWeave keeps the plan, every finished task and the handoff in git, so Claude Code, Codex or any other agent can pick up the same work. SpecWithCode runs those agents on your own machines and subscriptions. Verified Skill lists agent skills you can check before you install them.">
+  return <Layout title="Spec-driven handoff for Claude Code, Codex and Cursor" description="Open-source CLI that keeps the spec, task ledger and handoff in git, so Codex or any agent continues when Claude Code hits its usage limit. Free, MIT.">
     <main className={clsx(base.page, h.home)}>
       {/* 1. Hero */}
       <section className={h.hero}>
