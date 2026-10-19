@@ -1,0 +1,59 @@
+{
+  "voiceId": "0Ki1af67ybTaTu4TNmO8",
+  "modelId": "eleven_v4",
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
+  "lines": [
+    {
+      "id": "01-intro",
+      "chunks": [
+        ["One Chrome extension, for every agent you run in SpecWithCode.", "One Chrome extension, for every agent you run in Spec With Code."]
+      ]
+    },
+    {
+      "id": "02-install",
+      "chunks": [
+        ["Open Settings, Chrome.", "Open Settings, Chrome."],
+        ["Add to Chrome opens SpecWithCode Browser in the Chrome Web Store, and Chrome keeps it up to date.", " Add to Chrome opens Spec With Code Browser in the Chrome Web Store, and Chrome keeps it up to date."]
+      ]
+    },
+    {
+      "id": "03-pair",
+      "chunks": [
+        ["Choose Show pairing code, and copy it.", "Choose Show pairing code, and copy it."],
+        ["In Chrome, click the SpecWithCode icon, paste the code, name this profile Work, and pair it.", " In Chrome, click the Spec With Code icon, paste the code, name this profile Work, and pair it."]
+      ]
+    },
+    {
+      "id": "04-copilot",
+      "chunks": [
+        ["Start a chat with GitHub Copilot, and ask it to check the demo page in your Chrome.", "Start a chat with GitHub Copilot, and ask it to check the demo page in your Chrome."],
+        ["It opens a tab, types Ada, presses Greet, and reads back Hello, Ada.", " It opens a tab, types Ada, presses Greet, and reads back: Hello, Ada."]
+      ]
+    },
+    {
+      "id": "05-codex",
+      "chunks": [
+        ["In another chat, Codex uses the same extension, in tabs of its own.", "In another chat, Codex uses the same extension, in tabs of its own."],
+        ["You install it once, for every provider.", " You install it once, for every provider."]
+      ]
+    },
+    {
+      "id": "06-control",
+      "chunks": [
+        ["Agent tabs stay in the blue SpecWithCode tab group. Drag a tab out to take it back.", "Agent tabs stay in the blue Spec With Code tab group. Drag a tab out to take it back."],
+        ["Or press Pause, and no agent can use this profile.", " Or press Pause, and no agent can use this profile."]
+      ]
+    },
+    {
+      "id": "07-outro",
+      "chunks": [
+        ["Get SpecWithCode Browser from the Chrome Web Store. The link is below.", "Get Spec With Code Browser from the Chrome Web Store. The link is below."]
+      ]
+    }
+  ]
+}
