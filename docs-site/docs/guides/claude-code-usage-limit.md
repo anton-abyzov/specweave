@@ -89,6 +89,10 @@ Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) hav
 - **Compact at 400K on 1M-context models.** Each message resends the conversation so far, and Claude Code's default waits until about 967K tokens to summarize it. `specweave autocompact on` (or `/autocompact 400k`) keeps every turn under half that. See [Auto-compact at 400K](/docs/guides/claude-code-auto-compact/).
 - **Start a fresh session per task.** A long transcript makes every later step more expensive. With the task state in the repository, a new session needs one `specweave pickup` to catch up.
 
+:::tip Prefer a desktop app?
+[SpecWithCode](/code/) is a free, open-source Mac app that runs Claude Code and Codex side by side. When one subscription hits its limit, the thread continues on another signed-in provider by default. Watch [Keep working when a provider runs out](/tutorials/provider-runs-out/).
+:::
+
 ## Common questions
 
 **Does starting a new chat reset the Claude Code limit?** No. Both the five-hour window and the weekly limit count all your use, across Claude Code and Claude in the browser.
@@ -107,3 +111,4 @@ Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) hav
 - [Auto-compact at 400K](/docs/guides/claude-code-auto-compact/)
 - [Claude Code vs Codex: use both](/docs/guides/claude-code-vs-codex/)
 - [Claude Code Projects and threads](/docs/guides/claude-code-projects/)
+- [SpecWithCode](/code/): run several coding agents on your own machines
