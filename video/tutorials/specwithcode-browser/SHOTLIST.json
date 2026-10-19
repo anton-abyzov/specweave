@@ -1,0 +1,82 @@
+{
+  "episode": "specwithcode-browser",
+  "title": "One Chrome extension for every agent",
+  "app": "SpecWithCode built from PR #400 (store install) merged with PR #411 (Copilot tools over http), disposable server on 127.0.0.1:8351; SpecWithCode Browser 1.0.1 from the Chrome Web Store",
+  "startPath": "/settings/chrome",
+  "offCamera": [
+    "copilot.sh: tools/bin/copilot runs the installed GitHub Copilot CLI with the real HOME (its sign-in is in the login keychain)",
+    "seed.sh: greet-app with a one-page demo on 127.0.0.1:5173, specweave init . --quick, committed; the Copilot provider in studio/userdata/settings.json",
+    "codex-auth.sh: short-lived Codex login in the demo HOME (no refresh token, mode 600)",
+    "record.mjs --prepare: welcome wizard, ~/greet-app as a Local folder, Full access"
+  ],
+  "comment": "One continuous headless take of two browsers: the app (take.webm) and a Chrome profile with the store build of SpecWithCode Browser (chrome/page-N.webm, one per page). Headless Chrome has no toolbar, so the popup opens as a tab and is zoomed 2.2x. The pairing code is blurred in both places. Beat ids match vo-lines.json and edit.json.",
+  "shots": [
+    {
+      "id": "02-install",
+      "kind": "APP",
+      "steps": [
+        {"do": "pause", "ms": 800},
+        {"do": "hover", "role": "link", "nameRegex": "^Add to Chrome", "ms": 1800},
+        {"do": "hover", "text": "Open the link in the Chrome profile agents should use. Chrome keeps the extension up to date.", "ms": 2200}
+      ]
+    },
+    {
+      "id": "03-pair",
+      "kind": "APP",
+      "steps": [
+        {"do": "click", "role": "button", "name": "Show pairing code", "after": 1200},
+        {"do": "click", "role": "button", "name": "Copy pairing code", "after": 1000},
+        {"do": "popupOpen", "after": 1200},
+        {"do": "popupPaste", "after": 800},
+        {"do": "popupType", "css": "#label", "text": "Work"},
+        {"do": "popupButton", "name": "Pair this profile", "phase": "connected", "after": 2000},
+        {"do": "popupStill"},
+        {"do": "expect", "text": "Work", "exact": true, "timeout": 30000},
+        {"do": "pause", "ms": 2000}
+      ]
+    },
+    {
+      "id": "04-copilot",
+      "kind": "APP",
+      "steps": [
+        {"do": "press", "key": "Escape", "after": 1200},
+        {"do": "click", "text": "New chat", "exact": true, "after": 1800},
+        {"do": "click", "role": "button", "nameRegex": "^(GPT|Claude|Default|Auto)", "after": 900},
+        {"do": "click", "role": "button", "name": "GitHub Copilot", "exact": true, "after": 900},
+        {"do": "click", "role": "option", "nameRegex": "^Claude Sonnet 5\\.5 GitHub Copilot", "after": 1200},
+        {"do": "click", "role": "textbox", "name": "Message", "after": 400},
+        {"do": "type", "delay": 26, "text": "In my Chrome, open http://127.0.0.1:5173, type Ada in the name field, press Greet, and tell me what the page shows."},
+        {"do": "pause", "ms": 500},
+        {"do": "press", "key": "Enter", "after": 1500},
+        {"do": "waitChromeUrl", "contains": "127.0.0.1:5173", "timeout": 300000},
+        {"do": "expect", "textRegex": "Hello, Ada!", "timeout": 300000},
+        {"do": "pause", "ms": 3000}
+      ]
+    },
+    {
+      "id": "05-codex",
+      "kind": "APP",
+      "steps": [
+        {"do": "click", "text": "New chat", "exact": true, "after": 1800},
+        {"do": "click", "role": "button", "nameRegex": "^(GPT|Claude|Default|Auto)", "after": 900},
+        {"do": "click", "role": "button", "name": "Codex", "exact": true, "after": 900},
+        {"do": "click", "role": "option", "nameRegex": "^GPT-6\\.1-Sol Codex", "after": 1200},
+        {"do": "click", "role": "textbox", "name": "Message", "after": 400},
+        {"do": "type", "delay": 26, "text": "In my Chrome, open http://127.0.0.1:5173 in a new tab, type Grace, press Greet, and tell me what it shows."},
+        {"do": "pause", "ms": 500},
+        {"do": "press", "key": "Enter", "after": 1500},
+        {"do": "expect", "textRegex": "Hello, Grace!", "timeout": 300000},
+        {"do": "pause", "ms": 3000}
+      ]
+    },
+    {
+      "id": "06-control",
+      "kind": "APP",
+      "steps": [
+        {"do": "popupButton", "name": "Pause", "phase": "paused", "after": 2500},
+        {"do": "popupStill"},
+        {"do": "popupButton", "name": "Resume", "phase": "connected", "after": 1500}
+      ]
+    }
+  ]
+}
