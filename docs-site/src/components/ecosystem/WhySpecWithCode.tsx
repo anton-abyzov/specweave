@@ -78,7 +78,7 @@ export default function WhySpecWithCode() {
         <li><b>Pick SpecWithCode</b> to coordinate several agents across your own machines, watch every subscription’s limits, and keep code off anyone else’s servers.</li>
       </ul>
       <p className={styles.sources}>Cloud agent sources: <a href="https://learn.chatgpt.com/docs/environments/cloud-environment">Codex cloud</a>, <a href="https://code.claude.com/docs/en/claude-code-on-the-web">Claude Code on the web</a>, <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-environment">Copilot cloud agent</a>, <a href="https://cursor.com/docs/cloud-agent">Cursor cloud agents</a>, <a href="https://jules.google/docs">Jules</a>. Plan prices: <a href="https://support.claude.com/en/articles/11049741-what-is-the-max-plan">Claude Max</a>, <a href="https://learn.chatgpt.com/docs/pricing">ChatGPT and Codex</a>. Claude plan use in other apps: <a href="https://code.claude.com/docs/en/legal-and-compliance">Anthropic’s terms</a>.</p>
-      <p className={styles.more}><Link className="wv-link" to="/docs/compare/specwithcode-vs-opencode-t3-code">Full comparison with every source</Link></p>
+      <p className={styles.more}><Link className="wv-link" to="/docs/compare/specwithcode-vs-opencode-t3-code">Full comparison with every source</Link>, or <Link className="wv-link" to="/docs/compare/specwithcode-vs-bridgemind/">SpecWithCode vs BridgeMind</Link></p>
     </div>
   </section>;
 }
