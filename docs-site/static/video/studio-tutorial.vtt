@@ -1,43 +1,74 @@
 WEBVTT
 
-NOTE Descriptive captions for a silent screen recording. Cue times follow the on-screen section changes.
+NOTE Captions match the narration. Times follow the spoken words.
 
 1
-00:00:00.000 --> 00:00:04.000
-[No sound] Every AI agent. One workspace you own.
+00:00:00.300 --> 00:00:02.172
+Every AI agent.
 
 2
-00:00:04.000 --> 00:00:09.500
-Projects: give the coordinator a goal.
+00:00:02.172 --> 00:00:04.200
+One workspace you own.
 
 3
-00:00:09.500 --> 00:00:15.000
-It starts a worker for each part and lists them in the Threads rail.
+00:00:04.200 --> 00:00:08.320
+In a project, you give
+the coordinator a goal.
 
 4
-00:00:15.000 --> 00:00:20.000
-Each job gets the model that fits.
+00:00:09.600 --> 00:00:14.920
+It starts a worker for each part
+and lists them in the Threads rail.
 
 5
-00:00:20.000 --> 00:00:25.000
-Here Codex writes tip.py while Claude writes the README.
+00:00:15.200 --> 00:00:18.600
+Each job gets the model that fits.
 
 6
-00:00:25.000 --> 00:00:31.000
-Results come back to one conversation. The coordinator checks each worker's output against the goal.
+00:00:20.100 --> 00:00:25.200
+Here Codex writes tip.py while
+Claude writes the README.
 
 7
-00:00:31.000 --> 00:00:38.000
-Hit a limit? The usage view shows every account's limits.
+00:00:25.200 --> 00:00:27.757
+Results come back to one conversation.
 
 8
-00:00:38.000 --> 00:00:48.000
-When Claude runs out, Continue with Codex carries the conversation over, so Codex knows the code word only Claude was told. The limit in this clip is simulated.
+00:00:27.757 --> 00:00:31.200
+The coordinator checks each
+worker's output against the goal.
 
 9
-00:00:48.000 --> 00:00:56.000
-One record in git. The open-source specweave CLI hands off at 90% of a usage window, and any agent continues with specweave pickup.
+00:00:31.200 --> 00:00:32.320
+Hit a limit?
 
 10
-00:00:56.000 --> 00:01:01.000
-Bring your agents. Keep your machines. spec-weave.com/studio
+00:00:32.320 --> 00:00:36.040
+SpecWithCode shows every account's limits.
+
+11
+00:00:38.200 --> 00:00:43.240
+When Claude runs out, Continue with
+Codex carries the conversation over,
+
+12
+00:00:43.240 --> 00:00:47.120
+so Codex knows the word
+only Claude was told.
+
+13
+00:00:48.200 --> 00:00:50.040
+One record in git.
+
+14
+00:00:50.040 --> 00:00:55.920
+The open-source CLI hands off at
+90%, and any agent picks it up.
+
+15
+00:00:56.200 --> 00:00:57.840
+Bring your agents.
+
+16
+00:00:57.840 --> 00:00:59.680
+Keep your machines.
