@@ -31,29 +31,16 @@ function hasActiveAutoSession(data) {
   }
   return false;
 }
-// `specweave task done`/`skip` leaves this marker, naming its session, when an
-// increment's last task turns terminal; Stop then reminds that session once to
-// verify and close it. Only that session spawns the worker: every other stop
-// stays on the fast path. Ancestors are checked because the CLI writes at the
-// umbrella-aware root; the walk stops at the first marker it finds.
-const CLOSE_PENDING = path.join('.specweave', 'state', 'close-pending.json');
+// `specweave task done`/`skip` writes ~/.specweave/close-pending/<session>.json
+// when an increment's last task turns terminal; Stop then reminds that session
+// once to verify and close it. Only that session spawns the worker: every
+// other stop stays on the fast path.
 function hasClosePendingFor(data) {
   const session = typeof data.session_id === 'string' ? data.session_id : '';
-  if (!session || data.stop_hook_active === true) return false;
-  let current = path.resolve(typeof data.cwd === 'string' ? data.cwd : process.cwd());
-  for (let depth = 0; depth < 100; depth++) {
-    const marker = path.join(current, CLOSE_PENDING);
-    if (existsSync(marker)) {
-      try {
-        const entries = JSON.parse(readFileSync(marker, 'utf8'));
-        return Object.values(entries ?? {}).some(entry => entry && entry.session === session);
-      } catch { return false; }
-    }
-    const parent = path.dirname(current);
-    if (parent === current) break;
-    current = parent;
-  }
-  return false;
+  if (!/^[A-Za-z0-9._-]{1,128}$/.test(session) || session === '.' || session === '..') return false;
+  if (data.stop_hook_active === true) return false;
+  try { return existsSync(path.join(homedir(), '.specweave', 'close-pending', `${session}.json`)); }
+  catch { return false; }
 }
 // PreToolUse fast path. Ordinary edits and ordinary shell commands must not
 // spawn a worker, resolve npm or import the CLI. Write|Edit only matter inside

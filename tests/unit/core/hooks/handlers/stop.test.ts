@@ -2,7 +2,7 @@
  * Stop handler — the `/sw:auto` loop driver, routed through the dispatcher.
  * Pass = `{}`; block = `{decision:"block", reason}`; never traps an ordinary session.
  */
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -215,15 +215,25 @@ describe('stop (auto loop driver)', () => {
 
 describe('stop (close reminder outside auto mode)', () => {
   let repo = '';
+  let home = '';
   const cwd0 = process.cwd();
+  beforeEach(() => {
+    home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-stop-home-'));
+    vi.stubEnv('HOME', home);
+    vi.stubEnv('USERPROFILE', home);
+  });
   afterEach(() => {
+    vi.unstubAllEnvs();
     process.chdir(cwd0);
     if (repo) fs.rmSync(repo, { recursive: true, force: true });
+    fs.rmSync(home, { recursive: true, force: true });
     repo = '';
   });
-  const marker = (root: string) => stateFile(root, 'close-pending.json');
-  const writeMarker = (root: string, body: Record<string, unknown>) => fs.writeFileSync(marker(root), JSON.stringify(body));
-  const readMarker = (root: string) => (fs.existsSync(marker(root)) ? JSON.parse(fs.readFileSync(marker(root), 'utf8')) : null);
+  const marker = (session: string) => path.join(home, '.specweave', 'close-pending', `${session}.json`);
+  const writeMarker = (session: string, entries: Array<{ root: string; id: string; at: string }>) => {
+    fs.mkdirSync(path.dirname(marker(session)), { recursive: true });
+    fs.writeFileSync(marker(session), JSON.stringify(Object.fromEntries(entries.map((e) => [`${e.root}\n${e.id}`, e]))));
+  };
   const setStatus = (root: string, id: string, status: string) =>
     fs.writeFileSync(path.join(root, '.specweave', 'increments', id, 'metadata.json'), JSON.stringify({ increment: id, status }));
   const now = () => new Date().toISOString();
@@ -231,7 +241,7 @@ describe('stop (close reminder outside auto mode)', () => {
   it('reminds the session that finished the work, once, to verify, review and complete', async () => {
     repo = mkRepo();
     mkIncrement(repo, '0009-done', { tasksDone: 2, tasksPending: 0, acsTotal: 1, acsDone: 1 });
-    writeMarker(repo, { '0009-done': { at: now(), session: 'thread-a' } });
+    writeMarker('thread-a', [{ root: repo, id: '0009-done', at: now() }]);
     process.chdir(repo);
 
     const first = await stop({ session_id: 'thread-a' });
@@ -241,26 +251,32 @@ describe('stop (close reminder outside auto mode)', () => {
     expect(first.reason).toContain('specweave verify 0009-done');
     expect(first.reason).toContain('specweave complete 0009-done');
     expect(first.reason).toContain('without asking');
-    expect(readMarker(repo)).toBeNull();
+    expect(fs.existsSync(marker('thread-a'))).toBe(false);
     expect(await stop({ session_id: 'thread-a' })).toEqual({});
   });
 
-  it('never blocks another session in the same folder', async () => {
+  it('finds an increment the session finished in another checkout (a sibling worktree)', async () => {
+    repo = mkRepo();
+    const worktree = mkRepo();
+    try {
+      mkIncrement(worktree, '0015-lane', { tasksDone: 1, tasksPending: 0, acsTotal: 1, acsDone: 1 });
+      writeMarker('thread-a', [{ root: worktree, id: '0015-lane', at: now() }]);
+      process.chdir(repo);
+      expect((await stop({ session_id: 'thread-a' })).reason).toContain('specweave complete 0015-lane');
+    } finally {
+      fs.rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
+  it('never blocks another session, or a stop a Stop hook already continued', async () => {
     repo = mkRepo();
     mkIncrement(repo, '0009-done', { tasksDone: 1, tasksPending: 0, acsTotal: 1, acsDone: 1 });
-    writeMarker(repo, { '0009-done': { at: now(), session: 'thread-a' } });
+    writeMarker('thread-a', [{ root: repo, id: '0009-done', at: now() }]);
     process.chdir(repo);
     expect(await stop({ session_id: 'thread-b' })).toEqual({});
     expect(await stop({})).toEqual({});
-    expect(readMarker(repo)).toEqual({ '0009-done': expect.objectContaining({ session: 'thread-a' }) });
-  });
-
-  it('never blocks a stop that a Stop hook already continued', async () => {
-    repo = mkRepo();
-    mkIncrement(repo, '0009-done', { tasksDone: 1, tasksPending: 0, acsTotal: 1, acsDone: 1 });
-    writeMarker(repo, { '0009-done': { at: now(), session: 'thread-a' } });
-    process.chdir(repo);
     expect(await stop({ session_id: 'thread-a', stop_hook_active: true })).toEqual({});
+    expect(fs.existsSync(marker('thread-a'))).toBe(true);
   });
 
   it('drops markers for closed, legacy-closed, reopened or day-old increments without blocking', async () => {
@@ -271,15 +287,15 @@ describe('stop (close reminder outside auto mode)', () => {
     mkIncrement(repo, '0013-old', { tasksDone: 1, tasksPending: 0, acsTotal: 1, acsDone: 1 });
     setStatus(repo, '0010-closed', 'completed');
     setStatus(repo, '0011-legacy', 'superseded');
-    writeMarker(repo, {
-      '0010-closed': { at: now(), session: 'thread-a' },
-      '0011-legacy': { at: now(), session: 'thread-a' },
-      '0012-reopened': { at: now(), session: 'thread-a' },
-      '0013-old': { at: new Date(Date.now() - 25 * 3600 * 1000).toISOString(), session: 'thread-a' },
-    });
+    writeMarker('thread-a', [
+      { root: repo, id: '0010-closed', at: now() },
+      { root: repo, id: '0011-legacy', at: now() },
+      { root: repo, id: '0012-reopened', at: now() },
+      { root: repo, id: '0013-old', at: new Date(Date.now() - 25 * 3600 * 1000).toISOString() },
+    ]);
     process.chdir(repo);
     expect(await stop({ session_id: 'thread-a' })).toEqual({});
-    expect(readMarker(repo)).toBeNull();
+    expect(fs.existsSync(marker('thread-a'))).toBe(false);
   });
 
   it('auto loop stops blocking once its increment is completed', async () => {
