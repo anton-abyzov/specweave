@@ -118,7 +118,8 @@ function makeProject(name: string, opts: { livingDocs?: false | 'onDone' } = {})
       {
         version: '2.0',
         project: { name: 'greetco' },
-        testing: { commands: [] },
+        // verify refuses an empty command list (0933), so give it one that passes.
+        testing: { commands: ['node -e "process.exit(0)"'] },
         livingDocs: opts.livingDocs ?? false,
       },
       null,
