@@ -31,6 +31,17 @@ function hasActiveAutoSession(data) {
   }
   return false;
 }
+// `specweave task done`/`skip` writes ~/.specweave/close-pending/<session>.json
+// when an increment's last task turns terminal; Stop then reminds that session
+// once to verify and close it. Only that session spawns the worker: every
+// other stop stays on the fast path.
+function hasClosePendingFor(data) {
+  const session = typeof data.session_id === 'string' ? data.session_id : '';
+  if (!/^[A-Za-z0-9._-]{1,128}$/.test(session) || session === '.' || session === '..') return false;
+  if (data.stop_hook_active === true) return false;
+  try { return existsSync(path.join(homedir(), '.specweave', 'close-pending', `${session}.json`)); }
+  catch { return false; }
+}
 // PreToolUse fast path. Ordinary edits and ordinary shell commands must not
 // spawn a worker, resolve npm or import the CLI. Write|Edit only matter inside
 // `.specweave/increments/`; Bash only matters when the project opted into the
@@ -100,7 +111,7 @@ process.stdin.on('end',()=>{
   catch {return finish({},'invalid_input');}
   if(!['session-start','pre-tool-use','pre-compact','stop'].includes(event))return finish({});
   if(process.env.SPECWEAVE_DISABLE_HOOKS === '1')return finish({});
-  if(event === 'stop' && !hasActiveAutoSession(data))return finish({});
+  if(event === 'stop' && !hasActiveAutoSession(data) && !hasClosePendingFor(data))return finish({});
   if(event === 'pre-tool-use' && skipPreToolUse(data))return finish({});
   const env={...process.env};
   child=spawn(process.execPath,[worker,event],{env,detached:process.platform !== 'win32',stdio:['pipe','pipe','pipe']});

@@ -81,6 +81,38 @@ describe.skipIf(!built)('plugins/specweave/hooks/run.mjs (requires npm run build
     }
   });
 
+  it('stop reminds only the session that finished the last task, once, to close the increment', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-runmjs-close-'));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-runmjs-home-'));
+    try {
+      fs.mkdirSync(path.join(repo, '.specweave', 'state'), { recursive: true });
+      fs.writeFileSync(path.join(repo, '.specweave', 'config.json'), '{}');
+      const inc = path.join(repo, '.specweave', 'increments', '0002-finished');
+      fs.mkdirSync(inc, { recursive: true });
+      fs.writeFileSync(path.join(inc, 'metadata.json'), JSON.stringify({ status: 'active' }));
+      fs.writeFileSync(path.join(inc, 'tasks.md'), '### T-001: First\n**Status**: [x] completed\n');
+      fs.writeFileSync(path.join(inc, 'spec.md'), '# Finished\n');
+      fs.mkdirSync(path.join(home, '.specweave', 'close-pending'), { recursive: true });
+      fs.writeFileSync(
+        path.join(home, '.specweave', 'close-pending', 'thread-a.json'),
+        JSON.stringify({ [`${repo}\n0002-finished`]: { root: repo, id: '0002-finished', at: new Date().toISOString() } }),
+      );
+      const env = { HOME: home, USERPROFILE: home };
+      // Another session stays on the fast path: no CLI is even needed.
+      expect(
+        run('stop', { hook_event_name: 'Stop', session_id: 'thread-b' }, { ...env, SPECWEAVE_HOME: path.join(os.tmpdir(), 'definitely-not-a-cli') }, repo).json,
+      ).toEqual({});
+      const first = run('stop', { hook_event_name: 'Stop', session_id: 'thread-a' }, env, repo);
+      expect(first.status).toBe(0);
+      expect(validateHookOutput('stop', first.json)).toBeNull();
+      expect(first.json).toMatchObject({ decision: 'block', reason: expect.stringContaining('specweave complete 0002-finished') });
+      expect(run('stop', { hook_event_name: 'Stop', session_id: 'thread-a' }, env, repo).json).toEqual({});
+    } finally {
+      fs.rmSync(repo, { recursive: true, force: true });
+      fs.rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('prints {} for an unknown event and for garbage stdin, exit 0', () => {
     expect(run('bogus', '{}')).toMatchObject({ status: 0, out: '{}' });
     expect(run('stop', '{{{{')).toMatchObject({ status: 0, out: '{}' });
