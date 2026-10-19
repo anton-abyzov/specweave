@@ -266,6 +266,7 @@ const config: Config = {
         // Pages removed or merged over time, pointed at the page that replaced them.
         redirects: [
           {from: ['/studio'], to: '/code'},
+          {from: ['/download', '/code/downloads', '/specwithcode/download', '/studio/download'], to: '/code/download'},
           {from: ['/docs/guides/specweave-vs-speckit'], to: '/docs/compare/specweave-vs-github-spec-kit'},
           {from: ['/docs', '/docs/overview'], to: '/docs/overview/introduction'},
           {from: ['/docs/intro', '/docs/quick-start', '/docs/features', '/docs/overview/features', '/docs/guides/life-automation', '/docs/guides/meta-capability'], to: '/docs/overview/introduction'},
