@@ -22,6 +22,8 @@ Two Macs on one tailnet, recorded with SpecWithCode 1.0.47: the invitation line 
 
 <TutorialEmbed slug="add-a-machine" />
 
+Setting up a new Mac from scratch? [Join a new Mac to your main machine](/tutorials/join-a-mac/) shows the same line made from the welcome screen's **Join my existing machines**, and the `specwithcode fleet invite` path for a Mac without the desktop app.
+
 ## One machine per subscription
 
 We recommend one machine for each AI-provider subscription you pay for. Sign each machine in once, one account per provider, and leave it that way: for example, Claude Code signed in to one Anthropic account on the MacBook, and Codex signed in to another OpenAI account on the Mac mini.
