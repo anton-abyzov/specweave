@@ -52,7 +52,8 @@ or a `Waits on: ...` line in the increment's `handoff.md`; a `wait` with the not
 
 On the other side, "pick up all" is `specweave pickup --all`: the newest index,
 actionable increments first, then the ones waiting on a person. Start each topic with
-its resume prompt, then `specweave pickup <id>`.
+its resume prompt, then `specweave pickup <id>` and sw-do, which closes each one
+whose tasks all end up done.
 
 ## Your hand-written handoff is kept
 
@@ -93,7 +94,8 @@ account", run `specweave pickup`. It fetches the last handoff, moves this branch
 forward to it and applies the handed-off edits (only on a clean tree), then prints the
 increment, the next task with its acceptance criteria and any notes. If it reports
 uncommitted changes or a diverged branch, do what it says; never discard the user's
-edits. Then continue with sw-do.
+edits. Then continue with sw-do, which closes the increment through sw-done once its
+last task is done.
 
 Several sessions can hand off in one project (each increment's handoff, and a session
 that hit the limit in a worktree or with several increments active). `specweave handoff
@@ -130,4 +132,5 @@ git push -u origin HEAD
 ```
 
 To pick up by hand: `git fetch origin`, check out that branch, read its `handoff.md`,
-and continue at the first task in spec.md with no `done` line in the ledger.
+and continue at the first task in spec.md with no `done` line in the ledger. When none
+is left, close it as sw-done says.
