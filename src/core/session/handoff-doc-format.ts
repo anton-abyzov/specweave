@@ -13,6 +13,7 @@
  */
 
 import * as path from 'path';
+import { closeChain } from '../increment/close-pending.js';
 
 /** Footer marker (ownership sentinel + format version handle). */
 export const DOC_FORMAT_MARKER = 'Doc format v2';
@@ -288,7 +289,7 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
   } else if (inc?.nextTask) {
     L.push(`\`specweave task claim ${inc.nextTask.id} ${inc.id}\` — ${inc.nextTask.title}`);
   } else if (inc && inc.counts.done + inc.counts.skipped === inc.counts.total && inc.counts.total > 0) {
-    L.push(`All tasks done → \`specweave verify ${inc.id}\` then \`specweave complete ${inc.id}\`.`);
+    L.push(`All tasks done → close it without asking: ${closeChain(inc.id)}.`);
   } else {
     L.push('_No explicit next step — read the summary above._');
   }

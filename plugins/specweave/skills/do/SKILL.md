@@ -72,8 +72,15 @@ merge and close; do not implement.
 
 ## Finish without asking
 
-When `task next` has nothing left, run sw-done: verify, review, complete.
-"All tasks are done, should I close?" is the anti-pattern.
+When `task next` has nothing left, run sw-done: verify, review, complete, in the same
+session. "All tasks are done, should I close?" is the anti-pattern.
+
+Plan for it from the start: a progress checklist or status you keep for the user ends
+with "Verify and close 0042", not with "merge" or "release". Work that shipped through
+a PR still gets `specweave task done T-03 --evidence "<commit sha>"` first, or the ledger
+never shows it finished. A session never ends with every task done and the increment
+still open; if a close gate stops you (verify fails, a manual check only the user can
+do), say which one in your report. A lane agent leaves the close to its lead.
 
 ## Stopping early
 

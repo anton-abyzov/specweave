@@ -1,17 +1,25 @@
 /**
- * Stop hook handler — the `/sw:auto` loop driver, and nothing else (Stop
- * fires on every turn; handoff automation lives in PreCompact).
+ * Stop hook handler — the `/sw:auto` loop driver, plus a one-time close
+ * reminder for ordinary sessions (Stop fires on every turn; handoff automation
+ * lives in PreCompact).
  *
  * Decision table (any throw short-circuits to `{}` so ordinary sessions are
  * never trapped):
  *
- *   no auto-mode.json | active !== true          -> reset counter;  {}
+ *   no auto-mode.json | active !== true          -> reset counter;  close reminder below
+ *   every auto increment completed/abandoned     -> reset;          {}
  *   stale session (auto.maxSessionAge, 7200 s)   -> reset;          {}
  *   turns > auto.maxTurns (default 20)           -> reset;          {}   // safety stop
  *   stop_hook_active + no progress for 3 turns   -> reset;          {}   // loop guard
  *   no increment to work on                      -> reset;          {}
  *   0 pending tasks AND all ACs satisfied        -> reset;          block: all_complete_needs_closure
  *   otherwise (work remains)                     -> counter + 1;    block: <P> task(s) / <A> AC(s) remain
+ *
+ * Close reminder (no auto session): `task done`/`skip` leaves a marker in
+ * `~/.specweave/close-pending/<session>.json` when an increment's last task
+ * turns terminal. That session's next stop blocks once with the close chain
+ * and the entry is removed; other sessions never see it. Entries also go once
+ * the increment is closed, gets new open tasks, or is a day old.
  *
  * Output shapes: pass = `{}`; block = top-level `decision:"block"` + `reason`.
  *
@@ -27,6 +35,13 @@ import { logHook, readActiveIncrements, readJsonSafe } from './utils.js';
 import { loadTaskBoard } from '../../tasks/task-board.js';
 import { hasTasksFile } from '../../tasks/tasks-source.js';
 import { readSpecAcs, deriveAcStatus } from '../../tasks/verify-runner.js';
+import {
+  CLOSE_PENDING_MAX_AGE_MS,
+  closeChain,
+  isClosedStatus,
+  readClosePending,
+  removeClosePending,
+} from '../../increment/close-pending.js';
 
 const TURNS_FILE = '.stop-auto-turns';
 
@@ -124,6 +139,43 @@ function computeRemaining(
   return { pendingTasks, pendingAcs, unresolvedIds };
 }
 
+function isClosed(dir: string): boolean {
+  return isClosedStatus(readJsonSafe<{ status?: unknown }>(path.join(dir, 'metadata.json'))?.status);
+}
+
+/**
+ * Outside auto mode: remind the session that finished an increment's last
+ * task, once, to verify and close it. Only the session named in the marker is
+ * reminded; every other session in the folder passes untouched. The entry is
+ * removed before blocking, and a stop that a Stop hook already continued is
+ * never blocked again, so a failed write can never trap a session.
+ */
+function closeReminder(input: Parameters<HandlerFn>[0], context: HookContext): ReturnType<typeof pass> {
+  if (input.stop_hook_active === true) return pass();
+  const session = typeof input.session_id === 'string' ? input.session_id : '';
+  if (!session) return pass();
+  const pending = readClosePending(session);
+  const now = Date.now();
+  const due: string[] = [];
+  const drop: string[] = [];
+  for (const [key, entry] of Object.entries(pending)) {
+    drop.push(key);
+    const dir = findIncrementDir(entry.root, entry.id);
+    const at = Date.parse(entry.at);
+    const stale = !Number.isFinite(at) || now - at > CLOSE_PENDING_MAX_AGE_MS;
+    // A task added after the finish reopens the work; the next `task done` re-marks it.
+    if (dir && !stale && !isClosed(dir) && computeRemaining(entry.root, [entry.id]).pendingTasks === 0) due.push(entry.id);
+  }
+  if (!removeClosePending(session, pending, drop) || due.length === 0) return pass();
+  logHook(context, 'stop', `close reminder: ${due.join(', ')}`, 'block');
+  return stopBlock(
+    `${due.join(', ')}: you finished every task, and the increment is still open. ` +
+      `Close it now, without asking: ${due.map((id) => closeChain(id)).join('; and ')}. ` +
+      'If a close gate stops you (verify fails, a check only the user can do), say which in your reply. ' +
+      'A lane agent leaves the close to its lead.',
+  );
+}
+
 /** The loop is ending under an auto session: reset the counter and let Claude stop. */
 function exitLoop(context: HookContext, why: string): ReturnType<typeof pass> {
   resetTurns(context.stateDir);
@@ -138,7 +190,7 @@ export const handle: HandlerFn = async (input, context) => {
     const session = fs.existsSync(sessionPath) ? readJsonSafe(sessionPath) : null;
     if (!session || session.active !== true) {
       resetTurns(stateDir);
-      return pass();
+      return closeReminder(input, context);
     }
 
     const config = readJsonSafe<{ auto?: { maxSessionAge?: number; maxTurns?: number } }>(configPath);
@@ -151,7 +203,11 @@ export const handle: HandlerFn = async (input, context) => {
       return exitLoop(context, `safety stop: turns ${state.turns} > auto.maxTurns ${maxTurns}`);
     }
 
-    const incrementIds = resolveIncrementIds(session, projectRoot);
+    // A closed increment has nothing left to loop on, even while the marker still names it.
+    const incrementIds = resolveIncrementIds(session, projectRoot).filter((id) => {
+      const dir = findIncrementDir(projectRoot, id);
+      return !dir || !isClosed(dir);
+    });
     if (incrementIds.length === 0) return exitLoop(context, 'no increment to work on');
 
     const { pendingTasks, pendingAcs, unresolvedIds } = computeRemaining(projectRoot, incrementIds);
