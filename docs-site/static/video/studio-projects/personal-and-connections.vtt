@@ -1,45 +1,105 @@
 WEBVTT
 
+NOTE Captions match the narration. Times follow the spoken words.
+
 1
-00:00:00.000 --> 00:00:07.474
-This Personal project uses app-managed storage and starts without a Git repository.
+00:00:00.300 --> 00:00:05.020
+This Personal project uses app-managed
+storage and starts without a Git
 
 2
-00:00:07.475 --> 00:00:14.822
-Personal projects keep the same project-specific memory, routines and usage views.
+00:00:05.020 --> 00:00:06.500
+repository.
 
 3
-00:00:14.822 --> 00:00:22.099
-Its execution device owns the storage. Extra folders and repositories are optional.
+00:00:07.720 --> 00:00:11.373
+Personal projects keep the
+same project-specific memory,
 
 4
-00:00:22.099 --> 00:00:29.471
-Add an existing synthetic folder and save its access grant. This does not move the folder.
+00:00:11.373 --> 00:00:14.320
+routines and usage views.
 
 5
-00:00:29.471 --> 00:00:36.814
-A repository URL can coexist with that folder. Associate the owned local checkout before saving.
+00:00:15.070 --> 00:00:18.310
+Its execution device owns the storage.
 
 6
-00:00:36.814 --> 00:00:44.112
-Match checks the checkout's actual remote identity. This walkthrough performs no network clone.
+00:00:18.310 --> 00:00:21.910
+Extra folders and
+repositories are optional.
 
 7
-00:00:44.112 --> 00:00:51.421
-Save a local MCP command separately. This example is an owned, inert discovery fixture.
+00:00:22.350 --> 00:00:26.870
+Add an existing synthetic folder
+and save its access grant.
 
 8
-00:00:51.422 --> 00:00:58.755
-Check discovers MCP tools. It does not verify a Gmail, Calendar or other external service account.
+00:00:26.870 --> 00:00:29.670
+This does not move the folder.
 
 9
-00:00:58.755 --> 00:01:06.172
-Choose and save exactly the tools this project may use. Calls still follow SpecWithCode's approval rules.
+00:00:29.720 --> 00:00:33.407
+A repository URL can
+coexist with that folder.
 
 10
-00:01:06.172 --> 00:01:13.452
-Revoke removes future access. Restoring requires a new discovery check and fresh tool grants.
+00:00:33.407 --> 00:00:37.060
+Associate the owned local
+checkout before saving.
 
 11
-00:01:13.453 --> 00:01:21.630
-The command runs as the device's user. No external account or AI provider was contacted in this walkthrough.
+00:00:37.060 --> 00:00:40.986
+Match checks the checkout's
+actual remote identity.
+
+12
+00:00:40.986 --> 00:00:44.360
+This walkthrough performs
+no network clone.
+
+13
+00:00:44.360 --> 00:00:47.480
+Save a local MCP command separately.
+
+14
+00:00:47.480 --> 00:00:51.520
+This example is an owned,
+inert discovery fixture.
+
+15
+00:00:51.520 --> 00:00:53.986
+Check discovers MCP tools.
+
+16
+00:00:53.986 --> 00:00:58.860
+It does not verify a Gmail, Calendar
+or other external service account.
+
+17
+00:00:58.860 --> 00:01:02.809
+Choose and save exactly the
+tools this project may use.
+
+18
+00:01:02.809 --> 00:01:06.420
+Calls still follow
+SpecWithCode's approval rules.
+
+19
+00:01:06.420 --> 00:01:09.142
+Revoke removes future access.
+
+20
+00:01:09.142 --> 00:01:13.700
+Restoring requires a new discovery
+check and fresh tool grants.
+
+21
+00:01:13.700 --> 00:01:16.740
+The command runs as the device's user.
+
+22
+00:01:16.740 --> 00:01:21.633
+No external account or AI provider
+was contacted in this walkthrough.
