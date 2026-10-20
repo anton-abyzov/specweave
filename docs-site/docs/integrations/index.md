@@ -31,5 +31,3 @@ Sync is explicit in 3.0. Changing an increment's status never touches a tracker.
 - [GitHub sync](/docs/guides/github-sync)
 - [Jira and Azure DevOps](/docs/guides/jira-ado-sync)
 - [`specweave sync` reference](/docs/reference/sync-cli)
-
-A rewrite of sync around the 3.0 ledger is planned for 3.1.

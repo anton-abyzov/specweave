@@ -153,7 +153,6 @@ Examples from the maintainer's portfolio. These are usage examples, not controll
 | One closure gate you can actually see (`verify.json`) | — | — | — | — | — | **Yes** |
 | Autonomous execution (hours, unattended) | — | — | — | — | — | **Yes** |
 | Multi-agent teams (parallel, contract-first) | — | — | — | — | — | **Yes** |
-| External sync (GitHub / JIRA / ADO) | — | — | — | — | — | **Yes** |
 | Append-only ledger (claims, evidence, no lost work) | — | — | — | — | — | **Yes** |
 | LSP code intelligence (198x faster) | — | — | — | — | — | **Yes** |
 | Cross-tool handoff (any vendor, any subscription) | — | — | — | — | — | **Yes** |
@@ -182,11 +181,11 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow agains
 
 **6 core skills, 5 optional, one source** — the same skills for Claude Code, Codex and Grok; see [Six core skills, five optional](#six-core-skills-five-optional).
 
-**External Sync** — `specweave sync push|pull|status|setup`. GitHub is first-class; Jira and Azure DevOps are opt-in. Nothing calls a tracker unless you run sync.
-
 **Enterprise Ready** — Compliance audit trails. Brownfield analysis. Multi-repo workspaces.
 
 **Dashboard** — `specweave dashboard` shows intents, increments and evidence from local files, with no model calls.
+
+**Optional tracker sync** — `specweave sync push|pull|status|setup`. GitHub is first-class; Jira and Azure DevOps are opt-in. Nothing calls a tracker unless you run sync.
 
 <br/>
 

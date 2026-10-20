@@ -45,7 +45,6 @@ const PLANS: Plan[] = [
       'Claude Code, Codex, Grok, Gemini CLI, Cursor',
       'Auto-handoff before a usage limit stops you',
       'Specs, tasks and evidence kept in git',
-      'GitHub, Jira and Azure DevOps sync',
     ],
     cta: {label: 'Download free', to: '/code/'},
     featured: true,
