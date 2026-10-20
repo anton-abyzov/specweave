@@ -1,8 +1,9 @@
 /*
   #how on the homepage: four layers (spec, agents, ledger, handoff) in one column on one iris spine.
-  Static layout first. Motion runs only inside @supports (animation-timeline: view()) and
-  prefers-reduced-motion: no-preference, starts at entry 0%, fills both ways and ends on the
-  static layout, so no-JS, reduced motion and full-page screenshots show the complete picture.
+  The site's one scroll sequence. Static layout first. Motion runs only inside
+  @supports (animation-timeline: view()) and prefers-reduced-motion: no-preference, starts at
+  entry 0% (the stage still off screen) and fills forwards only, so before the range starts the
+  static layout shows: no-JS, reduced motion and full-page screenshots show the complete picture.
   Only opacity and transform animate: the handoff switch crossfades a stacked earlier state.
   What moves explains the structure: the spine draws through the four layers, each layer's node
   lights as it is reached, and the handoff node and its agent line switch from claude@cloud to
@@ -257,16 +258,16 @@
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    /* The spine draws as the stage scrolls through. Ranges start at entry 0% and fill both
-       ways, so nothing shows its final state and then snaps back to the first frame. */
+    /* The spine draws as the stage scrolls through. Ranges start at entry 0%, when the
+       element is still below the viewport, so the switch to the first frame is never seen. */
     .stage::after {
-      animation: drawDown linear both;
+      animation: drawDown linear forwards;
       animation-timeline: view();
       animation-range: entry 0% cover 60%;
     }
 
     .plane::before {
-      animation: nodeOn linear both;
+      animation: nodeOn linear forwards;
       animation-timeline: view();
       animation-range: entry 0% entry 60%;
     }
@@ -274,19 +275,19 @@
     .handoff::after,
     .switch .from::before,
     .switch .to::before {
-      animation: earlierStateOut linear both;
+      animation: earlierStateOut linear forwards;
       animation-timeline: view();
       animation-range: entry 0% cover 40%;
     }
 
     .switchRule {
-      animation: drawAcross linear both;
+      animation: drawAcross linear forwards;
       animation-timeline: view();
       animation-range: entry 0% cover 40%;
     }
 
     .thread::before {
-      animation: drawDown linear both;
+      animation: drawDown linear forwards;
       animation-timeline: view();
       animation-range: entry 0% cover 40%;
     }

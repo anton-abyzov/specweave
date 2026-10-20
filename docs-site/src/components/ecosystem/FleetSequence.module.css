@@ -1,11 +1,7 @@
 /*
-  /code scroll sequence: coordinator, workers on several machines, results back.
-  Static markup is the final state. Inside @supports and prefers-reduced-motion:
-  no-preference, a view timeline draws the iris thread out to the machines, brings
-  the machine rows in at different rates, then draws the thread back to the results.
-  Every animation fills both ways and starts at entry 0%, so nothing shows its final
-  state and then snaps back, and everything is at rest by cover 40%. Without support
-  or with reduced motion everything sits in its final place.
+  /code fleet diagram: coordinator, workers on several machines, results back.
+  Static: the site's one scroll sequence is on the home page (HomeHandoff), so
+  this diagram is always complete.
 */
 .fleet {
   padding-top: var(--wv-space-24);
@@ -260,89 +256,6 @@
 }
 
 /* ---------- Scroll-driven sequence ---------- */
-@keyframes fleetDrawAcross {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-
-@keyframes fleetDrawDown {
-  0%, 30% { transform: scaleY(0); }
-  100% { transform: scaleY(1); }
-}
-
-@keyframes fleetBranch {
-  0%, 40% { transform: scaleX(0); }
-  100% { transform: scaleX(1); }
-}
-
-@keyframes fleetRowIn {
-  0%, 35% { opacity: 0; transform: translateX(var(--from, 24px)); }
-  100% { opacity: 1; transform: none; }
-}
-
-@keyframes fleetReported {
-  0%, 70% { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-@keyframes fleetReturnAcross {
-  0%, 72% { transform: scaleX(0); }
-  100% { transform: scaleX(1); }
-}
-
-@keyframes fleetReturnDown {
-  0%, 72% { transform: scaleY(0); }
-  100% { transform: scaleY(1); }
-}
-
-@keyframes fleetResultsIn {
-  0%, 75% { opacity: 0; transform: translateX(24px); }
-  100% { opacity: 1; transform: none; }
-}
-
-@keyframes fleetStackDraw {
-  from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
-}
-
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .stage { view-timeline: --wv-fleet block; }
-
-    .nodeCoord::after,
-    .machines::before,
-    .machine::before,
-    .machine,
-    .machine :global(.wv-chip),
-    .machine::after,
-    .machines::after,
-    .results::before,
-    .results,
-    .stage::before {
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: --wv-fleet;
-    }
-
-    .nodeCoord::after { animation-name: fleetDrawAcross; animation-range: entry 0% cover 15%; }
-    .machines::before { animation-name: fleetDrawDown; animation-range: entry 0% cover 20%; }
-    .machine::before { animation-name: fleetBranch; animation-range: entry 0% cover 25%; }
-
-    /* Three layers, three rates: the farther machine arrives later and travels farther. */
-    .machine { animation-name: fleetRowIn; }
-    .machine:nth-child(1) { --from: 16px; animation-range: entry 0% cover 26%; }
-    .machine:nth-child(2) { --from: 32px; animation-range: entry 0% cover 29%; }
-    .machine:nth-child(3) { --from: 48px; animation-range: entry 0% cover 32%; }
-
-    .machine :global(.wv-chip) { animation-name: fleetReported; animation-range: entry 0% cover 34%; }
-    .machine::after { animation-name: fleetReturnAcross; animation-range: entry 0% cover 36%; }
-    .machines::after { animation-name: fleetReturnDown; animation-range: entry 0% cover 37%; }
-    .results::before { animation-name: fleetReturnAcross; animation-range: entry 0% cover 38%; }
-    .results { animation-name: fleetResultsIn; animation-range: entry 0% cover 40%; }
-
-    .stage::before { animation-name: fleetStackDraw; animation-range: entry 0% cover 40%; }
-  }
-}
 
 @media (max-width: 760px) {
   .fleet {

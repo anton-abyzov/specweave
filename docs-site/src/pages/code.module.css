@@ -3,7 +3,7 @@
   Only --wv-* tokens from src/css/weave.css; both themes come from the tokens.
   Type: h1 48 (44 on phones), h2 32, h3 21, lead 21, body 17, ui 15, caption 13.
   Radius by role: 4 chips, 6 buttons, 10 notes and panels, 14 screenshot frames.
-  The one scroll sequence lives in components/ecosystem/FleetSequence.module.css.
+  Static: the site's one scroll sequence is on the home page (HomeHandoff).
 */
 
 /* ---------- Page ---------- */
@@ -478,7 +478,6 @@
   .controls > li + li {
     border-top: 0;
   }
-
 
   .actions :global(.wv-btn) {
     flex: 1 1 auto;
