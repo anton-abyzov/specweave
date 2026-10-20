@@ -43,7 +43,7 @@ commands=(
     'update-instructions:Update CLAUDE.md and AGENTS.md with smart merge (preserves user content)'
     'update:Update SpecWeave\: CLI, instructions, config, AND plugins (default)'
     'check-discipline:Report increment status counts, advisory WIP note and metadata consistency'
-    'gc:Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs'
+    'gc:Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs, expire session checkpoints older than 7 days'
     'qa:Run quality assessment on an increment'
     'link-pr:Link a pull request to external tickets (JIRA, ADO)'
     'branch-name:Output the computed branch name for an increment (with optional JIRA/ADO ticket key)'
