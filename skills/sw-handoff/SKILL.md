@@ -42,8 +42,8 @@ specweave handoff --all --reason "<their words>"
 
 It writes `.specweave/handoffs/<date>-INDEX.md` and `index.json`: one row per active
 increment (tasks done/total, open ACs, last activity, what it waits on, a paste-ready
-resume prompt) and, in an umbrella workspace, every checkout under
-`repositories/<org>/<repo>` (and its worktrees) with uncommitted files, unpushed
+resume prompt) and every nested checkout (`repositories/<org>/<repo>` or any folder
+up to three levels down with its own `.git`, and their worktrees) with uncommitted files, unpushed
 commits or a branch with no remote, with its open PR when `gh` is installed. It is
 read-only toward everything else: no claims released, nothing committed or pushed in
 the umbrella or the nested repos. Commit and push the local-only work it lists, or say
