@@ -1,7 +1,7 @@
 /*
   /product (the SpecWeave CLI) on Weave. Shared page kit: continuity.module.css.
   Only --wv-* tokens. Terminals are wv-code, the loop is wv-thread, the capture is wv-window.
-  Motion: one scroll sequence, the loop. Its resting state is the final state.
+  Static: the site's one scroll sequence is on the home page (HomeHandoff).
 */
 
 .hero {
@@ -162,48 +162,6 @@
   line-height: 20px;
   color: var(--wv-ink);
   overflow-wrap: anywhere;
-}
-
-@keyframes loopDraw {
-  from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
-}
-
-@keyframes markerOn {
-  from { transform: scale(0.4); }
-  to { transform: scale(1); }
-}
-
-@keyframes fileIn {
-  from { transform: translateX(var(--wv-space-6)); opacity: 0; }
-  to { transform: none; opacity: 1; }
-}
-
-/* Ranges start at entry 0% and fill both ways, so nothing shows its final state and then
-   snaps back; every part is at rest by cover 40%. Without support or with reduced motion
-   every part keeps its static, final layout. */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .loop { view-timeline: --wv-loop block; }
-
-    .loop::before {
-      animation: loopDraw linear both;
-      animation-timeline: --wv-loop;
-      animation-range: entry 0% cover 40%;
-    }
-
-    .loop > .step::before {
-      animation: markerOn linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 100%;
-    }
-
-    .stepFile {
-      animation: fileIn linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 40%;
-    }
-  }
 }
 
 /* ---------- Flag lists: hairline rows, command on the left ---------- */
