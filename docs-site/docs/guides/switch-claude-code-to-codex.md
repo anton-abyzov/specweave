@@ -1,5 +1,5 @@
 ---
-title: "Continue a Claude Code task in Codex"
+title: "How to continue a Claude Code task in Codex when you hit the limit"
 description: "Move a half-finished task from Claude Code to Codex and back: what carries over, the two commands that do it, and what to check before you switch."
 slug: /guides/switch-claude-code-to-codex
 keywords: [switch from claude code to codex, move from claude code to codex, continue claude code session in codex, claude code to codex handoff, codex to claude code, switch ai coding tools mid task, claude code out of usage switch to codex]

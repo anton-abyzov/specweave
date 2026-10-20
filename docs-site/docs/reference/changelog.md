@@ -44,7 +44,15 @@ The current release is **SpecWeave 3.1.0**, published 17 October 2026. Install o
 
 ## SpecWithCode releases
 
-SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.53, published 19 October 2026. [Download SpecWithCode for Mac](/code/download/).
+SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.62, published 20 October 2026. [Download SpecWithCode for Mac](/code/download/).
+
+### 1.0.54 to 1.0.62, 19 to 20 October 2026
+
+- **Busy Macs.** This Mac no longer shows as "Can't reach" when its server is slow, background checks take turns instead of freezing the server, and requests stay fast under load.
+- **Usage limits.** Each provider shows every quota window and marks the one that binds. A thread can fall back through an ordered list of models when one hits its limit.
+- **Approvals and updates.** An answered approval never stays "Waiting", an update closes idle Codex sessions instead of waiting on them, and a turn a service update interrupted continues afterwards.
+- **Projects and machines.** Move a thread to another project, link a project with its copy on another machine, hand a project's folder to another machine, and let another machine take over as coordinator.
+- **Safety.** Provider API keys and passwords are redacted before settings reach the app, credential files are refused in reads, and work granted to other machines is scoped.
 
 ### 1.0.51 to 1.0.53, 19 October 2026
 
