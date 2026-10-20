@@ -1,3 +1,9 @@
+## [3.1.4] - 2026-10-20
+
+### Changed
+
+- Close gate counts plain-bullet ACs as declared (#2116)
+
 ## [3.1.3] - 2026-10-20
 
 ### Added
