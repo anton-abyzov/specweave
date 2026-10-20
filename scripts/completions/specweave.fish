@@ -44,7 +44,7 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a team -d 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a update-instructions -d "Update CLAUDE.md and AGENTS.md with smart merge (preserves user content)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a update -d "Update SpecWeave: CLI, instructions, config, AND plugins (default)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a check-discipline -d "Report increment status counts, advisory WIP note and metadata consistency"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a gc -d "Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a gc -d "Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs, expire session checkpoints older than 7 days"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a qa -d "Run quality assessment on an increment"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a link-pr -d "Link a pull request to external tickets (JIRA, ADO)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a branch-name -d "Output the computed branch name for an increment (with optional JIRA/ADO ticket key)"
