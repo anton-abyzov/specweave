@@ -8,8 +8,9 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-const { mockFindEffectiveRoot, mockPurgeState, mockFindNested, mockWorktreesSize } = vi.hoisted(() => ({
+const { mockFindEffectiveRoot, mockPurgeState, mockFindNested, mockWorktreesSize, mockPruneCheckpoints } = vi.hoisted(() => ({
   mockFindEffectiveRoot: vi.fn(),
+  mockPruneCheckpoints: vi.fn(),
   mockPurgeState: vi.fn(),
   mockFindNested: vi.fn(),
   mockWorktreesSize: vi.fn(),
@@ -24,6 +25,12 @@ vi.mock('../../../../src/core/state/state-gc.js', () => ({
   findNestedSpecweaveDirs: mockFindNested,
   worktreesSize: mockWorktreesSize,
   formatBytes: (n: number) => `${n} B`,
+}));
+
+// Never touch the real ~/.specweave/checkpoints from a test.
+vi.mock('../../../../src/core/session/checkpoint-retention.js', () => ({
+  pruneCheckpoints: mockPruneCheckpoints,
+  CHECKPOINT_RETENTION_DAYS: 7,
 }));
 
 import { gcCommand } from '../../../../src/cli/commands/gc.js';
@@ -42,6 +49,7 @@ describe('gcCommand', () => {
     mockPurgeState.mockReturnValue({ applied: false, candidates: [], deleted: [], bytes: 0 });
     mockFindNested.mockReturnValue([]);
     mockWorktreesSize.mockReturnValue(0);
+    mockPruneCheckpoints.mockReturnValue({ applied: false, sessions: 0, bytes: 0, pointers: 0, kept: 0, pendingHandoffs: 0, partial: false });
   });
 
   afterEach(() => {
@@ -66,6 +74,7 @@ describe('gcCommand', () => {
       expect(mockPurgeState).not.toHaveBeenCalled();
       expect(mockWorktreesSize).not.toHaveBeenCalled();
       expect(mockFindNested).not.toHaveBeenCalled();
+      expect(mockPruneCheckpoints).not.toHaveBeenCalled();
     });
 
     it('reports the error as JSON under --json', async () => {
@@ -98,6 +107,26 @@ describe('gcCommand', () => {
       expect(mockFindNested).toHaveBeenCalledWith('/proj');
       expect(output()).toContain('specweave gc');
       expect(process.exitCode).not.toBe(1);
+    });
+
+    it('reports reclaimable session checkpoints on a dry run', async () => {
+      mockFindEffectiveRoot.mockReturnValue('/proj');
+      mockPruneCheckpoints.mockReturnValue({ applied: false, sessions: 3, bytes: 4096, pointers: 1, kept: 5, pendingHandoffs: 2, partial: false });
+
+      await gcCommand({ home: '/h' });
+
+      expect(mockPruneCheckpoints).toHaveBeenCalledWith('/h/.specweave/checkpoints', { apply: false });
+      expect(output()).toContain('Session checkpoints: 3 older than 7 days and 1 Studio pointer, 4096 B reclaimable');
+      expect(output()).toContain('2 with a pending handoff');
+    });
+
+    it('applies the checkpoint prune with --yes and lists it under --json', async () => {
+      mockFindEffectiveRoot.mockReturnValue('/proj');
+
+      await gcCommand({ home: '/h', yes: true, json: true });
+
+      expect(mockPruneCheckpoints).toHaveBeenCalledWith('/h/.specweave/checkpoints', { apply: true });
+      expect(JSON.parse(output()).checkpoints.dir).toBe('/h/.specweave/checkpoints');
     });
   });
 });
