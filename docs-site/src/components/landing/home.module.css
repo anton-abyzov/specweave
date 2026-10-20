@@ -1,9 +1,8 @@
 /*
   Homepage (src/pages/index.tsx) on Weave. Builds on continuity.module.css (.page type and buttons).
   Only --wv-* tokens. Left aligned, sections separated by space and hairlines.
-  Motion: the handoff layers (HomeHandoff.module.css) and the family thread below draw on scroll,
-  each inside @supports (animation-timeline: view()) and prefers-reduced-motion: no-preference,
-  starting at entry 0% and filling both ways; the resting state is the final layout. Nothing else moves.
+  Motion: the site's one scroll sequence is the handoff layers (HomeHandoff.module.css).
+  Nothing else on the site moves on scroll.
 */
 
 /* ---------- Hero: sized to content ---------- */
@@ -242,33 +241,6 @@
 @media (min-width: 900px) {
   .family > li {
     grid-template-columns: 240px minmax(0, 1fr);
-  }
-}
-
-@keyframes threadDown {
-  from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
-}
-
-@keyframes nodeOn {
-  from { transform: scale(0.4); }
-  to { transform: none; }
-}
-
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    /* The thread draws down through the three products as the list scrolls in. */
-    .family:global(.wv-thread)::before {
-      animation: threadDown linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 40%;
-    }
-
-    .home .family > li::before {
-      animation: nodeOn linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 70%;
-    }
   }
 }
 
