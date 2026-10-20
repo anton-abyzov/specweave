@@ -72,4 +72,12 @@ describe('complete refuses a spec without acceptance criteria (0933)', () => {
     expect(reasoned.ok).toBe(true);
     expect(reasoned.notices.join('\n')).toMatch(/no acceptance criteria — closing anyway, reason: spike/);
   });
+
+  it('accepts ACs written as plain bullets without checkboxes', async () => {
+    mk('# Demo\n\n- AC-US1-01 \u2014 rows show the resolved dir.\n- **AC-US1-02**: copy stays.\n');
+    await runVerify(root, '0001-demo', incDir, { commands: ['node -e "process.exit(0)"'] });
+    const gate = checkClosureGate(incDir, '0001-demo');
+    expect(gate.errors.join('\n')).not.toMatch(/no acceptance criteria/);
+    expect(gate.notices.join('\n')).not.toMatch(/no acceptance criteria/);
+  });
 });

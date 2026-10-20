@@ -12,7 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { readVerifyReport, describeUncheckedAcs, readSpecAcs } from './verify-runner.js';
+import { readVerifyReport, describeUncheckedAcs, specDeclaresAcs } from './verify-runner.js';
 import { loadTaskBoard } from './task-board.js';
 import { parseVerdict } from '../review/reviewer.js';
 
@@ -67,7 +67,7 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
   }
 
   // 0933: an increment with no acceptance criteria has no definition of done.
-  if (fs.existsSync(path.join(incrementDir, 'spec.md')) && readSpecAcs(incrementDir).length === 0) {
+  if (fs.existsSync(path.join(incrementDir, 'spec.md')) && !specDeclaresAcs(incrementDir)) {
     if (!reason) {
       errors.push('spec.md declares no acceptance criteria — add `- [ ] AC-01: …` lines, or pass --reason "<why closing without them>"');
     } else {
