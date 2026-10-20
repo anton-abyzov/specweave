@@ -88,7 +88,7 @@ To let the agent work through every task unattended, use [autonomous mode](/docs
 specweave verify
 ```
 
-runs the build, test and lint commands from the Commands table in `AGENTS.md` and writes `reports/verify.md` and `reports/verify.json`, including which acceptance criteria the ledger shows as met. With no commands configured or detected, verify fails with "no test commands configured"; `specweave verify --reason "docs only"` passes and records the reason in `verify.json`.
+runs the build, test and lint commands from the Commands table in `AGENTS.md` and writes `reports/verify.md` and `reports/verify.json`, including which acceptance criteria the ledger shows as met. `acs.items` lists each criterion with how it was decided (`checkbox`, `ledger` or `none`) and the tasks that cite it, so a reader can trace a criterion to its tasks; a met criterion is declared done, not proof that a test exercised it. With no commands configured or detected, verify fails with "no test commands configured"; `specweave verify --reason "docs only"` passes and records the reason in `verify.json`.
 
 ## 4. Review
 

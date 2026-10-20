@@ -66,7 +66,7 @@ Switching subscriptions with a dozen threads in flight is one command:
 specweave handoff --all --reason "switching accounts"
 ```
 
-It writes `.specweave/handoffs/<date>-INDEX.md` and `index.json` with one row per active increment: tasks done, open acceptance criteria, last activity, what it waits on, and a resume prompt to paste into a new thread. In an umbrella workspace it also scans every checkout under `repositories/<org>/<repo>` and their worktrees, and lists each one with uncommitted files, unpushed commits or a branch with no remote, with the open PR for that branch when the GitHub CLI is installed. A checkout whose path or branch carries an increment's four-digit id is listed in that increment's row.
+It writes `.specweave/handoffs/<date>-INDEX.md` and `index.json` with one row per active increment: tasks done, open acceptance criteria, last activity, what it waits on, and a resume prompt to paste into a new thread. It also scans every nested checkout (registered repositories, `repositories/<org>/<repo>`, and any folder up to three levels down with its own `.git`, whatever its name, skipping dot and dependency folders and symlinks that leave the root) and their worktrees, and lists each one with uncommitted files, unpushed commits or a branch with no remote, with the open PR for that branch when the GitHub CLI is installed. A checkout whose path or branch carries an increment's four-digit id is listed in that increment's row.
 
 `--all` changes nothing else: no claims are released, no ledger events are written, and nothing is committed or pushed in the umbrella or the nested repos. `--dry-run` prints the index instead of writing it.
 

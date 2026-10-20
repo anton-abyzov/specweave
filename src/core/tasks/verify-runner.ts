@@ -31,7 +31,7 @@ export interface VerifyReport {
   ranAt: string;
   increment: string;
   commands: Array<{ cmd: string; exit: number }>;
-  acs: { total: number; done: number };
+  acs: { total: number; done: number; items?: VerifyAcItem[] };
   tasks: { total: number; done: number; skipped: number; open: number };
   /** Skipped tasks with the mandatory reason from `specweave task skip`. */
   skipped: Array<{ id: string; by?: string; reason?: string }>;
@@ -44,12 +44,27 @@ export interface VerifyReport {
 /** Message (and verify.md line) when there is nothing to run. */
 export const NO_COMMANDS_MESSAGE = 'no test commands configured';
 
+/**
+ * One AC in verify.json: whether it counts as done for the close gate, how
+ * that was decided, and the tasks that cite it with their ledger status.
+ * Readers use it to trace an AC to its tasks; `done` is declared status, not
+ * proof that a test exercised it.
+ */
+export interface VerifyAcItem {
+  id: string;
+  done: boolean;
+  via: 'checkbox' | 'ledger' | 'none';
+  tasks: Array<{ id: string; status: string }>;
+}
+
 export interface AcEntry {
   id: string;
   done: boolean;
   text: string;
   /** How `done` was decided: ticked in spec.md, or every covering task is done in the ledger. */
   via?: 'checkbox' | 'ledger';
+  /** Tasks that cite this AC, with their ledger status (set by deriveAcStatus). */
+  tasks?: Array<{ id: string; status: string }>;
 }
 
 /** One-line human summary of open ACs, or undefined when nothing is open. */
@@ -92,11 +107,12 @@ export function specDeclaresAcs(incrementDir: string): boolean {
  */
 export function deriveAcStatus(acs: AcEntry[], board: TaskBoard): AcEntry[] {
   return acs.map((a) => {
-    if (a.done) return { ...a, via: 'checkbox' };
     const covering = board.tasks.filter((t) => (t.acs ?? []).includes(a.id));
+    const tasks = covering.map((t) => ({ id: t.id, status: t.state.status }));
+    if (a.done) return { ...a, via: 'checkbox', tasks };
     const terminal = covering.every((t) => t.state.status === 'done' || t.state.status === 'skipped');
     const anyDone = covering.some((t) => t.state.status === 'done');
-    return covering.length > 0 && terminal && anyDone ? { ...a, done: true, via: 'ledger' } : a;
+    return covering.length > 0 && terminal && anyDone ? { ...a, done: true, via: 'ledger', tasks } : { ...a, tasks };
   });
 }
 
@@ -193,7 +209,11 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
     ranAt: new Date().toISOString(),
     increment: incrementId,
     commands: results.map((r) => ({ cmd: r.cmd, exit: r.exit })),
-    acs: { total: acs.length, done: acs.filter((a) => a.done).length },
+    acs: {
+      total: acs.length,
+      done: acs.filter((a) => a.done).length,
+      items: acs.map((a) => ({ id: a.id, done: a.done, via: a.via ?? 'none', tasks: a.tasks ?? [] })),
+    },
     tasks: { total: board.counts.total, done: board.counts.done, skipped: board.counts.skipped, open: board.counts.total - board.counts.done - board.counts.skipped },
     skipped: board.tasks
       .filter((t) => t.state.status === 'skipped')

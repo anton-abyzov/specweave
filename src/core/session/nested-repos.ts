@@ -2,9 +2,9 @@
  * Nested-repo scan for `specweave handoff --all` (read-only).
  *
  * An umbrella workspace keeps product code in its own Git checkouts under
- * `repositories/<org>/<repo>`, usually gitignored by the umbrella, so the
- * umbrella's own `git status` never sees them. This module lists every
- * checkout there (plus the worktrees Git knows about for each, wherever they
+ * `repositories/<org>/<repo>` (or any nested folder with its own `.git`),
+ * usually gitignored by the umbrella, so the umbrella's own `git status`
+ * never sees them. This module lists every checkout there (plus the worktrees Git knows about for each, wherever they
  * live, and the workspace root itself) and reports the ones holding work that
  * exists only on this machine: uncommitted files, commits ahead of the
  * upstream, or a branch with no remote.
@@ -95,30 +95,80 @@ function isCheckout(dir: string): boolean {
   try { return fs.existsSync(path.join(dir, '.git')); } catch { return false; }
 }
 
-function listDirs(dir: string): string[] {
-  try {
-    return fs.readdirSync(dir, { withFileTypes: true })
-      .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
-      .map((d) => path.join(dir, d.name));
-  } catch { return []; }
-}
-
 function real(p: string): string {
   try { return fs.realpathSync(p); } catch { return path.resolve(p); }
 }
 
-/** `repositories/<org>/<repo>` checkouts (and a checkout directly at `repositories/<repo>`). */
+/** Folders that hold dependencies or build output, never a project's own checkout. */
+const SKIP_DIRS = new Set(['node_modules', 'vendor', 'dist', 'build', 'target', 'out', 'coverage', 'Pods', 'bower_components', '__pycache__']);
+
+/** How deep below the root nested checkouts are looked for (`repositories/<org>/<repo>` is 3). */
+export const NESTED_DEPTH = 3;
+/** Most directories one discovery reads, so a huge plain folder cannot stall a command. */
+export const NESTED_DIR_BUDGET = 5000;
+
+function isWithin(child: string, parent: string): boolean {
+  const rel = path.relative(parent, child);
+  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
+}
+
+/**
+ * Child folders to descend into: real directories, plus symlinked ones that
+ * resolve inside the root. Dot folders and dependency folders are skipped.
+ */
+function childDirs(dir: string, rootReal: string): Array<{ path: string; link: boolean }> {
+  let entries: fs.Dirent[];
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return []; }
+  const out: Array<{ path: string; link: boolean }> = [];
+  for (const d of entries) {
+    if (d.name.startsWith('.') || SKIP_DIRS.has(d.name)) continue;
+    const full = path.join(dir, d.name);
+    if (d.isDirectory()) { out.push({ path: full, link: false }); continue; }
+    if (!d.isSymbolicLink()) continue;
+    try {
+      const target = fs.realpathSync(full);
+      if (isWithin(target, rootReal) && fs.statSync(target).isDirectory()) out.push({ path: full, link: true });
+    } catch { /* dangling link */ }
+  }
+  return out.sort((x, y) => x.path.localeCompare(y.path));
+}
+
+/**
+ * Nested Git checkouts under a workspace root: the repositories registered in
+ * `.specweave/config.json`, then any folder up to {@link NESTED_DEPTH} levels
+ * down that has a `.git` folder or file, whatever it is named
+ * (`repositories/<org>/<repo>`, `apps/api`, `my-service`). The walk stays
+ * inside the root, stops at the first checkout on each path, and lists each
+ * real path once, preferring a registered or non-symlinked path over an
+ * alias. The root itself is not listed.
+ */
 export function findNestedCheckouts(root: string): string[] {
-  const base = path.join(root, 'repositories');
-  const found: string[] = [];
+  const rootReal = real(root);
+  // real path -> [display path, rank]; lower rank wins (registered, direct, via symlink).
+  const found = new Map<string, [string, number]>();
+  const record = (p: string, rank: number) => {
+    const key = real(p);
+    if (key === rootReal) return;
+    const prev = found.get(key);
+    if (!prev || rank < prev[1]) found.set(key, [p, rank]);
+  };
   if (fs.existsSync(path.join(root, '.specweave', 'config.json'))) {
-    for (const repo of registeredRepositories(root)) if (isCheckout(repo.absolutePath)) found.push(repo.absolutePath);
+    for (const repo of registeredRepositories(root)) if (isCheckout(repo.absolutePath)) record(repo.absolutePath, 0);
   }
-  for (const first of listDirs(base)) {
-    if (isCheckout(first)) { found.push(first); continue; }
-    for (const second of listDirs(first)) if (isCheckout(second)) found.push(second);
+  let budget = NESTED_DIR_BUDGET;
+  let level = childDirs(root, rootReal);
+  for (let depth = 1; depth <= NESTED_DEPTH && level.length > 0; depth++) {
+    const next: Array<{ path: string; link: boolean }> = [];
+    for (const dir of level) {
+      if (budget-- <= 0) break;
+      if (isCheckout(dir.path)) { record(dir.path, dir.link ? 2 : 1); continue; }
+      if (depth < NESTED_DEPTH) {
+        for (const child of childDirs(dir.path, rootReal)) next.push({ path: child.path, link: dir.link || child.link });
+      }
+    }
+    level = next;
   }
-  return [...new Map(found.map(p => [real(p), p])).values()].sort();
+  return [...found.values()].map(([p]) => p).sort();
 }
 
 /** Worktrees Git records for a checkout (absolute paths, the checkout itself included). */
