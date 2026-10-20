@@ -70,6 +70,21 @@ export function readSpecAcs(incrementDir: string): AcEntry[] {
 }
 
 /**
+ * Whether spec.md declares any AC at all, ticked, unticked or as a plain
+ * `- AC-US1-01 — …` bullet (older specs). The no-AC close gate uses this, so
+ * bullet-style specs are not mistaken for specs without a definition of done.
+ */
+export function specDeclaresAcs(incrementDir: string): boolean {
+  if (readSpecAcs(incrementDir).length > 0) return true;
+  try {
+    const spec = fs.readFileSync(path.join(incrementDir, 'spec.md'), 'utf-8');
+    return /^\s*[-*]\s+(?:\[[ xX]\]\s+)?\*{0,2}AC-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*\b/m.test(spec);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Derive AC completion from the ledger: an AC is met when it is ticked in
  * spec.md, or when at least one task covers it and every task covering it is
  * done or skipped with at least one done. Nobody has to tick checkboxes by
