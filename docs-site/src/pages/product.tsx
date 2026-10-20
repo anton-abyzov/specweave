@@ -141,11 +141,11 @@ const record: Array<{ what: string; where: React.ReactNode; how: React.ReactNode
 ];
 
 const integrations: Array<{ name: string; cmd: string; body: React.ReactNode; to: string; link: string }> = [
-  { name: 'Issue trackers', cmd: 'specweave sync push', body: <>GitHub, Jira and Azure DevOps. Issues are created only when you run <code>sync push</code>; <code>sync pull</code> and <code>sync status</code> read them back.</>, to: '/docs/guides/github-sync', link: 'Tracker sync guide' },
   { name: 'Code navigation', cmd: 'specweave lsp refs src/restore.js restoreDraft', body: <>References, definitions, hover types and symbols from language servers, so agents stop grepping. <code>specweave lsp setup</code> picks servers for the languages in your repository.</>, to: '/docs/guides/lsp-integration', link: 'LSP guide' },
   { name: 'Jev', cmd: 'specweave jev route "<prompt>"', body: <>Closed-set decisions in about 250 ms: which skill or model tier, whether a shell command is safe to run, whether pulled text needs a second look. Opt in with <code>specweave jev setup</code>.</>, to: '/jev', link: 'About Jev' },
   { name: 'Project hub', cmd: 'specweave project brief', body: <>A shared goal, context, artifacts and routines in <code>.specweave/project/hub.json</code> that every tool reads. <code>--harness codex</code> exports the brief for another tool.</>, to: '/docs/guides/portable-projects', link: 'Portable projects guide' },
   { name: 'Existing repositories', cmd: 'specweave get owner/repo', body: <>Clones and registers a repository in the workspace, or every repository in an organization with <code>--all</code>. <code>--dry-run</code> previews adopting a checkout you already have.</>, to: '/docs/guides/workspace-adoption', link: 'Workspace adoption guide' },
+  { name: 'Issue trackers', cmd: 'specweave sync push', body: <>Optional. Push an increment to GitHub Issues, Jira or Azure DevOps when your team plans there.</>, to: '/docs/guides/github-sync', link: 'Tracker sync guide' },
 ];
 
 export default function Product() {

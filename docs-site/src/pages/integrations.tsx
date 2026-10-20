@@ -4,8 +4,8 @@ import Link from '@docusaurus/Link';
 import styles from './continuity.module.css';
 
 export default function Integrations() {
-  return <Layout title="AI coding agents and issue tracker integrations" description="SpecWeave works with every coding agent that reads AGENTS.md, and pushes progress to GitHub, Jira or Azure DevOps only when you ask."><main className={styles.page}>
-    <header className={styles.articleHero}><h1>Every agent reads it. Trackers only when you ask.</h1><p>SpecWeave needs no service and no account. Coding agents read the files in your repository. Issue trackers are optional, and in 3.0 nothing reaches them unless you run <code>specweave sync push</code>.</p></header>
+  return <Layout title="AI coding agents and integrations" description="SpecWeave works with every coding agent that reads AGENTS.md. Issue tracker sync is optional."><main className={styles.page}>
+    <header className={styles.articleHero}><h1>Every coding agent reads it.</h1><p>SpecWeave needs no service and no account. Coding agents read the files in your repository, so Claude Code, Codex, Grok and the rest pick up the same spec and ledger.</p></header>
     <div className={styles.articleBody}>
       <h2>Coding agents</h2>
       <table><thead><tr><th>Tool</th><th>Reads</th><th>Skills</th></tr></thead><tbody>
@@ -16,7 +16,7 @@ export default function Integrations() {
       </tbody></table>
       <p>The CLI is the same in every tool, so a tool without skills still runs the loop. Switching between them, or between two subscriptions of one, is a <Link to="/docs/guides/cross-tool-handoff">handoff and a pickup</Link>. More in <Link to="/docs/integrations/generic-ai-tools">Codex, Grok and others</Link>.</p>
 
-      <h2>Issue trackers</h2>
+      <h2>Issue trackers (optional)</h2>
       <table><thead><tr><th>Tracker</th><th>Useful when</th><th>Guide</th></tr></thead><tbody>
         <tr><td>GitHub Issues</td><td>Issues and code live in the same place.</td><td><Link to="/docs/guides/github-sync">GitHub</Link></td></tr>
         <tr><td>Jira</td><td>Product and engineering share an existing delivery process.</td><td><Link to="/docs/guides/jira-ado-sync">Jira and Azure DevOps</Link></td></tr>
@@ -30,7 +30,6 @@ export default function Integrations() {
 
       <details><summary>Do I need a tracker?</summary><p>No. Specs, the ledger, handoffs and the dashboard all work locally. Add a tracker when it makes collaboration easier.</p></details>
       <details><summary>Will moving a card on the dashboard update Jira?</summary><p>No. Board changes are local. Run <code>specweave sync push</code> for the increment when you want the tracker updated.</p></details>
-      <details><summary>What is changing in 3.1?</summary><p>The sync engine is being rewritten around one issue per increment and one link field, with Jira and Azure DevOps as small adapters. 3.0 keeps the existing push behaviour, minus the writes on status changes.</p></details>
       <details><summary>How should a team evaluate this?</summary><p>Start with one repository and a throwaway tracker project. Check the mapping, permissions, reopened issues and partial failures with <code>sync push --dry-run</code> before connecting the real one.</p></details>
 
       <h2>Also from SpecWeave</h2>
