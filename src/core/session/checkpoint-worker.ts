@@ -1,6 +1,8 @@
 /** A detached supervisor enforces the wall-clock budget even while Git blocks synchronously. */
 import { spawn, spawnSync } from 'node:child_process';
+import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { maybePruneCheckpoints } from './checkpoint-retention.js';
 import { CHECKPOINT_WORKER_TIMEOUT_MS, cleanupCheckpointRequest, runSessionCheckpoint } from './session-checkpoint.js';
 
 const requestPath = process.argv[2];
@@ -31,6 +33,9 @@ if (requestPath) {
       clearTimeout(timer);
       stopOwnProcessTree();
       cleanupCheckpointRequest(requestPath);
+      // Off the hook's path: this supervisor is detached. The request sits in
+      // <checkpoints>/<session>/, and the prune runs at most once a day.
+      maybePruneCheckpoints(path.dirname(path.dirname(requestPath)));
     };
     child.once('error', finish);
     child.once('exit', finish);

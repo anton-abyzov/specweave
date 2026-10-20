@@ -2,7 +2,9 @@
  * CLI command: gc
  *
  * Purges known junk from .specweave/state/ (dry-run by default, --yes to delete),
- * and reports .worktrees size and nested .specweave/ directories.
+ * reports .worktrees size and nested .specweave/ directories, and expires
+ * session checkpoints under ~/.specweave/checkpoints (same rule as the daily
+ * background prune; also only with --yes).
  */
 
 import * as path from 'path';
@@ -14,11 +16,15 @@ import {
   worktreesSize,
   formatBytes,
 } from '../../core/state/state-gc.js';
+import { checkpointsDirectory } from '../../core/session/session-checkpoint.js';
+import { CHECKPOINT_RETENTION_DAYS, pruneCheckpoints } from '../../core/session/checkpoint-retention.js';
 
 export interface GcCommandOptions {
   yes?: boolean;
   json?: boolean;
   projectRoot?: string;
+  /** Home holding `.specweave/checkpoints` (tests). */
+  home?: string;
 }
 
 // NOTE: user-facing command output; console.* is intentional here.
@@ -44,9 +50,11 @@ export async function gcCommand(options: GcCommandOptions = {}): Promise<void> {
   const result = purgeState(stateDir, { apply: !!options.yes });
   const worktrees = worktreesSize(projectRoot);
   const nested = findNestedSpecweaveDirs(projectRoot);
+  const checkpointsDir = checkpointsDirectory(options.home);
+  const checkpoints = pruneCheckpoints(checkpointsDir, { apply: !!options.yes });
 
   if (options.json) {
-    console.log(JSON.stringify({ ...result, worktreesBytes: worktrees, nestedSpecweaveDirs: nested }, null, 2));
+    console.log(JSON.stringify({ ...result, worktreesBytes: worktrees, nestedSpecweaveDirs: nested, checkpoints: { dir: checkpointsDir, ...checkpoints } }, null, 2));
     return;
   }
 
@@ -67,6 +75,17 @@ export async function gcCommand(options: GcCommandOptions = {}): Promise<void> {
 
   console.log('');
   console.log(`.worktrees/: ${worktrees === 0 ? chalk.dim('absent') : formatBytes(worktrees)}`);
+
+  const pending = checkpoints.pendingHandoffs ? `, ${checkpoints.pendingHandoffs} with a pending handoff` : '';
+  const kept = chalk.dim(`(${checkpoints.kept} kept${pending})`);
+  if (checkpoints.sessions === 0 && checkpoints.pointers === 0) {
+    console.log(`Session checkpoints: nothing older than ${CHECKPOINT_RETENTION_DAYS} days ${kept}`);
+  } else {
+    const ptrs = checkpoints.pointers ? ` and ${checkpoints.pointers} Studio pointer${checkpoints.pointers === 1 ? '' : 's'}` : '';
+    const verbC = checkpoints.applied ? 'deleted' : 'reclaimable';
+    console.log(`Session checkpoints: ${checkpoints.sessions} older than ${CHECKPOINT_RETENTION_DAYS} days${ptrs}, ${formatBytes(checkpoints.bytes)} ${verbC} ${kept}`);
+  }
+  console.log(chalk.dim(`  ${checkpointsDir}`));
 
   if (nested.length > 0) {
     console.log('');

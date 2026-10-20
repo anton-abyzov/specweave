@@ -629,7 +629,7 @@ program
 // GC command - purge junk from .specweave/state (dry-run by default)
 program
   .command('gc')
-  .description('Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs')
+  .description('Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs, expire session checkpoints older than 7 days')
   .option('-y, --yes', 'Actually delete (default is dry-run)')
   .option('--json', 'Output as JSON')
   .option('--project-root <path>', 'Project root directory')

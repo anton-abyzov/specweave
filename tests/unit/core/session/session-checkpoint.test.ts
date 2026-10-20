@@ -299,17 +299,23 @@ describe('local session checkpoints', () => {
     const fakeGit = path.join(fixture, 'git');
     fs.writeFileSync(fakeGit, '#!/bin/sh\n/bin/sleep 60 &\nprintf "%s" "$!" > "$1"\nwait\n', { mode: 0o755 });
     const source = fs.readFileSync(path.resolve('src/core/session/checkpoint-worker.ts'), 'utf8')
-      .replace("'./session-checkpoint.js'", "'./fixture-engine.mjs'");
+      .replace("'./session-checkpoint.js'", "'./fixture-engine.mjs'")
+      .replace("'./checkpoint-retention.js'", "'./fixture-engine.mjs'");
+    const pruned = path.join(fixture, 'pruned.txt');
     const worker = path.join(fixture, 'worker.mjs');
     fs.writeFileSync(worker, ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.ES2020 } }).outputText);
     fs.writeFileSync(path.join(fixture, 'fixture-engine.mjs'), [
       "import { execFileSync } from 'node:child_process';",
       'export const CHECKPOINT_WORKER_TIMEOUT_MS = 1500;',
       'export function cleanupCheckpointRequest() {}',
+      "import { writeFileSync } from 'node:fs';",
+      `export function maybePruneCheckpoints(root) { writeFileSync(${JSON.stringify(pruned)}, root); }`,
       `export async function runSessionCheckpoint() { try { execFileSync(${JSON.stringify(fakeGit)}, [${JSON.stringify(pidFile)}], { timeout: 150, killSignal: 'SIGKILL', stdio: 'ignore' }); } catch {} }`,
     ].join('\n'));
-    const result = spawnSync(process.execPath, [worker, path.join(fixture, 'request.json')], { timeout: 4000, encoding: 'utf8' });
+    const result = spawnSync(process.execPath, [worker, path.join(fixture, 'session', 'request.json')], { timeout: 4000, encoding: 'utf8' });
     expect(result.status).toBe(0);
+    // After the capture, the detached supervisor offers the daily prune the checkpoints root.
+    expect(fs.readFileSync(pruned, 'utf8')).toBe(fixture);
     const pid = Number(fs.readFileSync(pidFile, 'utf8'));
     expect(pid).toBeGreaterThan(0);
     const running = () => {
