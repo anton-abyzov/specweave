@@ -504,24 +504,29 @@ export class IncrementCompletionValidator {
   }
 
   /**
-   * Count open (unchecked) acceptance criteria in spec.md
+   * Count acceptance criteria that are not met.
    *
-   * Searches for pattern: - [ ] **AC-
+   * Uses the same ledger-derived AC status as `specweave verify`: an AC is met
+   * when ticked in spec.md or when every task covering it is done in the
+   * ledger. State lives only in ledger.jsonl, so spec.md boxes are never ticked
+   * for ledger-tracked work. When no task references any AC (the ledger can say
+   * nothing about ACs), falls back to counting `- [ ] **AC-` lines in spec.md.
    *
    * @param incrementId - The increment ID
    * @returns Number of open ACs
    */
   static async countOpenACs(incrementId: string): Promise<number> {
-    const specPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId, 'spec.md');
+    const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
+    const { loadTaskBoard } = await import('../tasks/task-board.js');
+    const { readSpecAcs, deriveAcStatus } = await import('../tasks/verify-runner.js');
+    const specAcs = readSpecAcs(incrementPath);
+    const board = loadTaskBoard(incrementPath);
+    if (specAcs.length > 0 && board.tasks.some((t) => (t.acs ?? []).length > 0)) {
+      return deriveAcStatus(specAcs, board).filter((a) => !a.done).length;
+    }
 
-    const content = await fs.readFile(specPath, 'utf-8');
-
-    // Match unchecked ACs: - [ ] **AC-
-    // Must be at start of line (^), followed by - [ ], then **AC-
-    const openACPattern = /^- \[ \] \*\*AC-/gm;
-    const matches = content.match(openACPattern) || [];
-
-    return matches.length;
+    const content = await fs.readFile(path.join(incrementPath, 'spec.md'), 'utf-8');
+    return (content.match(/^- \[ \] \*\*AC-/gm) || []).length;
   }
 
   /**
