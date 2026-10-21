@@ -57,6 +57,12 @@ describe('IncrementCompletionValidator.countOpenACs (ledger-derived)', () => {
     expect(await IncrementCompletionValidator.countOpenACs(id)).toBe(1);
   });
 
+  it('also counts unfinished legacy criteria written without checkboxes', async () => {
+    fs.writeFileSync(path.join(dir, 'spec.md'), SPEC.replaceAll('- [ ] **', '- **'));
+    fs.writeFileSync(path.join(dir, 'ledger.jsonl'), done('T-001') + '\n');
+    expect(await IncrementCompletionValidator.countOpenACs(id)).toBe(1);
+  });
+
   it('falls back to spec.md checkboxes when no task references an AC', async () => {
     fs.writeFileSync(path.join(dir, 'tasks.md'), '# Tasks\n\n### T-001: One\n**Status**: [ ] pending\n');
     fs.writeFileSync(path.join(dir, 'ledger.jsonl'), done('T-001') + '\n');
