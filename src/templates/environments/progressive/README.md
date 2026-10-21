@@ -2,13 +2,13 @@
 
 **Four environments: Development, QA, Staging, Production**
 
-This template is for growing teams with dedicated QA and rigorous testing.
+This template is for mature products with dedicated QA and rigorous testing. It fits a team of 2–10 people with a QA step in every release.
 
 ## Strategy
 
 - **4 environments**: Development (local), QA (cloud), Staging (cloud), Production (cloud)
 - **Deployment flow**: Development → QA → Staging → Production
-- **Best for**: Growing teams (5-15 developers), multiple teams, rigorous QA
+- **Best for**: Mature products, a dedicated QA step, rigorous testing
 
 ## Structure
 
@@ -69,11 +69,11 @@ Production (manual deploy)
 
 ### QA
 - **Type**: Cloud (Hetzner/Railway)
-- **Purpose**: Dedicated QA team testing
+- **Purpose**: Dedicated QA testing
 - **Size**: Small resources (CX11)
 - **Promotion**: Auto-deploy from `develop` branch
 - **Testing**: Manual QA, exploratory testing, regression
-- **Access**: QA team only
+- **Access**: QA testers only
 
 ### Staging
 - **Type**: Cloud (Hetzner/Railway)
@@ -121,8 +121,7 @@ Secrets for 'production':
 
 ## When to Graduate
 
-Move to **Enterprise** strategy when:
-- ✅ Team exceeds 15 developers
+Add more environments when:
 - ✅ Need UAT environment for customer validation
 - ✅ Regulatory/compliance requirements (HIPAA, PCI-DSS)
 - ✅ Need regional deployments

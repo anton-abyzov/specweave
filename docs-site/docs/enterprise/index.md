@@ -1,25 +1,26 @@
 ---
 sidebar_position: 1
-title: Enterprise overview
-description: SpecWeave for enterprise teams, covering audit trails, brownfield work, multi-repo workspaces, tracker sync and parallel delivery.
+title: SpecWeave for teams
+sidebar_label: Teams
+description: SpecWeave for teams of 2–10 people, covering audit trails, brownfield work, multi-repo workspaces, tracker sync and parallel delivery.
 ---
 
-# SpecWeave for enterprise
+# SpecWeave for teams
 
-SpecWeave is built for legacy codebases, distributed teams and work that has to stand up to an audit.
+SpecWeave is built for teams of 2–10 people working on legacy codebases, across locations, on work that has to stand up to an audit.
 
-## Enterprise plan
+## Team plan
 
-SpecWeave and SpecWithCode are free for every team, at any size. An enterprise contract adds what a company rolling coding agents out to many engineers needs around them. It never charges for running agents on your own machines and never resells model tokens.
+SpecWeave and SpecWithCode are built for teams of 2–10 people and free. A team contract adds what a team putting coding agents to work needs around them. It never charges for running agents on your own machines and never resells model tokens.
 
 | Offered today | Scoped with your contract |
 |---|---|
-| Rollout across your teams, with SpecWeave set up in your repositories | SSO and SCIM |
-| Priority support with a named engineer and response times in the contract | Provider and model policy for each team |
+| Setup for your whole team, with SpecWeave set up in your repositories | SSO |
+| Priority support with a named engineer and response times in the contract | Provider and model policy for your team |
 | Export of who ran which agent, on which machine, with what evidence (from the ledger and `specweave report`) | A self-hosted skill registry |
-| Security review pack and invoice billing | Anything else your rollout needs, scheduled and priced in the contract |
+| Security review pack and invoice billing | Anything else your team needs, scheduled and priced in the contract |
 
-Contracts are annual. The two-week [founding team pilot](/pricing) is the usual first step. To start a conversation, email [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com?subject=SpecWithCode%20for%20our%20company) with your team size and the tools you use, or see [pricing](/pricing).
+Contracts are annual. The two-week [founding team pilot](/pricing) is the usual first step. To start a conversation, email [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com?subject=SpecWithCode%20for%20our%20team) with your team size (2–10 people) and the tools you use, or see [pricing](/pricing).
 
 ## Inspectable delivery records
 
@@ -37,11 +38,11 @@ The CLI appends ledger events; it does not rewrite prior events. The ledger is a
 
 ## Three products, distinct responsibilities
 
-SpecWeave owns the project workflow. vskill and Skill Studio provide skill installation and evaluation. The separate **SpecWithCode** app, free for every developer and team and in early access, provides a native coding workspace across machines. Read the [shared architecture](/docs/overview/studio-architecture) for connection options, per-host pairing, account boundaries and the current verification scope. [See SpecWithCode](/code/) before planning a rollout around it.
+SpecWeave owns the project workflow. vskill and Skill Studio provide skill installation and evaluation. The separate **SpecWithCode** app, built for teams of 2–10 people, free and in early access, provides a native coding workspace across machines. Read the [shared architecture](/docs/overview/studio-architecture) for connection options, per-host pairing, account boundaries and the current verification scope. [See SpecWithCode](/code/) before planning a rollout around it.
 
 ## Brownfield work
 
-Most enterprise work changes existing code. `spec.md` records the existing behaviour under Problem before anything changes, and `create-increment --supersedes <id>` lets a replacement increment abandon its predecessor with a recorded reason instead of leaving half-open work behind. See [Brownfield workflow](/docs/workflows/brownfield).
+Most team work changes existing code. `spec.md` records the existing behaviour under Problem before anything changes, and `create-increment --supersedes <id>` lets a replacement increment abandon its predecessor with a recorded reason instead of leaving half-open work behind. See [Brownfield workflow](/docs/workflows/brownfield).
 
 ## Multi-repo workspaces
 

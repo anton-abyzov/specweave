@@ -57,7 +57,7 @@ export default function SubscriptionValue() {
         </div>
         <p className={styles.fine}>Illustrative arithmetic with your own numbers, not a quote or a promised multiplier. Plans have session and weekly limits; extra usage, seat rules and provider terms can change the result. Enterprise plans can bill differently: Anthropic currently lists Enterprise as a seat fee plus API-rate usage. On Cursor’s X Subscription, Claude, GPT and Gemini bill at API list price from prepaid credit, not from the plan allowance. <a className="wv-link" href="https://claude.com/pricing">Check current provider pricing.</a></p>
       </div>
-      <Link to="/pricing" className={clsx('wv-link', styles.inlineLink)}>SpecWithCode itself is free. See pricing and team options</Link>
+      <Link to="/pricing" className={clsx('wv-link', styles.inlineLink)}>SpecWithCode itself is free. See pricing for teams of 2–10</Link>
     </div>
   </section>;
 }
