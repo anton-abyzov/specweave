@@ -98,7 +98,7 @@ export function deriveAcStatus(acs: AcEntry[], board: TaskBoard): AcEntry[] {
 export function parseSpecAcs(specContent: string): AcEntry[] {
   const acs: AcEntry[] = [];
   const re = /^\s*[-*]\s+(?:\[([ xX])\]\s+)?\*{0,2}(AC-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)\*{0,2}(?::|\s+[—–-])?\s*(.*)$/;
-  for (const line of specContent.split('\n')) {
+  for (const line of specContent.split(/\r?\n/)) {
     const m = line.match(re);
     if (m) acs.push({ id: m[2], done: m[1]?.toLowerCase() === 'x', text: m[3].trim() });
   }

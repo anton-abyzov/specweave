@@ -90,6 +90,16 @@ describe('complete refuses a spec without acceptance criteria (0933)', () => {
     expect(checkClosureGate(incDir, '0001-demo').ok).toBe(false);
   });
 
+  it('keeps CRLF checkbox and plain criteria in the verification gate', async () => {
+    mk('# Demo\r\n\r\n- [ ] AC-01: checkbox\r\n- **AC-02**: plain bullet\r\n');
+    const { report } = await runVerify(root, '0001-demo', incDir, { commands: ['node -e "process.exit(0)"'] });
+    expect(report.ok).toBe(false);
+    expect(report.acs).toEqual({ total: 2, done: 0 });
+    const gate = checkClosureGate(incDir, '0001-demo');
+    expect(gate.ok).toBe(false);
+    expect(gate.errors.join('\n')).not.toMatch(/no acceptance criteria/);
+  });
+
   it('derives legacy bullet acceptance from all covering ledger tasks', async () => {
     mk('# Demo\n\n- AC-US1-01 — rows show the resolved dir.\n\n### T-01 Show paths\n- AC: AC-US1-01 | Files: src/a.ts | Test: node -e "process.exit(0)"\n');
     fs.writeFileSync(path.join(incDir, 'ledger.jsonl'), JSON.stringify({ t: 'T-01', e: 'done', by: 'fixture', at: new Date().toISOString(), evidence: 'verified paths' }) + '\n');
