@@ -1,3 +1,15 @@
+## [3.1.5] - 2026-10-21
+
+### Changed
+
+- Count legacy plain-bullet acceptance criteria in verification (#2127)
+- fix(complete): count open ACs from the ledger like verify (#2126)
+- docs: keep tracker sync a brief optional mention (#2124)
+- docs-site: keep one scroll sequence, home handoff only (#2122)
+- Expire session checkpoint folders after 7 days (#2121)
+- 0938: SpecWithCode 1.0.62, Organization sameAs, switching title (#2120)
+- docs: add missing still and helper scripts to browser tutorial (#2119)
+
 ## [3.1.4] - 2026-10-20
 
 ### Changed
