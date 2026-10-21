@@ -43,7 +43,7 @@ This page describes OpenSpec as [its repository](https://github.com/Fission-AI/O
 
 **OpenSpec fits** when your priority is a reviewable, always-current description of what the system does, and changes are mostly finished in one sitting.
 
-**SpecWeave fits** when work spans sessions, tools or people: you hit usage limits, switch between Claude Code and Codex, run parallel threads, or want proof that tests ran before something is called done.
+**SpecWeave fits** teams of 2–10 people whose work spans sessions, tools or teammates: you hit usage limits, switch between Claude Code and Codex, run parallel threads, or want proof that tests ran before something is called done.
 
 ## Using both
 
