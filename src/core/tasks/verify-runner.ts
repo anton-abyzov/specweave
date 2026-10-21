@@ -75,13 +75,7 @@ export function readSpecAcs(incrementDir: string): AcEntry[] {
  * bullet-style specs are not mistaken for specs without a definition of done.
  */
 export function specDeclaresAcs(incrementDir: string): boolean {
-  if (readSpecAcs(incrementDir).length > 0) return true;
-  try {
-    const spec = fs.readFileSync(path.join(incrementDir, 'spec.md'), 'utf-8');
-    return /^\s*[-*]\s+(?:\[[ xX]\]\s+)?\*{0,2}AC-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*\b/m.test(spec);
-  } catch {
-    return false;
-  }
+  return readSpecAcs(incrementDir).length > 0;
 }
 
 /**
@@ -100,13 +94,13 @@ export function deriveAcStatus(acs: AcEntry[], board: TaskBoard): AcEntry[] {
   });
 }
 
-/** Parse `- [ ] AC-01 …` / `- [x] **AC-US1-01**: …` lines from spec.md. */
+/** Parse checkbox and legacy plain-bullet criteria from spec.md. */
 export function parseSpecAcs(specContent: string): AcEntry[] {
   const acs: AcEntry[] = [];
-  const re = /^-\s+\[([ xX])\]\s+\*{0,2}(AC-[A-Za-z0-9-]+)\*{0,2}:?\s*(.*)$/;
+  const re = /^\s*[-*]\s+(?:\[([ xX])\]\s+)?\*{0,2}(AC-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)\*{0,2}(?::|\s+[—–-])?\s*(.*)$/;
   for (const line of specContent.split('\n')) {
     const m = line.match(re);
-    if (m) acs.push({ id: m[2], done: m[1].toLowerCase() === 'x', text: m[3].trim() });
+    if (m) acs.push({ id: m[2], done: m[1]?.toLowerCase() === 'x', text: m[3].trim() });
   }
   return acs;
 }
