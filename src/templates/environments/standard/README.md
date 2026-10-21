@@ -2,13 +2,13 @@
 
 **Three environments: Development, Staging, Production**
 
-This template is for professional projects with proper testing and validation.
+This template is for professional projects with proper testing and validation. It fits a team of 2–10 people running a product in production.
 
 ## Strategy
 
 - **3 environments**: Development (local), Staging (cloud), Production (cloud)
 - **Deployment flow**: Development → Staging → Production
-- **Best for**: Small teams (2-5 developers), production SaaS, professional projects
+- **Best for**: Production SaaS with real users, professional projects
 
 ## Structure
 
@@ -91,7 +91,7 @@ Secrets for 'production':
 ## When to Graduate
 
 Move to **Progressive** strategy when:
-- ✅ Team growing beyond 5 developers
+- ✅ Releases need a QA sign-off before staging
 - ✅ Need dedicated QA environment
-- ✅ Multiple teams contributing
+- ✅ Several workstreams ship to production at once
 - ✅ More rigorous testing required

@@ -2,13 +2,13 @@
 
 **Single environment: Production only**
 
-This template is for quick MVPs and prototypes that deploy directly to production.
+This template is for quick MVPs and prototypes that deploy directly to production. It fits a team of 2–10 people before its first real release.
 
 ## Strategy
 
 - **1 environment**: Production
 - **Deployment flow**: Local development → Production
-- **Best for**: MVPs, prototypes, solo developers, quick shipping
+- **Best for**: MVPs, prototypes, pre-release projects, quick shipping
 
 ## Structure
 
@@ -48,6 +48,6 @@ your-project/
 
 Move to **Standard** strategy when:
 - ✅ You have real users (need staging for testing)
-- ✅ Team growing (need isolation)
+- ✅ More than one person deploys and you need isolation
 - ✅ Bugs in production are too costly
 - ✅ Need to test infrastructure changes safely

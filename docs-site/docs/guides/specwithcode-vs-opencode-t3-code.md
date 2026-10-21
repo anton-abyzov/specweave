@@ -66,6 +66,6 @@ when work should keep running with your laptop closed and your repository alread
 
 ## Pick SpecWithCode
 
-when you want one coordinator to split work across several agents on your own Macs, watch every subscription's limits in one place, let agents use your Chrome through the SpecWithCode Browser extension, and keep your code off anyone else's servers.
+when your team of 2–10 people wants one coordinator to split work across several agents on your own Macs, watch every subscription's limits in one place, let agents use your Chrome through the SpecWithCode Browser extension, and keep your code off anyone else's servers.
 
 [Download SpecWithCode](/code/) or compare it with [BridgeMind](/docs/compare/specwithcode-vs-bridgemind).
