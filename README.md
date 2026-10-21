@@ -28,7 +28,7 @@ specweave init .
 
 ## SpecWithCode: the free workspace on top
 
-[SpecWithCode](https://spec-weave.com/code/) is a desktop app built on SpecWeave. Describe the work once and a coordinator splits it across Claude Code, Codex, Grok or Cursor workers on your own machines, with the spec, evidence and handoff in git. It is free for every developer and team: no markup, no token resale, no seat fee to run agents on your own machines. Early access, Apple silicon Macs. [Download](https://spec-weave.com/code/) · [Pricing](https://spec-weave.com/pricing)
+[SpecWithCode](https://spec-weave.com/code/) is a desktop app built on SpecWeave. Describe the work once and a coordinator splits it across Claude Code, Codex, Grok or Cursor workers on your own machines, with the spec, evidence and handoff in git. It is built for teams of 2–10 people and free: no markup, no token resale, no seat fee to run agents on your own machines. Early access, Apple silicon Macs. [Download](https://spec-weave.com/code/) · [Pricing](https://spec-weave.com/pricing)
 
 ## Keep your repositories where they are
 
@@ -181,7 +181,7 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow agains
 
 **6 core skills, 5 optional, one source** — the same skills for Claude Code, Codex and Grok; see [Six core skills, five optional](#six-core-skills-five-optional).
 
-**Enterprise Ready** — Compliance audit trails. Brownfield analysis. Multi-repo workspaces.
+**Built for teams of 2–10 people** — Compliance audit trails. Brownfield analysis. Multi-repo workspaces.
 
 **Dashboard** — `specweave dashboard` shows intents, increments and evidence from local files, with no model calls.
 

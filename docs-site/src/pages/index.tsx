@@ -277,14 +277,14 @@ export default function Home() {
       {/* 8. Pricing, built with, final call to action */}
       <section className={clsx(h.section, h.pricing)} aria-labelledby="pricing-title">
         <div>
-          <h2 id="pricing-title">Free for every developer</h2>
-          <p>Companies pay only if they want hosted skills, rollout help or support.</p>
+          <h2 id="pricing-title">Built for teams of 2–10 people, free to run</h2>
+          <p>Teams pay only if they want hosted skills, setup help or support.</p>
           <Link className={base.secondary} to="/pricing">See pricing</Link>
         </div>
         <dl className={h.facts}>
           <div><dt>SpecWithCode app</dt><dd>Free</dd></div>
           <div><dt>SpecWeave CLI</dt><dd>Free, MIT licensed</dd></div>
-          <div><dt>Seat limit / usage cap</dt><dd>None</dd></div>
+          <div><dt>Seat fee / usage cap</dt><dd>None</dd></div>
           <div><dt>Markup on your AI subscriptions</dt><dd>None</dd></div>
         </dl>
       </section>

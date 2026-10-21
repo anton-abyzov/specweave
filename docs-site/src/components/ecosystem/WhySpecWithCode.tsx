@@ -56,7 +56,7 @@ export default function WhySpecWithCode() {
   return <section className={styles.why} id="why" aria-labelledby="why-title">
     <div className={styles.head}>
       <h2 id="why-title">Who it is for</h2>
-      <p>SpecWithCode is for engineers who build and maintain software with several coding agents at once, on the plans they already pay for, on machines they own. If you want the cheapest single prompt, a pay-per-token tool may suit you better.</p>
+      <p>SpecWithCode is for teams of 2–10 people who build and maintain software with several coding agents at once, on the plans they already pay for, on machines they own. If you want the cheapest single prompt, a pay-per-token tool may suit you better.</p>
       <p>Specs stay yours: link a thread to a <Link className="wv-link" to="/docs/getting-started/">SpecWeave</Link> increment and its plan card shows task progress from <code>spec.md</code> and <code>ledger.jsonl</code>. Optional and read-only: the app never rewrites your spec.</p>
     </div>
 

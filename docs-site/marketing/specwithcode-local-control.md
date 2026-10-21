@@ -61,7 +61,7 @@ Put your AI subscriptions and machines to work.
 
 Bring supported coding-agent subscriptions into one workspace on computers your team controls. Connect approved machines privately, choose where work runs, and keep folder access and approvals explicit.
 
-For sustained coding work, an eligible subscription can cost less than paying API rates for the same workload. The result depends on the plan, model, usage limits and any extra charges. Compare cost per accepted task before scaling across a team.
+For sustained coding work, an eligible subscription can cost less than paying API rates for the same workload. The result depends on the plan, model, usage limits and any extra charges. Compare cost per accepted task before rolling it out to your team of 2–10.
 
 Cloud models still receive prompts and relevant context through your chosen provider. Connected tools use their own services.
 
@@ -80,5 +80,5 @@ Checked 2026-10-14 against [Claude pricing](https://claude.com/pricing) and [Cla
 - Provider limits, seat/account rules and company-approved access still apply. Connecting machines does not create more subscription entitlement or imply shared credentials.
 - “10× cheaper” requires a measured, comparable workload: the same model and accepted outcome, input/output/cache accounting, current API rates, subscription charges, extra usage and the measurement period. Until then, use the conditional savings wording above.
 - A $200 plan is not an unlimited token pool or a guaranteed $2,000 API equivalent. Verify the provider, plan and current price before adding a price to a campaign.
-- Amazon and Microsoft are examples of potential enterprise audiences, not verified customers, endorsements or validated deployments. Do not use their names or logos as social proof.
+- The audience is teams of 2–10 people. Do not name large companies such as Amazon or Microsoft as audiences, customers, endorsements or social proof, and do not use their logos.
 - Promote privately connected, individually approved machines. Do not promise that an entire company network, arbitrary hardware or enterprise-scale concurrency is already supported or tested.
