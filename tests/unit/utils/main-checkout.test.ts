@@ -8,7 +8,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { mainCheckoutOf } from '../../../src/utils/main-checkout.js';
+import { gitCheckoutFor, linkedWorktreeRoot, mainCheckoutOf } from '../../../src/utils/main-checkout.js';
 
 const hooksDir = path.join(process.cwd(), 'plugins', 'specweave', 'hooks');
 
@@ -80,5 +80,18 @@ describe('mainCheckoutOf (AC-01)', () => {
     for (const [name, { dir }] of Object.entries(cases)) {
       expect({ name, result: inline(dir) }).toEqual({ name, result: mainCheckoutOf(dir) });
     }
+  });
+});
+
+describe('gitCheckoutFor', () => {
+  it('runs Git in the worktree when planning resolves outside it, else in the planning root', () => {
+    const wt = path.join(base, 'worktrees', 'wt');
+    const umbrella = path.join(base, 'umbrella');
+    expect(linkedWorktreeRoot(path.join(wt, 'src', 'deep'))).toBe(wt);
+    expect(linkedWorktreeRoot(cases.mainCheckout.dir)).toBeNull();
+    expect(gitCheckoutFor(path.join(wt, 'src', 'deep'), umbrella)).toBe(wt);
+    expect(gitCheckoutFor(path.join(wt, 'src', 'deep'), wt)).toBe(wt);
+    expect(gitCheckoutFor(path.join(wt, 'src', 'deep'), path.join(wt, 'src'))).toBe(path.join(wt, 'src'));
+    expect(gitCheckoutFor(cases.mainCheckout.dir, umbrella)).toBe(umbrella);
   });
 });
