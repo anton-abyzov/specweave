@@ -88,3 +88,32 @@ export function recordIncrementWork(
     opts,
   );
 }
+
+/** Log of `specweave small-fix` exemptions, relative to the project root. */
+export const SMALL_FIX_LOG = path.join('.specweave', 'state', 'small-fixes.jsonl');
+
+export interface SmallFixEntry {
+  at: string;
+  by: string;
+  reason: string;
+  session?: string;
+  model?: string;
+}
+
+export function readSmallFixes(projectRoot: string): SmallFixEntry[] {
+  try {
+    return fs
+      .readFileSync(path.join(projectRoot, SMALL_FIX_LOG), 'utf8')
+      .split('\n')
+      .flatMap((line) => {
+        try {
+          const entry = JSON.parse(line);
+          return entry && typeof entry.at === 'string' && typeof entry.reason === 'string' ? [entry as SmallFixEntry] : [];
+        } catch {
+          return [];
+        }
+      });
+  } catch {
+    return [];
+  }
+}
