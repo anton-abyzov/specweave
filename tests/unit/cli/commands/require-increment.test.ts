@@ -47,7 +47,9 @@ describe('require-increment user-level hook (1001 AC-03)', () => {
     expect(user.model).toBe('opus');
     expect(user.hooks.PreToolUse[0]).toEqual(userHook);
     expect(user.hooks.Stop).toEqual([{ hooks: [] }]);
-    expect(user.hooks.PreToolUse[1].hooks[0].command).toBe(`node "${path.join('/pkg', 'plugins', 'specweave', 'hooks', 'run.mjs')}" pre-tool-use`);
+    // Tagged, so the launcher guards only opted-in projects from the user entry.
+    expect(user.hooks.PreToolUse[1].hooks[0].command).toBe(`node "${path.join('/pkg', 'plugins', 'specweave', 'hooks', 'run.mjs')}" pre-tool-use --scope user`);
+    expect(settings(root).hooks.PreToolUse[0].hooks[0].command).toBe(`node "${path.join('/pkg', 'plugins', 'specweave', 'hooks', 'run.mjs')}" pre-tool-use`);
     expect(stdout).toContain(`Claude Code edit hook: installed (${path.join(root, '.claude', 'settings.json')})`);
     expect(stdout).toContain(`Claude Code user edit hook: installed (${path.join(home, '.claude', 'settings.json')})`);
 

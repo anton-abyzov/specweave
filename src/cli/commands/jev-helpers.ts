@@ -160,13 +160,20 @@ export function projectSettingsPath(projectRoot: string): string {
  * resolves its own plugin root from `import.meta.url`, so an absolute path is
  * all it needs.
  */
-export function jevHookCommand(root: string = packageRoot()): string {
-  return `node "${path.join(root, HOOK_REL)}" ${HOOK_EVENT}`;
+export function jevHookCommand(root: string = packageRoot(), scope?: HookScope): string {
+  return `node "${path.join(root, HOOK_REL)}" ${HOOK_EVENT}${scope === 'user' ? ' --scope user' : ''}`;
 }
 
+/**
+ * `user`: the entry sits in `~/.claude/settings.json` and so runs in every
+ * project; the launcher passes it at once unless an opted-in project's marker
+ * is found (and defers to that project's own entry when Claude loaded it).
+ */
+export type HookScope = 'project' | 'user';
+
 /** One hook entry, exactly as written into settings.json. */
-function jevHookEntry(root: string): HookCommand {
-  return { type: 'command', command: jevHookCommand(root), timeout: HOOK_TIMEOUT };
+function jevHookEntry(root: string, scope?: HookScope): HookCommand {
+  return { type: 'command', command: jevHookCommand(root, scope), timeout: HOOK_TIMEOUT };
 }
 
 /**
@@ -239,6 +246,7 @@ export function setProjectHook(
   on: boolean,
   packageDir: string = packageRoot(),
   matcher: string = HOOK_MATCHER,
+  scope: HookScope = 'project',
 ): ProjectHookState {
   const file = projectSettingsPath(projectRoot);
   const read = readSettings(file);
@@ -269,7 +277,7 @@ export function setProjectHook(
       next.push({
         ...group,
         matcher,
-        hooks: entries.map((hook) => (isJevHookCommand(hook?.command) ? jevHookEntry(packageDir) : hook)),
+        hooks: entries.map((hook) => (isJevHookCommand(hook?.command) ? jevHookEntry(packageDir, scope) : hook)),
       });
       continue;
     }
@@ -278,7 +286,7 @@ export function setProjectHook(
   }
 
   if (on && !placed) {
-    next.push({ matcher, hooks: [jevHookEntry(packageDir)] });
+    next.push({ matcher, hooks: [jevHookEntry(packageDir, scope)] });
     changed = true;
   }
 

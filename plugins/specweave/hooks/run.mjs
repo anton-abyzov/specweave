@@ -139,8 +139,24 @@ function threadBoundIn(root) {
     return !CLOSED_STATUSES.has(status);
   } catch { return false; }
 }
+// `--scope user`: the entry `specweave require-increment` writes to
+// ~/.claude/settings.json runs in every project. It guards nothing (not even
+// increment files) unless an opted-in project's marker is found, and leaves a
+// project whose own entry Claude loaded to that entry (no second worker).
+const USER_SCOPE = process.argv[3] === '--scope' && process.argv[4] === 'user';
+const EDIT_HOOK_MATCHER = 'Edit|Write|MultiEdit|NotebookEdit';
+function projectEntryLoaded(data) {
+  const dir = process.env.CLAUDE_PROJECT_DIR || (typeof data.cwd === 'string' ? data.cwd : '');
+  if (!dir) return false;
+  try {
+    const groups = JSON.parse(readFileSync(path.join(dir, '.claude', 'settings.json'), 'utf8'))?.hooks?.PreToolUse;
+    return Array.isArray(groups) && groups.some((g) => g?.matcher === EDIT_HOOK_MATCHER && Array.isArray(g.hooks)
+      && g.hooks.some((h) => typeof h?.command === 'string' && /hooks\/run\.mjs"?\s+pre-tool-use\s*$/.test(h.command.replace(/\\/g, '/'))));
+  } catch { return false; }
+}
 function skipPreToolUse(data) {
   const tool = typeof data.tool_name === 'string' ? data.tool_name : '';
+  if (USER_SCOPE && (tool === 'Bash' || findMarker(data, REQUIRE_INCREMENT_MARKER) === null || projectEntryLoaded(data))) return true;
   if (tool === 'Bash') return !hasJevGuardMarker(data);
   const ti = data.tool_input;
   const filePath = ti && typeof ti === 'object' && typeof ti.file_path === 'string'
