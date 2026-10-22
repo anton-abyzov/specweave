@@ -6,9 +6,9 @@
  * `gh release view vX.Y.Z -R anton-abyzov/specwithcode --json assets`.
  * After editing, run `CHECK_RELEASE_LINKS=1 npx vitest run specwithcodeRelease` to confirm the DMG exists.
  */
-const VERSION = '1.0.62';
+const VERSION = '1.0.71';
 const DMG_NAME = 'SpecWithCode-arm64.dmg';
-const DMG_BYTES = 156_433_398;
+const DMG_BYTES = 159_784_442;
 
 const REPO = 'https://github.com/anton-abyzov/specwithcode';
 

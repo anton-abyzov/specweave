@@ -168,6 +168,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'faq', label: 'FAQ'},
         {type: 'doc', id: 'overview/dogfooding', label: 'Built with SpecWeave'},
         {type: 'doc', id: 'examples/index', label: 'Examples'},
+        {type: 'doc', id: 'guides/spec-as-code', label: 'Spec as code and intent-first'},
         {type: 'doc', id: 'guides/spec-driven-tools-compared', label: 'Compared: OpenSpec, Spec Kit, BMAD, Kiro'},
         {type: 'doc', id: 'guides/specweave-vs-speckit', label: 'SpecWeave vs Spec Kit'},
         {type: 'doc', id: 'guides/specweave-vs-openspec', label: 'SpecWeave vs OpenSpec'},

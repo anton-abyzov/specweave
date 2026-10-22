@@ -1,0 +1,97 @@
+---
+title: "Spec as code vs spec-driven and intent-first development"
+description: "Compare spec as code, spec-driven development and SpecWeave's intent-first workflow. See how SpecWithCode runs AI coding agents against a shared record."
+slug: /compare/spec-as-code
+keywords: [spec as code, spec-driven development, intent-first development, SpecWithCode, spec with code, AI coding agent]
+---
+
+import Head from '@docusaurus/Head';
+
+export const questions = [
+  {q: 'What does spec as code mean?', a: 'It means keeping specifications in version control alongside implementation, reviewing changes together and connecting requirements to checks. A Markdown file is a start; acceptance criteria and evidence make it useful.'},
+  {q: 'How does intent-first development differ from spec-driven development?', a: 'Spec-driven development starts from a specification. SpecWeave calls its method intent-first development: settle the outcome and decisions first, write a small increment, record task evidence, review the result and close it. The terms overlap, but they do not name the same product.'},
+  {q: 'Is Spec with Code a product or a development method?', a: 'SpecWithCode, pronounced Spec with Code, is an AI coding agent workspace. SpecWeave is the separate CLI for specifications, task evidence and handoffs in git. Spec as code and spec-driven development are broader practices.'},
+  {q: 'Do I need SpecWithCode to use SpecWeave?', a: 'No. The SpecWeave CLI works with agents that can read repository files and run shell commands. SpecWithCode adds a desktop workspace for those agents and their provider accounts.'},
+];
+
+<Head>
+  <script type="application/ld+json">{JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'TechArticle',
+        '@id': 'https://spec-weave.com/docs/compare/spec-as-code/#article',
+        headline: 'Spec as code vs spec-driven and intent-first development',
+        description: 'Compare specifications in version control, spec-driven development and the intent-first workflow used by SpecWeave.',
+        url: 'https://spec-weave.com/docs/compare/spec-as-code/',
+        mainEntityOfPage: 'https://spec-weave.com/docs/compare/spec-as-code/',
+        inLanguage: 'en',
+        author: {'@type': 'Organization', name: 'SpecWeave', url: 'https://spec-weave.com/'},
+        publisher: {'@id': 'https://spec-weave.com/#org'},
+        isPartOf: {'@id': 'https://spec-weave.com/#website'},
+        image: 'https://spec-weave.com/img/og-weave.jpg',
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': 'https://spec-weave.com/docs/compare/spec-as-code/#questions',
+        mainEntity: questions.map(({q, a}) => ({'@type': 'Question', name: q, acceptedAnswer: {'@type': 'Answer', text: a}})),
+      },
+    ],
+  })}</script>
+</Head>
+
+# Spec as code vs spec-driven and intent-first development
+
+**Spec as code** is a practice: keep specifications in version control with the implementation. **Spec-driven development** is a workflow: use a specification to guide what an AI coding agent builds. **Intent-first development** is SpecWeave's method for deciding the outcome, recording evidence and handing unfinished work between tools.
+
+[SpecWithCode](/code/), pronounced **Spec with Code**, is the desktop workspace that runs the agents. It is a product, rather than another name for those practices. You can use the SpecWeave CLI without it.
+
+## Compare the three approaches
+
+| Term | Main question | Useful artifact | Common failure |
+|---|---|---|---|
+| Spec as code | Can we review requirements with implementation? | A versioned specification in the same repository | The document drifts after the code changes |
+| Spec-driven development | What should the agent build? | Requirements and a plan with acceptance criteria | A long plan still leaves decisions unresolved |
+| Intent-first development with SpecWeave | What will count as finished, and who can continue it? | A short `spec.md`, an append-only `ledger.jsonl` and a handoff when needed | Treating a task report as proof without checking its evidence |
+
+These approaches can work together. A team can keep specs as code, use a spec-driven planning tool and then put a change into a SpecWeave increment for execution and handoff. A structured file helps an agent find the requirements; it does not make those requirements correct or prove that the implementation meets them.
+
+## A small example: add CSV export
+
+Suppose a user asks for a Download CSV button on a filtered invoice table. "Add CSV export" leaves several decisions open: which rows, which columns, whose permissions and what happens when there are no matches?
+
+Settle those decisions before implementation. A useful outcome is: an authorized user can download the rows matching the current filters, in the visible column order, without including data the user cannot see.
+
+A small spec can make that outcome checkable:
+
+```markdown
+## Acceptance Criteria
+- [ ] AC-01: The CSV includes only rows matching the active filters.
+- [ ] AC-02: Columns follow the visible table order.
+- [ ] AC-03: Unauthorized users cannot export invoice data.
+- [ ] AC-04: An empty result produces a header-only CSV.
+```
+
+The corresponding checks should exercise the exported file and the authorization boundary. Counting rendered buttons or confirming that an agent wrote a CSV helper does not prove those criteria. Review the changed code and inspect a real exported file before accepting the result.
+
+Keep the spec in the pull request with the implementation. When a requirement changes, review its new check and its code together. That is what makes the document a working part of the project rather than a record of an old conversation.
+
+## Where SpecWeave and SpecWithCode fit
+
+[SpecWeave](/docs/overview/introduction/) keeps the increment and task evidence in repository files. Its [daily loop](/docs/overview/how-it-works/) moves from deciding the outcome to implementation, verification, review and completion. The ledger records claims and finished tasks; the Markdown spec stays the definition of the work.
+
+If a coding session ends or reaches a usage limit, [handoff and pickup](/docs/guides/cross-tool-handoff/) let another tool continue from that record. The next agent should inspect the branch, claims and saved evidence before editing. A handoff preserves progress; it does not grant extra permissions or make unverified work complete.
+
+[SpecWithCode](/code/) brings Claude Code, Codex, Cursor and other agents into one workspace on your own machines. You choose provider accounts, where work runs and which actions need approval. Cloud models still receive the prompts and relevant context sent to those providers. The SpecWeave record is optional; you can also use the app for ordinary coding conversations.
+
+## Choose a starting point
+
+If requirements already live in Git, start by making one change's acceptance criteria observable. Add checks for behavior and permissions, then keep the evidence with the work.
+
+If you want a guided planning workflow, compare [SpecWeave, OpenSpec, GitHub Spec Kit, BMAD and Kiro](/docs/compare/spec-driven-development-tools/). That comparison explains their artifacts and handoff behavior; this page explains the terminology.
+
+If your immediate problem is managing several coding agents, [explore SpecWithCode](/code/) or [download the Mac app](/code/download/). Start with one project and one provider before adding workers or machines.
+
+## Common questions
+
+{questions.map(({q, a}) => <section key={q}><h3>{q}</h3><p>{a}</p></section>)}

@@ -74,3 +74,44 @@ assert(!wildcardDisallows.some(rule => rule.test('/search/')), 'Search must be c
 assert(!indexablePaths.has('/docs/overview/'), 'The copied README must not compete with the introduction');
 assert.equal(new URL(pageFor('/docs/overview/').querySelector('link[rel="canonical"]').href, origin).href, `${origin}/docs/overview/introduction/`);
 console.log(`SEO artifact verified: ${urls.length} indexable URLs; unique titles, descriptions, headings, matching canonicals; ${internalLinks} internal links; intentional exclusions preserved.`);
+
+// Brand discovery is a rendered-page contract, including entity links and visible FAQ copy.
+const schemaNodes = doc => [...doc.querySelectorAll('script[type="application/ld+json"]')]
+  .flatMap(script => { const data = JSON.parse(script.textContent); return data['@graph'] ?? [data]; });
+for (const path of ['/code/', '/code/download/']) {
+  const doc = pageFor(path);
+  assert(doc.querySelector('main').textContent.includes('Spec with Code'), `Missing visible brand pronunciation: ${path}`);
+  assert(doc.querySelector('meta[name="description"]').content.includes('Spec with Code'), `Missing brand alias in description: ${path}`);
+  assert(doc.querySelector('meta[name="description"]').content.length <= 160, `Long product description: ${path}`);
+  for (const selector of ['meta[property="og:image"]', 'meta[name="twitter:image"]']) {
+    assert.equal(doc.querySelector(selector)?.content, `${origin}/img/studio/og-specwithcode.jpg`, `Wrong product share image: ${path}`);
+  }
+  const nodes = schemaNodes(doc);
+  assert(nodes.some(node => node['@type'] === 'WebSite' && node['@id'] === `${origin}/#website`), `Unresolved site entity: ${path}`);
+  const app = nodes.find(node => node['@type'] === 'SoftwareApplication' && node.name === 'SpecWithCode');
+  assert.equal(app?.alternateName, 'Spec with Code', `Missing product alias: ${path}`);
+  assert.equal(app?.['@id'], `${origin}/code/#app`, `Split product identity: ${path}`);
+  const webPage = nodes.find(node => node['@type'] === 'WebPage');
+  assert.equal(webPage?.isPartOf?.['@id'], `${origin}/#website`, `Page must belong to root WebSite: ${path}`);
+}
+const product = pageFor('/code/');
+assert(product.title.includes('Spec with Code'), 'Product title must explain the spaced brand');
+assert.equal(schemaNodes(product).find(node => node['@type'] === 'WebPage')?.mainEntity?.['@id'], `${origin}/code/#app`);
+for (const faq of schemaNodes(product).filter(node => node['@type'] === 'FAQPage')) {
+  for (const question of faq.mainEntity) {
+    assert(product.querySelector('main').textContent.includes(question.name), `Invisible FAQ: ${question.name}`);
+    assert(product.querySelector('main').textContent.includes(question.acceptedAnswer.text), `FAQ answer differs from page: ${question.name}`);
+  }
+}
+const comparisonPath = '/docs/compare/spec-as-code/';
+assert(indexablePaths.has(comparisonPath), 'Missing terminology guide in sitemap');
+const comparison = pageFor(comparisonPath);
+const article = schemaNodes(comparison).find(node => node['@type'] === 'TechArticle');
+assert.equal(article?.url, `${origin}${comparisonPath}`);
+assert.equal(article?.headline, comparison.querySelector('h1').textContent);
+assert(comparison.querySelector('main').textContent.includes('AC-04'), 'Guide must include a concrete acceptance example');
+assert(product.querySelector(`a[href="${comparisonPath}"]`), 'Product must link to terminology guide');
+console.log('Brand SEO verified: visible alias, product identity, social cards, matching FAQ and indexable TechArticle.');
+for (const path of ['/', '/code/', '/code/download/']) {
+  assert(!pageFor(path).querySelector('link[href*="fonts.googleapis.com"]'), `External font stylesheet blocks rendering: ${path}`);
+}
