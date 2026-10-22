@@ -39,8 +39,8 @@ export function smallFixCommand(reason: string | undefined, opts: { cwd?: string
   fs.appendFileSync(log, JSON.stringify(entry) + '\n', 'utf8');
   const marker = { kind: 'small-fix' as const, incrementId: null, root, event: 'small-fix', reason: entry.reason, at: entry.at };
   if (session) recordWorkSession({ sessionId: session, ...marker });
-  // Codex and Pi threads have no session id; the guard also reads a marker keyed by the thread.
-  if (thread) recordWorkSession({ sessionId: `studio-${thread}`, ...marker });
+  // Codex and Pi threads have no session id; the guard then reads a marker keyed by the thread.
+  else if (thread) recordWorkSession({ sessionId: `studio-${thread}`, ...marker });
   if (session) process.stdout.write(`Small fix recorded for session ${session}: ${entry.reason}\n`);
   else if (thread) process.stdout.write(`Small fix recorded for this SpecWithCode thread: ${entry.reason}\n`);
   else {

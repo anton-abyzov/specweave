@@ -7,6 +7,7 @@ import type { HookContext, HookInput } from '../../../../src/core/hooks/handlers
 import { smallFixCommand, readSmallFixes } from '../../../../src/cli/commands/small-fix.js';
 import { requireIncrementCommand } from '../../../../src/cli/commands/require-increment.js';
 import { appendEvent } from '../../../../src/core/tasks/ledger.js';
+import { recordIncrementWork } from '../../../../src/core/tasks/work-session.js';
 
 const KEYS = ['HOME', 'USERPROFILE', 'SPECWEAVE_STUDIO_THREAD_ID', 'CLAUDE_CODE_SESSION_ID', 'SPECWEAVE_SESSION_ID', 'SPECWEAVE_AGENT'];
 let saved: Record<string, string | undefined>;
@@ -89,6 +90,36 @@ describe('required-increment guard (AC-03)', () => {
     process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread:t1';
     appendEvent(path.join(root, '.specweave', 'increments', '0002-y', 'ledger.jsonl'), { t: '*', e: 'note', by: 'claude@test', at: '2026-10-22T12:00:00Z', note: 'x' });
     expect(await handle(edit('src/a.ts', 'sess-z'), context)).toEqual({});
+  });
+
+  it('a thread small fix stops exempting once the thread worked an increment that then closed', async () => {
+    setMode('enforce');
+    const inc = path.join(root, '.specweave', 'increments', '0002-y');
+    const closeIt = () => {
+      fs.mkdirSync(inc, { recursive: true });
+      fs.writeFileSync(path.join(inc, 'metadata.json'), '{"status":"completed"}');
+    };
+    // A Claude thread: the session marker is the only one written.
+    process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread:claude';
+    process.env.SPECWEAVE_SESSION_ID = 'sess-c';
+    expect(smallFixCommand('typo', { cwd: root })).toBe(0);
+    expect(fs.existsSync(path.join(home, '.specweave', 'sessions', 'studio-thread_claude.json'))).toBe(false);
+    expect(await handle(edit('src/a.ts', 'sess-c'), context)).toEqual({});
+    fs.mkdirSync(inc, { recursive: true });
+    fs.writeFileSync(path.join(inc, 'metadata.json'), '{"status":"active"}');
+    recordIncrementWork(inc, { e: 'claim', t: 'T-01' }, { sessionId: 'sess-c', home });
+    closeIt();
+    expect((await handle(edit('src/a.ts', 'sess-c'), context)).hookSpecificOutput?.permissionDecision).toBe('deny');
+
+    // A Codex thread (no session id): its thread marker gives way to the increment work.
+    delete process.env.SPECWEAVE_SESSION_ID;
+    process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread:codex';
+    expect(smallFixCommand('typo', { cwd: root })).toBe(0);
+    expect(await handle(edit('src/a.ts', ''), context)).toEqual({});
+    fs.writeFileSync(path.join(inc, 'metadata.json'), '{"status":"active"}');
+    recordIncrementWork(inc, { e: 'claim', t: 'T-01' }, { home });
+    closeIt();
+    expect((await handle(edit('src/a.ts', ''), context)).hookSpecificOutput?.permissionDecision).toBe('deny');
   });
 
   it('remind warns once per session', async () => {
