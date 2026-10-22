@@ -92,16 +92,23 @@ export function TimelinePage() {
     });
   }, [data, scope, tool, needle, windowStart]);
 
+  // Activity, throughput and the KPI tiles follow the same filters as the Gantt rows.
+  const visible = useMemo(() => new Set(rows.map((r) => r.incrementId)), [rows]);
   const activity = useMemo(
     () =>
       (data?.activity ?? []).filter(
         (a) =>
+          visible.has(a.incrementId) &&
           (tool === 'all' || a.tool === tool) &&
-          (!windowStart || Date.parse(a.at) >= windowStart) &&
-          (!needle || `${a.incrementId} ${a.title}`.toLowerCase().includes(needle)),
+          (!windowStart || Date.parse(a.at) >= windowStart),
       ),
-    [data, tool, windowStart, needle],
+    [data, visible, tool, windowStart],
   );
+  const closes = useMemo(
+    () => (data?.closes ?? []).filter((c) => visible.has(c.incrementId) && (tool === 'all' || c.tool === tool)),
+    [data, visible, tool],
+  );
+  const throughput = useMemo(() => dailyCloses(closes, now), [closes, now]);
 
   const tools = useMemo(() => [...new Set((data?.rows ?? []).flatMap((r) => r.tools))].sort(), [data]);
   const open = rows.filter((r) => r.remaining);
@@ -109,10 +116,9 @@ export function TimelinePage() {
   const p80 = open.reduce((n, r) => n + (r.remaining?.p80Minutes ?? 0), 0);
   const lanes = Math.max(1, Math.min(data?.lanes ?? 1, open.length || 1));
   const tasksLeft = open.reduce((n, r) => n + (r.remaining?.tasks ?? 0), 0);
-  const recent = (data?.rows ?? []).filter((r) => !windowStart || Date.parse(r.start) >= windowStart);
-  const finished = recent.filter((r) => r.tasks.done + r.tasks.skipped >= 2);
+  const finished = rows.filter((r) => !isOpen(r) && r.tasks.done + r.tasks.skipped >= 2);
   const live = finished.filter((r) => !r.recordedAfter).length;
-  const week = (data?.throughput ?? []).slice(-7).reduce((n, d) => n + d.total, 0);
+  const week = closes.filter((c) => Date.parse(c.at) >= now - 7 * DAY).length;
 
   return (
     <div className="work-page timeline-page">
@@ -237,7 +243,7 @@ export function TimelinePage() {
               <h2>
                 Throughput <span>tasks closed per day, last 30 days</span>
               </h2>
-              <Throughput data={data?.throughput ?? []} tool={tool} />
+              <Throughput data={throughput} />
               <Pace payload={data} />
             </section>
             <section className="timeline-panel" aria-label="Latest activity">
@@ -324,11 +330,13 @@ function Gantt({
               {ticks.map((t) => (
                 <span key={t} className="gantt-grid" style={{ left: x(t) }} />
               ))}
+              {r.lastEvent && end >= from && (
               <span
                 className="gantt-bar"
                 style={{ left: x(start), width: w(start, end) }}
                 title={`${r.title}\n${when(start)} → ${isOpen(r) ? 'now' : when(end)}\n${progress}, ${r.acs.done}/${r.acs.total} ACs`}
               />
+              )}
               {r.remaining && (
                 <>
                   <span
@@ -354,15 +362,27 @@ function Gantt({
   );
 }
 
-function Throughput({ data, tool }: { data: PlanTimelinePayload['throughput']; tool: string }) {
-  const values = data.map((d) => {
-    const byFamily: Record<string, number> = {};
-    for (const [k, n] of Object.entries(d.byTool)) {
-      if (tool !== 'all' && k !== tool) continue;
-      byFamily[toolClass(k)] = (byFamily[toolClass(k)] ?? 0) + n;
-    }
-    return byFamily;
-  });
+interface DayCount {
+  date: string;
+  byFamily: Record<string, number>;
+}
+/** Closed tasks per local day for the last 30 days, grouped by agent family. */
+function dailyCloses(closes: PlanTimelinePayload['closes'], now: number): DayCount[] {
+  const key = (ms: number) => new Date(ms).toLocaleDateString('en-CA');
+  const days = new Map<string, DayCount>();
+  for (let i = 29; i >= 0; i--) {
+    const date = key(now - i * DAY);
+    days.set(date, { date, byFamily: {} });
+  }
+  for (const c of closes) {
+    const d = days.get(key(Date.parse(c.at)));
+    if (d) d.byFamily[toolClass(c.tool)] = (d.byFamily[toolClass(c.tool)] ?? 0) + 1;
+  }
+  return [...days.values()];
+}
+
+function Throughput({ data }: { data: DayCount[] }) {
+  const values = data.map((d) => d.byFamily);
   const totals = values.map((v) => Object.values(v).reduce((n, x) => n + x, 0));
   const max = Math.max(1, ...totals);
   const keys = [...new Set(values.flatMap((v) => Object.keys(v)))];

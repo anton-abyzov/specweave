@@ -21,7 +21,9 @@
  * Fast path: PreToolUse for a file outside `.specweave/increments/` prints `{}`
  * without loading the CLI at all (the guards only concern increment files), and
  * PreToolUse for Bash prints `{}` unless the project opted into the Jev command
- * guard with a `.specweave/state/jev-guard.enabled` marker.
+ * guard with a `.specweave/state/jev-guard.enabled` marker. Edits outside
+ * increments reach the required-increment guard only under a
+ * `.specweave/state/require-increment.enabled` marker.
  */
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
@@ -66,9 +68,16 @@ const event = process.argv[2] ?? '';
 
 /** Opt-in marker for the Jev Bash guard, searched upward from cwd / project dir. */
 const JEV_GUARD_MARKER = path.join('.specweave', 'state', 'jev-guard.enabled');
+/** Opt-in marker for required increments (`specweave require-increment`): ordinary edits reach the guard. */
+const REQUIRE_INCREMENT_MARKER = path.join('.specweave', 'state', 'require-increment.enabled');
+const EDIT_TOOLS = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit']);
 const JEV_GUARD_MAX_DEPTH = 8;
 
 function hasJevGuardMarker(input) {
+  return hasMarker(input, JEV_GUARD_MARKER);
+}
+
+function hasMarker(input, marker) {
   const starts = [typeof input.cwd === 'string' ? input.cwd : process.cwd(), process.env.CLAUDE_PROJECT_DIR];
   for (const start of starts) {
     if (!start) continue;
@@ -80,7 +89,7 @@ function hasJevGuardMarker(input) {
     }
     for (let depth = 0; depth < JEV_GUARD_MAX_DEPTH; depth++) {
       try {
-        if (existsSync(path.join(current, JEV_GUARD_MARKER))) return true;
+        if (existsSync(path.join(current, marker))) return true;
       } catch {
         break;
       }
@@ -158,7 +167,8 @@ function normalizeInput(raw) {
         event === 'pre-tool-use' &&
         (tool === 'Bash'
           ? !hasJevGuardMarker(input)
-          : !filePath.includes('.specweave/increments/'));
+          : !filePath.includes('.specweave/increments/') &&
+            !(EDIT_TOOLS.has(tool) && hasMarker(input, REQUIRE_INCREMENT_MARKER)));
       return { raw: JSON.stringify(input), skip };
     }
   } catch {

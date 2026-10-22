@@ -4,7 +4,8 @@
  * An Edit or Write inside the project, outside `.specweave/`, is planned work
  * when the agent session has a work marker (`~/.specweave/sessions/<id>.json`,
  * written by any ledger append, `create-increment`, `verify`, `complete` or
- * `small-fix`) or its SpecWithCode thread is bound to an increment.
+ * `small-fix`) for this project, naming an open increment or a small fix, or
+ * its SpecWithCode thread is bound to an open increment here.
  * Otherwise:
  *
  *   off      → nothing (the default)
@@ -40,9 +41,29 @@ function inside(child: string, parent: string): boolean {
   return rel === '' || (!!rel && !rel.startsWith('..') && !path.isAbsolute(rel));
 }
 
-/** Is this session already working on an increment or a declared small fix? */
+/** Marker `specweave require-increment` leaves so the hook launcher's fast path knows to run the guard. */
+export const REQUIRE_INCREMENT_MARKER = 'require-increment.enabled';
+
+const CLOSED = new Set(['completed', 'abandoned', 'cancelled']);
+
+/** Same project: one root contains the other (an umbrella and its nested repos count as one). */
+function sameProject(a: string, b: string): boolean {
+  return inside(path.resolve(a), path.resolve(b)) || inside(path.resolve(b), path.resolve(a));
+}
+
+function openIncrement(root: string, incrementId: string | null): boolean {
+  if (!incrementId) return false;
+  const status = readJsonSafe<{ status?: string }>(path.join(root, '.specweave', 'increments', incrementId, 'metadata.json'))?.status;
+  return !CLOSED.has(String(status ?? ''));
+}
+
+/**
+ * Is this session already working, in this project, on an open increment or a
+ * declared small fix? Markers from another project or a closed increment do not count.
+ */
 export function hasPlannedWork(
   input: HookInput,
+  projectRoot: string,
   opts: { env?: NodeJS.ProcessEnv; home?: string } = {},
 ): boolean {
   const env = opts.env ?? process.env;
@@ -50,9 +71,19 @@ export function hasPlannedWork(
   const ids = [input.session_id, env.SPECWEAVE_SESSION_ID, env.CLAUDE_CODE_SESSION_ID].filter(
     (id): id is string => typeof id === 'string' && !!id.trim(),
   );
-  if (ids.some((id) => readWorkSession(id, home))) return true;
+  for (const id of ids) {
+    const marker = readWorkSession(id, home);
+    if (!marker || !sameProject(marker.root, projectRoot)) continue;
+    if (marker.kind === 'small-fix' || openIncrement(marker.root, marker.incrementId)) return true;
+  }
   const thread = env.SPECWEAVE_STUDIO_THREAD_ID?.trim();
-  return !!thread && fs.existsSync(studioThreadBindingFile(thread, home));
+  if (!thread) return false;
+  const binding = readJsonSafe<{ root?: string; incrementId?: string }>(studioThreadBindingFile(thread, home));
+  return (
+    !!binding?.root &&
+    sameProject(binding.root, projectRoot) &&
+    openIncrement(binding.root, binding.incrementId ?? null)
+  );
 }
 
 export function requireIncrementMessage(mode: RequireIncrementMode): string {
@@ -84,7 +115,7 @@ export function checkRequireIncrement(
   if (/[\\/]\.specweave[\\/]/.test(file)) return pass();
   if (!inside(file, context.projectRoot) && !inside(file, cwd)) return pass();
 
-  if (hasPlannedWork(input, opts)) return pass();
+  if (hasPlannedWork(input, context.projectRoot, opts)) return pass();
 
   if (mode === 'enforce') return deny(requireIncrementMessage(mode));
 

@@ -119,7 +119,8 @@ export function WorkPage({ sessionsOnly = false }: { sessionsOnly?: boolean }) {
   const tools = [
     ...new Set((data?.items ?? []).flatMap((item) => item.executions.map((s) => s.actor.split('@')[0]).filter(Boolean))),
   ].sort();
-  const doneSince = doneWindow === 'all' ? 0 : Date.now() - Number(doneWindow) * 86400000;
+  // The done window is a board control; execution history (/sessions) keeps every item.
+  const doneSince = sessionsOnly || doneWindow === 'all' ? 0 : Date.now() - Number(doneWindow) * 86400000;
   const items = (data?.items ?? []).filter(
     (item) =>
       `${item.title} ${item.summary} ${item.incrementId ?? ''}`.toLowerCase().includes(query.toLowerCase()) &&
