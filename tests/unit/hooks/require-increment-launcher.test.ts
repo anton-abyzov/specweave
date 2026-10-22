@@ -26,7 +26,7 @@ function edit(session: string) {
     }),
     encoding: 'utf8',
     timeout: 20000,
-    env: { ...process.env, HOME: home, SPECWEAVE_HOME: repoRoot, CLAUDE_CODE_SESSION_ID: '', SPECWEAVE_SESSION_ID: '', SPECWEAVE_STUDIO_THREAD_ID: '' },
+    env: { ...process.env, HOME: home, USERPROFILE: home, SPECWEAVE_HOME: repoRoot, CLAUDE_CODE_SESSION_ID: '', SPECWEAVE_SESSION_ID: '', SPECWEAVE_STUDIO_THREAD_ID: '' },
   });
   expect(res.status).toBe(0);
   return JSON.parse(res.stdout.trim()) as { hookSpecificOutput?: { permissionDecision?: string } };

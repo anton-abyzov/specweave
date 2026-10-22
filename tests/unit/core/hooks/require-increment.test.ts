@@ -8,7 +8,7 @@ import { smallFixCommand, readSmallFixes } from '../../../../src/cli/commands/sm
 import { requireIncrementCommand } from '../../../../src/cli/commands/require-increment.js';
 import { appendEvent } from '../../../../src/core/tasks/ledger.js';
 
-const KEYS = ['HOME', 'SPECWEAVE_STUDIO_THREAD_ID', 'CLAUDE_CODE_SESSION_ID', 'SPECWEAVE_SESSION_ID', 'SPECWEAVE_AGENT'];
+const KEYS = ['HOME', 'USERPROFILE', 'SPECWEAVE_STUDIO_THREAD_ID', 'CLAUDE_CODE_SESSION_ID', 'SPECWEAVE_SESSION_ID', 'SPECWEAVE_AGENT'];
 let saved: Record<string, string | undefined>;
 let root: string;
 let home: string;
@@ -30,6 +30,7 @@ beforeEach(() => {
   root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'sw-require-')));
   home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-require-home-'));
   process.env.HOME = home;
+  process.env.USERPROFILE = home;
   process.env.SPECWEAVE_AGENT = 'claude@test';
   fs.mkdirSync(path.join(root, '.specweave', 'state'), { recursive: true });
   context = {

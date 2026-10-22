@@ -10,7 +10,7 @@ import { readWorkSession } from '../../../../src/core/tasks/work-session.js';
 import { studioThreadBindingFile } from '../../../../src/core/tasks/studio-thread-binding.js';
 import { projectIncrement } from '../../../../src/dashboard/server/data/work-projection.js';
 
-const KEYS = ['HOME', 'SPECWEAVE_STUDIO_THREAD_ID', 'CLAUDE_CODE_SESSION_ID', 'SPECWEAVE_SESSION_ID', 'SPECWEAVE_MODEL', 'ANTHROPIC_MODEL', 'SPECWEAVE_AGENT', 'SPECWEAVE_TOOL'];
+const KEYS = ['HOME', 'USERPROFILE', 'SPECWEAVE_STUDIO_THREAD_ID', 'CLAUDE_CODE_SESSION_ID', 'SPECWEAVE_SESSION_ID', 'SPECWEAVE_MODEL', 'ANTHROPIC_MODEL', 'SPECWEAVE_AGENT', 'SPECWEAVE_TOOL'];
 let saved: Record<string, string | undefined>;
 let root: string;
 let home: string;
@@ -24,6 +24,7 @@ beforeEach(() => {
   fs.mkdirSync(path.join(root, '.specweave', 'increments'), { recursive: true });
   fs.writeFileSync(path.join(root, '.specweave', 'config.json'), JSON.stringify({ project: { name: 'demo' } }));
   process.env.HOME = home;
+  process.env.USERPROFILE = home;
   process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread:plan-1';
   process.env.SPECWEAVE_SESSION_ID = 'session-1';
   process.env.SPECWEAVE_TOOL = 'claude';
