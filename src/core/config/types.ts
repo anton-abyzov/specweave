@@ -633,6 +633,13 @@ export interface ReviewConfiguration {
  */
 export interface PlanningConfig {
   deepInterview?: DeepInterviewMode;
+  /**
+   * Must code changes belong to an increment? `off` (default), `remind` (one
+   * note per session) or `enforce` (edits denied until the session creates or
+   * claims an increment, or runs `specweave small-fix`). Set with
+   * `specweave require-increment <mode>`, which also installs the Claude Code hook.
+   */
+  requireIncrement?: 'off' | 'remind' | 'enforce';
 }
 
 /**
