@@ -23,6 +23,7 @@ import { IncrementDetailPage } from './pages/IncrementDetailPage';
 import { HooksPage } from './pages/HooksPage';
 import { AgentsPage } from './pages/AgentsPage';
 import { WorkspacePage } from './pages/WorkspacePage';
+import { TimelinePage } from './pages/TimelinePage';
 
 export default function App() {
   const projectManager = useProjectManager();
@@ -40,6 +41,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<WorkPage />} />
               <Route path="/project" element={<ProjectHubPage />} />
+              <Route path="/timeline" element={<TimelinePage />} />
               <Route path="/sessions" element={<WorkPage sessionsOnly />} />
               <Route path="/overview" element={<OverviewPage />} />
               <Route path="/increments" element={<IncrementsPage />} />

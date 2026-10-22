@@ -5,6 +5,7 @@ import { useSSEStatus } from '../../contexts/SSEContext';
 const PRIMARY = [
   ['/project', 'Project hub', '◈'],
   ['/', 'Work board', '▥'],
+  ['/timeline', 'Timeline', '≡'],
   ['/increments', 'Evidence', '▤'],
   ['/sessions', 'Sessions', '↗'],
   ['/sync', 'Connections', '⇄'],
