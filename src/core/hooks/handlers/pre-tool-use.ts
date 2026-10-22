@@ -1,9 +1,12 @@
 /**
- * PreToolUse hook handler (tools: Write, Edit, Bash) — two hard rules:
+ * PreToolUse hook handler (tools: Write, Edit, MultiEdit, NotebookEdit, Bash) — three rules:
  *
  * 1. Status Completion Guard — no manual `status: completed` in an increment's
  *    metadata.json; closure goes through `/sw:done` / `specweave complete`.
- * 2. Jev Bash guard (opt-in, 0878) — when `.specweave/state/jev-guard.enabled`
+ * 2. Required increment (opt-in, 0996) — with `planning.requireIncrement` set
+ *    to `remind` or `enforce`, an edit in a session with no increment and no
+ *    `specweave small-fix` is warned about or denied (see require-increment.ts).
+ * 3. Jev Bash guard (opt-in, 0878) — when `.specweave/state/jev-guard.enabled`
  *    exists AND `jev.enabled` AND `jev.guards.bash`, a shell command that
  *    survives the regex prefilter is scored by Jev; a `deny` verdict blocks it,
  *    a `warn` verdict is surfaced as additionalContext.
@@ -40,6 +43,7 @@ import * as path from 'path';
 import { redactSecrets } from '../../jev/redact.js';
 import type { HandlerFn, HookContext, HookInput, HookResult } from './types.js';
 import { deny, pass, warn } from './types.js';
+import { checkRequireIncrement, EDIT_TOOLS } from './require-increment.js';
 import {
   extractIncrementId,
   getFilePath,
@@ -241,7 +245,15 @@ export const handle: HandlerFn = async (input, context) => {
     }
   }
 
-  if (toolName !== 'Edit' && toolName !== 'Write') return pass();
+  if (!EDIT_TOOLS.has(toolName)) return pass();
+
+  try {
+    const required = checkRequireIncrement(input, context);
+    if (required.hookSpecificOutput) return required;
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    logHook(context, 'require-increment', `[ERROR] ${msg}`, 'error');
+  }
 
   const filePath = getFilePath(input);
   if (!filePath || !isIncrementFile(filePath)) return pass();
