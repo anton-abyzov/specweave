@@ -42,8 +42,8 @@ export interface PlanRow {
   models: string[];
   /** Most tasks were closed with no live claim-to-done span: the plan was written after the work. */
   recordedAfter: boolean;
-  /** Open work only: remaining weight and minutes at the p50 and p80 rates, uninterrupted. */
-  remaining: { tasks: number; weight: number; p50Minutes: number; p80Minutes: number } | null;
+  /** Open work only: remaining weight, minutes at the p50 and p80 rates and finish times, uninterrupted from now. */
+  remaining: { tasks: number; weight: number; p50Minutes: number; p80Minutes: number; finishP50: string; finishP80: string } | null;
   lastEvent: { at: string; e: string; t: string; by: string } | null;
   specPath: string;
 }
@@ -69,8 +69,8 @@ export interface PlanTimelinePayload {
   generatedAt: string;
   rows: PlanRow[];
   activity: PlanActivity[];
-  /** Done or skipped tasks per local day, oldest first, with the tools that closed them. */
-  throughput: Array<{ date: string; total: number; byTool: Record<string, number> }>;
+  /** Every done or skipped task of the last 30 days, oldest first (throughput is computed from the filtered set). */
+  closes: Array<{ at: string; incrementId: string; tool: string }>;
   rates: { overall: PlanRate; byTool: PlanRate[]; byModel: PlanRate[]; fallback: boolean };
   /** Median agents finishing tasks per active day over the last week (at least 1): parallel lanes for the forecast. */
   lanes: number;

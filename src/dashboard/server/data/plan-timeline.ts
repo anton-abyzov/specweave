@@ -33,6 +33,7 @@ export const DEFAULT_RATE = { p50: 30, p80: 60 };
 const ACTIVITY_LIMIT = 300;
 const THROUGHPUT_DAYS = 30;
 const CLOSED = new Set(['completed', 'abandoned']);
+const DAY_MS = 86400000;
 
 export function taskWeight(files: number, acs: number): number {
   const w = 1 + 0.5 * Math.max(0, files - 1) + 0.25 * Math.max(0, acs - 1);
@@ -237,11 +238,13 @@ export function buildPlanTimeline(root: string, now = new Date()): PlanTimelineP
       weight: round(open.reduce((n, t) => n + t.weight, 0)),
       p50Minutes: Math.round(p50),
       p80Minutes: Math.round(p80),
+      finishP50: new Date(now.getTime() + Math.round(p50) * 60000).toISOString(),
+      finishP80: new Date(now.getTime() + Math.round(p80) * 60000).toISOString(),
     };
   }
 
   // Lanes: the median number of agents that finished tasks on each active day of the last week.
-  const weekAgo = now.getTime() - 7 * 86400000;
+  const weekAgo = now.getTime() - 7 * DAY_MS;
   const agentsByDay = new Map<string, Set<string>>();
   for (const { events } of loaded) {
     for (const e of events) {
@@ -252,26 +255,20 @@ export function buildPlanTimeline(root: string, now = new Date()): PlanTimelineP
   }
   const lanes = Math.max(1, Math.round(quantile([...agentsByDay.values()].map((set) => set.size), 0.5)));
 
-  const days = new Map<string, { date: string; total: number; byTool: Record<string, number> }>();
-  for (let i = THROUGHPUT_DAYS - 1; i >= 0; i--) {
-    const date = localDay(new Date(now.getTime() - i * 86400000).toISOString());
-    days.set(date, { date, total: 0, byTool: {} });
-  }
-  for (const { events } of loaded) {
-    for (const e of events) {
-      if (e.e !== 'done' && e.e !== 'skip') continue;
-      const day = days.get(localDay(e.at));
-      if (!day) continue;
-      day.total++;
-      day.byTool[toolOf(e.by)] = (day.byTool[toolOf(e.by)] ?? 0) + 1;
-    }
-  }
+  const since = now.getTime() - THROUGHPUT_DAYS * DAY_MS;
+  const closes = loaded
+    .flatMap(({ row, events }) =>
+      events
+        .filter((e) => (e.e === 'done' || e.e === 'skip') && Date.parse(e.at) >= since)
+        .map((e) => ({ at: e.at, incrementId: row.incrementId, tool: toolOf(e.by) })),
+    )
+    .sort((a, b) => a.at.localeCompare(b.at));
 
   return {
     generatedAt: now.toISOString(),
     rows: loaded.map((l) => l.row),
     activity: activity.sort((a, b) => b.at.localeCompare(a.at)).slice(0, ACTIVITY_LIMIT),
-    throughput: [...days.values()],
+    closes,
     rates: { overall: overall ?? rate('all', []), byTool, byModel, fallback: !overall || overall.samples < MIN_SAMPLES },
     lanes,
     smallFixes: readSmallFixes(root).length,

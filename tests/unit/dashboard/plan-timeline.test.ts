@@ -72,12 +72,16 @@ describe('plan timeline (AC-05)', () => {
     expect(plan.rates.fallback).toBe(false);
 
     // Two open tasks, weights 1 and 2.5, at 20 min per weight unit.
-    expect(open.remaining).toEqual({ tasks: 2, weight: 3.5, p50Minutes: 70, p80Minutes: 70 });
+    expect(open.remaining).toEqual({
+      tasks: 2, weight: 3.5, p50Minutes: 70, p80Minutes: 70,
+      finishP50: new Date(NOW.getTime() + 70 * 60000).toISOString(),
+      finishP80: new Date(NOW.getTime() + 70 * 60000).toISOString(),
+    });
     expect(open.lastEvent).toMatchObject({ e: 'claim', t: 'T-01' });
     expect(open.specPath).toBe(path.join(root, '.specweave/increments/0002-open/spec.md'));
 
-    expect(plan.throughput).toHaveLength(30);
-    expect(plan.throughput.reduce((n, d) => n + d.total, 0)).toBe(5);
+    expect(plan.closes).toHaveLength(5);
+    expect(plan.closes[0]).toEqual({ at: at(280), incrementId: '0001-live', tool: 'claude' });
     expect(plan.lanes).toBe(1);
     expect(plan.activity[0]).toMatchObject({ incrementId: '0002-open', event: 'claim', tool: 'claude', model: 'opus' });
     expect(plan.activity).toHaveLength(11);
@@ -100,7 +104,7 @@ describe('plan timeline (AC-05)', () => {
     expect(plan.rates.overall.samples).toBe(0);
     expect(plan.rates.fallback).toBe(true);
     // Without history the default rate applies.
-    expect(plan.rows[1].remaining).toEqual({ tasks: 1, weight: 1, p50Minutes: DEFAULT_RATE.p50, p80Minutes: DEFAULT_RATE.p80 });
+    expect(plan.rows[1].remaining).toMatchObject({ tasks: 1, weight: 1, p50Minutes: DEFAULT_RATE.p50, p80Minutes: DEFAULT_RATE.p80 });
   });
 
   it('GET /api/plan serves the payload for the selected project', async () => {

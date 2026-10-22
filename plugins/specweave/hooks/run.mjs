@@ -48,20 +48,36 @@ function hasClosePendingFor(data) {
 // Jev guard with a local marker file.
 const JEV_GUARD_MARKER = path.join('.specweave', 'state', 'jev-guard.enabled');
 const JEV_GUARD_MAX_DEPTH = 8;
-function hasJevGuardMarker(data) {
+// Edits outside increments only matter when the project opted into required
+// increments (`specweave require-increment`), which leaves its own marker; a
+// session already marked as working on an increment in that project skips too.
+const REQUIRE_INCREMENT_MARKER = path.join('.specweave', 'state', 'require-increment.enabled');
+const EDIT_TOOLS = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit']);
+function findMarker(data, marker) {
   const starts = [typeof data.cwd === 'string' ? data.cwd : process.cwd(), process.env.CLAUDE_PROJECT_DIR];
   for (const start of starts) {
     if (!start) continue;
     let current;
     try { current = path.resolve(start); } catch { continue; }
     for (let depth = 0; depth < JEV_GUARD_MAX_DEPTH; depth++) {
-      try { if (existsSync(path.join(current, JEV_GUARD_MARKER))) return true; } catch { break; }
+      try { if (existsSync(path.join(current, marker))) return current; } catch { break; }
       const parent = path.dirname(current);
       if (parent === current) break;
       current = parent;
     }
   }
-  return false;
+  return null;
+}
+function hasJevGuardMarker(data) {
+  return findMarker(data, JEV_GUARD_MARKER) !== null;
+}
+function sessionWorksIn(data, root) {
+  const session = typeof data.session_id === 'string' ? data.session_id : '';
+  if (!/^[A-Za-z0-9._-]{1,128}$/.test(session) || session === '.' || session === '..') return false;
+  try {
+    const marker = JSON.parse(readFileSync(path.join(homedir(), '.specweave', 'sessions', `${session}.json`), 'utf8'));
+    return marker?.kind === 'small-fix' && typeof marker.root === 'string' && path.resolve(marker.root) === root;
+  } catch { return false; }
 }
 function skipPreToolUse(data) {
   const tool = typeof data.tool_name === 'string' ? data.tool_name : '';
@@ -69,7 +85,10 @@ function skipPreToolUse(data) {
   const ti = data.tool_input;
   const filePath = ti && typeof ti === 'object' && typeof ti.file_path === 'string'
     ? ti.file_path.replace(/\\/g, '/') : '';
-  return !filePath.includes('.specweave/increments/');
+  if (filePath.includes('.specweave/increments/')) return false;
+  if (!EDIT_TOOLS.has(tool)) return true;
+  const root = findMarker(data, REQUIRE_INCREMENT_MARKER);
+  return root === null || sessionWorksIn(data, root);
 }
 function record(reason) {
   try {

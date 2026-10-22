@@ -121,8 +121,7 @@ try {
     check((await page.locator('.gantt-now-label').count()) === 1, 'Gantt shows a Now line');
     const kpis = await page.locator('[data-testid="timeline-kpis"]').innerText();
     check(/Open increments\s*1\s*2 tasks left/.test(kpis), 'KPI: one open increment, two tasks left');
-    check(/Planned before the work\s*50%/.test(kpis), 'KPI: half the finished increments were planned live');
-    check((await page.locator('.timeline-activity li').count()) >= 5, 'Activity feed lists ledger events');
+    check((await page.locator('.timeline-activity li').count()) === 3, 'Activity feed lists the open increment\'s 3 ledger events');
     check((await page.locator('.timeline-throughput rect').count()) > 0, 'Throughput chart has bars');
     check((await page.locator('.timeline-pace tbody tr').count()) >= 2, 'Pace table lists the measured rates');
 
@@ -130,6 +129,16 @@ try {
     await page.waitForTimeout(300);
     const allRows = await page.locator('.gantt-row').count();
     check(allRows === 3, `All (last 30 days) shows 3 increments, hides the 40-day-old one (got ${allRows})`);
+    const allKpis = await page.locator('[data-testid="timeline-kpis"]').innerText();
+    check(/Planned before the work\s*50%/.test(allKpis), 'KPI: half the finished increments were planned live');
+    check(/Closed in the last 7 days\s*9/.test(allKpis), 'KPI: 9 tasks closed in the last 7 days across the visible increments');
+    await page.getByLabel('Search increments').fill('recorded');
+    await page.waitForTimeout(300);
+    const searched = await page.locator('[data-testid="timeline-kpis"]').innerText();
+    check(/Closed in the last 7 days\s*2/.test(searched), 'Text filter narrows the KPI tiles too');
+    check((await page.locator('.timeline-activity li').count()) === 2, 'Text filter narrows the activity feed');
+    await page.getByLabel('Search increments').fill('');
+    await page.waitForTimeout(300);
     await page.getByLabel('Time window').selectOption('all');
     await page.waitForTimeout(300);
     check((await page.locator('.gantt-row').count()) === 4, 'All time shows all 4 increments');

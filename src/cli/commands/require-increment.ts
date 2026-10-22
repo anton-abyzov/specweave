@@ -11,6 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import {
+  REQUIRE_INCREMENT_MARKER,
   REQUIRE_INCREMENT_MODES,
   readRequireIncrementMode,
   type RequireIncrementMode,
@@ -48,6 +49,13 @@ export function requireIncrementCommand(
   config.planning = { ...(config.planning ?? {}), requireIncrement: mode };
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n', 'utf8');
 
+  // The hook launcher's fast path skips ordinary edits unless this marker exists.
+  const marker = path.join(root, '.specweave', 'state', REQUIRE_INCREMENT_MARKER);
+  if (mode === 'off') fs.rmSync(marker, { force: true });
+  else {
+    fs.mkdirSync(path.dirname(marker), { recursive: true });
+    fs.writeFileSync(marker, `${mode}\n`, 'utf8');
+  }
   const hook = setProjectHook(root, mode !== 'off', opts.packageDir ?? packageRoot(), EDIT_HOOK_MATCHER);
   out(`planning.requireIncrement: ${mode}`);
   if (hook.error) {
