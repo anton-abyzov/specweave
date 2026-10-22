@@ -269,12 +269,12 @@ describe('run.mjs fast path from a linked worktree (1001 AC-01, AC-02)', () => {
   let worktree = '';
   let fakeCli = '';
 
-  function editFrom(cwd: string, env: Record<string, string> = {}) {
-    const res = spawnSync(process.execPath, [runner, 'pre-tool-use'], {
+  function editFrom(cwd: string, env: Record<string, string> = {}, args: string[] = [], filePath = path.join(cwd, 'src', 'a.ts')) {
+    const res = spawnSync(process.execPath, [runner, 'pre-tool-use', ...args], {
       cwd,
       input: JSON.stringify({
         hook_event_name: 'PreToolUse', session_id: '', cwd, tool_name: 'Edit',
-        tool_input: { file_path: path.join(cwd, 'src', 'a.ts'), old_string: 'a', new_string: 'b' },
+        tool_input: { file_path: filePath, old_string: 'a', new_string: '"status": "completed"' },
       }),
       encoding: 'utf8',
       timeout: 20000,
@@ -342,6 +342,31 @@ describe('run.mjs fast path from a linked worktree (1001 AC-01, AC-02)', () => {
     expect(editFrom(worktree, { SPECWEAVE_STUDIO_THREAD_ID: 't-open' })).toEqual({});
     expect(editFrom(worktree, { SPECWEAVE_STUDIO_THREAD_ID: 't-done' })).toEqual({ systemMessage: 'worker ran' });
     expect(editFrom(worktree, { SPECWEAVE_STUDIO_THREAD_ID: 't-away' })).toEqual({ systemMessage: 'worker ran' });
+  });
+
+  it('the user-level entry guards nothing, increment files included, outside opted-in projects', () => {
+    const user = ['--scope', 'user'];
+    const other = path.join(base, 'other');
+    fs.mkdirSync(path.join(other, '.specweave', 'increments', '0001-x'), { recursive: true });
+    fs.writeFileSync(path.join(other, '.specweave', 'config.json'), '{}');
+    const metadata = path.join(other, '.specweave', 'increments', '0001-x', 'metadata.json');
+    expect(editFrom(other, {}, user, metadata)).toEqual({});
+    // The project-level entry (only written in opted-in projects) still reaches the worker.
+    expect(editFrom(other, {}, [], metadata)).toEqual({ systemMessage: 'worker ran' });
+    // From a worktree of an opted-in project the user entry is the only one, so it runs.
+    expect(editFrom(worktree, {}, user)).toEqual({ systemMessage: 'worker ran' });
+    // Where Claude loaded the project's own entry, the user entry leaves the edit to it.
+    fs.mkdirSync(path.join(umbrella, '.claude'), { recursive: true });
+    fs.writeFileSync(path.join(umbrella, '.claude', 'settings.json'), JSON.stringify({ hooks: { PreToolUse: [
+      { matcher: 'Edit|Write|MultiEdit|NotebookEdit', hooks: [{ type: 'command', command: `node "${runner}" pre-tool-use` }] },
+    ] } }));
+    try {
+      expect(editFrom(umbrella, {}, user)).toEqual({});
+      expect(editFrom(umbrella, {}, [])).toEqual({ systemMessage: 'worker ran' });
+    } finally {
+      fs.rmSync(path.join(umbrella, '.claude'), { recursive: true, force: true });
+    }
+    expect(editFrom(umbrella, {}, user)).toEqual({ systemMessage: 'worker ran' });
   });
 
   it('matches a standalone worktree small fix to the main checkout that holds the marker', () => {

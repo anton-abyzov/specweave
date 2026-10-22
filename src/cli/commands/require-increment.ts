@@ -2,10 +2,11 @@
  * `specweave require-increment [off|remind|enforce]` — show or set
  * `planning.requireIncrement` and install or remove the PreToolUse hook that
  * enforces it, both in `<projectRoot>/.claude/settings.json` and in the user's
- * `~/.claude/settings.json`. The user entry reaches Claude sessions that run
- * outside the project, such as SpecWithCode worktrees; without the project's
- * marker the launcher's fast path passes those edits at once. Other tools
- * follow AGENTS.md.
+ * `~/.claude/settings.json`. The user entry (`--scope user`) reaches Claude
+ * sessions that run outside the project, such as SpecWithCode worktrees;
+ * without an opted-in project's marker the launcher passes every edit at once,
+ * increment files included, so other projects keep no PreToolUse guard. Other
+ * tools follow AGENTS.md.
  *
  * @module cli/commands/require-increment
  */
@@ -65,7 +66,7 @@ export function requireIncrementCommand(
   }
   const packageDir = opts.packageDir ?? packageRoot();
   const hook = setProjectHook(root, mode !== 'off', packageDir, EDIT_HOOK_MATCHER);
-  const user = setProjectHook(home, mode !== 'off', packageDir, EDIT_HOOK_MATCHER);
+  const user = setProjectHook(home, mode !== 'off', packageDir, EDIT_HOOK_MATCHER, 'user');
   out(`planning.requireIncrement: ${mode}`);
   let failed = false;
   for (const [label, state] of [['Claude Code edit hook', hook], ['Claude Code user edit hook', user]] as const) {
