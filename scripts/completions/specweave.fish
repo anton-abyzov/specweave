@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall pause start resume abandon complete task card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
+set -l commands init uninstall pause start resume abandon complete task card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact require-increment small-fix jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -32,6 +32,8 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-han
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a statusline -d "Claude Code status line that records usage for auto-handoff"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a usage-guard -d "Stop hook: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a autocompact -d "on | off | status: where Claude Code summarizes a long session (default 400k)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a require-increment -d "Show or set whether code changes need an increment: off | remind | enforce"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a small-fix -d "Declare this session's change too small for an increment (logged; satisfies require-increment)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a jev -d "Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a next-id -d "Return the next available increment number. Prefer: create-increment --auto-id"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a archive -d "Archive completed increments and sync living docs (project-specific folders)"
@@ -224,6 +226,12 @@ complete -c specweave -n "__fish_seen_subcommand_from usage-guard" -l workspace 
 complete -c specweave -n "__fish_seen_subcommand_from autocompact" -l at -d "Window for `on`, 100k to 1M (default 400k)"
 complete -c specweave -n "__fish_seen_subcommand_from autocompact" -l project -d "Write .claude/settings.json in this project instead of ~/.claude/settings.json"
 complete -c specweave -n "__fish_seen_subcommand_from autocompact" -l workspace -d "Select the planning workspace explicitly"
+
+# require-increment
+complete -c specweave -n "__fish_seen_subcommand_from require-increment" -l workspace -d "Select the planning workspace explicitly"
+
+# small-fix
+complete -c specweave -n "__fish_seen_subcommand_from small-fix" -l workspace -d "Select the planning workspace explicitly"
 
 # jev
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l json -d "Machine-readable JSON output"

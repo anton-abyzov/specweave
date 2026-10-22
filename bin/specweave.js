@@ -378,6 +378,23 @@ program
     process.exitCode = await autocompactCommand(action, { at: options.at, project: options.project === true });
   });
 
+// Required increments - planning.requireIncrement and its Claude Code edit hook
+program
+  .command('require-increment [mode]')
+  .description('Show or set whether code changes need an increment: off | remind | enforce')
+  .action(async (mode) => {
+    const { requireIncrementCommand } = await import('../dist/src/cli/commands/require-increment.js');
+    process.exitCode = requireIncrementCommand(mode);
+  });
+
+program
+  .command('small-fix <reason>')
+  .description('Declare this session\'s change too small for an increment (logged; satisfies require-increment)')
+  .action(async (reason) => {
+    const { smallFixCommand } = await import('../dist/src/cli/commands/small-fix.js');
+    process.exitCode = smallFixCommand(reason);
+  });
+
 // Jev command - TypeSafe System One: fast, cheap, calibrated closed-set decisions
 program
   .command('jev <action> [args...]')
