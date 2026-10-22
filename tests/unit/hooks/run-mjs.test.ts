@@ -255,3 +255,134 @@ describe('run.mjs CLI-root cache is per-user and symlink-proof', () => {
     }
   });
 });
+
+/**
+ * The PreToolUse fast path for SpecWithCode worktrees outside the project: the
+ * require marker is found through the worktree's main checkout, and a thread
+ * small fix (keyed `studio-<thread>`) skips the worker. A fake CLI whose router
+ * always answers tells a worker run apart from the fast path.
+ */
+describe('run.mjs fast path from a linked worktree (1001 AC-01, AC-02)', () => {
+  let base = '';
+  let home = '';
+  let umbrella = '';
+  let worktree = '';
+  let fakeCli = '';
+
+  function editFrom(cwd: string, env: Record<string, string> = {}, args: string[] = [], filePath = path.join(cwd, 'src', 'a.ts')) {
+    const res = spawnSync(process.execPath, [runner, 'pre-tool-use', ...args], {
+      cwd,
+      input: JSON.stringify({
+        hook_event_name: 'PreToolUse', session_id: '', cwd, tool_name: 'Edit',
+        tool_input: { file_path: filePath, old_string: 'a', new_string: '"status": "completed"' },
+      }),
+      encoding: 'utf8',
+      timeout: 20000,
+      env: { ...process.env, HOME: home, USERPROFILE: home, SPECWEAVE_HOME: fakeCli, CLAUDE_PROJECT_DIR: '', SPECWEAVE_STUDIO_THREAD_ID: '', PATH: '', ...env },
+    });
+    expect(res.status).toBe(0);
+    return JSON.parse((res.stdout ?? '').trim()) as Record<string, unknown>;
+  }
+  function smallFix(id: string, root: string) {
+    const dir = path.join(home, '.specweave', 'sessions');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, `${id}.json`), JSON.stringify({ version: 1, sessionId: id, kind: 'small-fix', incrementId: null, root, event: 'small-fix', at: '2026-10-22T12:00:00Z' }));
+  }
+
+  beforeAll(() => {
+    base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'sw-runmjs-wt-')));
+    home = path.join(base, 'home');
+    umbrella = path.join(base, 'umbrella');
+    const app = path.join(umbrella, 'repositories', 'org', 'app');
+    fs.mkdirSync(path.join(app, '.git', 'worktrees', 'wt'), { recursive: true });
+    fs.mkdirSync(path.join(umbrella, '.specweave', 'state'), { recursive: true });
+    fs.writeFileSync(path.join(umbrella, '.specweave', 'config.json'), '{"planning":{"requireIncrement":"enforce"}}');
+    fs.writeFileSync(path.join(umbrella, '.specweave', 'state', 'require-increment.enabled'), 'enforce\n');
+    worktree = path.join(base, 'worktrees', 'wt');
+    fs.mkdirSync(path.join(worktree, 'src'), { recursive: true });
+    fs.writeFileSync(path.join(worktree, '.git'), `gitdir: ${app}/.git/worktrees/wt\n`);
+    fakeCli = path.join(base, 'fake-cli');
+    const routerDir = path.join(fakeCli, 'dist', 'src', 'core', 'hooks', 'handlers');
+    fs.mkdirSync(routerDir, { recursive: true });
+    fs.writeFileSync(path.join(fakeCli, 'package.json'), JSON.stringify({ name: 'specweave', type: 'module' }));
+    fs.writeFileSync(path.join(routerDir, 'hook-router.js'), `export async function hookRouter() { return { systemMessage: 'worker ran' }; }\n`);
+  });
+  afterAll(() => fs.rmSync(base, { recursive: true, force: true }));
+
+  it('reaches the worker from the worktree when the umbrella opted in', () => {
+    expect(editFrom(worktree)).toEqual({ systemMessage: 'worker ran' });
+    // A plain folder with no worktree link stays on the fast path.
+    const plain = path.join(base, 'plain');
+    fs.mkdirSync(path.join(plain, 'src'), { recursive: true });
+    expect(editFrom(plain)).toEqual({});
+  });
+
+  it('skips the worker for a thread small fix in this project, not for one elsewhere', () => {
+    smallFix('studio-thread_fix', umbrella);
+    expect(editFrom(worktree, { SPECWEAVE_STUDIO_THREAD_ID: 'thread:fix' })).toEqual({});
+    smallFix('studio-thread_other', path.join(base, 'elsewhere'));
+    expect(editFrom(worktree, { SPECWEAVE_STUDIO_THREAD_ID: 'thread:other' })).toEqual({ systemMessage: 'worker ran' });
+  });
+
+  it('skips the worker for a thread bound to an open increment here, not a closed one', () => {
+    const inc = (id: string, status: string) => {
+      fs.mkdirSync(path.join(umbrella, '.specweave', 'increments', id), { recursive: true });
+      fs.writeFileSync(path.join(umbrella, '.specweave', 'increments', id, 'metadata.json'), JSON.stringify({ status }));
+    };
+    const bind = (thread: string, incrementId: string, root = umbrella) => {
+      const dir = path.join(home, '.specweave', 'studio', 'threads');
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, `${thread}.json`), JSON.stringify({ version: 1, threadId: thread, incrementId, root, taskId: null, event: 'studio-launch', at: '2026-10-22T12:00:00Z' }));
+    };
+    inc('0001-open', 'active');
+    inc('0002-done', 'completed');
+    bind('t-open', '0001-open');
+    bind('t-done', '0002-done');
+    bind('t-away', '0001-open', path.join(base, 'elsewhere'));
+    expect(editFrom(worktree, { SPECWEAVE_STUDIO_THREAD_ID: 't-open' })).toEqual({});
+    expect(editFrom(worktree, { SPECWEAVE_STUDIO_THREAD_ID: 't-done' })).toEqual({ systemMessage: 'worker ran' });
+    expect(editFrom(worktree, { SPECWEAVE_STUDIO_THREAD_ID: 't-away' })).toEqual({ systemMessage: 'worker ran' });
+  });
+
+  it('the user-level entry guards nothing, increment files included, outside opted-in projects', () => {
+    const user = ['--scope', 'user'];
+    const other = path.join(base, 'other');
+    fs.mkdirSync(path.join(other, '.specweave', 'increments', '0001-x'), { recursive: true });
+    fs.writeFileSync(path.join(other, '.specweave', 'config.json'), '{}');
+    const metadata = path.join(other, '.specweave', 'increments', '0001-x', 'metadata.json');
+    expect(editFrom(other, {}, user, metadata)).toEqual({});
+    // The project-level entry (only written in opted-in projects) still reaches the worker.
+    expect(editFrom(other, {}, [], metadata)).toEqual({ systemMessage: 'worker ran' });
+    // From a worktree of an opted-in project the user entry is the only one, so it runs.
+    expect(editFrom(worktree, {}, user)).toEqual({ systemMessage: 'worker ran' });
+    // Where Claude loaded the project's own entry, the user entry leaves the edit to it.
+    fs.mkdirSync(path.join(umbrella, '.claude'), { recursive: true });
+    fs.writeFileSync(path.join(umbrella, '.claude', 'settings.json'), JSON.stringify({ hooks: { PreToolUse: [
+      { matcher: 'Edit|Write|MultiEdit|NotebookEdit', hooks: [{ type: 'command', command: `node "${runner}" pre-tool-use` }] },
+    ] } }));
+    try {
+      expect(editFrom(umbrella, {}, user)).toEqual({});
+      expect(editFrom(umbrella, {}, [])).toEqual({ systemMessage: 'worker ran' });
+    } finally {
+      fs.rmSync(path.join(umbrella, '.claude'), { recursive: true, force: true });
+    }
+    expect(editFrom(umbrella, {}, user)).toEqual({ systemMessage: 'worker ran' });
+  });
+
+  it('matches a standalone worktree small fix to the main checkout that holds the marker', () => {
+    const main = path.join(base, 'solo');
+    fs.mkdirSync(path.join(main, '.git', 'worktrees', 'solo-wt'), { recursive: true });
+    fs.mkdirSync(path.join(main, '.specweave', 'state'), { recursive: true });
+    fs.writeFileSync(path.join(main, '.specweave', 'config.json'), '{}');
+    fs.writeFileSync(path.join(main, '.specweave', 'state', 'require-increment.enabled'), 'enforce\n');
+    const soloWt = path.join(base, 'worktrees', 'solo-wt');
+    fs.mkdirSync(path.join(soloWt, '.specweave'), { recursive: true });
+    fs.mkdirSync(path.join(soloWt, 'src'), { recursive: true });
+    fs.writeFileSync(path.join(soloWt, '.specweave', 'config.json'), '{}');
+    fs.writeFileSync(path.join(soloWt, '.git'), `gitdir: ${main}/.git/worktrees/solo-wt\n`);
+    expect(editFrom(soloWt, { SPECWEAVE_STUDIO_THREAD_ID: 'thread:solo' })).toEqual({ systemMessage: 'worker ran' });
+    // `small-fix` run in the worktree records the worktree as its root.
+    smallFix('studio-thread_solo', soloWt);
+    expect(editFrom(soloWt, { SPECWEAVE_STUDIO_THREAD_ID: 'thread:solo' })).toEqual({});
+  });
+});

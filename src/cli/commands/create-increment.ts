@@ -21,6 +21,8 @@ import type { DeepInterviewMode } from '../../core/config/types.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { slugify } from '../../utils/string-utils.js';
 import { supersedeIncrement, setParentIncrement } from '../../core/tasks/supersede.js';
+import { detectSessionId } from '../../core/tasks/ledger.js';
+import { recordIncrementWork } from '../../core/tasks/work-session.js';
 
 
 export interface CreateIncrementOptions {
@@ -150,6 +152,9 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
   const finalId = autoId
     ? path.basename(result.incrementPath)
     : resolvedId;
+
+  // The SpecWithCode thread and the agent session now work on this increment.
+  recordIncrementWork(result.incrementPath, { e: 'create' }, { sessionId: detectSessionId() });
 
   // Relationships: --supersedes abandons the old increment, --parent links up.
   const relations: string[] = [];

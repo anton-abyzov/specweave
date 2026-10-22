@@ -160,13 +160,20 @@ export function projectSettingsPath(projectRoot: string): string {
  * resolves its own plugin root from `import.meta.url`, so an absolute path is
  * all it needs.
  */
-export function jevHookCommand(root: string = packageRoot()): string {
-  return `node "${path.join(root, HOOK_REL)}" ${HOOK_EVENT}`;
+export function jevHookCommand(root: string = packageRoot(), scope?: HookScope): string {
+  return `node "${path.join(root, HOOK_REL)}" ${HOOK_EVENT}${scope === 'user' ? ' --scope user' : ''}`;
 }
 
+/**
+ * `user`: the entry sits in `~/.claude/settings.json` and so runs in every
+ * project; the launcher passes it at once unless an opted-in project's marker
+ * is found (and defers to that project's own entry when Claude loaded it).
+ */
+export type HookScope = 'project' | 'user';
+
 /** One hook entry, exactly as written into settings.json. */
-function jevHookEntry(root: string): HookCommand {
-  return { type: 'command', command: jevHookCommand(root), timeout: HOOK_TIMEOUT };
+function jevHookEntry(root: string, scope?: HookScope): HookCommand {
+  return { type: 'command', command: jevHookCommand(root, scope), timeout: HOOK_TIMEOUT };
 }
 
 /**
@@ -200,14 +207,24 @@ function readSettings(file: string): { settings: Record<string, unknown>; existe
   }
 }
 
-/** Is the Jev PreToolUse hook registered for this project right now? */
-export function readProjectHook(projectRoot: string): ProjectHookState {
+/**
+ * Our launcher under `matcher`. Each guard owns one matcher group (the Jev Bash
+ * guard `Bash`, the required-increment guard {@link EDIT_HOOK_MATCHER}), so
+ * switching one never touches the other.
+ */
+function isOurGroup(group: HookGroup, matcher: string): boolean {
+  return (group?.matcher ?? HOOK_MATCHER) === matcher && (group?.hooks ?? []).some((hook) => isJevHookCommand(hook?.command));
+}
+
+/** Matcher of the required-increment guard's PreToolUse group. */
+export const EDIT_HOOK_MATCHER = 'Edit|Write|MultiEdit|NotebookEdit';
+
+/** Is the SpecWeave PreToolUse hook registered for `matcher` (default: the Jev Bash guard) right now? */
+export function readProjectHook(projectRoot: string, matcher: string = HOOK_MATCHER): ProjectHookState {
   const file = projectSettingsPath(projectRoot);
   const read = readSettings(file);
   if ('error' in read) return { path: file, present: false, error: read.error };
-  const present = preToolUseGroups(read.settings).some((group) =>
-    (group?.hooks ?? []).some((hook) => isJevHookCommand(hook?.command)),
-  );
+  const present = preToolUseGroups(read.settings).some((group) => isOurGroup(group, matcher));
   return { path: file, present };
 }
 
@@ -228,6 +245,8 @@ export function setProjectHook(
   projectRoot: string,
   on: boolean,
   packageDir: string = packageRoot(),
+  matcher: string = HOOK_MATCHER,
+  scope: HookScope = 'project',
 ): ProjectHookState {
   const file = projectSettingsPath(projectRoot);
   const read = readSettings(file);
@@ -247,8 +266,7 @@ export function setProjectHook(
 
   for (const group of groups) {
     const entries = Array.isArray(group?.hooks) ? group.hooks : [];
-    const mine = entries.some((hook) => isJevHookCommand(hook?.command));
-    if (!mine) {
+    if (!isOurGroup(group, matcher)) {
       next.push(group);
       continue;
     }
@@ -258,8 +276,8 @@ export function setProjectHook(
       placed = true;
       next.push({
         ...group,
-        matcher: HOOK_MATCHER,
-        hooks: entries.map((hook) => (isJevHookCommand(hook?.command) ? jevHookEntry(packageDir) : hook)),
+        matcher,
+        hooks: entries.map((hook) => (isJevHookCommand(hook?.command) ? jevHookEntry(packageDir, scope) : hook)),
       });
       continue;
     }
@@ -268,7 +286,7 @@ export function setProjectHook(
   }
 
   if (on && !placed) {
-    next.push({ matcher: HOOK_MATCHER, hooks: [jevHookEntry(packageDir)] });
+    next.push({ matcher, hooks: [jevHookEntry(packageDir, scope)] });
     changed = true;
   }
 

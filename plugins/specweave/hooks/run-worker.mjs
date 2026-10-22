@@ -21,11 +21,13 @@
  * Fast path: PreToolUse for a file outside `.specweave/increments/` prints `{}`
  * without loading the CLI at all (the guards only concern increment files), and
  * PreToolUse for Bash prints `{}` unless the project opted into the Jev command
- * guard with a `.specweave/state/jev-guard.enabled` marker.
+ * guard with a `.specweave/state/jev-guard.enabled` marker. Edits outside
+ * increments reach the required-increment guard only under a
+ * `.specweave/state/require-increment.enabled` marker.
  */
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
-import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -66,10 +68,44 @@ const event = process.argv[2] ?? '';
 
 /** Opt-in marker for the Jev Bash guard, searched upward from cwd / project dir. */
 const JEV_GUARD_MARKER = path.join('.specweave', 'state', 'jev-guard.enabled');
+/** Opt-in marker for required increments (`specweave require-increment`): ordinary edits reach the guard. */
+const REQUIRE_INCREMENT_MARKER = path.join('.specweave', 'state', 'require-increment.enabled');
+const EDIT_TOOLS = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit']);
 const JEV_GUARD_MAX_DEPTH = 8;
 
 function hasJevGuardMarker(input) {
-  const starts = [typeof input.cwd === 'string' ? input.cwd : process.cwd(), process.env.CLAUDE_PROJECT_DIR];
+  return hasMarker(input, JEV_GUARD_MARKER);
+}
+
+// Main checkout of the linked Git worktree containing `dir`, or null. Keep in
+// step with src/utils/main-checkout.ts (a parity test compares them): the
+// SpecWithCode worktrees live outside the project, so markers are searched from
+// the main checkout too. Sync reads only, no Git process.
+const WORKTREE_GITDIR = /^gitdir:\s*(.*?)[\\/]\.git[\\/]worktrees[\\/][^\\/]+[\\/]?\s*$/;
+function mainCheckoutOf(dir) {
+  let current;
+  try { current = path.resolve(dir); } catch { return null; }
+  for (let depth = 0; depth < 100; depth++) {
+    const dotGit = path.join(current, '.git');
+    try {
+      const stat = statSync(dotGit, { throwIfNoEntry: false });
+      if (stat) {
+        if (!stat.isFile()) return null;
+        const first = readFileSync(dotGit, 'utf8').split(/\r?\n/, 1)[0] ?? '';
+        const match = WORKTREE_GITDIR.exec(first.trim());
+        return match && match[1] ? path.resolve(current, match[1]) : null;
+      }
+    } catch { return null; }
+    const parent = path.dirname(current);
+    if (parent === current) return null;
+    current = parent;
+  }
+  return null;
+}
+
+function hasMarker(input, marker) {
+  const first = [typeof input.cwd === 'string' ? input.cwd : process.cwd(), process.env.CLAUDE_PROJECT_DIR].filter(Boolean);
+  const starts = [...first, ...first.map(mainCheckoutOf)];
   for (const start of starts) {
     if (!start) continue;
     let current;
@@ -80,7 +116,7 @@ function hasJevGuardMarker(input) {
     }
     for (let depth = 0; depth < JEV_GUARD_MAX_DEPTH; depth++) {
       try {
-        if (existsSync(path.join(current, JEV_GUARD_MARKER))) return true;
+        if (existsSync(path.join(current, marker))) return true;
       } catch {
         break;
       }
@@ -158,7 +194,8 @@ function normalizeInput(raw) {
         event === 'pre-tool-use' &&
         (tool === 'Bash'
           ? !hasJevGuardMarker(input)
-          : !filePath.includes('.specweave/increments/'));
+          : !filePath.includes('.specweave/increments/') &&
+            !(EDIT_TOOLS.has(tool) && hasMarker(input, REQUIRE_INCREMENT_MARKER)));
       return { raw: JSON.stringify(input), skip };
     }
   } catch {

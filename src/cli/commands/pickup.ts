@@ -17,6 +17,7 @@
 
 import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { gitCheckoutFor } from '../../utils/main-checkout.js';
 import { buildPickup } from '../../core/session/pickup.js';
 import { appendEvent, getAgentId, ledgerPath, readIncrementEvents, recordSessionOnce, INCREMENT_EVENT_TASK } from '../../core/tasks/ledger.js';
 import { resolveIncrement, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
@@ -46,7 +47,10 @@ export interface PickupCommandOptions {
 }
 
 export async function pickupCommand(opts: PickupCommandOptions = {}): Promise<number> {
-  const root = resolveEffectiveRoot(opts.cwd ?? process.cwd());
+  const startDir = opts.cwd ?? process.cwd();
+  const root = resolveEffectiveRoot(startDir);
+  // In a thread's worktree the plan resolves to the main checkout; Git stays in the worktree.
+  const gitRoot = gitCheckoutFor(startDir, root);
   if (opts.all) {
     const latest = readLatestIndex(root);
     const text = renderPickupAll(root, latest);
@@ -78,7 +82,7 @@ export async function pickupCommand(opts: PickupCommandOptions = {}): Promise<nu
   //    unless it belongs to another increment than the one asked for.
   const applied: PickupApplyResult = chosen?.kind === 'session'
     ? { status: 'none', message: '' }
-    : applyHandoff(root, { dryRun, ...(target ? { increment: chosen?.incrementId ?? target } : {}) });
+    : applyHandoff(gitRoot, { dryRun, ...(target ? { increment: chosen?.incrementId ?? target } : {}) });
 
   const pending = listPendingHandoffs(root, { home: opts.home });
   if (!target && pending.length) {
@@ -101,7 +105,7 @@ export async function pickupCommand(opts: PickupCommandOptions = {}): Promise<nu
     if (chosen.incrementId) {
       try { incrementId = resolveIncrement(root, chosen.incrementId).id; } catch { /* gone since */ }
     }
-    const result = buildPickup(root, { incrementId, agent, checkpointHome: opts.home });
+    const result = buildPickup(root, { incrementId, agent, checkpointHome: opts.home, gitRoot });
     if (!dryRun) markSessionPicked(chosen, agent);
     const text = [...head, result.text, ...othersBlock(others)].filter(Boolean).join('\n');
     process.stdout.write((opts.json ? JSON.stringify({ ...result, text, picked: chosen, pending: others }, null, 2) : text) + '\n');
@@ -124,7 +128,7 @@ export async function pickupCommand(opts: PickupCommandOptions = {}): Promise<nu
       }
     }
   }
-  const result = buildPickup(root, { incrementId, agent, checkpointHome: opts.home });
+  const result = buildPickup(root, { incrementId, agent, checkpointHome: opts.home, gitRoot });
   if (!dryRun && !['dirty', 'diverged', 'failed'].includes(applied.status)) {
     const pushed = applied.status === 'elsewhere' ? undefined : applied.meta?.increment;
     recordPickup(root, chosen?.incrementId ?? pushed ?? result.incrementId, applied, agent);

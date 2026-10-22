@@ -45,6 +45,8 @@ export interface PickupOptions {
   activeIds?: string[];
   /** Home directory holding `.specweave/checkpoints` (tests). */
   checkpointHome?: string;
+  /** Checkout whose branch state is shown (a thread's worktree); default: `projectRoot`. */
+  gitRoot?: string;
 }
 
 export interface PickupResult {
@@ -56,6 +58,7 @@ export interface PickupResult {
 /** Build the pickup text. Returns empty text when there is nothing to say. */
 export function buildPickup(projectRoot: string, opts: PickupOptions = {}): PickupResult {
   const agent = opts.agent ?? getAgentId();
+  const gitRoot = opts.gitRoot ?? projectRoot;
   const leaseHours = readLeaseHours(projectRoot);
   const incRoot = incrementsDir(projectRoot);
   const active = opts.activeIds ?? listActiveIncrementIds(projectRoot);
@@ -77,7 +80,7 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
   }
 
   if (!opts.compact) {
-    const git = gitLine(projectRoot);
+    const git = gitLine(gitRoot);
     if (git) L.push(git);
   }
 
@@ -103,8 +106,8 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
     L.push('Run `specweave pickup` for the next task\'s acceptance criteria, claims and branch state. When the last task is done, verify and close it in the same session (sw-done).');
   }
   if (!opts.compact && ids.length === 0) {
-    const branch = currentBranch(projectRoot);
-    const cards = branchCards(branchCardsPath(projectRoot, branch), { origin: readOriginUrl(projectRoot) });
+    const branch = currentBranch(gitRoot);
+    const cards = branchCards(branchCardsPath(projectRoot, branch), { origin: readOriginUrl(gitRoot) });
     if (cards.length) L.push(...renderChecklist(cards, `Cards on ${branch ?? 'no branch'}`).split('\n'));
   }
   if (!opts.compact && ids.length === 0 && !intents) {

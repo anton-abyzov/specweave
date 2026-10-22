@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { useProjectApi } from '../hooks/useProjectApi';
 import { useProject } from '../hooks/useProject';
+import { useUrlState } from '../hooks/useUrlState';
 import { useSSEEvent, useSSEStatus } from '../contexts/SSEContext';
 import {
   WORK_STATES,
@@ -113,8 +114,18 @@ export function WorkPage({ sessionsOnly = false }: { sessionsOnly?: boolean }) {
     if (await mutate(`/${encodeURIComponent(item.id)}`, 'PATCH', { revision: item.revision, state }))
       setNotice(`${item.title} moved to ${LABELS[state]}.`);
   }
-  const items = (data?.items ?? []).filter((item) =>
-    `${item.title} ${item.summary} ${item.incrementId ?? ''}`.toLowerCase().includes(query.toLowerCase()),
+  const [tool, setTool] = useUrlState('tool', 'all');
+  const [doneWindow, setDoneWindow] = useUrlState('done', '14');
+  const tools = [
+    ...new Set((data?.items ?? []).flatMap((item) => item.executions.map((s) => s.actor.split('@')[0]).filter(Boolean))),
+  ].sort();
+  // The done window is a board control; execution history (/sessions) keeps every item.
+  const doneSince = sessionsOnly || doneWindow === 'all' ? 0 : Date.now() - Number(doneWindow) * 86400000;
+  const items = (data?.items ?? []).filter(
+    (item) =>
+      `${item.title} ${item.summary} ${item.incrementId ?? ''}`.toLowerCase().includes(query.toLowerCase()) &&
+      (tool === 'all' || item.executions.some((s) => s.actor.split('@')[0] === tool)) &&
+      (item.state !== 'done' || !doneSince || Date.parse(item.updatedAt) >= doneSince),
   );
   const selected = data?.items.find((item) => item.id === selectedId);
   const linkedOptions = [
@@ -173,6 +184,24 @@ export function WorkPage({ sessionsOnly = false }: { sessionsOnly?: boolean }) {
         <div className="work-view-label">
           {sessionsOnly ? 'SETUPS & CONTINUATIONS' : 'INTENT BOARD'}
           <span>{items.length} items</span>
+        </div>
+        <div className="work-filters">
+          <select aria-label="Agent tool" value={tool} onChange={(event) => setTool(event.target.value)}>
+            <option value="all">All agents</option>
+            {tools.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+          {!sessionsOnly && (
+            <select aria-label="Done window" value={doneWindow} onChange={(event) => setDoneWindow(event.target.value)}>
+              <option value="7">Done: last 7 days</option>
+              <option value="14">Done: last 14 days</option>
+              <option value="30">Done: last 30 days</option>
+              <option value="all">Done: all</option>
+            </select>
+          )}
         </div>
         <label className="work-search">
           <span aria-hidden="true">⌕</span>

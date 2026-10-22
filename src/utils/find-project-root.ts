@@ -16,6 +16,7 @@
 import * as fs from 'fs';
 import path from 'path';
 import { explicitWorkspaceRoot, isWorkspaceRoot, hasLegacyWorkspaceLayout, registeredRepositories, canonicalPath, isWithin } from '../core/workspace/context.js';
+import { mainCheckoutOf } from './main-checkout.js';
 
 /**
  * Find project root by searching for .specweave/config.json
@@ -154,6 +155,8 @@ export function findUmbrellaRoot(startDir: string = process.cwd()): string | nul
  *
  * - In a multi-repo umbrella: returns the umbrella root (increments belong there)
  * - In a single-repo project: returns the nearest project root
+ * - In a linked Git worktree outside the project (SpecWithCode threads): the
+ *   same lookups from the worktree's main checkout
  * - Otherwise: null
  *
  * Use this instead of resolveEffectiveRoot() for any command that scans or
@@ -164,7 +167,10 @@ export function findUmbrellaRoot(startDir: string = process.cwd()): string | nul
  * @returns Effective project root path or null if not inside a SpecWeave project
  */
 export function findEffectiveRoot(startDir: string = process.cwd()): string | null {
-  return findUmbrellaRoot(startDir) ?? findProjectRoot(startDir);
+  const found = findUmbrellaRoot(startDir) ?? findProjectRoot(startDir);
+  if (found) return found;
+  const main = mainCheckoutOf(startDir);
+  return main ? findUmbrellaRoot(main) ?? findProjectRoot(main) : null;
 }
 
 /**
