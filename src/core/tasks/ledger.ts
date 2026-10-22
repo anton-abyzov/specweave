@@ -34,7 +34,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { touchIncrementUpdated } from './increment-updated.js';
-import { recordStudioThreadBinding } from './studio-thread-binding.js';
+import { recordIncrementWork } from './work-session.js';
 
 export type TaskEventType = 'claim' | 'done' | 'release' | 'block' | 'skip';
 export type IncrementEventType = 'note' | 'session' | 'handoff' | 'pickup' | 'wait';
@@ -60,6 +60,8 @@ export interface LedgerEvent {
   line?: string;
   /** Card link: PR URL, report path, artifact URL … */
   link?: string;
+  /** Model the writing agent ran on, when its environment names one (see {@link detectModel}). */
+  model?: string;
 }
 
 /** Longest card line kept in the ledger; longer text is truncated with `…`. */
@@ -159,6 +161,17 @@ export function detectSessionId(env: NodeJS.ProcessEnv = process.env): string | 
   return (env.SPECWEAVE_SESSION_ID || own[detectTool(env)] || env.CLAUDE_CODE_SESSION_ID || env.CODEX_SESSION_ID)?.trim() || undefined;
 }
 
+/**
+ * The model this process runs on: `SPECWEAVE_MODEL` (set by SpecWithCode or the
+ * user), else Claude Code's `ANTHROPIC_MODEL`. Unknown → undefined.
+ */
+export function detectModel(env: NodeJS.ProcessEnv = process.env): string | undefined {
+  const explicit = env.SPECWEAVE_MODEL?.trim();
+  if (explicit) return explicit;
+  if (detectTool(env) === 'claude' && env.ANTHROPIC_MODEL?.trim()) return env.ANTHROPIC_MODEL.trim();
+  return undefined;
+}
+
 /** Serialize one event as a single ledger line (with trailing newline). */
 export function formatLedgerLine(event: LedgerEvent): string {
   // Fixed key order keeps lines diff-friendly and grep-able.
@@ -170,6 +183,7 @@ export function formatLedgerLine(event: LedgerEvent): string {
     if (line) ordered.line = line;
   }
   if (event.link?.trim()) ordered.link = event.link.trim();
+  if (event.model?.trim()) ordered.model = event.model.trim();
   return JSON.stringify(ordered) + '\n';
 }
 
@@ -182,10 +196,11 @@ export function formatLedgerLine(event: LedgerEvent): string {
  */
 export function appendEvent(ledgerFile: string, event: LedgerEvent): void {
   fs.mkdirSync(path.dirname(ledgerFile), { recursive: true });
-  fs.appendFileSync(ledgerFile, formatLedgerLine(event), { encoding: 'utf-8', flag: 'a' });
+  const model = event.model ?? (event.by === getAgentId() ? detectModel() : undefined);
+  fs.appendFileSync(ledgerFile, formatLedgerLine(model ? { ...event, model } : event), { encoding: 'utf-8', flag: 'a' });
   touchIncrementUpdated(path.dirname(ledgerFile), event.at);
-  // Inside a SpecWeave Studio turn, the thread now works on this increment.
-  recordStudioThreadBinding(ledgerFile, event);
+  // The SpecWithCode thread and the agent session now work on this increment.
+  recordIncrementWork(path.dirname(ledgerFile), event, { sessionId: detectSessionId() });
 }
 
 /** Parse a ledger file. Missing file → no events. Malformed lines are counted, never fatal. */
@@ -218,6 +233,7 @@ export function parseLedger(content: string): { events: LedgerEvent[]; malformed
           ...(typeof obj.evidence === 'string' ? { evidence: obj.evidence } : {}),
           ...(typeof obj.line === 'string' && obj.line.trim() ? { line: clampCardLine(obj.line).line } : {}),
           ...(typeof obj.link === 'string' && obj.link.trim() ? { link: obj.link.trim() } : {}),
+          ...(typeof obj.model === 'string' && obj.model.trim() ? { model: obj.model.trim() } : {}),
         });
       } else {
         malformed++;

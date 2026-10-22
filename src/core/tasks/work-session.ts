@@ -1,0 +1,90 @@
+/**
+ * Work-session markers — which increment (or declared small fix) an agent
+ * session is working on.
+ *
+ * `~/.specweave/sessions/<session>.json` is written whenever a session touches
+ * an increment (any ledger append, `create-increment`, `verify`, `complete`) or
+ * declares `specweave small-fix`. The required-increment guard reads it to
+ * decide whether an edit is planned work. Like the Studio thread binding it
+ * holds no task state and every write is best-effort.
+ *
+ * @module core/tasks/work-session
+ */
+
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import { recordStudioThreadBinding } from './studio-thread-binding.js';
+
+export interface WorkSessionMarker {
+  version: 1;
+  sessionId: string;
+  kind: 'increment' | 'small-fix';
+  /** Increment folder name; null for a small fix. */
+  incrementId: string | null;
+  /** Project root whose `.specweave` holds the increment or the small-fix log. */
+  root: string;
+  /** What wrote the marker: a ledger event type, `create`, `verify`, `complete` or `small-fix`. */
+  event: string;
+  reason?: string;
+  at: string;
+}
+
+/** Where the marker of `sessionId` lives. */
+export function workSessionFile(sessionId: string, home = os.homedir()): string {
+  return path.join(home, '.specweave', 'sessions', `${sessionId.replace(/[^\w.-]/g, '_')}.json`);
+}
+
+export function readWorkSession(sessionId: string | undefined, home = os.homedir()): WorkSessionMarker | null {
+  if (!sessionId?.trim()) return null;
+  try {
+    const marker = JSON.parse(fs.readFileSync(workSessionFile(sessionId.trim(), home), 'utf8'));
+    return marker && marker.version === 1 ? (marker as WorkSessionMarker) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function recordWorkSession(
+  marker: Omit<WorkSessionMarker, 'version'>,
+  opts: { home?: string } = {},
+): void {
+  if (!marker.sessionId?.trim()) return;
+  try {
+    const file = workSessionFile(marker.sessionId.trim(), opts.home);
+    fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
+    const temporary = `${file}.${process.pid}.${Date.now()}`;
+    fs.writeFileSync(temporary, JSON.stringify({ version: 1, ...marker }, null, 2) + '\n', { mode: 0o600 });
+    fs.renameSync(temporary, file);
+  } catch {
+    // A convenience record; the command that triggered it already succeeded.
+  }
+}
+
+/**
+ * The current session and SpecWithCode thread now work on the increment in
+ * `incrementDir`. Used by every command that touches an increment, whether or
+ * not it appends to the ledger.
+ */
+export function recordIncrementWork(
+  incrementDir: string,
+  event: { t?: string; e: string; at?: string },
+  opts: { sessionId?: string; env?: NodeJS.ProcessEnv; home?: string } = {},
+): void {
+  const at = event.at ?? new Date().toISOString();
+  const dir = path.resolve(incrementDir);
+  recordStudioThreadBinding(path.join(dir, 'ledger.jsonl'), { t: event.t ?? '*', e: event.e, at }, opts);
+  const incrementsDir = path.dirname(dir);
+  if (!opts.sessionId || path.basename(incrementsDir) !== 'increments') return;
+  recordWorkSession(
+    {
+      sessionId: opts.sessionId,
+      kind: 'increment',
+      incrementId: path.basename(dir),
+      root: path.dirname(path.dirname(incrementsDir)),
+      event: event.e,
+      at,
+    },
+    opts,
+  );
+}

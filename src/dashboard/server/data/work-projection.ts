@@ -85,7 +85,12 @@ export function projectIncrement(root: string, id: string): WorkItem | null {
   const events = readLedger(path.join(dir, 'ledger.jsonl')).events.sort((a, b) => a.at.localeCompare(b.at));
   const executions: ExecutionSegment[] = [];
   for (const [index, event] of events.entries()) {
-    if (executions[executions.length - 1]?.actor === event.by) continue;
+    const last = executions[executions.length - 1];
+    if (last?.actor === event.by && (!event.model || last.model === event.model)) continue;
+    if (last?.actor === event.by && !last.model) {
+      last.model = event.model ?? null;
+      continue;
+    }
     const tool = event.by.split('@')[0];
     executions.push({
       id: `ledger-${index}`,
@@ -95,7 +100,7 @@ export function projectIncrement(root: string, id: string): WorkItem | null {
           ? 'Claude Code'
           : tool
         : null,
-      model: null,
+      model: event.model ?? null,
       effort: null,
       provider: null,
       surface: null,

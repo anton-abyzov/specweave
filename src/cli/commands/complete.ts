@@ -1,3 +1,6 @@
+import * as path from 'path';
+import { detectSessionId } from '../../core/tasks/ledger.js';
+import { recordIncrementWork } from '../../core/tasks/work-session.js';
 import { completeIncrement } from '../../core/increment/status-commands.js';
 import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
@@ -93,6 +96,9 @@ export async function completeCommand(
       console.error(`Error completing "${resolved}": ${err instanceof Error ? err.message : String(err)}`);
     }
 
+    if (success) {
+      recordIncrementWork(path.join(projectRoot, '.specweave', 'increments', resolved), { e: 'complete' }, { sessionId: detectSessionId() });
+    }
     results.push({ id, resolved, success });
   }
 
