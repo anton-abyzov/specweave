@@ -24,21 +24,26 @@ export function smallFixCommand(reason: string | undefined, opts: { cwd?: string
   const env = opts.env ?? process.env;
   const root = resolveEffectiveRoot(opts.cwd ?? process.cwd());
   const session = detectSessionId(env);
+  const thread = env.SPECWEAVE_STUDIO_THREAD_ID?.trim() || undefined;
   const model = detectModel(env);
   const entry: SmallFixEntry = {
     at: new Date().toISOString(),
     by: getAgentId(env),
     reason: why.slice(0, 300),
     ...(session ? { session } : {}),
+    ...(thread ? { thread } : {}),
     ...(model ? { model } : {}),
   };
   const log = path.join(root, SMALL_FIX_LOG);
   fs.mkdirSync(path.dirname(log), { recursive: true });
   fs.appendFileSync(log, JSON.stringify(entry) + '\n', 'utf8');
-  if (session) {
-    recordWorkSession({ sessionId: session, kind: 'small-fix', incrementId: null, root, event: 'small-fix', reason: entry.reason, at: entry.at });
-    process.stdout.write(`Small fix recorded for session ${session}: ${entry.reason}\n`);
-  } else {
+  const marker = { kind: 'small-fix' as const, incrementId: null, root, event: 'small-fix', reason: entry.reason, at: entry.at };
+  if (session) recordWorkSession({ sessionId: session, ...marker });
+  // Codex and Pi threads have no session id; the guard also reads a marker keyed by the thread.
+  if (thread) recordWorkSession({ sessionId: `studio-${thread}`, ...marker });
+  if (session) process.stdout.write(`Small fix recorded for session ${session}: ${entry.reason}\n`);
+  else if (thread) process.stdout.write(`Small fix recorded for this SpecWithCode thread: ${entry.reason}\n`);
+  else {
     process.stdout.write(
       `Small fix logged: ${entry.reason}\nNo session id in this environment (set SPECWEAVE_SESSION_ID), so the required-increment guard cannot exempt this session.\n`,
     );

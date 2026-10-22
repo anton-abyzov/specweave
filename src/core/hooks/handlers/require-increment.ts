@@ -4,8 +4,9 @@
  * An Edit or Write inside the project, outside `.specweave/`, is planned work
  * when the agent session has a work marker (`~/.specweave/sessions/<id>.json`,
  * written by any ledger append, `create-increment`, `verify`, `complete` or
- * `small-fix`) for this project, naming an open increment or a small fix, or
- * its SpecWithCode thread is bound to an open increment here.
+ * `small-fix`, keyed `studio-<thread>` for a SpecWithCode thread) for this
+ * project, naming an open increment or a small fix, or its SpecWithCode thread
+ * is bound to an open increment here.
  * Otherwise:
  *
  *   off      → nothing (the default)
@@ -22,6 +23,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { readWorkSession } from '../../tasks/work-session.js';
 import { studioThreadBindingFile } from '../../tasks/studio-thread-binding.js';
+import { mainCheckoutOf } from '../../../utils/main-checkout.js';
 import type { HookContext, HookInput, HookResult } from './types.js';
 import { deny, pass, warn } from './types.js';
 import { getFilePath, getToolInput, readJsonSafe } from './utils.js';
@@ -46,9 +48,17 @@ export const REQUIRE_INCREMENT_MARKER = 'require-increment.enabled';
 
 const CLOSED = new Set(['completed', 'abandoned', 'cancelled']);
 
-/** Same project: one root contains the other (an umbrella and its nested repos count as one). */
-function sameProject(a: string, b: string): boolean {
+function nested(a: string, b: string): boolean {
   return inside(path.resolve(a), path.resolve(b)) || inside(path.resolve(b), path.resolve(a));
+}
+
+/**
+ * Same project: one root contains the other (an umbrella and its nested repos
+ * count as one). A Git worktree also counts as its main checkout, so a
+ * SpecWithCode worktree matches the project it came from.
+ */
+function sameProject(a: string, b: string): boolean {
+  return nested(a, b) || nested(mainCheckoutOf(a) ?? a, mainCheckoutOf(b) ?? b);
 }
 
 function openIncrement(root: string, incrementId: string | null): boolean {
@@ -68,7 +78,9 @@ export function hasPlannedWork(
 ): boolean {
   const env = opts.env ?? process.env;
   const home = opts.home ?? os.homedir();
-  const ids = [input.session_id, env.SPECWEAVE_SESSION_ID, env.CLAUDE_CODE_SESSION_ID].filter(
+  const thread = env.SPECWEAVE_STUDIO_THREAD_ID?.trim();
+  // `specweave small-fix` in a thread without a session id keys its marker by the thread.
+  const ids = [input.session_id, env.SPECWEAVE_SESSION_ID, env.CLAUDE_CODE_SESSION_ID, thread ? `studio-${thread}` : undefined].filter(
     (id): id is string => typeof id === 'string' && !!id.trim(),
   );
   for (const id of ids) {
@@ -76,7 +88,6 @@ export function hasPlannedWork(
     if (!marker || !sameProject(marker.root, projectRoot)) continue;
     if (marker.kind === 'small-fix' || openIncrement(marker.root, marker.incrementId)) return true;
   }
-  const thread = env.SPECWEAVE_STUDIO_THREAD_ID?.trim();
   if (!thread) return false;
   const binding = readJsonSafe<{ root?: string; incrementId?: string }>(studioThreadBindingFile(thread, home));
   return (

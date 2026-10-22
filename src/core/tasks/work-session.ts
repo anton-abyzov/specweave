@@ -97,6 +97,8 @@ export interface SmallFixEntry {
   by: string;
   reason: string;
   session?: string;
+  /** SpecWithCode thread id (`SPECWEAVE_STUDIO_THREAD_ID`). */
+  thread?: string;
   model?: string;
 }
 

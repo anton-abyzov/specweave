@@ -1,13 +1,17 @@
 /**
  * `specweave require-increment [off|remind|enforce]` — show or set
- * `planning.requireIncrement` and install or remove the project-level
- * PreToolUse hook that enforces it (Claude Code reads
- * `<projectRoot>/.claude/settings.json`; other tools follow AGENTS.md).
+ * `planning.requireIncrement` and install or remove the PreToolUse hook that
+ * enforces it, both in `<projectRoot>/.claude/settings.json` and in the user's
+ * `~/.claude/settings.json`. The user entry reaches Claude sessions that run
+ * outside the project, such as SpecWithCode worktrees; without the project's
+ * marker the launcher's fast path passes those edits at once. Other tools
+ * follow AGENTS.md.
  *
  * @module cli/commands/require-increment
  */
 
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import {
@@ -21,16 +25,19 @@ import { readSmallFixes } from './small-fix.js';
 
 export function requireIncrementCommand(
   mode: string | undefined,
-  opts: { cwd?: string; packageDir?: string } = {},
+  opts: { cwd?: string; packageDir?: string; home?: string } = {},
 ): number {
   const root = resolveEffectiveRoot(opts.cwd ?? process.cwd());
+  const home = opts.home ?? os.homedir();
   const configPath = path.join(root, '.specweave', 'config.json');
   const out = (s: string) => process.stdout.write(s + '\n');
 
   if (!mode) {
     const hook = readProjectHook(root, EDIT_HOOK_MATCHER);
+    const user = readProjectHook(home, EDIT_HOOK_MATCHER);
     out(`planning.requireIncrement: ${readRequireIncrementMode(configPath)}`);
     out(`Claude Code edit hook: ${hook.present ? 'installed' : 'not installed'} (${hook.path})`);
+    out(`Claude Code user edit hook: ${user.present ? 'installed' : 'not installed'} (${user.path})`);
     out(`Small fixes logged: ${readSmallFixes(root).length}`);
     return 0;
   }
@@ -56,13 +63,18 @@ export function requireIncrementCommand(
     fs.mkdirSync(path.dirname(marker), { recursive: true });
     fs.writeFileSync(marker, `${mode}\n`, 'utf8');
   }
-  const hook = setProjectHook(root, mode !== 'off', opts.packageDir ?? packageRoot(), EDIT_HOOK_MATCHER);
+  const packageDir = opts.packageDir ?? packageRoot();
+  const hook = setProjectHook(root, mode !== 'off', packageDir, EDIT_HOOK_MATCHER);
+  const user = setProjectHook(home, mode !== 'off', packageDir, EDIT_HOOK_MATCHER);
   out(`planning.requireIncrement: ${mode}`);
-  if (hook.error) {
-    process.stderr.write(`Hook not changed: ${hook.error}\n`);
-    return 1;
+  let failed = false;
+  for (const [label, state] of [['Claude Code edit hook', hook], ['Claude Code user edit hook', user]] as const) {
+    if (state.error) {
+      process.stderr.write(`${label} not changed: ${state.error}\n`);
+      failed = true;
+    } else out(`${label}: ${state.present ? 'installed' : 'removed'} (${state.path})`);
   }
-  out(`Claude Code edit hook: ${hook.present ? 'installed' : 'removed'} (${hook.path})`);
+  if (failed) return 1;
   if (mode === 'enforce') out('Edits now need an increment or `specweave small-fix "<why>"` in the session.');
   return 0;
 }

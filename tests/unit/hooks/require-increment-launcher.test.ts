@@ -17,16 +17,19 @@ const built = fs.existsSync(path.join(repoRoot, 'dist', 'src', 'core', 'hooks', 
 let project = '';
 let home = '';
 
-function edit(session: string) {
+function edit(session: string, cwd = project, env: Record<string, string> = {}) {
   const res = spawnSync(process.execPath, [runner, 'pre-tool-use'], {
-    cwd: project,
+    cwd,
     input: JSON.stringify({
-      hook_event_name: 'PreToolUse', session_id: session, cwd: project, tool_name: 'Edit',
-      tool_input: { file_path: path.join(project, 'src', 'a.ts'), old_string: 'a', new_string: 'b' },
+      hook_event_name: 'PreToolUse', session_id: session, cwd, tool_name: 'Edit',
+      tool_input: { file_path: path.join(cwd, 'src', 'a.ts'), old_string: 'a', new_string: 'b' },
     }),
     encoding: 'utf8',
     timeout: 20000,
-    env: { ...process.env, HOME: home, USERPROFILE: home, SPECWEAVE_HOME: repoRoot, CLAUDE_CODE_SESSION_ID: '', SPECWEAVE_SESSION_ID: '', SPECWEAVE_STUDIO_THREAD_ID: '' },
+    env: {
+      ...process.env, HOME: home, USERPROFILE: home, SPECWEAVE_HOME: repoRoot, CLAUDE_PROJECT_DIR: '',
+      CLAUDE_CODE_SESSION_ID: '', SPECWEAVE_SESSION_ID: '', SPECWEAVE_STUDIO_THREAD_ID: '', ...env,
+    },
   });
   expect(res.status).toBe(0);
   return JSON.parse(res.stdout.trim()) as { hookSpecificOutput?: { permissionDecision?: string } };
@@ -57,7 +60,7 @@ describe.skipIf(!built)('required-increment guard through run.mjs (requires npm 
     const out = process.stdout.write;
     process.stdout.write = (() => true) as typeof process.stdout.write;
     try {
-      expect(requireIncrementCommand('enforce', { cwd: project, packageDir: repoRoot })).toBe(0);
+      expect(requireIncrementCommand('enforce', { cwd: project, packageDir: repoRoot, home })).toBe(0);
     } finally {
       process.stdout.write = out;
     }
@@ -73,5 +76,29 @@ describe.skipIf(!built)('required-increment guard through run.mjs (requires npm 
     expect(edit('s-closed').hookSpecificOutput?.permissionDecision).toBe('deny');
     marker('s-other', { kind: 'small-fix', incrementId: null, root: path.join(home, 'other-project'), event: 'small-fix' });
     expect(edit('s-other').hookSpecificOutput?.permissionDecision).toBe('deny');
+  });
+
+  it('finds the marker from a SpecWithCode worktree outside the project (1001 AC-01, AC-02)', () => {
+    // project becomes an umbrella holding a nested repo whose linked worktree lives elsewhere.
+    const app = path.join(project, 'repositories', 'org', 'app');
+    fs.mkdirSync(path.join(app, '.git', 'worktrees', 'wt'), { recursive: true });
+    const worktree = path.join(home, 'worktrees', 'wt');
+    fs.mkdirSync(path.join(worktree, 'src'), { recursive: true });
+    fs.writeFileSync(path.join(worktree, '.git'), `gitdir: ${app}/.git/worktrees/wt\n`);
+
+    // The project's state from the first test: enforce, with its marker.
+    expect(edit('s-wt', worktree).hookSpecificOutput?.permissionDecision).toBe('deny');
+    const thread = { SPECWEAVE_STUDIO_THREAD_ID: 'thread:wt' };
+    expect(edit('s-wt', worktree, thread).hookSpecificOutput?.permissionDecision).toBe('deny');
+
+    // A launch binding to an open increment in the umbrella passes.
+    const bindings = path.join(home, '.specweave', 'studio', 'threads');
+    fs.mkdirSync(bindings, { recursive: true });
+    fs.writeFileSync(path.join(bindings, 'thread_wt.json'), JSON.stringify({ version: 1, threadId: 'thread:wt', incrementId: '0001-open', root: project, taskId: null, event: 'studio-launch', at: '2026-10-22T12:00:00Z' }));
+    expect(edit('s-wt', worktree, thread)).toEqual({});
+
+    // A thread small fix (no session id) passes too.
+    marker('studio-thread_fix', { kind: 'small-fix', incrementId: null, root: project, event: 'small-fix' });
+    expect(edit('', worktree, { SPECWEAVE_STUDIO_THREAD_ID: 'thread:fix' })).toEqual({});
   });
 });

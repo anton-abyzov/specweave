@@ -27,7 +27,7 @@
  */
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
-import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -77,8 +77,35 @@ function hasJevGuardMarker(input) {
   return hasMarker(input, JEV_GUARD_MARKER);
 }
 
+// Main checkout of the linked Git worktree containing `dir`, or null. Keep in
+// step with src/utils/main-checkout.ts (a parity test compares them): the
+// SpecWithCode worktrees live outside the project, so markers are searched from
+// the main checkout too. Sync reads only, no Git process.
+const WORKTREE_GITDIR = /^gitdir:\s*(.*?)[\\/]\.git[\\/]worktrees[\\/][^\\/]+[\\/]?\s*$/;
+function mainCheckoutOf(dir) {
+  let current;
+  try { current = path.resolve(dir); } catch { return null; }
+  for (let depth = 0; depth < 100; depth++) {
+    const dotGit = path.join(current, '.git');
+    try {
+      const stat = statSync(dotGit, { throwIfNoEntry: false });
+      if (stat) {
+        if (!stat.isFile()) return null;
+        const first = readFileSync(dotGit, 'utf8').split(/\r?\n/, 1)[0] ?? '';
+        const match = WORKTREE_GITDIR.exec(first.trim());
+        return match && match[1] ? path.resolve(current, match[1]) : null;
+      }
+    } catch { return null; }
+    const parent = path.dirname(current);
+    if (parent === current) return null;
+    current = parent;
+  }
+  return null;
+}
+
 function hasMarker(input, marker) {
-  const starts = [typeof input.cwd === 'string' ? input.cwd : process.cwd(), process.env.CLAUDE_PROJECT_DIR];
+  const first = [typeof input.cwd === 'string' ? input.cwd : process.cwd(), process.env.CLAUDE_PROJECT_DIR].filter(Boolean);
+  const starts = [...first, ...first.map(mainCheckoutOf)];
   for (const start of starts) {
     if (!start) continue;
     let current;

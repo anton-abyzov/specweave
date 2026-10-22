@@ -100,6 +100,85 @@ describe('required-increment guard (AC-03)', () => {
   });
 });
 
+function bind(thread: string, bindingRoot: string, incrementId: string): void {
+  const file = path.join(home, '.specweave', 'studio', 'threads', `${thread.replace(/[^\w.-]/g, '_')}.json`);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify({ version: 1, threadId: thread, incrementId, root: bindingRoot, taskId: null, event: 'claim', at: '2026-10-22T12:00:00Z' }));
+}
+function openIncrementIn(projectRoot: string, id: string): void {
+  fs.mkdirSync(path.join(projectRoot, '.specweave', 'increments', id), { recursive: true });
+  fs.writeFileSync(path.join(projectRoot, '.specweave', 'increments', id, 'metadata.json'), '{"status":"active"}');
+}
+
+describe('SpecWithCode worktrees outside the project (1001 AC-01, AC-02)', () => {
+  let outside: string;
+  let worktree: string;
+  beforeEach(() => {
+    // root is an umbrella; repositories/org/app is a nested repo whose linked
+    // worktree lives outside it, like ~/.specwithcode/<machine>/worktrees/*.
+    const app = path.join(root, 'repositories', 'org', 'app');
+    fs.mkdirSync(path.join(app, '.git', 'worktrees', 'wt'), { recursive: true });
+    outside = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'sw-require-wt-')));
+    worktree = path.join(outside, 'wt');
+    fs.mkdirSync(path.join(worktree, 'src'), { recursive: true });
+    fs.writeFileSync(path.join(worktree, '.git'), `gitdir: ${app}/.git/worktrees/wt\n`);
+    openIncrementIn(root, '0001-open');
+  });
+  afterEach(() => fs.rmSync(outside, { recursive: true, force: true }));
+
+  function wtEdit(session = 'sess-wt'): HookInput {
+    return { session_id: session, cwd: worktree, tool_name: 'Edit', tool_input: { file_path: path.join(worktree, 'src', 'a.ts'), old_string: 'a', new_string: 'b' } };
+  }
+  const denied = async (input: HookInput) => (await handle(input, context)).hookSpecificOutput?.permissionDecision === 'deny';
+
+  it('passes an edit in the worktree when the thread is bound to an open increment in the umbrella', async () => {
+    setMode('enforce');
+    expect(await denied(wtEdit())).toBe(true);
+    process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread:wt';
+    expect(await denied(wtEdit())).toBe(true);
+    bind('thread:wt', root, '0001-open');
+    expect(await handle(wtEdit(), context)).toEqual({});
+  });
+
+  it('denies when the binding belongs to an unrelated repository', async () => {
+    setMode('enforce');
+    const other = path.join(outside, 'other');
+    openIncrementIn(other, '0001-open');
+    process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread:wt';
+    bind('thread:wt', other, '0001-open');
+    expect(await denied(wtEdit())).toBe(true);
+  });
+
+  it('a standalone project worktree with its own .specweave matches a binding to the main checkout', async () => {
+    setMode('enforce');
+    const app = path.join(root, 'repositories', 'org', 'app');
+    fs.mkdirSync(path.join(worktree, '.specweave'), { recursive: true });
+    fs.writeFileSync(path.join(worktree, '.specweave', 'config.json'), JSON.stringify({ planning: { requireIncrement: 'enforce' } }));
+    openIncrementIn(app, '0002-app');
+    const wtContext = { ...context, projectRoot: worktree, stateDir: path.join(worktree, '.specweave', 'state'), configPath: path.join(worktree, '.specweave', 'config.json') };
+    process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread:wt';
+    expect((await handle(wtEdit(), wtContext)).hookSpecificOutput?.permissionDecision).toBe('deny');
+    bind('thread:wt', app, '0002-app');
+    expect(await handle(wtEdit(), wtContext)).toEqual({});
+  });
+
+  it('small-fix from the worktree with only the thread id exempts the thread in this project only', async () => {
+    setMode('enforce');
+    process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread:fix';
+    expect(smallFixCommand('rename a variable', { cwd: worktree })).toBe(0);
+    expect(readSmallFixes(root)).toMatchObject([{ reason: 'rename a variable', thread: 'thread:fix' }]);
+    expect(await handle(wtEdit('no-session-marker'), context)).toEqual({});
+
+    // The same thread's small fix recorded for another project does not count.
+    const other = path.join(outside, 'other');
+    fs.mkdirSync(path.join(other, '.specweave'), { recursive: true });
+    fs.writeFileSync(path.join(other, '.specweave', 'config.json'), '{}');
+    process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread:elsewhere';
+    expect(smallFixCommand('elsewhere', { cwd: other })).toBe(0);
+    expect(await denied(wtEdit('no-session-marker'))).toBe(true);
+  });
+});
+
 describe('small-fix and require-increment commands (AC-04)', () => {
   it('small-fix exempts the session and logs the exemption', async () => {
     setMode('enforce');
