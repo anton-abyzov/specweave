@@ -49,13 +49,14 @@ describe('small-fix (1001 AC-02)', () => {
     expect(fs.existsSync(path.join(home, '.specweave', 'sessions', 'studio-thread_abc.json'))).toBe(true);
   });
 
-  it('with a session id and a thread, writes both markers', () => {
+  it('with a session id and a thread, writes only the session marker', () => {
     const env = { SPECWEAVE_STUDIO_THREAD_ID: 't1', SPECWEAVE_SESSION_ID: 'sess-1', SPECWEAVE_AGENT: 'claude@test' };
     expect(smallFixCommand('one line', { cwd: root, env })).toBe(0);
     expect(stdout).toContain('Small fix recorded for session sess-1');
     expect(readSmallFixes(root)).toMatchObject([{ session: 'sess-1', thread: 't1' }]);
     expect(readWorkSession('sess-1', home)?.kind).toBe('small-fix');
-    expect(readWorkSession('studio-t1', home)?.kind).toBe('small-fix');
+    // A thread marker here would outlive the session's later increment work.
+    expect(readWorkSession('studio-t1', home)).toBeNull();
   });
 
   it('with neither, logs the fix and says the session cannot be exempted', () => {

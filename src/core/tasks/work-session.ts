@@ -75,18 +75,13 @@ export function recordIncrementWork(
   const dir = path.resolve(incrementDir);
   recordStudioThreadBinding(path.join(dir, 'ledger.jsonl'), { t: event.t ?? '*', e: event.e, at }, opts);
   const incrementsDir = path.dirname(dir);
-  if (!opts.sessionId || path.basename(incrementsDir) !== 'increments') return;
-  recordWorkSession(
-    {
-      sessionId: opts.sessionId,
-      kind: 'increment',
-      incrementId: path.basename(dir),
-      root: path.dirname(path.dirname(incrementsDir)),
-      event: event.e,
-      at,
-    },
-    opts,
-  );
+  if (path.basename(incrementsDir) !== 'increments') return;
+  const marker = { kind: 'increment' as const, incrementId: path.basename(dir), root: path.dirname(path.dirname(incrementsDir)), event: event.e, at };
+  if (opts.sessionId) recordWorkSession({ sessionId: opts.sessionId, ...marker }, opts);
+  // A thread's earlier small fix (`studio-<thread>`, written without a session id)
+  // gives way to its increment work, so it stops exempting once that increment closes.
+  const thread = (opts.env ?? process.env).SPECWEAVE_STUDIO_THREAD_ID?.trim();
+  if (thread && readWorkSession(`studio-${thread}`, opts.home)) recordWorkSession({ sessionId: `studio-${thread}`, ...marker }, opts);
 }
 
 /** Log of `specweave small-fix` exemptions, relative to the project root. */
