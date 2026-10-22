@@ -8,6 +8,8 @@
 import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { resolveIncrement, readLeaseHours, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
+import { detectSessionId } from '../../core/tasks/ledger.js';
+import { recordIncrementWork } from '../../core/tasks/work-session.js';
 import { runVerify, describeUncheckedAcs, NO_COMMANDS_MESSAGE } from '../../core/tasks/verify-runner.js';
 
 export interface VerifyCommandOptions {
@@ -34,6 +36,7 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
     throw e;
   }
 
+  recordIncrementWork(inc.dir, { e: 'verify' }, { sessionId: detectSessionId() });
   const result = await runVerify(projectRoot, inc.id, inc.dir, {
     commands: opts.cmd && opts.cmd.length ? opts.cmd : undefined,
     leaseHours: readLeaseHours(projectRoot),
