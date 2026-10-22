@@ -28,6 +28,7 @@ import { resolveIncrement, listActiveIncrementIds, readLeaseHours, IncrementReso
 import { parseSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
 import { INTENT_BOARD_PATH, readIntentContext } from '../intent/portable-context.js';
 import { serializeHandoffPointer } from './handoff-pointer.js';
+import { gitCheckoutFor } from '../../utils/main-checkout.js';
 import {
   renderHandoffDoc,
   renderPastePrompt,
@@ -101,6 +102,8 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   const resolvedIsSpecWeave = fs.existsSync(path.join(resolved, '.specweave', 'config.json'));
   const isSpecWeave = !opts.nonSpecweave && resolvedIsSpecWeave;
   const effectiveRoot = isSpecWeave ? resolved : passedRoot;
+  // Planning state may live in a worktree's main checkout; the branch, diff and push stay here.
+  const gitRoot = gitCheckoutFor(passedRoot, effectiveRoot);
 
   // ── Increment ──────────────────────────────────────────────────────────
   let incrementId: string | undefined;
@@ -152,7 +155,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   const { docPath, diffPath } = resolveWritePaths(effectiveRoot, isSpecWeave, incDir, opts.out);
 
   // ── Git + scrub ────────────────────────────────────────────────────────
-  const git = captureGitState(isolatedCheckpoint ? opts.checkpointRoot! : effectiveRoot, diffPath, { strict: isolatedCheckpoint });
+  const git = captureGitState(isolatedCheckpoint ? opts.checkpointRoot! : gitRoot, diffPath, { strict: isolatedCheckpoint });
   const intentRedactions: Record<string, number> = {};
   const intents = isSpecWeave ? readIntentContext(effectiveRoot, intentRedactions) : undefined;
   const intentLink = intents ? `[Open the intent board](${path.relative(path.dirname(docPath), path.join(effectiveRoot, INTENT_BOARD_PATH)).replace(/\\/g, '/')})` : undefined;
@@ -171,7 +174,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
     localCheckpoint: Boolean(opts.checkpointRoot),
     docPath,
     diffPath,
-    repoRoot: isolatedCheckpoint ? opts.checkpointRoot! : effectiveRoot,
+    repoRoot: isolatedCheckpoint ? opts.checkpointRoot! : gitRoot,
     generatedAt: new Date().toISOString(),
     isSpecWeave,
     agent,
@@ -200,7 +203,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   if (isSpecWeave && !isolatedCheckpoint) writePointer(effectiveRoot, docPath);
   // The snapshot is taken after the doc is written, so it carries the doc.
   if (opts.push !== false && !opts.checkpoint) {
-    docInput.push = pushHandoff(effectiveRoot, { by: agent, at: new Date().toISOString(), increment: incrementId, reason: opts.reason }, { explicit: opts.push === true });
+    docInput.push = pushHandoff(gitRoot, { by: agent, at: new Date().toISOString(), increment: incrementId, reason: opts.reason }, { explicit: opts.push === true });
   }
   const docMarkdown = renderHandoffDoc(docInput);
   const pastePrompt = renderPastePrompt(docInput, { inline: opts.inline });

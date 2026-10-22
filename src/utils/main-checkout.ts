@@ -25,6 +25,28 @@ const WORKTREE_GITDIR = /^gitdir:\s*(.*?)[\\/]\.git[\\/]worktrees[\\/][^\\/]+[\\
  * (`.git/modules/`), unreadable, or absent.
  */
 export function mainCheckoutOf(dir: string): string | null {
+  return worktreeLink(dir)?.main ?? null;
+}
+
+/** Top of the linked worktree containing `dir` (the folder holding its `.git` file), or null. */
+export function linkedWorktreeRoot(dir: string): string | null {
+  return worktreeLink(dir)?.root ?? null;
+}
+
+/**
+ * Where Git commands for work started in `startDir` run. Planning state may
+ * resolve to the main checkout (`findEffectiveRoot`), but a thread's branch,
+ * diff and pushes live in its own worktree.
+ */
+export function gitCheckoutFor(startDir: string, planningRoot: string): string {
+  const own = linkedWorktreeRoot(startDir);
+  if (!own) return planningRoot;
+  const rel = path.relative(own, path.resolve(planningRoot));
+  const inside = rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
+  return inside ? planningRoot : own;
+}
+
+function worktreeLink(dir: string): { root: string; main: string } | null {
   let current: string;
   try {
     current = path.resolve(dir);
@@ -39,7 +61,7 @@ export function mainCheckoutOf(dir: string): string | null {
         if (!stat.isFile()) return null;
         const first = fs.readFileSync(dotGit, 'utf8').split(/\r?\n/, 1)[0] ?? '';
         const match = WORKTREE_GITDIR.exec(first.trim());
-        return match && match[1] ? path.resolve(current, match[1]) : null;
+        return match && match[1] ? { root: current, main: path.resolve(current, match[1]) } : null;
       }
     } catch {
       return null;

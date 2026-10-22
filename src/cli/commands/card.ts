@@ -17,6 +17,7 @@
 
 import { execFileSync } from 'child_process';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { gitCheckoutFor } from '../../utils/main-checkout.js';
 import { clampCardLine, getAgentId, type LedgerEvent } from '../../core/tasks/ledger.js';
 import { incrementCards, readOriginUrl, renderChecklist, type Card } from '../../core/tasks/cards.js';
 import { resolveIncrement, readLeaseHours, IncrementResolutionError, type ResolvedIncrement } from '../../core/tasks/resolve-increment.js';
@@ -43,8 +44,10 @@ export async function cardCommand(action: string, a?: string, b?: string, opts: 
   }
   const cwd = opts.cwd ?? process.cwd();
   const projectRoot = resolveEffectiveRoot(cwd);
+  // Cards live with the plan; the branch is the start directory's own checkout (a thread's worktree).
+  const gitRoot = gitCheckoutFor(cwd, projectRoot);
   const agent = opts.agent ?? getAgentId();
-  const branch = opts.branch ?? currentBranch(projectRoot);
+  const branch = opts.branch ?? currentBranch(gitRoot);
   const file = branchCardsPath(projectRoot, branch);
 
   if (action === 'add') {
@@ -61,7 +64,7 @@ export async function cardCommand(action: string, a?: string, b?: string, opts: 
     const inc = boundIncrement(projectRoot, a, err);
     if (inc === null) return 1;
     if (inc) return taskCommand('list', inc.id, undefined, opts);
-    out(renderChecklist(branchCards(file, cardOpts(projectRoot)), branchHeader(branch)));
+    out(renderChecklist(branchCards(file, cardOpts(gitRoot)), branchHeader(branch)));
     return 0;
   }
 
@@ -86,14 +89,14 @@ export async function cardCommand(action: string, a?: string, b?: string, opts: 
   if (opts.link?.trim()) event.link = opts.link.trim();
   if (action === 'done') {
     event.e = 'done';
-    const sha = headSha(projectRoot);
+    const sha = headSha(gitRoot);
     event.evidence = [opts.evidence?.trim(), opts.link?.trim(), sha ? `HEAD ${sha}` : undefined].filter(Boolean).join('\n') || 'card done';
   } else if (action === 'wait') {
     event.e = 'block';
     event.note = (opts.reason ?? opts.note ?? opts.line ?? 'waiting').trim();
   }
   appendBranchEvent(file, event);
-  const card = branchCards(file, cardOpts(projectRoot)).find((c) => c.id === cardId);
+  const card = branchCards(file, cardOpts(gitRoot)).find((c) => c.id === cardId);
   const wanted = { start: 'doing', done: 'done', wait: 'waiting' }[action as 'start' | 'done' | 'wait'];
   if (card?.state !== wanted) {
     err(`${cardId} is ${card?.state ?? 'unknown'}: another agent holds it, or it is already finished`);
@@ -107,7 +110,9 @@ export async function cardCommand(action: string, a?: string, b?: string, opts: 
 export async function cardsCommand(incrementId?: string, opts: CardCommandOptions = {}): Promise<number> {
   const out = (s: string) => process.stdout.write(s + '\n');
   const err = (s: string) => process.stderr.write(s + '\n');
-  const projectRoot = resolveEffectiveRoot(opts.cwd ?? process.cwd());
+  const cwd = opts.cwd ?? process.cwd();
+  const projectRoot = resolveEffectiveRoot(cwd);
+  const gitRoot = gitCheckoutFor(cwd, projectRoot);
   const inc = boundIncrement(projectRoot, incrementId, err);
   if (inc === null) return 1;
   let header: string;
@@ -115,11 +120,11 @@ export async function cardsCommand(incrementId?: string, opts: CardCommandOption
   if (inc) {
     const title = readTitle(inc.dir);
     header = `${inc.id}${title ? ` ${title}` : ''}`;
-    cards = incrementCards(inc.dir, { ...cardOpts(projectRoot), leaseHours: readLeaseHours(projectRoot) });
+    cards = incrementCards(inc.dir, { ...cardOpts(gitRoot), leaseHours: readLeaseHours(projectRoot) });
   } else {
-    const branch = opts.branch ?? currentBranch(projectRoot);
+    const branch = opts.branch ?? currentBranch(gitRoot);
     header = branchHeader(branch);
-    cards = branchCards(branchCardsPath(projectRoot, branch), cardOpts(projectRoot));
+    cards = branchCards(branchCardsPath(projectRoot, branch), cardOpts(gitRoot));
   }
   out(opts.json ? JSON.stringify({ increment: inc?.id ?? null, header, cards }, null, 2) : renderChecklist(cards, header));
   return 0;
@@ -145,8 +150,8 @@ function branchHeader(branch: string | undefined): string {
   return `Cards on ${branch ?? 'no branch'}`;
 }
 
-function cardOpts(projectRoot: string) {
-  return { origin: readOriginUrl(projectRoot) };
+function cardOpts(gitRoot: string) {
+  return { origin: readOriginUrl(gitRoot) };
 }
 
 function rel(root: string, p: string): string {

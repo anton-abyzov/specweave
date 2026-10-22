@@ -16,6 +16,7 @@
 import type { HandlerFn, HookContext, HookInput } from './types.js';
 import { pass } from './types.js';
 import { logHook, readActiveIncrements } from './utils.js';
+import { gitCheckoutFor } from '../../../utils/main-checkout.js';
 
 export const HANDOFF_BUDGET_MS = 5000;
 
@@ -54,7 +55,9 @@ export async function writeAutoHandoff(
       : typeof decisionRaw === 'string' && decisionRaw.trim()
         ? [decisionRaw]
         : undefined;
-    const build = buildWorkHandoff(context.projectRoot, {
+    // From a thread's worktree, start there so the Git capture is the thread's branch.
+    const start = input.cwd && gitCheckoutFor(input.cwd, context.projectRoot) !== context.projectRoot ? input.cwd : context.projectRoot;
+    const build = buildWorkHandoff(start, {
       incrementId: active[0],
       reason: str(input, 'reason') ?? defaultReason,
       summary: str(input, 'summary'),
