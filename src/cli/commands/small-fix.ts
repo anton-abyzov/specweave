@@ -11,35 +11,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { detectModel, detectSessionId, getAgentId } from '../../core/tasks/ledger.js';
-import { recordWorkSession } from '../../core/tasks/work-session.js';
+import { recordWorkSession, SMALL_FIX_LOG, type SmallFixEntry } from '../../core/tasks/work-session.js';
 
-export const SMALL_FIX_LOG = path.join('.specweave', 'state', 'small-fixes.jsonl');
-
-export interface SmallFixEntry {
-  at: string;
-  by: string;
-  reason: string;
-  session?: string;
-  model?: string;
-}
-
-export function readSmallFixes(projectRoot: string): SmallFixEntry[] {
-  try {
-    return fs
-      .readFileSync(path.join(projectRoot, SMALL_FIX_LOG), 'utf8')
-      .split('\n')
-      .flatMap((line) => {
-        try {
-          const entry = JSON.parse(line);
-          return entry && typeof entry.at === 'string' && typeof entry.reason === 'string' ? [entry as SmallFixEntry] : [];
-        } catch {
-          return [];
-        }
-      });
-  } catch {
-    return [];
-  }
-}
+export { readSmallFixes } from '../../core/tasks/work-session.js';
 
 export function smallFixCommand(reason: string | undefined, opts: { cwd?: string; env?: NodeJS.ProcessEnv } = {}): number {
   const why = (reason ?? '').replace(/\s+/g, ' ').trim();
