@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SpecWeave hook supervisor: parent deadline remains live while the worker blocks in Git.
 import { spawn, spawnSync } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,12 +50,41 @@ const JEV_GUARD_MARKER = path.join('.specweave', 'state', 'jev-guard.enabled');
 const JEV_GUARD_MAX_DEPTH = 8;
 // Edits outside increments only matter when the project opted into required
 // increments (`specweave require-increment`), which leaves its own marker; a
-// session already marked as working on an increment in that project skips too.
+// session or SpecWithCode thread with a small fix there, or a thread bound to
+// an open increment there, skips too.
 const REQUIRE_INCREMENT_MARKER = path.join('.specweave', 'state', 'require-increment.enabled');
 const EDIT_TOOLS = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit']);
+// Main checkout of the linked Git worktree containing `dir`, or null. Keep in
+// step with src/utils/main-checkout.ts (a parity test compares them): the
+// SpecWithCode worktrees live outside the project, so markers are searched from
+// the main checkout too. Sync reads only, no Git process.
+const WORKTREE_GITDIR = /^gitdir:\s*(.*?)[\\/]\.git[\\/]worktrees[\\/][^\\/]+[\\/]?\s*$/;
+function mainCheckoutOf(dir) {
+  let current;
+  try { current = path.resolve(dir); } catch { return null; }
+  for (let depth = 0; depth < 100; depth++) {
+    const dotGit = path.join(current, '.git');
+    try {
+      const stat = statSync(dotGit, { throwIfNoEntry: false });
+      if (stat) {
+        if (!stat.isFile()) return null;
+        const first = readFileSync(dotGit, 'utf8').split(/\r?\n/, 1)[0] ?? '';
+        const match = WORKTREE_GITDIR.exec(first.trim());
+        return match && match[1] ? path.resolve(current, match[1]) : null;
+      }
+    } catch { return null; }
+    const parent = path.dirname(current);
+    if (parent === current) return null;
+    current = parent;
+  }
+  return null;
+}
+function markerStarts(data) {
+  const starts = [typeof data.cwd === 'string' ? data.cwd : process.cwd(), process.env.CLAUDE_PROJECT_DIR].filter(Boolean);
+  return [...starts, ...starts.map(mainCheckoutOf)];
+}
 function findMarker(data, marker) {
-  const starts = [typeof data.cwd === 'string' ? data.cwd : process.cwd(), process.env.CLAUDE_PROJECT_DIR];
-  for (const start of starts) {
+  for (const start of markerStarts(data)) {
     if (!start) continue;
     let current;
     try { current = path.resolve(start); } catch { continue; }
@@ -71,12 +100,43 @@ function findMarker(data, marker) {
 function hasJevGuardMarker(data) {
   return findMarker(data, JEV_GUARD_MARKER) !== null;
 }
+// A small fix declared in this project by the session, or (Codex, Pi: no
+// session id) by the SpecWithCode thread, keyed `studio-<thread>` and sanitized
+// like workSessionFile. Worktrees count as their main checkout.
+const SAFE_ID = /^[A-Za-z0-9._-]{1,128}$/;
 function sessionWorksIn(data, root) {
   const session = typeof data.session_id === 'string' ? data.session_id : '';
-  if (!/^[A-Za-z0-9._-]{1,128}$/.test(session) || session === '.' || session === '..') return false;
+  const thread = (process.env.SPECWEAVE_STUDIO_THREAD_ID ?? '').trim();
+  const ids = [session, thread ? `studio-${thread}`.replace(/[^\w.-]/g, '_') : '']
+    .filter((id) => SAFE_ID.test(id) && id !== '.' && id !== '..');
+  const project = (dir) => path.resolve(mainCheckoutOf(dir) ?? dir);
+  for (const id of ids) {
+    try {
+      const marker = JSON.parse(readFileSync(path.join(homedir(), '.specweave', 'sessions', `${id}.json`), 'utf8'));
+      if (marker?.kind !== 'small-fix' || typeof marker.root !== 'string') continue;
+      if (path.resolve(marker.root) === root || project(marker.root) === project(root)) return true;
+    } catch {}
+  }
+  return false;
+}
+// The SpecWithCode thread is bound to an increment of this project that is not
+// closed: the guard would pass, so skip the worker. Same rule as the guard's
+// binding check, with an exact project match (anything else asks the worker).
+const CLOSED_STATUSES = new Set(['completed', 'abandoned', 'cancelled']);
+function threadBoundIn(root) {
+  const thread = (process.env.SPECWEAVE_STUDIO_THREAD_ID ?? '').trim();
+  if (!thread) return false;
   try {
-    const marker = JSON.parse(readFileSync(path.join(homedir(), '.specweave', 'sessions', `${session}.json`), 'utf8'));
-    return marker?.kind === 'small-fix' && typeof marker.root === 'string' && path.resolve(marker.root) === root;
+    const file = path.join(homedir(), '.specweave', 'studio', 'threads', `${thread.replace(/[^\w.-]/g, '_')}.json`);
+    const binding = JSON.parse(readFileSync(file, 'utf8'));
+    const id = binding?.incrementId;
+    if (typeof binding?.root !== 'string' || !binding.root || typeof id !== 'string' || !SAFE_ID.test(id) || id === '.' || id === '..') return false;
+    const project = (dir) => path.resolve(mainCheckoutOf(dir) ?? dir);
+    if (path.resolve(binding.root) !== root && project(binding.root) !== project(root)) return false;
+    let status = '';
+    try { status = String(JSON.parse(readFileSync(path.join(binding.root, '.specweave', 'increments', id, 'metadata.json'), 'utf8'))?.status ?? ''); }
+    catch {}
+    return !CLOSED_STATUSES.has(status);
   } catch { return false; }
 }
 function skipPreToolUse(data) {
@@ -88,7 +148,7 @@ function skipPreToolUse(data) {
   if (filePath.includes('.specweave/increments/')) return false;
   if (!EDIT_TOOLS.has(tool)) return true;
   const root = findMarker(data, REQUIRE_INCREMENT_MARKER);
-  return root === null || sessionWorksIn(data, root);
+  return root === null || sessionWorksIn(data, root) || threadBoundIn(root);
 }
 function record(reason) {
   try {

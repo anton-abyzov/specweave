@@ -471,6 +471,30 @@ describe('find-project-root', () => {
       await fsPromises.mkdir(path.join(tmpBase, '.specweave'), { recursive: true });
       expect(findEffectiveRoot(tmpBase)).toBeNull();
     });
+
+    it('should resolve a linked worktree outside the umbrella through its main checkout', async () => {
+      const { tmpBase, umbrellaRoot, childRepo } = await createUmbrellaTree();
+      const worktree = path.join(tmpBase, 'worktrees', 'wt');
+      await fsPromises.mkdir(path.join(worktree, 'src'), { recursive: true });
+      await fsPromises.writeFile(path.join(worktree, '.git'), `gitdir: ${childRepo}/.git/worktrees/wt\n`);
+      expect(findProjectRoot(worktree)).toBeNull();
+      expect(findEffectiveRoot(worktree)).toBe(umbrellaRoot);
+      expect(findEffectiveRoot(path.join(worktree, 'src'))).toBe(umbrellaRoot);
+    });
+
+    it('should resolve a standalone project worktree to the main checkout, and ignore submodule links', async () => {
+      const { tmpBase, projectRoot } = await createProjectTree();
+      await fsPromises.mkdir(path.join(projectRoot, '.git'), { recursive: true });
+      const worktree = path.join(tmpBase, 'wt');
+      await fsPromises.mkdir(worktree, { recursive: true });
+      await fsPromises.writeFile(path.join(worktree, '.git'), `gitdir: ${projectRoot}/.git/worktrees/wt`);
+      expect(findEffectiveRoot(worktree)).toBe(projectRoot);
+
+      const submodule = path.join(tmpBase, 'sub');
+      await fsPromises.mkdir(submodule, { recursive: true });
+      await fsPromises.writeFile(path.join(submodule, '.git'), `gitdir: ${projectRoot}/.git/modules/sub`);
+      expect(findEffectiveRoot(submodule)).toBeNull();
+    });
   });
 
   // ---------------------------------------------------------------------------
