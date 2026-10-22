@@ -407,6 +407,19 @@
   gap: 12px;
   margin-bottom: 20px;
 }
+.work-filters {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.work-filters select {
+  border: 1px solid var(--sw-brand-line);
+  background: var(--sw-brand-surface);
+  color: var(--sw-brand-ink);
+  border-radius: 5px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
 .work-view-label {
   font-size: 10px;
   letter-spacing: 1.4px;

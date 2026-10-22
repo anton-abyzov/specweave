@@ -56,6 +56,7 @@ export async function dashboardCommand(options: DashboardOptions = {}): Promise<
     console.log(chalk.bold.green('  SpecWeave Dashboard'));
     console.log(chalk.dim('  ────────────────────'));
     console.log(`  ${chalk.cyan('URL:')}     ${chalk.underline(url)}`);
+    console.log(`  ${chalk.cyan('Timeline:')} ${chalk.underline(`http://localhost:${existing.port}/timeline?project=${projectSlug}`)}`);
     console.log(`  ${chalk.dim('Already running (PID ' + existing.pid + ')')}`);
     console.log('');
 
@@ -93,6 +94,7 @@ async function startNewDashboard(projectRoot: string, options: DashboardOptions)
   console.log(chalk.bold.green('  SpecWeave Dashboard'));
   console.log(chalk.dim('  ────────────────────'));
   console.log(`  ${chalk.cyan('URL:')}     ${chalk.underline(url)}`);
+  console.log(`  ${chalk.cyan('Timeline:')} ${chalk.underline(`${instance.url}/timeline?project=${projectSlug}`)}`);
   console.log(`  ${chalk.cyan('Project:')} ${projectRoot}`);
   console.log(`  ${chalk.cyan('PID:')}     ${process.pid}`);
   console.log('');

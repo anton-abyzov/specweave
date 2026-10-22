@@ -1,3 +1,16 @@
+## [Unreleased]
+
+### Added
+
+- Dashboard Timeline page (`specweave dashboard`, then Timeline): a Gantt chart of every increment with uninterrupted-work forecasts from the project's measured pace, throughput, latest ledger activity and filters for status, agent, window and text.
+- `specweave require-increment off|remind|enforce` and `specweave small-fix "<why>"`: an opt-in Claude Code edit guard that asks for an increment before code changes.
+- Work board filters for agent and how long finished work stays visible.
+
+### Changed
+
+- `create-increment`, `verify` and `complete` bind the SpecWithCode thread and the agent session to the increment, not only ledger appends.
+- Ledger events record the model (`SPECWEAVE_MODEL`, or `ANTHROPIC_MODEL` under Claude Code), so the Work board no longer says "Model unknown" for new work.
+
 ## [3.1.5] - 2026-10-21
 
 ### Changed
