@@ -31,7 +31,7 @@ commands=(
     'statusline:Claude Code status line that records usage for auto-handoff'
     'usage-guard:Stop hook\: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once'
     'autocompact:on | off | status\: where Claude Code summarizes a long session (default 400k)'
-    'require-increment:Show or set whether code changes need an increment\: off | remind | enforce'
+    'require-increment:Show or set the increment nudge for code changes\: off | remind (recommend) | enforce (opt-in block)'
     'small-fix:Declare this session'\''s change too small for an increment (logged; satisfies require-increment)'
     'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
     'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'

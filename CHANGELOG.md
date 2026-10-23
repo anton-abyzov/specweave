@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Changed
+
+- Increments are recommended, not required. The `remind` message now says so and tells the agent to carry on when a change does not need one; `enforce` stays an explicit opt-in. The AGENTS.md loop text says the same.
+
 ## [3.1.6] - 2026-10-22
 
 ### Added

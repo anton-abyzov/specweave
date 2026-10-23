@@ -32,7 +32,7 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-han
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a statusline -d "Claude Code status line that records usage for auto-handoff"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a usage-guard -d "Stop hook: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a autocompact -d "on | off | status: where Claude Code summarizes a long session (default 400k)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a require-increment -d "Show or set whether code changes need an increment: off | remind | enforce"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a require-increment -d "Show or set the increment nudge for code changes: off | remind (recommend) | enforce (opt-in block)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a small-fix -d "Declare this session's change too small for an increment (logged; satisfies require-increment)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a jev -d "Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a next-id -d "Return the next available increment number. Prefer: create-increment --auto-id"

@@ -6,6 +6,7 @@ import { handle } from '../../../../src/core/hooks/handlers/pre-tool-use.js';
 import type { HookContext, HookInput } from '../../../../src/core/hooks/handlers/types.js';
 import { smallFixCommand, readSmallFixes } from '../../../../src/cli/commands/small-fix.js';
 import { requireIncrementCommand } from '../../../../src/cli/commands/require-increment.js';
+import { requireIncrementMessage } from '../../../../src/core/hooks/handlers/require-increment.js';
 import { appendEvent } from '../../../../src/core/tasks/ledger.js';
 import { recordIncrementWork } from '../../../../src/core/tasks/work-session.js';
 
@@ -237,5 +238,15 @@ describe('small-fix and require-increment commands (AC-04)', () => {
     written = JSON.parse(fs.readFileSync(settings, 'utf8'));
     expect(written.hooks.PreToolUse).toEqual([bashGuard]);
     expect(requireIncrementCommand('sometimes', { cwd: root })).toBe(1);
+  });
+});
+
+describe('require-increment wording', () => {
+  it('remind recommends an increment and never asks to retry a blocked edit', () => {
+    const remind = requireIncrementMessage('remind');
+    expect(remind).toMatch(/^Recommended, not required/);
+    expect(remind).toMatch(/does not need one, carry on/);
+    expect(remind).not.toMatch(/retry the edit/);
+    expect(requireIncrementMessage('enforce')).toMatch(/requires an increment.*Then retry the edit\.$/);
   });
 });
