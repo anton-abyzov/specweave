@@ -15,10 +15,10 @@ import {buildVideoObject, getTutorial} from '../data/tutorials';
 import styles from './code.module.css';
 
 /*
-  Every product claim on this page was checked against specwithcode 1.0.43 and 1.0.44
-  (anton-abyzov/specwithcode releases v1.0.43 and v1.0.44, both 18 October 2026) and the app's
-  own user docs at v1.0.44: docs/user/usage.md, install.md, add-a-machine.md, linux-worker.md,
-  computer-use.md, source-control.md. Each feature has one section; others link to it.
+  The feature sections originated from the 1.0.43/1.0.44 user-doc audit.
+  Increment 1008 revises positioning against provider-adapter source and retained
+  receipts. Source support, UI demonstrations and installed acceptance are distinct;
+  this comment is not a blanket certification of every feature on the current build.
 */
 
 const icon = {size: 20, strokeWidth: 1.5, 'aria-hidden': true} as const;
@@ -32,7 +32,7 @@ const THREADS: {name: string; detail: React.ReactNode}[] = [
 ];
 
 const LIMITS: {name: string; detail: React.ReactNode}[] = [
-  {name: 'A rule for each project', detail: <>Under When a provider runs out, choose Switch automatically (the default), Offer the fallback, or Wait for the reset. A thread moves before the limit, at 95% by default, and never in the middle of a turn.</>},
+  {name: 'A rule for each project', detail: <>Under When a provider runs out, choose Switch automatically, Offer the fallback, or Wait for the reset. Continuation depends on a compatible, available provider and the policy you choose.</>},
   {name: 'Credits before the fallback, if you want them', detail: <>Redeem a banked reset, spend Codex credits or use Claude API credits first. Each is off until you turn it on, and SpecWithCode never buys credits for you.</>},
   {name: 'The thread keeps its place', detail: <>Continuing hands the thread over with its context, in the same worktree. Tick Auto-continue when the limit resets, continue on another machine of the project, or undo a failover you did not want.</>},
   {name: 'Limits per account and machine', detail: <>Usage &gt; Limits names each account and the machine it is signed in on, with the share left in every session and weekly window.</>},
@@ -76,6 +76,8 @@ const FAQ: {q: string; a: React.ReactNode}[] = [
   {q: 'Should one machine switch between accounts of the same provider?', a: <>We recommend against it. Keep each machine signed in to one account per provider and leave it that way. For more capacity, add a machine with its own subscriptions instead of switching accounts by hand.</>},
   {q: 'What is free?', a: <>SpecWithCode is free and open source. You bring your provider accounts and pay any provider charges directly. The <Link className="wv-link" to="/docs/getting-started/">SpecWeave CLI</Link> keeps specs, task evidence and handoffs in git so another tool can continue the work.</>},
   BRAND_FAQ,
+  {q: 'Is SpecWithCode a coding-agent harness?', a: <>SpecWithCode is an agentic development environment that coordinates existing coding agents. Claude Code, Codex and other supported agents keep their own execution runtimes. The app adds project coordination, worker threads, context handoffs and shared tools. It is an independent MIT fork of <a href="https://github.com/pingdotgg/t3code">T3 Code</a>; the <a href={`${release.repoUrl}/blob/main/UPSTREAM.md`}>source provenance</a> records that foundation.</>},
+  {q: 'Do I need SpecWeave increments?', a: <>Increments are optional. We strongly recommend them for work that spans several agents or sessions: write the acceptance criteria, record task evidence and review the result before closing. Add skills for the work at hand, such as design, testing or code review. Passing checks supports those specific results; it does not guarantee bug-free software.</>},
 ];
 
 /** Plain-text copy of FAQ for the FAQPage structured data. Keep it in step with FAQ above. */
@@ -86,6 +88,8 @@ const FAQ_TEXT: {q: string; a: string}[] = [
   {q: FAQ[3].q, a: 'We recommend against it. Keep each machine signed in to one account per provider and leave it that way. For more capacity, add a machine with its own subscriptions instead of switching accounts by hand.'},
   {q: FAQ[4].q, a: 'SpecWithCode is free and open source. You bring your provider accounts and pay any provider charges directly. The SpecWeave CLI keeps specs, task evidence and handoffs in git so another tool can continue the work.'},
   BRAND_FAQ,
+  {q: FAQ[6].q, a: 'SpecWithCode is an agentic development environment that coordinates existing coding agents. Claude Code, Codex and other supported agents keep their own execution runtimes. The app adds project coordination, worker threads, context handoffs and shared tools. It is an independent MIT fork of T3 Code; the source provenance records that foundation.'},
+  {q: FAQ[7].q, a: 'Increments are optional. We strongly recommend them for work that spans several agents or sessions: write the acceptance criteria, record task evidence and review the result before closing. Add skills for the work at hand, such as design, testing or code review. Passing checks supports those specific results; it does not guarantee bug-free software.'},
 ];
 
 const SITE = 'https://spec-weave.com';
@@ -331,7 +335,7 @@ export default function Code() {
 
       <section className={clsx(styles.shell, styles.final)} aria-labelledby="final-title">
         <h2 id="final-title">Build with the agents you choose</h2>
-        <p>Keep the work on machines you control. Link a thread to a SpecWeave increment and the <Link className="wv-link" to="/product">CLI</Link> can pick up the same work.</p>
+        <p>Keep the work on machines you control. For work across agents or sessions, we strongly recommend an optional <Link className="wv-link" to="/product">SpecWeave increment</Link> with acceptance criteria, task evidence and a review before completion.</p>
         <div className={styles.actions}>
           <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="footer"><Download {...btnIcon} />Download SpecWithCode</a>
           <a className={clsx('wv-link', styles.finalLink)} href={release.repoUrl}>View source on GitHub</a>
