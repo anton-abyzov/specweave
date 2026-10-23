@@ -68,6 +68,15 @@ describe('findNestedCheckouts layouts (0964 AC-01, AC-02)', () => {
     expect(rels(findNestedCheckouts(root))).toEqual(['outer']);
   });
 
+  it('lists a checkout named like a build or dependency folder, without descending into it', () => {
+    mkRoot();
+    repo('build');
+    repo('build/inner');
+    repo('packages/vendor');
+    fs.mkdirSync(path.join(root, 'out', 'nested', '.git'), { recursive: true });
+    expect(rels(findNestedCheckouts(root))).toEqual(['build', 'packages/vendor']);
+  });
+
   it(`does not look deeper than ${NESTED_DEPTH} levels`, () => {
     mkRoot();
     repo('a/b/c/too-deep');

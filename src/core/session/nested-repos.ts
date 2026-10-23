@@ -114,15 +114,18 @@ function isWithin(child: string, parent: string): boolean {
 
 /**
  * Child folders to descend into: real directories, plus symlinked ones that
- * resolve inside the root. Dot folders and dependency folders are skipped.
+ * resolve inside the root. Dot folders are skipped, and dependency or build
+ * folders unless they are checkouts themselves.
  */
 function childDirs(dir: string, rootReal: string): Array<{ path: string; link: boolean }> {
   let entries: fs.Dirent[];
   try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return []; }
   const out: Array<{ path: string; link: boolean }> = [];
   for (const d of entries) {
-    if (d.name.startsWith('.') || SKIP_DIRS.has(d.name)) continue;
+    if (d.name.startsWith('.')) continue;
     const full = path.join(dir, d.name);
+    // A dependency or build folder is only kept when it is itself a checkout; the walk never descends into it.
+    if (SKIP_DIRS.has(d.name) && !isCheckout(full)) continue;
     if (d.isDirectory()) { out.push({ path: full, link: false }); continue; }
     if (!d.isSymbolicLink()) continue;
     try {
