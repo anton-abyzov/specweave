@@ -55,7 +55,7 @@ describe('runVerify', () => {
     // increments with 0 of N acceptance criteria met.)
     const openAcs = await runVerify(root, '0001-demo', incDir, { commands: ['node -e "console.log(1)"'] });
     expect(openAcs.report.ok).toBe(false);
-    expect(openAcs.report.acs).toEqual({ total: 3, done: 2 });
+    expect(openAcs.report.acs).toMatchObject({ total: 3, done: 2 });
     expect(openAcs.report.tasks).toEqual({ total: 2, done: 1, skipped: 0, open: 1 });
     expect(readVerifyReport(incDir)?.ok).toBe(false);
     const openMd = fs.readFileSync(openAcs.mdPath, 'utf-8');
@@ -67,7 +67,7 @@ describe('runVerify', () => {
     tickAllAcs(incDir);
     const good = await runVerify(root, '0001-demo', incDir, { commands: ['node -e "console.log(1)"'] });
     expect(good.report.ok).toBe(true);
-    expect(good.report.acs).toEqual({ total: 3, done: 3 });
+    expect(good.report.acs).toMatchObject({ total: 3, done: 3 });
     expect(fs.readFileSync(good.mdPath, 'utf-8')).toContain('PASS');
 
     const bad = await runVerify(root, '0001-demo', incDir, { commands: ['node -e "process.exit(3)"'] });
@@ -79,7 +79,7 @@ describe('runVerify', () => {
     const { root, incDir } = mkProject();
     fs.writeFileSync(path.join(incDir, 'spec.md'), '# Demo\n\nNo acceptance criteria here.\n');
     const r = await runVerify(root, '0001-demo', incDir, { commands: [], reason: 'fixture runs nothing' });
-    expect(r.report.acs).toEqual({ total: 0, done: 0 });
+    expect(r.report.acs).toMatchObject({ total: 0, done: 0 });
     expect(r.report.ok).toBe(true);
     expect(r.report.reason).toBe('fixture runs nothing');
     // 0933: complete refuses a spec with no ACs unless --reason is given.

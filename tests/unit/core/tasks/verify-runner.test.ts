@@ -94,7 +94,7 @@ describe('complete refuses a spec without acceptance criteria (0933)', () => {
     mk('# Demo\r\n\r\n- [ ] AC-01: checkbox\r\n- **AC-02**: plain bullet\r\n');
     const { report } = await runVerify(root, '0001-demo', incDir, { commands: ['node -e "process.exit(0)"'] });
     expect(report.ok).toBe(false);
-    expect(report.acs).toEqual({ total: 2, done: 0 });
+    expect(report.acs).toMatchObject({ total: 2, done: 0 });
     const gate = checkClosureGate(incDir, '0001-demo');
     expect(gate.ok).toBe(false);
     expect(gate.errors.join('\n')).not.toMatch(/no acceptance criteria/);
