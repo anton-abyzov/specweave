@@ -5,6 +5,7 @@
  * weave-bridge.css, which repoints --sw-brand-* and --ifm-* onto --wv-*.
  * Rules below use only --wv-* tokens.
  */
+@import './fonts.css';
 @import './tokens.css';
 @import './animations.css';
 @import '../../../src/styles/brand-tokens.css';

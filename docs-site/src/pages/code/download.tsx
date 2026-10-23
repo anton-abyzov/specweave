@@ -20,7 +20,7 @@ const btnIcon = {size: 16, strokeWidth: 1.5, 'aria-hidden': true} as const;
 const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/download/`;
 const TITLE = 'Download SpecWithCode for Mac (free, macOS 13+, Apple silicon)';
-const DESCRIPTION = `Download SpecWithCode ${release.version} for macOS: a free, notarized ${release.size} .dmg for Apple silicon Macs on macOS 13 or later. Run Claude Code, Codex and Copilot agents in one app.`;
+const DESCRIPTION = 'Download SpecWithCode (Spec with Code), the free AI coding agent workspace for Apple silicon Macs. Signed and notarized, for macOS 13 or later.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg`;
 const SHA_URL = `${release.repoUrl}/releases/download/v${release.version}/SHA256SUMS`;
 const CHROME_URL = 'https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb';
@@ -71,6 +71,7 @@ const DOWNLOAD_LD = {
       '@type': 'SoftwareApplication',
       '@id': `${SITE}/code/#app`,
       name: 'SpecWithCode',
+      alternateName: 'Spec with Code',
       url: `${SITE}/code/`,
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'macOS 13 or later (Apple silicon)',
@@ -124,6 +125,7 @@ export default function CodeDownload() {
             <span className={styles.productNote}>Free and open source</span>
           </p>
           <h1>Download SpecWithCode for Mac</h1>
+          <p>SpecWithCode, pronounced “Spec with Code”, brings your AI coding agents into one workspace.</p>
           <p className={styles.lead}>One free app for {providerSummary(4)}, on your own machines and the subscriptions you already pay for.</p>
           <div className={styles.actions}>
             <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="download-page"><Download {...btnIcon} />Download for Mac ({release.size})</a>

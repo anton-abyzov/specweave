@@ -67,12 +67,15 @@ const REACH: {name: string; detail: React.ReactNode}[] = [
   {name: 'Voice calls with the coordinator', detail: <>Talk to the coordinator out loud. Speech recognition and speech run on your Mac; an ElevenLabs voice is optional and uses your own key.</>},
 ];
 
+const BRAND_FAQ = {q: 'Is Spec with Code the same as SpecWithCode?', a: 'Yes. SpecWithCode is written as one word and pronounced Spec with Code. It is the free AI coding agent workspace. SpecWeave is the separate CLI that keeps specifications, task evidence and handoffs in git.'};
+
 const FAQ: {q: string; a: React.ReactNode}[] = [
   {q: 'Does everything stay on my machine?', a: <>No. Agent processes and project files live on the selected machine, but cloud models receive prompts and relevant context, which can include code and file contents. Connected tools use their own services. Private machine connections do not make model inference local.</>},
   {q: 'Can a subscription replace all API spending?', a: <>No. Use eligible plans through their supported coding agents. Limits, seat rules and provider terms still apply; API keys or extra usage may create separate charges. Enterprise billing may differ. Measure your own workload before claiming savings.</>},
   {q: 'What do I need to add another machine?', a: <>A Mac or a Linux machine (x64 or arm64) running SpecWithCode as a background service, Tailscale on every machine in the same tailnet, and that machine’s own project checkout and provider sign-ins. Then invite it and add the line on your main machine. Windows machines cannot run workers. Adding a machine does not add subscription entitlement or open your company network.</>},
   {q: 'Should one machine switch between accounts of the same provider?', a: <>We recommend against it. Keep each machine signed in to one account per provider and leave it that way. For more capacity, add a machine with its own subscriptions instead of switching accounts by hand.</>},
   {q: 'What is free?', a: <>SpecWithCode is free and open source. You bring your provider accounts and pay any provider charges directly. The <Link className="wv-link" to="/docs/getting-started/">SpecWeave CLI</Link> keeps specs, task evidence and handoffs in git so another tool can continue the work.</>},
+  BRAND_FAQ,
 ];
 
 /** Plain-text copy of FAQ for the FAQPage structured data. Keep it in step with FAQ above. */
@@ -82,12 +85,13 @@ const FAQ_TEXT: {q: string; a: string}[] = [
   {q: FAQ[2].q, a: 'A Mac or a Linux machine (x64 or arm64) running SpecWithCode as a background service, Tailscale on every machine in the same tailnet, and that machine’s own project checkout and provider sign-ins. Then invite it and add the line on your main machine. Windows machines cannot run workers. Adding a machine does not add subscription entitlement or open your company network.'},
   {q: FAQ[3].q, a: 'We recommend against it. Keep each machine signed in to one account per provider and leave it that way. For more capacity, add a machine with its own subscriptions instead of switching accounts by hand.'},
   {q: FAQ[4].q, a: 'SpecWithCode is free and open source. You bring your provider accounts and pay any provider charges directly. The SpecWeave CLI keeps specs, task evidence and handoffs in git so another tool can continue the work.'},
+  BRAND_FAQ,
 ];
 
 const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/`;
-const TITLE = 'SpecWithCode: run Claude Code and Codex agents on your Mac';
-const DESCRIPTION = `Free, open-source Mac app that runs ${providerSummary(3)} on your own machines and subscriptions, and keeps going when one hits a usage limit.`;
+const TITLE = 'SpecWithCode (Spec with Code): Claude Code & Codex workspace';
+const DESCRIPTION = 'SpecWithCode (Spec with Code) is a free AI coding agent workspace. Run Claude Code, Codex and Cursor on your own machines with your existing accounts.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg`;
 const tour = getTutorial('specwithcode-tour');
 const tourVideo = tour ? buildVideoObject(tour, SITE) : null;
@@ -96,9 +100,19 @@ const SPECWITHCODE_LD = {
   '@context': 'https://schema.org',
   '@graph': [
     {
+      '@type': 'WebPage',
+      '@id': PAGE_URL,
+      url: PAGE_URL,
+      name: TITLE,
+      description: DESCRIPTION,
+      isPartOf: {'@id': `${SITE}/#website`},
+      mainEntity: {'@id': `${PAGE_URL}#app`},
+    },
+    {
       '@type': 'SoftwareApplication',
       '@id': `${PAGE_URL}#app`,
       name: 'SpecWithCode',
+      alternateName: 'Spec with Code',
       description: DESCRIPTION,
       url: PAGE_URL,
       applicationCategory: 'DeveloperApplication',
@@ -185,7 +199,7 @@ export default function Code() {
             <span className={styles.productNote}>Free and open source</span>
           </p>
           <h1>SpecWithCode: run Claude Code, Codex and Cursor agents on your own machines</h1>
-          <p className={styles.lead}>Coding agents on your machines, under your control.</p>
+          <p className={styles.lead}>SpecWithCode (pronounced “Spec with Code”) is a free, open-source AI coding agent workspace on your own machines.</p>
           <p className={styles.lead}>One coordinator per project starts worker threads in {providerSummary(6)}, each on its own branch or worktree.</p>
           <div className={styles.actions}>
             <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for Mac</a>
@@ -288,6 +302,13 @@ export default function Code() {
         <Evidence items={REACH} />
       </section>
 
+      <section className={clsx(styles.shell, styles.section)} aria-labelledby="specs-title">
+        <div className={styles.sectionHead}>
+          <h2 id="specs-title">Keep the spec with the code</h2>
+          <p>The optional SpecWeave CLI keeps acceptance criteria, task evidence and handoffs in your repository. SpecWithCode runs the agents against that record. <Link className="wv-link" to="/docs/compare/spec-as-code/">Compare spec as code, spec-driven and intent-first development</Link>, or <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">compare the planning tools</Link>.</p>
+        </div>
+      </section>
+
       <div className={styles.shell}><WhySpecWithCode /></div>
 
       <section className={clsx(styles.shell, styles.section)} id="watch" aria-labelledby="watch-title">
@@ -299,7 +320,7 @@ export default function Code() {
       </section>
 
       <section className={clsx(styles.shell, styles.section, styles.faq)} aria-labelledby="questions-title">
-        <h2 id="questions-title">Questions about boundaries</h2>
+        <h2 id="questions-title">Questions about SpecWithCode</h2>
         <div className={styles.faqList}>
           {FAQ.map(item => <details key={item.q}>
             <summary><span>{item.q}</span><ChevronDown size={16} strokeWidth={1.5} aria-hidden="true" /></summary>

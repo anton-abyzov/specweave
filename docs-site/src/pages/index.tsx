@@ -102,7 +102,7 @@ export default function Home() {
       <section className={h.hero}>
         <div className={h.heroText}>
           <h1>Switch AI tools without losing your place.</h1>
-          <p className={h.lead}>SpecWeave writes the plan and every finished task into git, so Claude Code, Codex or any other agent can pick up the same work. SpecWithCode runs those agents on your own machines and subscriptions.</p>
+          <p className={h.lead}>SpecWeave writes the plan and every finished task into git, so Claude Code, Codex or any other agent can pick up the same work. SpecWithCode (pronounced “Spec with Code”) runs those agents on your own machines and subscriptions.</p>
           <div className={h.actions}>
             <a className={base.primary} href={release.dmgUrl} aria-label={downloadLabel}>Download for Mac</a>
             <Link className={base.secondary} to="/product">Get the CLI</Link>
