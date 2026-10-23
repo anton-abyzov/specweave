@@ -98,14 +98,21 @@ export function hasPlannedWork(
 }
 
 export function requireIncrementMessage(mode: RequireIncrementMode): string {
-  const lead =
-    mode === 'enforce'
-      ? 'This project requires an increment before code changes (planning.requireIncrement = enforce), and this session has none.'
-      : 'Reminder: this project plans changes as increments (planning.requireIncrement = remind), and this session has none yet.';
+  const plan =
+    'Plan it with `specweave create-increment "<title>"` and fill spec.md, ' +
+    'or continue an open one with `specweave task claim T-NN <increment>`.';
+  if (mode === 'enforce') {
+    return (
+      'This project requires an increment before code changes (planning.requireIncrement = enforce), ' +
+      `and this session has none. ${plan} ` +
+      'If the change is too small to plan, run `specweave small-fix "<why>"`. Then retry the edit.'
+    );
+  }
+  // remind: a recommendation only. The edit already went through.
   return (
-    `${lead} Plan it with \`specweave create-increment "<title>"\` and fill spec.md, ` +
-    'or continue an open one with `specweave task claim T-NN <increment>`. ' +
-    'If the change is too small to plan, run `specweave small-fix "<why>"`. Then retry the edit.'
+    'Recommended, not required: this project plans changes as increments ' +
+    `(planning.requireIncrement = remind), and this session has none yet. ${plan} ` +
+    'If this change does not need one, carry on, or record it with `specweave small-fix "<why>"`.'
   );
 }
 

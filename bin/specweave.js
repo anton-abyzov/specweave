@@ -381,7 +381,7 @@ program
 // Required increments - planning.requireIncrement and its Claude Code edit hook
 program
   .command('require-increment [mode]')
-  .description('Show or set whether code changes need an increment: off | remind | enforce')
+  .description('Show or set the increment nudge for code changes: off | remind (recommend) | enforce (opt-in block)')
   .action(async (mode) => {
     const { requireIncrementCommand } = await import('../dist/src/cli/commands/require-increment.js');
     process.exitCode = requireIncrementCommand(mode);
