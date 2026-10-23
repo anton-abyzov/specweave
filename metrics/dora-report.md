@@ -1,6 +1,6 @@
 # DORA Metrics Report
 
-**Generated**: Oct 20, 2026 at 6:05:02 AM
+**Generated**: Oct 23, 2026 at 6:04:52 AM
 **Period**: Last 30 days
 
 ---
@@ -10,7 +10,7 @@
 | Metric | Value | Tier | Status |
 |--------|-------|------|--------|
 | **Deployment Frequency** | 100 deploys/month | 🏆 Elite | ✅ |
-| **Lead Time for Changes** | 4.1 hours | ⭐ High | ✅ |
+| **Lead Time for Changes** | 6.3 hours | ⭐ High | ✅ |
 | **Change Failure Rate** | 0% | 🏆 Elite | ✅ |
 | **Mean Time to Recovery** | 0 minutes | ⚪ N/A | ℹ️ |
 
@@ -37,8 +37,8 @@
 
 ## ⚡ Lead Time for Changes
 
-**Current**: 4.1 hours (⭐ High)
-**Percentiles**: P50 = 0.6h, P90 = 14.8h
+**Current**: 6.3 hours (⭐ High)
+**Percentiles**: P50 = 1.2h, P90 = 20.1h
 
 **Industry Benchmarks**:
 - 🏆 Elite: Less than 1 hour
@@ -49,7 +49,7 @@
 ### Insights
 
 - ✅ **Strong Performance**: Lead time under 1 week is competitive
-- 📊 **Distribution**: 50% of changes deploy in 0.6h, 90% in 14.8h
+- 📊 **Distribution**: 50% of changes deploy in 1.2h, 90% in 20.1h
 - 📈 **Next Level**: Focus on reducing p90 to reach elite tier
 - 💡 **Tip**: Identify bottlenecks in slowest 10% of deployments
 
@@ -58,7 +58,7 @@
 ## ✅ Change Failure Rate
 
 **Current**: 0% (🏆 Elite)
-**Failed Releases**: 0 / 33
+**Failed Releases**: 0 / 30
 
 **Industry Benchmarks**:
 - 🏆 Elite: 0-15%
@@ -94,15 +94,15 @@
 
 ## 📈 Recent Activity
 
-### Recent Releases (33 in last 30 days)
+### Recent Releases (30 in last 30 days)
 
+- **[v3.1.6](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.6)** - Oct 23, 2026
+- **[v3.1.5](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.5)** - Oct 21, 2026
 - **[v3.1.4](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.4)** - Oct 20, 2026
 - **[v3.1.3](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.3)** - Oct 20, 2026
 - **[v3.1.2](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.2)** - Oct 19, 2026
-- **[v3.1.1](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.1)** - Oct 18, 2026
-- **[v3.1.0](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.0)** - Oct 17, 2026
 
-_...and 28 more releases_
+_...and 25 more releases_
 
 ### Production Incidents
 
@@ -132,4 +132,4 @@ _...and 28 more releases_
 ---
 
 _This report was generated automatically by SpecWeave DORA Metrics Calculator_
-_Last updated: Oct 20, 2026_
+_Last updated: Oct 23, 2026_
