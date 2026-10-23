@@ -26,6 +26,7 @@ const REQUIRED = [
   '.specweave/backups/',
   '.specweave/increments/**/reports/artifacts/',
   '.claude/worktrees/',
+  '.worktrees/',
 ];
 
 describe('ensureSpecweaveGitignoreEntries', () => {

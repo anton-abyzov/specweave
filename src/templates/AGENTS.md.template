@@ -23,7 +23,7 @@ Tasks in spec.md: `### T-01 Title`, then `- AC: AC-01 | Files: src/a.ts, tests/e
 
 - Use headless Chrome/Playwright CLI for browser tests and automation: `headless: true`, `PWDEBUG=0`, `PLAYWRIGHT_HTML_OPEN=never`, HTML reports `open: 'never'`. Save captures to files; propagate to subagents. Before opening an essential visible browser, ask the user and wait for explicit approval. Headless failure is not approval.
 - A task is done when its Test exits 0 and you have seen the real output. A Test checks the AC as users would (CLI, HTTP, UI, API); add unit tests only when asked or when config or conventions require them. Never skip, weaken or delete a test to pass, and never set a status by hand.
-- One agent per branch/worktree: `git worktree add ../NNNN-<agent> -b inc/NNNN-<agent>`. Claims older than 2h are stale. Merge `ledger.jsonl` conflicts keeping every line from both sides.
+- One agent per branch/worktree: `git worktree add .worktrees/NNNN-<agent> -b inc/NNNN-<agent>` (never `../`). Claims older than 2h are stale. On `ledger.jsonl` conflicts keep both sides' lines.
 - Decisions that must outlive this session go in spec.md Approach, or as one file per fact in `.specweave/memory/` with a line in its `MEMORY.md` index. Memory is committed, so every tool and account sees it.
 - Check a secret exists without printing it; never commit `.env*`.
 - Without the CLI, append ledger lines yourself, one JSON object per line, UTF-8, LF: `{"t":"T-01","e":"claim","by":"<tool>@<host>","at":"<ISO time>"}` (`e` is claim, done, release, skip or block; `done` needs `"evidence":"<commit sha>"`, `skip` needs `"note":"<why>"`).
