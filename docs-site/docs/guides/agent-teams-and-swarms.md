@@ -16,8 +16,8 @@ Every agent on the team follows these, whatever tool it runs in.
 **1. One worktree and branch per agent.** The branch name contains the increment id.
 
 ```bash
-git worktree add ../0042-claude -b inc/0042-claude
-git worktree add ../0042-codex  -b inc/0042-codex
+git worktree add .worktrees/0042-claude -b inc/0042-claude
+git worktree add .worktrees/0042-codex  -b inc/0042-codex
 ```
 
 **2. Claim before you edit, and edit only the task's files.**
@@ -79,7 +79,7 @@ Only the lead closes. Merge the lane branches into the increment branch, keeping
 ```bash
 specweave verify 0042
 specweave complete 0042
-git worktree remove ../0042-claude
+git worktree remove .worktrees/0042-claude
 ```
 
 ## In Claude Code

@@ -65,7 +65,7 @@ merge and close; do not implement.
 1. Group tasks into 2 to 5 lanes whose `Files` do not overlap. Shared contracts
    (types, schema) go in an early task the others list under `**Dependencies**: T-01`.
 2. One worktree and branch per lane agent (your tool's or app's worktree feature, or
-   `git worktree add ../0042-api -b inc/0042-api`), with `SPECWEAVE_AGENT=api` set.
+   `git worktree add .worktrees/0042-api -b inc/0042-api`, never `../`), with `SPECWEAVE_AGENT=api` set.
    Brief each one: its tasks, this loop, "edit only their Files", and on finish
    `specweave task release --all-mine` plus `specweave note "api: done" 0042`.
 3. Watch with `specweave task list 0042`; `blocked` rows are your queue. A claim older

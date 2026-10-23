@@ -429,6 +429,7 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '# Binary evidence and agent worktrees (never committed)',
     '.specweave/increments/**/reports/artifacts/',
     '.claude/worktrees/',
+    '.worktrees/',
     '# Binary evidence in reports/ (videos, screenshots, app bundles)',
     '**/reports/*.mp4',
     '**/reports/*.png',
