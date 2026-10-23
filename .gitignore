@@ -279,3 +279,6 @@ vskill.lock
 /video/tutorials/**/*.mp3
 /video/tutorials/**/*.mov
 /video/tutorials/**/out/
+
+# Agent worktrees
+.worktrees/
