@@ -1,15 +1,17 @@
 ---
-title: "SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro"
+title: "Spec-driven development tools: SpecWeave, OpenSpec, Spec Kit, BMAD and Kiro"
 description: "OpenSpec, GitHub Spec Kit, the BMAD Method, Kiro and SpecWeave compared: files, workflow, proof of done, and what happens when you switch AI coding tools mid-task."
 slug: /compare/spec-driven-development-tools
 keywords: [openspec alternative, spec kit alternative, bmad method, kiro specs, spec-driven development tools, openspec vs spec kit]
 ---
 
-# SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro
+# Spec-driven development tools compared
 
 All five tools start from the same observation: an AI coding agent works better from a written spec than from a chat message. They differ in how much they write before coding, where progress is kept, and what happens when the session ends.
 
 This page describes each tool as its public documentation presents it in September 2026. They all change quickly, so check each project's docs for the current state. SpecWeave is our project, so read this page with that in mind.
+
+For the terminology and a worked example, see [spec as code vs spec-driven and intent-first development](/docs/compare/spec-as-code/).
 
 ## At a glance
 
