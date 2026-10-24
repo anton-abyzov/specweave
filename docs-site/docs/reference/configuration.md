@@ -57,8 +57,8 @@ The single most useful edit is filling in `testing.commands`.
 | Field | Default | Notes |
 |-------|---------|-------|
 | `commands` | `[]` | The commands `specweave verify` runs, in order. Empty means auto-detect: `package.json` scripts `test`, `lint`, `build`, then Cargo, pytest or Go. |
-| `mode` | not set | `TDD`, `test-after`, `manual` or `none`: how tests are written for new work. `init` writes it only when you choose one. |
-| `coverage.unit`, `coverage.integration` | not set | Line coverage targets in percent. Below target is a warning at close, not a block. Written only when you set a target. |
+| `mode` | not set | Optional: `TDD`, `test-after`, `manual` or `none`. Unset means no test-order rule; TDD is never assumed. `TDD` adds "all tests must pass" to `specweave auto`, and `none` skips the coverage check. `init` writes it only when you choose one. |
+| `coverage.unit`, `coverage.integration` | not set | Line coverage targets in percent. Unset means no coverage check at close and no coverage criterion in `generate-rubric`. Below target is a warning, not a block. Written only when you set a target. |
 | `coverage.e2e` | not set | Share of written end-to-end tests that must pass. Not line coverage. |
 
 ### `tasks`

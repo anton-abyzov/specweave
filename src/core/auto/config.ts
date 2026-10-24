@@ -101,7 +101,6 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
 
   // Boolean fields - direct assignment if valid type
   if (typeof userConfig.enabled === 'boolean') config.enabled = userConfig.enabled;
-  if (typeof userConfig.enforceTestFirst === 'boolean') config.enforceTestFirst = userConfig.enforceTestFirst;
   if (typeof userConfig.requireTests === 'boolean') config.requireTests = userConfig.requireTests;
   if (typeof userConfig.requireValidation === 'boolean') config.requireValidation = userConfig.requireValidation;
   if (typeof userConfig.requireJudgeLLM === 'boolean') config.requireJudgeLLM = userConfig.requireJudgeLLM;
@@ -130,7 +129,7 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
 
   if (typeof userConfig.coverageThreshold === 'number') {
     if (userConfig.coverageThreshold < 0 || userConfig.coverageThreshold > 100) {
-      warnings.push('coverageThreshold must be 0-100, using default (80)');
+      warnings.push('coverageThreshold must be 0-100, ignoring it');
     } else {
       config.coverageThreshold = userConfig.coverageThreshold;
     }

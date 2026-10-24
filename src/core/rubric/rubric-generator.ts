@@ -42,7 +42,7 @@ export function generateRubric(
   options: GenerateOptions = {},
 ): string {
   const acs = extractACs(specContent);
-  const coverageTarget = options.coverageTarget ?? 90;
+  const coverageTarget = options.coverageTarget;
   const lines: string[] = [];
 
   // Derive the criterion ID from the AC ID: AC-US1-03 → R-US1-03. The rubric
@@ -94,23 +94,24 @@ export function generateRubric(
     }
   }
 
-  // Standard categories
-  lines.push('---');
-  lines.push('');
-  lines.push('## Test Coverage');
-  lines.push('');
-  // R-D01 is ADVISORY: line coverage is authoritatively gated by the dedicated
-  // validateCoverage path in completion-validator (which hard-fails on real
-  // low coverage and skips when no coverage report exists). The `coverage`
-  // rubric evaluator is not automated and would otherwise resolve to `skip`,
-  // which blocks closure for every increment — so it mirrors, not double-gates.
-  lines.push(`### R-D01: Unit test coverage meets target [advisory]`);
-  lines.push('- **Source**: project-default');
-  lines.push('- **Evaluator**: coverage');
-  lines.push(`- **Verify**: Coverage output on new/modified files (authoritative gate: completion-validator validateCoverage)`);
-  lines.push(`- **Threshold**: >= ${coverageTarget}% line coverage`);
-  lines.push('- **Result**: [ ] PENDING');
-  lines.push('');
+  // Coverage is opt-in: R-D01 appears only when the project sets a target
+  // (`testing.coverage.unit`).
+  if (coverageTarget) {
+    lines.push('---');
+    lines.push('');
+    lines.push('## Test Coverage');
+    lines.push('');
+    // R-D01 is ADVISORY: completion-validator's validateCoverage warns on real
+    // low coverage and skips when no coverage report exists. The `coverage`
+    // rubric evaluator is not automated, so this mirrors it and never blocks.
+    lines.push(`### R-D01: Unit test coverage meets target [advisory]`);
+    lines.push('- **Source**: project-default');
+    lines.push('- **Evaluator**: coverage');
+    lines.push(`- **Verify**: Coverage output on new/modified files (authoritative gate: completion-validator validateCoverage)`);
+    lines.push(`- **Threshold**: >= ${coverageTarget}% line coverage`);
+    lines.push('- **Result**: [ ] PENDING');
+    lines.push('');
+  }
 
   lines.push('---');
   lines.push('');

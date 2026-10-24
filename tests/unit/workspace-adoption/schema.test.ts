@@ -32,4 +32,11 @@ describe('portable configuration schema', async () => {
     expect(validate({ sync: { statusSync: { mappings: { github } } } }), JSON.stringify(validate.errors)).toBe(true);
     expect(validate({ sync: { statusSync: { mappings: { github: { ...github, active: 42 } } } } })).toBe(false);
   });
+  it('accepts the 2.0 testing block with no test policy and rejects removed TDD keys', async () => {
+    const validate = await validator();
+    expect(validate({ testing: { commands: ['npm test'] } }), JSON.stringify(validate.errors)).toBe(true);
+    expect(validate({ testing: { commands: [], mode: 'TDD', coverage: { unit: 80 } } }), JSON.stringify(validate.errors)).toBe(true);
+    expect(validate({ testing: { mode: 'red-green' } })).toBe(false);
+    expect(validate({ testing: { tddEnforcement: 'strict' } })).toBe(false);
+  });
 });
