@@ -4,7 +4,9 @@
  * `specweave pickup` prints the full form (the next task with its acceptance
  * criteria, claims held by others, branch and upstream state, the last
  * handoff, recent notes and the memory index). The SessionStart hook prints
- * the compact form, which skips Git so the hook stays fast.
+ * the compact form, which skips Git so the hook stays fast, prints absolute
+ * times so unchanged state gives identical bytes, and after a compaction
+ * restates only the active increments, the memory pointer and the pickup hint.
  *
  * Read-only: nothing here writes the ledger or any file. A session is recorded
  * when it claims a task, not when it looks.
@@ -37,8 +39,14 @@ const MAX_MEMORY_LINES = 20;
 export interface PickupOptions {
   /** Increment to focus on; default: the single active (or planned) one. */
   incrementId?: string;
-  /** Compact form for the SessionStart hook: no Git, no per-task detail. */
+  /** Compact form for the SessionStart hook: no Git, no per-task detail, absolute times. */
   compact?: boolean;
+  /**
+   * Compact form after a context compaction: only the active increments with
+   * their next task, the memory pointer and the pickup hint. Intents, the last
+   * handoff and notes are left to `specweave pickup`.
+   */
+  afterCompaction?: boolean;
   /** Override the agent id (tests). */
   agent?: string;
   /** Explicit increment ids in priority order (the hook's active-increment state). */
@@ -64,9 +72,12 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
   const active = opts.activeIds ?? listActiveIncrementIds(projectRoot);
   const ids = opts.incrementId ? [opts.incrementId] : active.length ? active : listStartableIncrementIds(projectRoot);
   const focus = ids.length === 1 ? ids[0] : undefined;
+  const afterCompaction = Boolean(opts.compact && opts.afterCompaction);
+  // Relative ages change every minute; the hook's text must not (AC-06).
+  const when = (iso?: string) => (opts.compact ? stamp(iso) : age(iso));
   const L: string[] = [];
 
-  const intents = readIntentContext(projectRoot);
+  const intents = afterCompaction ? undefined : readIntentContext(projectRoot);
   if (intents) L.push(intents);
 
   if (!opts.compact) L.push(`SpecWeave pickup · you are ${agent}`);
@@ -84,18 +95,18 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
     if (git) L.push(git);
   }
 
-  const handoff = lastHandoff(projectRoot, ids.map((id) => path.join(incRoot, id)));
+  const handoff = afterCompaction ? { line: '' } : lastHandoff(projectRoot, ids.map((id) => path.join(incRoot, id)), when);
   if (handoff.line) L.push(handoff.line);
   if (!opts.compact) {
     const checkpoint = lastCheckpoint(projectRoot, handoff.at, opts.checkpointHome);
     if (checkpoint) L.push(checkpoint);
   }
 
-  if (focus) {
+  if (focus && !afterCompaction) {
     const notes = readIncrementEvents(ledgerPath(path.join(incRoot, focus)), ['note']).slice(-MAX_NOTES);
     if (notes.length) {
       L.push('Notes:');
-      for (const n of notes) L.push(`- ${n.by} ${age(n.at)}: ${oneLine(n.note ?? '', 200)}`);
+      for (const n of notes) L.push(`- ${n.by} ${when(n.at)}: ${oneLine(n.note ?? '', 200)}`);
     }
   }
 
@@ -103,7 +114,7 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
   if (memory.length) L.push(...memory);
 
   if (opts.compact && L.length && ids.length) {
-    L.push('Run `specweave pickup` for the next task\'s acceptance criteria, claims and branch state. When the last task is done, verify and close it in the same session (sw-done).');
+    L.push('Run `specweave pickup` for the next task\'s acceptance criteria, claims, notes and branch state. When the last task is done, verify and close it in the same session (sw-done).');
   }
   if (!opts.compact && ids.length === 0) {
     const branch = currentBranch(gitRoot);
@@ -223,7 +234,7 @@ function readStatus(incDir: string): string {
  * travels with the branch and a checkout resets file times; otherwise the
  * newest handoff document on disk.
  */
-function lastHandoff(projectRoot: string, incDirs: string[]): { line: string; at?: number } {
+function lastHandoff(projectRoot: string, incDirs: string[], when: (iso?: string) => string = age): { line: string; at?: number } {
   let event: { e: LedgerEvent; dir: string } | undefined;
   for (const dir of incDirs) {
     const last = readIncrementEvents(ledgerPath(dir), ['handoff']).pop();
@@ -232,11 +243,11 @@ function lastHandoff(projectRoot: string, incDirs: string[]): { line: string; at
   if (event) {
     const docs = ['handoff.md', 'handoff.auto.md'].map((f) => path.join(event!.dir, f)).filter((p) => fs.existsSync(p));
     const where = docs.length ? ` → ${docs.map((p) => rel(projectRoot, p)).join(' + ')}` : '';
-    const line = `Last handoff: ${event.e.by} ${age(event.e.at)}${event.e.note ? `: ${oneLine(event.e.note, 200)}` : ''}${where}`;
+    const line = `Last handoff: ${event.e.by} ${when(event.e.at)}${event.e.note ? `: ${oneLine(event.e.note, 200)}` : ''}${where}`;
     return { line, at: Date.parse(event.e.at) };
   }
   const doc = newestHandoffDoc(projectRoot, incDirs);
-  if (doc) return { line: `Last handoff: ${rel(projectRoot, doc.p)} (${ageMs(doc.mtime)})`, at: doc.mtime };
+  if (doc) return { line: `Last handoff: ${rel(projectRoot, doc.p)} (${when(new Date(doc.mtime).toISOString())})`, at: doc.mtime };
   return { line: '' };
 }
 
@@ -341,6 +352,12 @@ function oneLine(s: string, max: number): string {
 function age(iso?: string): string {
   const t = iso ? Date.parse(iso) : NaN;
   return Number.isNaN(t) ? '' : ageMs(t);
+}
+
+/** Absolute UTC minute, `2026-10-10 14:33Z`: the same bytes until the state itself changes. */
+export function stamp(iso?: string): string {
+  const t = iso ? Date.parse(iso) : NaN;
+  return Number.isNaN(t) ? '' : new Date(t).toISOString().slice(0, 16).replace('T', ' ') + 'Z';
 }
 
 export function ageMs(ms: number): string {

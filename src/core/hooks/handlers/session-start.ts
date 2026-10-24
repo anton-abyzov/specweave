@@ -6,6 +6,11 @@
  * memory pointer). No banner, no doctor, no Git, no network — a few small file
  * reads, well under 300 ms. Returns `{}` when there is nothing to say.
  *
+ * Unchanged state gives identical bytes (absolute times, no ages). After a
+ * compaction (`source: "compact"`) only the active increments with their next
+ * task, the memory pointer and the pickup hint are restated; the rest is one
+ * `specweave pickup` away and was already said at startup.
+ *
  * Side effects: clears auto-mode session files older than 24 h so a crashed
  * `/sw:auto` run cannot trap the next session, resets per-session pressure
  * alerts, and purges junk state at most once per 24 h.
@@ -55,7 +60,7 @@ function runStateGc(stateDir: string, logsDir: string, timestamp: string): void 
   }
 }
 
-export const handle: HandlerFn = async (_input, context) => {
+export const handle: HandlerFn = async (input, context) => {
   const { projectRoot, stateDir, logsDir, timestamp } = context;
   clearStaleAutoSession(stateDir);
   runStateGc(stateDir, logsDir, timestamp);
@@ -63,20 +68,26 @@ export const handle: HandlerFn = async (_input, context) => {
   safeRemove(path.join(stateDir, 'context-pressure.json'));
   safeRemove(path.join(stateDir, 'prompt-health-alert.json'));
 
-  const { text } = buildPickup(projectRoot, { compact: true, activeIds: readActiveIncrements(projectRoot) });
-  const pending = pendingLine(projectRoot);
+  const afterCompaction = input.source === 'compact';
+  const { text } = buildPickup(projectRoot, { compact: true, afterCompaction, activeIds: readActiveIncrements(projectRoot) });
+  const pending = afterCompaction ? '' : pendingLine(projectRoot);
   const all = [text, pending].filter(Boolean).join('\n');
   if (!all) return pass();
   return sessionContext(`SpecWeave: ${all}`);
 };
 
-/** Several sessions handed off here: name them, so "pick up <id>" can take a specific one. */
+/**
+ * Sessions handed off here: the newest by name (what "pick up" takes) and a
+ * count of the rest, which `specweave pickup --list` and pickup's "Also
+ * pending" block name in full.
+ */
 function pendingLine(projectRoot: string): string {
   try {
     const pending = listPendingHandoffs(projectRoot);
     if (!pending.length) return '';
-    const shown = pending.slice(0, 5).map((h) => `${h.id} (${h.title.length > 60 ? h.title.slice(0, 59) + '…' : h.title})`);
-    const more = pending.length > 5 ? `, +${pending.length - 5} more` : '';
-    return `Pending handoffs, newest first: ${shown.join(', ')}${more}. "pick up" takes the newest; "pick up <id>" a specific one (\`specweave pickup <id>\`).`;
+    const [newest] = pending;
+    const title = newest.title.length > 60 ? newest.title.slice(0, 59) + '…' : newest.title;
+    const more = pending.length > 1 ? `, +${pending.length - 1} more (\`specweave pickup --list\`)` : '';
+    return `Pending handoffs: newest ${newest.id}${title ? ` (${title})` : ''}${more}. "pick up" takes the newest; "pick up <id>" a specific one (\`specweave pickup <id>\`).`;
   } catch { return ''; }
 }

@@ -68,6 +68,8 @@ export interface WorkHandoffOptions {
    * increment context, and leave the shared handoff pointer untouched. Requires
    * checkpoint:true and an isolated out path; explicit handoff is unchanged. */
   checkpointRoot?: string;
+  /** Cap the written diff (automatic handoffs); the doc says how to see the rest. */
+  maxDiffBytes?: number;
   /** Override the agent id (tests). */
   agent?: string;
 }
@@ -155,7 +157,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   const { docPath, diffPath } = resolveWritePaths(effectiveRoot, isSpecWeave, incDir, opts.out);
 
   // ── Git + scrub ────────────────────────────────────────────────────────
-  const git = captureGitState(isolatedCheckpoint ? opts.checkpointRoot! : gitRoot, diffPath, { strict: isolatedCheckpoint });
+  const git = captureGitState(isolatedCheckpoint ? opts.checkpointRoot! : gitRoot, diffPath, { strict: isolatedCheckpoint, maxDiffBytes: opts.maxDiffBytes });
   const intentRedactions: Record<string, number> = {};
   const intents = isSpecWeave ? readIntentContext(effectiveRoot, intentRedactions) : undefined;
   const intentLink = intents ? `[Open the intent board](${path.relative(path.dirname(docPath), path.join(effectiveRoot, INTENT_BOARD_PATH)).replace(/\\/g, '/')})` : undefined;

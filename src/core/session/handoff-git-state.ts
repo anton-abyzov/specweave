@@ -40,6 +40,60 @@ export interface GitState {
   upstream?: string;
   /** Commits on HEAD not yet on the upstream (undefined without an upstream). */
   ahead?: number;
+  /** Set when the written diff was cut at `maxDiffBytes`. */
+  diffCap?: DiffCap;
+}
+
+/** What a capped diff file holds compared with the whole diff. */
+export interface DiffCap {
+  shownBytes: number;
+  totalBytes: number;
+  shownFiles: number;
+  totalFiles: number;
+}
+
+/**
+ * Cap for automatic (PreCompact) handoffs. The session goes on working and the
+ * edits stay in the checkout, so a 10.8 MB dump only costs disk and scrub time.
+ */
+export const AUTO_HANDOFF_DIFF_CAP_BYTES = 1024 * 1024;
+
+/** The command that prints what a capped diff left out. */
+export const FULL_DIFF_COMMAND = 'git diff HEAD';
+
+/**
+ * Keep whole per-file sections, in order, while they fit in `maxBytes`; when
+ * even the first does not fit, keep its lines up to the cap. Cuts only at line
+ * ends, so the secret scrub still sees every kept line whole. A footer names
+ * what was left out and how to see it.
+ */
+export function capDiff(diff: string, maxBytes: number): { text: string; cap?: DiffCap } {
+  const totalBytes = Buffer.byteLength(diff, 'utf8');
+  if (totalBytes <= maxBytes) return { text: diff };
+  const sections = diff.split(/^(?=diff --git )/m);
+  const kept: string[] = [];
+  let shownBytes = 0;
+  for (const section of sections) {
+    const size = Buffer.byteLength(section, 'utf8');
+    if (shownBytes + size > maxBytes) break;
+    kept.push(section);
+    shownBytes += size;
+  }
+  const totalFiles = sections.filter((x) => x.startsWith('diff --git ')).length;
+  const shownFiles = kept.filter((x) => x.startsWith('diff --git ')).length;
+  let partial = '';
+  if (!kept.length) {
+    const head = Buffer.from(diff, 'utf8').subarray(0, maxBytes);
+    partial = head.subarray(0, head.lastIndexOf(0x0a) + 1).toString('utf8');
+    shownBytes = Buffer.byteLength(partial, 'utf8');
+  }
+  const cap: DiffCap = { shownBytes, totalBytes, shownFiles, totalFiles };
+  const footer = [
+    `# SpecWeave: diff capped at ${shownBytes} of ${totalBytes} bytes; ${shownFiles} of ${totalFiles} files shown whole${partial ? ', the first one cut at a line end' : ''}.`,
+    `# The edits are still in the checkout: run \`${FULL_DIFF_COMMAND}\` there for tracked files and \`git status --porcelain\` for untracked ones.`,
+  ].join('\n');
+  const body = partial || kept.join('');
+  return { text: `${body}${body.endsWith('\n') || !body ? '' : '\n'}${footer}\n`, cap };
 }
 
 /**
@@ -63,7 +117,7 @@ export const BOOKKEEPING_PATHSPECS: readonly string[] = [
 export const GIT_CAPTURE_BUDGET_MS = 3500;
 
 /** Capture through a private index; an interrupted hook never stages user files. */
-export function captureGitState(repoRoot: string, diffOutputPath: string, opts: { strict?: boolean } = {}): GitState {
+export function captureGitState(repoRoot: string, diffOutputPath: string, opts: { strict?: boolean; maxDiffBytes?: number } = {}): GitState {
   const empty: GitState = {
     isGitRepo: false, branch: '', shortSha: '', statusPorcelain: '',
     diffStat: '', hasUncommittedChanges: false,
@@ -124,7 +178,9 @@ export function captureGitState(repoRoot: string, diffOutputPath: string, opts: 
     const stagedDiff = (hasHead ? git([...staged, ...scope]) : '') ?? '';
     const workingStat = git([...working, '--stat', ...scope]) ?? '';
     const stagedStat = (hasHead ? git([...staged, '--stat', ...scope]) : '') ?? '';
-    writeDiff([workingDiff, stagedDiff].filter(Boolean).join('\n'));
+    const whole = [workingDiff, stagedDiff].filter(Boolean).join('\n');
+    const { text: diffText, cap: diffCap } = opts.maxDiffBytes ? capDiff(whole, opts.maxDiffBytes) : { text: whole, cap: undefined };
+    writeDiff(diffText);
     const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], true, false) ?? '';
     const aheadRaw = upstream ? git(['rev-list', '--count', `${upstream}..HEAD`]) : null;
     if (opts.strict && Date.now() > deadline) throw new Error('checkpoint Git capture budget exceeded');
@@ -134,6 +190,7 @@ export function captureGitState(repoRoot: string, diffOutputPath: string, opts: 
       hasUncommittedChanges: statusPorcelain.length > 0,
       upstream,
       ahead: aheadRaw !== null && aheadRaw !== '' ? Number(aheadRaw) : undefined,
+      ...(diffCap ? { diffCap } : {}),
     };
   } catch (error) {
     if (opts.strict) throw error;

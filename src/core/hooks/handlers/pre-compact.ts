@@ -8,6 +8,8 @@
  *   stall compaction. On timeout the write is abandoned and `{}` returned.
  * - With 2+ active increments the first one is used (no more
  *   "Multiple active increments" failures — the 51 % error class).
+ * - The diff file is capped at 1 MB (a 10.8 MB dump was measured); the doc
+ *   is written whole and names the command that shows the rest.
  * - Never blocks compaction; always returns `{}`.
  *
  * @module core/hooks/handlers/pre-compact
@@ -17,6 +19,7 @@ import type { HandlerFn, HookContext, HookInput } from './types.js';
 import { pass } from './types.js';
 import { logHook, readActiveIncrements } from './utils.js';
 import { gitCheckoutFor } from '../../../utils/main-checkout.js';
+import { AUTO_HANDOFF_DIFF_CAP_BYTES } from '../../session/handoff-git-state.js';
 
 export const HANDOFF_BUDGET_MS = 5000;
 
@@ -65,6 +68,7 @@ export async function writeAutoHandoff(
       gotcha: str(input, 'gotcha'),
       decisions,
       checkpoint: true,
+      maxDiffBytes: AUTO_HANDOFF_DIFF_CAP_BYTES,
     });
     const outcome = await Promise.race([build, timeout]);
     if (outcome === 'timeout') {

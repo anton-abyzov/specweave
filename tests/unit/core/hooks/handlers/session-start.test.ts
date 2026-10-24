@@ -100,13 +100,15 @@ describe('session-start', () => {
   it('points at the newest handoff (increment handoff.md or state/handoff-latest.md)', async () => {
     mkIncrement('0004-h', { handoff: true });
     const t = text(await handle({}, ctx()));
-    expect(t).toMatch(/Last handoff: \.specweave\/increments\/0004-h\/handoff\.md \(\d+m ago\)/);
+    expect(t).toMatch(/Last handoff: \.specweave\/increments\/0004-h\/handoff\.md \(\d{4}-\d\d-\d\d \d\d:\d\dZ\)/);
   });
 
   it('emits only the handoff pointer when nothing is active', async () => {
-    fs.writeFileSync(path.join(root, '.specweave', 'state', 'handoff-latest.md'), '# h');
+    const doc = path.join(root, '.specweave', 'state', 'handoff-latest.md');
+    fs.writeFileSync(doc, '# h');
+    fs.utimesSync(doc, new Date('2026-10-10T14:33:20Z'), new Date('2026-10-10T14:33:20Z'));
     const t = text(await handle({}, ctx()));
-    expect(t).toBe('SpecWeave: Last handoff: .specweave/state/handoff-latest.md (0m ago)');
+    expect(t).toBe('SpecWeave: Last handoff: .specweave/state/handoff-latest.md (2026-10-10 14:33Z)');
   });
 
   it('honors active-increment.json ordering and caps the list at 3', async () => {

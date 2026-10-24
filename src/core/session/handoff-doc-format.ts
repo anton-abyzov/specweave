@@ -14,6 +14,7 @@
 
 import * as path from 'path';
 import { closeChain } from '../increment/close-pending.js';
+import { FULL_DIFF_COMMAND, type DiffCap } from './handoff-git-state.js';
 
 /** Footer marker (ownership sentinel + format version handle). */
 export const DOC_FORMAT_MARKER = 'Doc format v2';
@@ -141,6 +142,12 @@ export interface HandoffGitInfo {
   statusPorcelain: string;
   diffStat: string;
   hasUncommittedChanges: boolean;
+  /** Set when the diff file was capped (automatic handoffs). */
+  diffCap?: DiffCap;
+}
+
+function formatKb(bytes: number): string {
+  return bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
 }
 
 export interface HandoffDocInput {
@@ -271,7 +278,10 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
     L.push('```');
     L.push(input.git.statusPorcelain || '(no porcelain output)');
     L.push('```');
-    L.push(`Full diff: \`${repoRelative(input.repoRoot, input.diffPath)}\``);
+    const cap = input.git.diffCap;
+    L.push(cap
+      ? `Diff: \`${repoRelative(input.repoRoot, input.diffPath)}\`, capped at ${formatKb(cap.shownBytes)} of ${formatKb(cap.totalBytes)} (${cap.shownFiles} of ${cap.totalFiles} files whole). Full diff: \`${FULL_DIFF_COMMAND}\` in the checkout; untracked files are listed above.`
+      : `Full diff: \`${repoRelative(input.repoRoot, input.diffPath)}\``);
     if (input.push?.wipRef) L.push(`Also pushed to \`${input.push.wipRef}\`; \`specweave pickup\` applies it.`);
   } else if (input.git.isGitRepo) {
     L.push('Working tree clean.');
