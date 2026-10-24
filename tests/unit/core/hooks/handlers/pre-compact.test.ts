@@ -7,7 +7,9 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { execFileSync } from 'child_process';
-import { handle, writeAutoHandoff } from '../../../../../src/core/hooks/handlers/pre-compact.js';
+import { handle, handoffIncrement, writeAutoHandoff } from '../../../../../src/core/hooks/handlers/pre-compact.js';
+import { studioThreadBindingFile } from '../../../../../src/core/tasks/studio-thread-binding.js';
+import { workSessionFile } from '../../../../../src/core/tasks/work-session.js';
 import { createContext } from '../../../../../src/core/hooks/handlers/utils.js';
 
 function mkRepo(): string {
@@ -85,6 +87,70 @@ describe('pre-compact', () => {
     mkActive(repo, '0001-one', '0002-two');
     expect(await writeAutoHandoff(createContext(repo), {}, 'auto: pre-compact')).toBe(true);
     expect(handoffDocs(repo).join('\n')).toContain('0001-one');
+  });
+
+  describe('handoffIncrement with several active increments', () => {
+    let home = '';
+    afterEach(() => {
+      if (home) fs.rmSync(home, { recursive: true, force: true });
+      home = '';
+    });
+    const write = (file: string, body: object) => {
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, JSON.stringify(body));
+    };
+
+    it("uses the SpecWithCode thread's bound increment, not the first active one", () => {
+      repo = mkRepo();
+      home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-precompact-home-'));
+      write(studioThreadBindingFile('thread-b', home), { version: 1, threadId: 'thread-b', incrementId: '0002-two', root: repo });
+      const env = { SPECWEAVE_STUDIO_THREAD_ID: 'thread-b' };
+      expect(handoffIncrement(['0001-one', '0002-two'], repo, {}, { env, home })).toBe('0002-two');
+    });
+
+    it("prefers the session's work marker over the thread binding", () => {
+      repo = mkRepo();
+      home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-precompact-home-'));
+      write(workSessionFile('sess-1', home), { version: 1, sessionId: 'sess-1', kind: 'increment', incrementId: '0003-three', root: repo });
+      write(studioThreadBindingFile('thread-b', home), { version: 1, threadId: 'thread-b', incrementId: '0002-two', root: repo });
+      const env = { SPECWEAVE_STUDIO_THREAD_ID: 'thread-b' };
+      expect(handoffIncrement(['0001-one', '0002-two', '0003-three'], repo, { session_id: 'sess-1' }, { env, home })).toBe('0003-three');
+    });
+
+    it('falls back to the first active increment when the binding is closed, foreign or absent', () => {
+      repo = mkRepo();
+      home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-precompact-home-'));
+      const other = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-precompact-other-'));
+      try {
+        write(studioThreadBindingFile('foreign', home), { version: 1, incrementId: '0002-two', root: other });
+        write(studioThreadBindingFile('closed', home), { version: 1, incrementId: '0009-done', root: repo });
+        const active = ['0001-one', '0002-two'];
+        expect(handoffIncrement(active, repo, {}, { env: { SPECWEAVE_STUDIO_THREAD_ID: 'foreign' }, home })).toBe('0001-one');
+        expect(handoffIncrement(active, repo, {}, { env: { SPECWEAVE_STUDIO_THREAD_ID: 'closed' }, home })).toBe('0001-one');
+        expect(handoffIncrement(active, repo, {}, { env: {}, home })).toBe('0001-one');
+      } finally {
+        fs.rmSync(other, { recursive: true, force: true });
+      }
+    });
+
+    it("writes the handoff for the thread's increment end to end", async () => {
+      repo = mkRepo();
+      mkActive(repo, '0001-one', '0002-two');
+      home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-precompact-home-'));
+      write(studioThreadBindingFile('thread-b', home), { version: 1, threadId: 'thread-b', incrementId: '0002-two', root: repo });
+      const saved = { HOME: process.env.HOME, T: process.env.SPECWEAVE_STUDIO_THREAD_ID };
+      process.env.HOME = home;
+      process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread-b';
+      try {
+        expect(await writeAutoHandoff(createContext(repo), {}, 'auto: pre-compact')).toBe(true);
+      } finally {
+        if (saved.HOME === undefined) delete process.env.HOME; else process.env.HOME = saved.HOME;
+        if (saved.T === undefined) delete process.env.SPECWEAVE_STUDIO_THREAD_ID; else process.env.SPECWEAVE_STUDIO_THREAD_ID = saved.T;
+      }
+      const docs = handoffDocs(repo).join('\n');
+      expect(docs).toContain('0002-two');
+      expect(docs).not.toContain('0001-one');
+    });
   });
 
   it('abandons the write when the budget is exceeded and still returns {}', async () => {
