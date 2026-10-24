@@ -57,7 +57,7 @@ function nested(a: string, b: string): boolean {
  * count as one). A Git worktree also counts as its main checkout, so a
  * SpecWithCode worktree matches the project it came from.
  */
-function sameProject(a: string, b: string): boolean {
+export function sameProject(a: string, b: string): boolean {
   return nested(a, b) || nested(mainCheckoutOf(a) ?? a, mainCheckoutOf(b) ?? b);
 }
 
