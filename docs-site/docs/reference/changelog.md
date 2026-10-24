@@ -1,12 +1,26 @@
 ---
 sidebar_position: 6
 title: Changelog
-description: "SpecWeave release notes: 3.1.0 adds opt-in skills, grill-me, the glossary and cross-model review; the 3.0 line brought handoff and pickup, auto-handoff, auto-compact and the Decide step."
+description: "SpecWeave release notes: the 3.1 line adds reopen, task cards, the Timeline, opt-in skills, grill-me, the glossary and cross-model review; the 3.0 line brought handoff and pickup, auto-handoff, auto-compact and the Decide step."
 ---
 
 # Changelog
 
-The current release is **SpecWeave 3.1.0**, published 17 October 2026. Install or upgrade with `npm i -g specweave@latest`, then run `specweave update` in each project. The complete history is in [CHANGELOG.md on GitHub](https://github.com/anton-abyzov/specweave/blob/develop/CHANGELOG.md), and every tag is on the [releases page](https://github.com/anton-abyzov/specweave/releases).
+The current release is **SpecWeave 3.1.9**, published 24 October 2026. Install or upgrade with `npm i -g specweave@latest`, then run `specweave update` in each project. The complete history is in [CHANGELOG.md on GitHub](https://github.com/anton-abyzov/specweave/blob/develop/CHANGELOG.md), and every tag is on the [releases page](https://github.com/anton-abyzov/specweave/releases).
+
+## 3.1.1 to 3.1.9, 18 to 24 October 2026
+
+| Version | Date | What changed |
+|---|---|---|
+| 3.1.9 | 24 Oct | `specweave reopen --json` includes `next: "specweave start <id>"`, the separate activation step. |
+| 3.1.8 | 24 Oct | `specweave --workspace <root> reopen <id> --reason "<text>"` moves a completed increment back to `planned` without activating it. The old closure is kept in `metadata.reopened`, and the ledger and reports are unchanged. |
+| 3.1.7 | 23 Oct | Increments are recommended, not required: the `remind` message tells the agent to carry on when a change does not need one. `enforce` stays opt-in. |
+| 3.1.6 | 22 Oct | Dashboard Timeline, a Gantt chart of every increment with forecasts from the project's measured pace. `specweave require-increment` (`off`, `remind` or `enforce`) and `specweave small-fix "<why>"`. Ledger events record the model. |
+| 3.1.5 | 21 Oct | `verify` and `complete` count plain-bullet acceptance criteria. Session checkpoint folders expire after 7 days. |
+| 3.1.4 | 20 Oct | The close gate counts plain-bullet acceptance criteria as declared. |
+| 3.1.3 | 20 Oct | Task cards: `--line` and `--link` on task events, `specweave cards` and `specweave card`. `verify` fails when no test commands are configured, and `complete` refuses a spec with no acceptance criteria, unless `--reason` is given. |
+| 3.1.2 | 19 Oct | A thread verifies and closes the increment it finishes. Docs for SpecWithCode Browser and narrated tutorials. |
+| 3.1.1 | 18 Oct | CLI fixes found while recording the tutorials, narrated CLI and handoff tutorials, and the new spec-weave.com design. |
 
 ## 3.1.0, 17 October 2026
 
@@ -44,7 +58,7 @@ The current release is **SpecWeave 3.1.0**, published 17 October 2026. Install o
 
 ## SpecWithCode releases
 
-SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.62, published 20 October 2026. [Download SpecWithCode for Mac](/code/download/).
+SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.76, published 24 October 2026. [Download SpecWithCode for Mac](/code/download/).
 
 ### 1.0.54 to 1.0.62, 19 to 20 October 2026
 
