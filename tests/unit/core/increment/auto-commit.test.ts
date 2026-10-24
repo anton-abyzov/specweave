@@ -433,6 +433,22 @@ describe('push', () => {
     expect(remoteHead()).toBe(before);
   });
 
+  it('reads the first of two merge values, as @{u} does', () => {
+    pushOn();
+    git(repo, 'checkout', '-q', '-b', 'feat/x', '--track', 'origin/develop');
+    git(repo, 'config', '--add', 'branch.feat/x.merge', 'refs/heads/feat/x');
+    writeIncrement();
+    const before = remoteHead();
+    const skipped = run({ callerPushesBranch: true });
+    expect(skipped.status).toBe('skipped');
+    expect(skipped.warnings[0]).toContain('feat/x tracks origin/develop, a different branch');
+    const r = run();
+    expect(r.status).toBe('committed');
+    expect(r.pushed).toBeUndefined();
+    expect(r.warnings[0]).toContain('tracks origin/develop, a different branch');
+    expect(remoteHead()).toBe(before);
+  });
+
   it('treats a half-set upstream as none when the caller pushes the branch', () => {
     git(repo, 'checkout', '-q', '-b', 'feat/y');
     git(repo, 'config', 'branch.feat/y.remote', 'origin');

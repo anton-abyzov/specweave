@@ -296,6 +296,17 @@ describe('handoff', () => {
     expect(git(remote, 'rev-parse', 'refs/heads/develop')).toBe(before);
   });
 
+  it('skips the commit when a second merge value names the branch itself', async () => {
+    config({ autoCommitIncrement: true });
+    git(repo, 'push', '-q');
+    git(repo, 'checkout', '-q', '-b', 'feat/x', '--track', 'origin/develop');
+    git(repo, 'config', '--add', 'branch.feat/x.merge', 'refs/heads/feat/x');
+    const before = git(remote, 'rev-parse', 'refs/heads/develop');
+    const result = await buildWorkHandoff(repo, { incrementId: INC_ID, agent: 'tester' });
+    expect(result.commit?.status).toBe('skipped');
+    expect(git(remote, 'rev-parse', 'refs/heads/develop')).toBe(before);
+  });
+
   it('handoff --json still prints commit warnings on stderr', async () => {
     config({ autoCommitIncrement: true });
     git(repo, 'checkout', '-q', '--detach');
