@@ -36,7 +36,7 @@ specweave handoff 0042 --reason "out of tokens" --next "restore on return"
 
 `--no-push` keeps the handoff local and `--keep-claims` keeps your claims.
 
-The snapshot refs do not put the increment's files on your branch. With [`git.autoCommitIncrement`](/docs/reference/configuration#git) on, `handoff` first commits that increment's `spec.md`, `ledger.jsonl` and `metadata.json` as `NNNN: handoff` (never `evidence/` or `reports/`), so the branch push carries them and a plain `git pull` elsewhere sees them. When the branch tracks a differently named branch (for example `feat/x` cut from `origin/main`), it skips that commit with a warning rather than let the push land it there. `--no-commit` skips that commit.
+The snapshot refs do not put the increment's files on your branch. With [`git.autoCommitIncrement`](/docs/reference/configuration#git) on, `handoff` first commits that increment's `spec.md`, `ledger.jsonl` and `metadata.json` as `NNNN: handoff` (never `evidence/` or `reports/`), so the branch push carries them and a plain `git pull` elsewhere sees them. When the branch tracks a differently named branch (for example `feat/x` cut from `origin/main`), it skips that commit with a warning rather than let the push land it there, and when earlier `task` auto-commits are all the branch has unpushed, it holds the branch push too (the snapshot refs still go). `--no-commit` skips that commit.
 
 Because the handoff lives in git, a cloud session such as a Claude Code Projects thread or a Codex cloud task sees it the same way your laptop does. There is nothing to copy or paste.
 

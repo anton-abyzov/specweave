@@ -29,7 +29,7 @@ import { parseSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
 import { INTENT_BOARD_PATH, readIntentContext } from '../intent/portable-context.js';
 import { serializeHandoffPointer } from './handoff-pointer.js';
 import { gitCheckoutFor } from '../../utils/main-checkout.js';
-import { autoCommitIncrement, gitTopFor, type AutoCommitResult } from '../increment/auto-commit.js';
+import { autoCommitIncrement, autoCommitPushHold, gitTopFor, type AutoCommitResult } from '../increment/auto-commit.js';
 import {
   renderHandoffDoc,
   renderPastePrompt,
@@ -220,7 +220,9 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   }
   // The snapshot is taken after the doc is written, so it carries the doc.
   if (opts.push !== false && !opts.checkpoint) {
-    docInput.push = pushHandoff(gitRoot, { by: agent, at: new Date().toISOString(), increment: incrementId, reason: opts.reason }, { explicit: opts.push === true });
+    // Earlier task/card auto-commits must not ride the branch push onto a differently named upstream.
+    const holdBranch = autoCommitPushHold(gitRoot);
+    docInput.push = pushHandoff(gitRoot, { by: agent, at: new Date().toISOString(), increment: incrementId, reason: opts.reason }, { explicit: opts.push === true, holdBranch });
   }
   const docMarkdown = renderHandoffDoc(docInput);
   const pastePrompt = renderPastePrompt(docInput, { inline: opts.inline });
