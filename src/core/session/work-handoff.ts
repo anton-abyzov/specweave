@@ -29,6 +29,7 @@ import { parseSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
 import { INTENT_BOARD_PATH, readIntentContext } from '../intent/portable-context.js';
 import { serializeHandoffPointer } from './handoff-pointer.js';
 import { gitCheckoutFor } from '../../utils/main-checkout.js';
+import { autoCommitIncrement, gitTopFor, type AutoCommitResult } from '../increment/auto-commit.js';
 import {
   renderHandoffDoc,
   renderPastePrompt,
@@ -59,6 +60,8 @@ export interface WorkHandoffOptions {
   push?: boolean;
   /** Keep this agent's claims instead of releasing them for the next agent. */
   keepClaims?: boolean;
+  /** `--no-commit` → false: skip the `git.autoCommitIncrement` commit. */
+  commit?: boolean;
   /**
    * A checkpoint (PreCompact) rather than a handoff: the same session goes on
    * working, so claims stay and no `handoff` event is written.
@@ -82,6 +85,8 @@ export interface WorkHandoffResult {
   /** Task ids whose claims this handoff released. */
   released: string[];
   push?: HandoffPushInfo;
+  /** The opt-in commit of the increment's own files (absent for checkpoints). */
+  commit?: AutoCommitResult;
 }
 
 export class AmbiguousActiveIncrementError extends Error {
@@ -201,6 +206,17 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   }
   writeDoc(docPath, renderHandoffDoc(docInput));
   if (isSpecWeave && !isolatedCheckpoint) writePointer(effectiveRoot, docPath);
+  // Opt-in (git.autoCommitIncrement): commit the ledger, spec and metadata on
+  // the branch before the push below, which then carries the commit. When the
+  // increment lives in another checkout, that checkout pushes per its config.
+  let commit: AutoCommitResult | undefined;
+  if (!opts.checkpoint && isSpecWeave && incrementId && incDir) {
+    const branchPushCarriesIt = opts.push !== false && gitTopFor(incDir) === gitTopFor(gitRoot);
+    commit = autoCommitIncrement(effectiveRoot, incDir, {
+      incrementId, action: 'handoff', commit: opts.commit,
+      push: opts.push === false || branchPushCarriesIt ? false : undefined,
+    });
+  }
   // The snapshot is taken after the doc is written, so it carries the doc.
   if (opts.push !== false && !opts.checkpoint) {
     docInput.push = pushHandoff(gitRoot, { by: agent, at: new Date().toISOString(), increment: incrementId, reason: opts.reason }, { explicit: opts.push === true });
@@ -208,7 +224,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
   const docMarkdown = renderHandoffDoc(docInput);
   const pastePrompt = renderPastePrompt(docInput, { inline: opts.inline });
 
-  return { docPath, diffPath, docMarkdown, pastePrompt, isSpecWeave, incrementId, released, push: docInput.push };
+  return { docPath, diffPath, docMarkdown, pastePrompt, isSpecWeave, incrementId, released, push: docInput.push, ...(commit ? { commit } : {}) };
 }
 
 // ───────────────────────────────────────────────────────────────────────────

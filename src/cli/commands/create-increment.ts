@@ -23,6 +23,7 @@ import { slugify } from '../../utils/string-utils.js';
 import { supersedeIncrement, setParentIncrement } from '../../core/tasks/supersede.js';
 import { detectSessionId } from '../../core/tasks/ledger.js';
 import { recordIncrementWork } from '../../core/tasks/work-session.js';
+import { autoCommitIncrement, describeAutoCommit } from '../../core/increment/auto-commit.js';
 
 
 export interface CreateIncrementOptions {
@@ -68,6 +69,9 @@ export interface CreateIncrementOptions {
    * `specweave start <id>` — or the first `specweave task claim` — activates it.
    */
   planned?: boolean;
+
+  /** `--no-commit` → false: skip the `git.autoCommitIncrement` commit. */
+  commit?: boolean;
 }
 
 export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
@@ -162,7 +166,12 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     if (result.ok) relations.push(result.message);
     else console.error(chalk.yellow(`⚠️  ${result.message}`));
   };
-  if (supersedes) record(supersedeIncrement(projectRoot, supersedes, finalId));
+  let superseded: string | undefined;
+  if (supersedes) {
+    const r = supersedeIncrement(projectRoot, supersedes, finalId);
+    if (r.ok && r.resolved) superseded = r.resolved;
+    record(r);
+  }
   if (parent) record(setParentIncrement(projectRoot, finalId, parent));
 
   // Await post-increment-planning hooks to ensure GitHub/JIRA/ADO sync completes
@@ -173,6 +182,16 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     console.error(chalk.yellow(`⚠️  Post-planning sync warning: ${error.message}`));
   }
 
+  // Opt-in (git.autoCommitIncrement): commit the new folder's own files, and the
+  // superseded increment's, so the plan reaches other machines.
+  const commit = autoCommitIncrement(projectRoot, result.incrementPath, {
+    incrementId: finalId,
+    action: 'create',
+    commit: options.commit,
+    alsoDirs: superseded ? [path.join(projectRoot, '.specweave', 'increments', superseded)] : [],
+  });
+  for (const w of commit.warnings) console.error(chalk.yellow(`warning: ${w}`));
+
   if (json) {
     console.log(JSON.stringify({
       success: true,
@@ -181,12 +200,15 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
       nextSteps: result.nextSteps,
       decide: deepInterview ?? 'critical',
       ...(relations.length ? { relations } : {}),
+      ...(commit.status === 'off' ? {} : { commit: { status: commit.status, sha: commit.sha, subject: commit.subject, pushed: commit.pushed } }),
     }));
   } else {
     console.log(chalk.green(`\nIncrement created: ${finalId} (${planned ? 'planned' : 'active'})`));
     console.log(`  Path: ${result.incrementPath}`);
     console.log(`  Files: ${result.createdFiles.join(', ')}`);
     for (const r of relations) console.log(`  ${r}`);
+    const committed = describeAutoCommit(commit);
+    if (committed) console.log(`  ${committed}`);
     console.log(`  Decide: ${deepInterview ?? 'critical'} (planning.deepInterview; sw-grill-me interviews in full)`);
     console.log(chalk.blue('\nNext steps:'));
     result.nextSteps.forEach((step, i) => {

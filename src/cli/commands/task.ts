@@ -19,6 +19,8 @@
  * `inc` defaults to the single active increment. Every command is read+append
  * only on ledger.jsonl. Task definitions (spec.md `## Tasks`, or a legacy
  * tasks.md) are never rewritten, so bookkeeping does not dirty the tree.
+ * With `git.autoCommitIncrement` on, claim/done/release/block/skip then commit
+ * the increment's spec.md, ledger.jsonl and metadata.json (`--no-commit` skips).
  * `next` and `claim` print the text of the task's acceptance criteria so the
  * agent does not need to reread spec.md for every task.
  *
@@ -46,6 +48,7 @@ import {
 import { resolveIncrement, readLeaseHours, ensureIncrementStarted, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
 import { readSpecAcs, type AcEntry } from '../../core/tasks/verify-runner.js';
 import { tasksFileName } from '../../core/tasks/tasks-source.js';
+import { autoCommitIncrement, describeAutoCommit, isAutoCommitSubject, type AutoCommitRequest, type AutoCommitResult } from '../../core/increment/auto-commit.js';
 
 export interface TaskCommandOptions {
   force?: boolean;
@@ -66,6 +69,8 @@ export interface TaskCommandOptions {
   line?: string;
   /** Card link (PR URL, report path, artifact URL) for claim/done/block. */
   link?: string;
+  /** `--no-commit` → false: skip the `git.autoCommitIncrement` commit. */
+  commit?: boolean;
 }
 
 export const EXIT_LOST_RACE = 3;
@@ -136,6 +141,16 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   };
   /** Current state of a task after the last append. */
   const stateOf = (id: string) => board.tasks.find((t) => t.id === id)!.state;
+  /** Opt-in commit of the increment's own files; never changes the exit code. */
+  const commitIncrement = (verb: AutoCommitRequest['action'], tasks: string[]): AutoCommitResult =>
+    autoCommitIncrement(projectRoot, inc.dir, { incrementId: inc.id, action: verb, tasks, commit: opts.commit });
+  const commitJson = (r: AutoCommitResult) =>
+    r.status === 'off' ? {} : { commit: { status: r.status, sha: r.sha, subject: r.subject, pushed: r.pushed } };
+  const reportCommit = (r: AutoCommitResult): void => {
+    for (const w of r.warnings) err(`warning: ${w}`);
+    const line = describeAutoCommit(r);
+    if (line && !opts.json) out(line);
+  };
 
   // Headings the parser could not read are reported, never dropped in silence.
   for (const w of board.warnings) err(`warning: ${w}`);
@@ -184,6 +199,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
     const mine = board.tasks.filter((t) => (t.state.status === 'claimed' || t.state.status === 'blocked' || t.state.status === 'stale') && t.state.by === agent);
     for (const t of mine) append('release', t.id, { note: note ?? 'release --all-mine' });
     out(mine.length ? `Released ${mine.map((t) => t.id).join(', ')}` : 'Nothing to release');
+    if (mine.length) reportCommit(commitIncrement('release', mine.map((t) => t.id)));
     return 0;
   }
 
@@ -214,7 +230,9 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
         err(`Lost the race for ${taskId}: ${describeState(after.state)}`);
         return EXIT_LOST_RACE;
       }
-      out(opts.json ? JSON.stringify({ claimed: taskId, by: agent, task: brief(after, acsOf()) }) : `Claimed ${taskId} as ${agent}\n${describeTask(after, inc.id, acsOf())}`);
+      const committed = commitIncrement('claim', [taskId]);
+      out(opts.json ? JSON.stringify({ claimed: taskId, by: agent, task: brief(after, acsOf()), ...commitJson(committed) }) : `Claimed ${taskId} as ${agent}\n${describeTask(after, inc.id, acsOf())}`);
+      reportCommit(committed);
       return 0;
     }
     case 'done': {
@@ -240,12 +258,12 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       }
       if (!evidence && card.link) evidence = card.link;
       if (!evidence) { err(`done needs evidence: --evidence "<sha or test output>" or --run "<cmd>" (task Test: ${task.test ?? 'none'})`); return 2; }
-      const sha = headSha(projectRoot);
-      if (sha && !evidence.includes(sha)) evidence = `${evidence}\nHEAD ${sha}`;
-      const subject = headSubject(projectRoot);
+      // The last work commit: auto-commits of the ledger itself do not count.
+      const work = lastWorkCommit(projectRoot);
+      if (work && !evidence.includes(work.sha)) evidence = `${evidence}\nHEAD ${work.sha}`;
       const incNum = inc.id.match(/^\d{3,}[A-Za-z]?(?=-)/)?.[0];
-      if (subject && incNum && !subject.includes(incNum)) {
-        err(`warning: HEAD subject "${subject}" does not mention ${incNum} — commit as \`${incNum}: <what changed>\` so the work is traceable`);
+      if (work?.subject && incNum && !work.subject.includes(incNum)) {
+        err(`warning: HEAD subject "${work.subject}" does not mention ${incNum} — commit as \`${incNum}: <what changed>\` so the work is traceable`);
       }
 
       // Auto-claim: a single agent needs one command, not claim+done.
@@ -268,7 +286,9 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       }
       const c = board.counts;
       const allDone = c.done + c.skipped === c.total && c.total > 0;
-      out(opts.json ? JSON.stringify({ done: taskId, evidence, log: logPath ? rel(projectRoot, logPath) : undefined, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}) }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
+      const committed = commitIncrement('done', [taskId]);
+      out(opts.json ? JSON.stringify({ done: taskId, evidence, log: logPath ? rel(projectRoot, logPath) : undefined, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}), ...commitJson(committed) }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
+      reportCommit(committed);
       if (allDone) finishedAll(inc.id);
       return 0;
     }
@@ -277,6 +297,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       if (task.state.status === 'open' || task.state.status === 'done' || task.state.status === 'skipped') { out(`${taskId} is ${task.state.status}; nothing to release`); return 0; }
       append('release', taskId, note ? { note } : {});
       out(`Released ${taskId}`);
+      reportCommit(commitIncrement('release', [taskId]));
       return 0;
     }
     case 'block': {
@@ -284,6 +305,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
       append('block', taskId, { note, ...card });
       out(`Blocked ${taskId}: ${note}`);
+      reportCommit(commitIncrement('block', [taskId]));
       return 0;
     }
     case 'skip': {
@@ -300,7 +322,9 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       const c = board.counts;
       // Re-skipping a task that was already skipped finishes nothing new.
       const allDone = !wasSkipped && c.done + c.skipped === c.total && c.total > 0;
-      out(opts.json ? JSON.stringify({ skipped: taskId, reason: note, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}) }) : `Skipped ${taskId} (terminal): ${note}`);
+      const committed = commitIncrement('skip', [taskId]);
+      out(opts.json ? JSON.stringify({ skipped: taskId, reason: note, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}), ...commitJson(committed) }) : `Skipped ${taskId} (terminal): ${note}`);
+      reportCommit(committed);
       if (allDone) finishedAll(inc.id);
       return 0;
     }
@@ -339,9 +363,16 @@ function firstLine(s: string): string {
   return s.split('\n')[0];
 }
 
-function headSubject(cwd: string): string | undefined {
+/**
+ * Newest commit that is not an auto-commit of increment files (those would
+ * hide the work commit from the traceability check and the evidence).
+ */
+function lastWorkCommit(cwd: string): { sha: string; subject: string } | undefined {
   try {
-    return execFileSync('git', ['log', '-1', '--pretty=%s'], { cwd, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() || undefined;
+    const rows = execFileSync('git', ['log', '-n', '50', '--format=%h%x09%s'], { cwd, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] })
+      .split('\n').filter(Boolean)
+      .map((l) => { const tab = l.indexOf('\t'); return { sha: l.slice(0, tab), subject: l.slice(tab + 1) }; });
+    return rows.find((r) => !isAutoCommitSubject(r.subject)) ?? rows[0];
   } catch {
     return undefined;
   }
@@ -370,12 +401,4 @@ function describeTask(t: BoardTask, incId: string, acs: AcEntry[] = []): string 
     `  state: ${describeState(t.state)}`,
     `  when done: specweave task done ${t.id} ${incId}${t.test ? ` --run "${t.test}"` : ' --evidence "<sha / output>"'}`,
   ].join('\n');
-}
-
-function headSha(cwd: string): string | undefined {
-  try {
-    return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() || undefined;
-  } catch {
-    return undefined;
-  }
 }
