@@ -130,14 +130,19 @@ interface GitRun {
   err: string;
 }
 
+/** Inherited pathspec modes would reinterpret the `:(literal)` paths (check-ignore refuses magic). */
+const PATHSPEC_ENV = ['GIT_LITERAL_PATHSPECS', 'GIT_GLOB_PATHSPECS', 'GIT_NOGLOB_PATHSPECS', 'GIT_ICASE_PATHSPECS'];
+
 function runGit(cwd: string, args: string[], timeout = COMMIT_TIMEOUT_MS, input?: string): GitRun {
+  const env: NodeJS.ProcessEnv = { ...process.env, GIT_TERMINAL_PROMPT: '0', GIT_OPTIONAL_LOCKS: '0' };
+  for (const name of PATHSPEC_ENV) delete env[name];
   const r = spawnSync('git', args, {
     cwd,
     encoding: 'utf8',
     ...(input === undefined ? { stdio: ['ignore', 'pipe', 'pipe'] as const } : { input, stdio: ['pipe', 'pipe', 'pipe'] as const }),
     timeout,
     maxBuffer: 16 * 1024 * 1024,
-    env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GIT_OPTIONAL_LOCKS: '0' },
+    env,
   });
   if (r.error) return { code: -1, out: '', err: r.error.message };
   return { code: r.status ?? -1, out: (r.stdout ?? '').trim(), err: (r.stderr ?? '').trim() };
@@ -197,11 +202,13 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   for (let i = 0; i < markers.length; i++) {
     if (markerPaths[i] && fs.existsSync(markerPaths[i])) return notCommitted('skipped', markers[i][1]);
   }
-  const branch = git(['symbolic-ref', '--quiet', '--short', 'HEAD']);
-  if (branch.code !== 0 || !branch.out) return notCommitted('skipped', 'detached HEAD');
+  // The full ref: `--short` gives `heads/<name>` when a tag or remote shares the name.
+  const head = git(['symbolic-ref', '--quiet', 'HEAD']);
+  if (head.code !== 0 || !head.out.startsWith('refs/heads/')) return notCommitted('skipped', 'detached HEAD');
+  const branch = head.out.slice('refs/heads/'.length);
   if (git(['rev-parse', '--verify', '--quiet', 'HEAD']).code !== 0) return notCommitted('skipped', 'no commits yet');
   if (req.callerPushesBranch) {
-    const problem = upstreamProblem(git, branch.out);
+    const problem = upstreamProblem(git, branch);
     if (problem) return notCommitted('skipped', `${problem}, and the handoff push would carry the commit there`);
   }
 
@@ -257,7 +264,7 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   }
   const sha = git(['rev-parse', '--short', 'HEAD']).out || undefined;
   const result: AutoCommitResult = { status: 'committed', sha, subject, files, warnings: [] };
-  if (push) pushToUpstream(git, branch.out, result);
+  if (push) pushToUpstream(git, branch, result);
   return result;
 }
 
@@ -322,12 +329,13 @@ function pushToUpstream(git: (args: string[], timeout?: number) => GitRun, branc
 /**
  * Why pushing `branch` to its upstream would land it somewhere else: a local
  * upstream or a differently named branch. Undefined when it is a same-named
- * branch on a remote, or when there is no upstream at all.
+ * branch on a remote, or when there is no upstream at all (a half-set one,
+ * remote without merge or the reverse, does not resolve as `@{u}` either).
  */
 function upstreamProblem(git: (args: string[]) => GitRun, branch: string): string | undefined {
   const remote = git(['config', '--get', `branch.${branch}.remote`]).out;
   const merge = git(['config', '--get', `branch.${branch}.merge`]).out;
-  if (!remote && !merge) return undefined;
+  if (!remote || !merge) return undefined;
   const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']).out || `${remote}/${merge.replace(/^refs\/heads\//, '')}`;
   if (remote === '.') return `${branch} tracks the local branch ${upstream}`;
   if (merge !== `refs/heads/${branch}`) return `${branch} tracks ${upstream}, a different branch`;

@@ -282,6 +282,20 @@ describe('handoff', () => {
     expect(git(remote, 'rev-parse', 'refs/heads/develop')).toBe(before);
   });
 
+  it('skips the commit on a differently named upstream when a tag shares the branch name', async () => {
+    config({ autoCommitIncrement: true });
+    git(repo, 'push', '-q');
+    git(repo, 'tag', 'feat/x');
+    git(repo, 'checkout', '-q', '-b', 'feat/x', '--track', 'origin/develop');
+    const before = git(remote, 'rev-parse', 'refs/heads/develop');
+    const head = git(repo, 'rev-parse', 'HEAD');
+    const result = await buildWorkHandoff(repo, { incrementId: INC_ID, agent: 'tester' });
+    expect(result.commit?.status).toBe('skipped');
+    expect(result.commit?.warnings[0]).toContain('feat/x tracks origin/develop, a different branch');
+    expect(git(repo, 'rev-parse', 'HEAD')).toBe(head);
+    expect(git(remote, 'rev-parse', 'refs/heads/develop')).toBe(before);
+  });
+
   it('handoff --json still prints commit warnings on stderr', async () => {
     config({ autoCommitIncrement: true });
     git(repo, 'checkout', '-q', '--detach');
