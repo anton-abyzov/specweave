@@ -13,6 +13,7 @@ commands=(
     'pause:Pause an active increment'
     'start:Start a planned/backlog/paused increment (status -> active)'
     'resume:Resume a paused, abandoned or not-yet-started increment'
+    'reopen:Correct a completed increment back to planned (never active); needs --reason and --workspace'
     'abandon:Abandon an increment'
     'complete:Complete one or more increments (triggers GitHub/JIRA/ADO sync)'
     'task:Task ledger\: list | next | claim | done | release | block | skip | render | whoami'
@@ -110,6 +111,13 @@ _specweave() {
                     ;;
                 resume)
                     _arguments \
+                        '--workspace[Select the planning workspace explicitly]' \
+                        '--help[Show help]'
+                    ;;
+                reopen)
+                    _arguments \
+                        '--reason[Why it is reopened (kept in metadata.reopened)]' \
+                        '--json[Print the result as JSON]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;

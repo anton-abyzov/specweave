@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Added
+
+- `specweave --workspace <root> reopen <id> --reason "<text>"` moves a completed increment back to `planned`; it never activates it. It refuses to run without a reason, without an explicit workspace, for an increment outside that workspace, for any status other than completed, and while another agent holds a claimed, stale or blocked task. The closure (`approvedAt`, `closeReason`, `readyForReviewAt`) moves into `metadata.reopened`, and the ledger and reports are left untouched. Activation stays a separate step: `specweave start <id>`.
+
 ## [3.1.7] - 2026-10-23
 
 ### Changed

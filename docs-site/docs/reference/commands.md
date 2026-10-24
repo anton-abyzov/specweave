@@ -49,6 +49,7 @@ Most commands that take an increment id accept the short number (`0042`) and fal
 | `specweave pause <id>` | Pause an active increment. | `-r, --reason <text>` |
 | `specweave resume <id>` | Resume a paused, abandoned or not-yet-started increment. | |
 | `specweave abandon <id>` | Abandon an increment. | `-r, --reason <text>`, `-f, --force` |
+| `specweave --workspace <root> reopen <id>` | Move a completed increment back to `planned` when it was closed too early. It never activates the increment; run `specweave start <id>` for that, once there is capacity. It refuses without a reason or an explicit workspace, for any status other than completed, and while another agent holds a claimed, stale or blocked task. The old closure is kept in `metadata.reopened`, and the ledger and reports are unchanged. | `-r, --reason <text>` (required), `--json` |
 | `specweave complete [id] [more-ids...]` | Close one or more increments. Blocks without a passing `reports/verify.json` unless you give a reason. Alias: `done`. | `-r, --reason <text>`, `--all --reason <text>` (close every task-complete increment), `-y, --yes` |
 | `specweave status` | Status overview of all increments. Alias: `progress`. | `-v, --verbose`, `-t, --type <type>` |
 | `specweave archive [increments...]` | Move completed increments to the archive folder. | `--keep-last <n>` (default 5), `--older-than <days>`, `--archive-completed`, `--dry-run` |
