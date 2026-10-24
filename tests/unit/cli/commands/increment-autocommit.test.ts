@@ -188,6 +188,18 @@ describe('task commands', () => {
     expect(stderr.join('')).toContain('HEAD subject "unrelated tidy-up" does not mention 0042');
   });
 
+  it('evidence still names the work commit behind more than 50 auto-commits', { timeout: 60_000 }, async () => {
+    config({ autoCommitIncrement: true });
+    const work = git(repo, 'rev-parse', '--short', 'HEAD');
+    for (let i = 0; i < 55; i++) git(repo, 'commit', '-q', '--allow-empty', '-m', `0042: claim T-0${(i % 3) + 1}`);
+    stderr.length = 0;
+    expect(await task('done', 'T-01', { evidence: 'tests pass' })).toBe(0);
+    expect(ledger().find((e) => e.e === 'done')?.evidence).toContain(`HEAD ${work}`);
+    // The warning names the work commit ("config"), never an auto-commit subject.
+    expect(stderr.join('')).toContain('HEAD subject "config"');
+    expect(stderr.join('')).not.toContain('HEAD subject "0042: claim');
+  });
+
   it('JSON output carries the commit', async () => {
     config({ autoCommitIncrement: true });
     expect(await task('done', 'T-01', { evidence: 'ok', json: true })).toBe(0);
