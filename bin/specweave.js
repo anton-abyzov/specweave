@@ -154,6 +154,7 @@ program
   .option('--write', 'With `render`: refresh a legacy tasks.md from the ledger')
   .option('--line <text>', 'Card text for claim/done/block (max 100 chars, longer text is truncated)')
   .option('--link <url>', 'Card link for claim/done/block (PR URL, report path, artifact URL)')
+  .option('--no-commit', 'Skip the git.autoCommitIncrement commit of the increment files')
   .option('--json', 'Machine-readable output')
   .action(async (action, taskOrIncrement, increment, options) => {
     const { taskCommand } = await import('../dist/src/cli/commands/task.js');
@@ -170,6 +171,7 @@ program
   .option('--run <cmd>', 'With `done` on a T-NN card: run <cmd>, exit 0 required')
   .option('--reason <text>', 'Why the card waits (`wait`)')
   .option('-f, --force', 'Override a live claim (T-NN cards)')
+  .option('--no-commit', 'Skip the git.autoCommitIncrement commit of the increment files (T-NN cards)')
   .option('--json', 'Machine-readable output')
   .action(async (action, idOrText, increment, options) => {
     const { cardCommand } = await import('../dist/src/cli/commands/card.js');
@@ -253,6 +255,7 @@ program
   .option('--planned', 'Create as "planned" instead of "active" (backlog work; start it with specweave start <id>)')
   .option('--supersedes <increment-id>', 'Increment this one replaces (the old one is abandoned with a closeReason)')
   .option('--parent <increment-id>', 'Parent increment (recorded as metadata.parent)')
+  .option('--no-commit', 'Skip the git.autoCommitIncrement commit of the new increment files')
   .option('--json', 'Output result as JSON (for programmatic use)')
   .action(async (title, options) => {
     if (title && !options.title) options.title = title;
@@ -287,6 +290,7 @@ program
   .option('--json', 'Output the full result as JSON (for programmatic use)')
   .option('--no-push', 'Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)')
   .option('--keep-claims', 'Keep your task claims instead of releasing them for the next agent')
+  .option('--no-commit', 'Skip the git.autoCommitIncrement commit of the increment files')
   .action(async (incrementId, options) => {
     if (incrementId === 'list') {
       const { handoffListCommand } = await import('../dist/src/cli/commands/pickup.js');
@@ -307,6 +311,7 @@ program
       json: options.json,
       push: options.push === false ? false : undefined,
       keepClaims: options.keepClaims,
+      commit: options.commit === false ? false : undefined,
       all: options.all,
       dryRun: options.dryRun,
     });

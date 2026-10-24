@@ -64,6 +64,8 @@ export interface HandoffCommandOptions {
   push?: boolean;
   /** `--keep-claims` → do not release this agent's task claims. */
   keepClaims?: boolean;
+  /** `--no-commit` → false: skip the `git.autoCommitIncrement` commit. */
+  commit?: boolean;
   /** `--all` → write the index of every active increment and nested repo. */
   all?: boolean;
   /** `--dry-run` (with `--all`) → print the index, write nothing. */
@@ -131,6 +133,7 @@ export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<
     nonSpecweave: opts.nonSpecweave,
     push: opts.push,
     keepClaims: opts.keepClaims,
+    commit: opts.commit,
   };
 
   let result;
@@ -151,6 +154,9 @@ export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<
     throw err;
   }
 
+  // Commit warnings go to stderr, also with --json, like the task commands'.
+  for (const w of result.commit?.warnings ?? []) process.stderr.write(`warning: ${w}\n`);
+
   if (opts.json) {
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
     return;
@@ -161,6 +167,7 @@ export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<
   const rel = path.relative(startDir, result.docPath).split(path.sep).join('/') || result.docPath;
   const what: string[] = [];
   if (result.released.length) what.push(`released ${result.released.join(', ')}`);
+  if (result.commit?.status === 'committed') what.push(`committed "${result.commit.subject}"${result.commit.pushed ? ` to ${result.commit.pushed}` : ''}`);
   if (result.push?.branch) what.push(`pushed ${result.push.branch}`);
   if (result.push?.wipRef) what.push('pushed your uncommitted edits');
   else if (result.push?.handoffRef) what.push('pushed the handoff');

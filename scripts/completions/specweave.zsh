@@ -149,6 +149,7 @@ _specweave() {
                         '--write[With `render`\: refresh a legacy tasks.md from the ledger]' \
                         '--line[Card text for claim/done/block (max 100 chars, longer text is truncated)]' \
                         '--link[Card link for claim/done/block (PR URL, report path, artifact URL)]' \
+                        '--no-commit[Skip the git.autoCommitIncrement commit of the increment files]' \
                         '--json[Machine-readable output]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
@@ -161,6 +162,7 @@ _specweave() {
                         '--run[With `done` on a T-NN card\: run <cmd>, exit 0 required]' \
                         '--reason[Why the card waits (`wait`)]' \
                         '--force[Override a live claim (T-NN cards)]' \
+                        '--no-commit[Skip the git.autoCommitIncrement commit of the increment files (T-NN cards)]' \
                         '--json[Machine-readable output]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
@@ -220,6 +222,7 @@ _specweave() {
                         '--planned[Create as "planned" instead of "active" (backlog work; start it with specweave start <id>)]' \
                         '--supersedes[Increment this one replaces (the old one is abandoned with a closeReason)]' \
                         '--parent[Parent increment (recorded as metadata.parent)]' \
+                        '--no-commit[Skip the git.autoCommitIncrement commit of the new increment files]' \
                         '--json[Output result as JSON (for programmatic use)]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
@@ -240,6 +243,7 @@ _specweave() {
                         '--json[Output the full result as JSON (for programmatic use)]' \
                         '--no-push[Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)]' \
                         '--keep-claims[Keep your task claims instead of releasing them for the next agent]' \
+                        '--no-commit[Skip the git.autoCommitIncrement commit of the increment files]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;

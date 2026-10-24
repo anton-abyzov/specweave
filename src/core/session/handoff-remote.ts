@@ -81,6 +81,8 @@ export interface PushOptions {
   remote?: string;
   /** The user asked for the push; report every reason it could not happen. */
   explicit?: boolean;
+  /** Skip the branch push (the snapshot refs still go) and warn with this reason. */
+  holdBranch?: string;
 }
 
 export function pushHandoff(repoRoot: string, meta: HandoffMeta, opts: PushOptions = {}): HandoffPushInfo {
@@ -101,7 +103,9 @@ export function pushHandoff(repoRoot: string, meta: HandoffMeta, opts: PushOptio
   // 1. The branch itself.
   const upstream = tryGit(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
   const ahead = upstream ? Number(tryGit(['rev-list', '--count', `${upstream}..HEAD`]) ?? '0') : undefined;
-  if (!upstream || (ahead ?? 0) > 0) {
+  if (opts.holdBranch) {
+    warnings.push(`branch not pushed: ${opts.holdBranch}`);
+  } else if (!upstream || (ahead ?? 0) > 0) {
     try {
       if (upstream) {
         const slash = upstream.indexOf('/');
