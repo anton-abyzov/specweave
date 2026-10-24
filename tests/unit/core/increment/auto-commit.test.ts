@@ -413,6 +413,53 @@ describe('push', () => {
     expect(r.status).toBe('committed');
     expect(r.warnings[0]).toContain('no upstream');
   });
+
+  it('reads the upstream of a branch that shares its name with a tag', () => {
+    pushOn();
+    // `symbolic-ref --short` would say `heads/feat/x` and find no upstream keys.
+    git(repo, 'tag', 'feat/x');
+    git(repo, 'checkout', '-q', '-b', 'feat/x', '--track', 'origin/develop');
+    writeIncrement();
+    const before = remoteHead();
+    const skipped = run({ callerPushesBranch: true });
+    expect(skipped.status).toBe('skipped');
+    expect(skipped.warnings[0]).toContain('feat/x tracks origin/develop, a different branch');
+
+    git(repo, 'push', '-q', '-u', 'origin', 'refs/heads/feat/x:refs/heads/feat/x');
+    const r = run({ callerPushesBranch: true });
+    expect(r.status).toBe('committed');
+    expect(r.pushed).toBe('origin/feat/x');
+    expect(git(remote, 'rev-parse', 'refs/heads/feat/x')).toBe(git(repo, 'rev-parse', 'HEAD'));
+    expect(remoteHead()).toBe(before);
+  });
+
+  it('treats a half-set upstream as none when the caller pushes the branch', () => {
+    git(repo, 'checkout', '-q', '-b', 'feat/y');
+    git(repo, 'config', 'branch.feat/y.remote', 'origin');
+    writeIncrement();
+    const r = run({ callerPushesBranch: true });
+    expect(r.status).toBe('committed');
+    expect(r.warnings).toEqual([]);
+  });
+});
+
+describe('environment', () => {
+  it('commits when the caller exports a pathspec mode', () => {
+    writeIncrement();
+    const saved = process.env.GIT_LITERAL_PATHSPECS;
+    process.env.GIT_LITERAL_PATHSPECS = '1';
+    const envFile = path.join(base, 'hook-env.txt');
+    hook('pre-commit', `env > "${envFile}"`);
+    try {
+      const r = run();
+      expect(r.status).toBe('committed');
+      expect(headFiles()).toEqual([`${INC}/ledger.jsonl`, `${INC}/metadata.json`, `${INC}/spec.md`]);
+    } finally {
+      if (saved === undefined) delete process.env.GIT_LITERAL_PATHSPECS;
+      else process.env.GIT_LITERAL_PATHSPECS = saved;
+    }
+    expect(fs.readFileSync(envFile, 'utf8')).not.toContain('GIT_LITERAL_PATHSPECS');
+  });
 });
 
 const caseInsensitive = (() => {

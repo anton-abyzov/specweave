@@ -132,6 +132,7 @@ complete -c specweave -n "__fish_seen_subcommand_from card" -l evidence -s e -d 
 complete -c specweave -n "__fish_seen_subcommand_from card" -l run -d "With `done` on a T-NN card: run <cmd>, exit 0 required"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l reason -d "Why the card waits (`wait`)"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l force -s f -d "Override a live claim (T-NN cards)"
+complete -c specweave -n "__fish_seen_subcommand_from card" -l no-commit -d "Skip the git.autoCommitIncrement commit of the increment files (T-NN cards)"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l json -d "Machine-readable output"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l workspace -d "Select the planning workspace explicitly"
 

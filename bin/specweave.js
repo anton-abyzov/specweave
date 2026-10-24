@@ -171,6 +171,7 @@ program
   .option('--run <cmd>', 'With `done` on a T-NN card: run <cmd>, exit 0 required')
   .option('--reason <text>', 'Why the card waits (`wait`)')
   .option('-f, --force', 'Override a live claim (T-NN cards)')
+  .option('--no-commit', 'Skip the git.autoCommitIncrement commit of the increment files (T-NN cards)')
   .option('--json', 'Machine-readable output')
   .action(async (action, idOrText, increment, options) => {
     const { cardCommand } = await import('../dist/src/cli/commands/card.js');

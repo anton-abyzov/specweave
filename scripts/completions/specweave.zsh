@@ -162,6 +162,7 @@ _specweave() {
                         '--run[With `done` on a T-NN card\: run <cmd>, exit 0 required]' \
                         '--reason[Why the card waits (`wait`)]' \
                         '--force[Override a live claim (T-NN cards)]' \
+                        '--no-commit[Skip the git.autoCommitIncrement commit of the increment files (T-NN cards)]' \
                         '--json[Machine-readable output]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
