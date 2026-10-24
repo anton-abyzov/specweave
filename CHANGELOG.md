@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Changed
+
+- `specweave reopen --json` now includes `next: "specweave start <id>"`, so scripts see the separate activation step that the plain output already prints.
+
 ## [3.1.8] - 2026-10-24
 
 ### Added

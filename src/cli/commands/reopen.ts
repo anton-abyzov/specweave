@@ -32,7 +32,7 @@ export async function reopenCommand(incrementId: string, opts: ReopenCommandOpti
   }
 
   if (opts.json) {
-    out(JSON.stringify(result, null, 2));
+    out(JSON.stringify({ ...result, next: `specweave start ${result.id}` }, null, 2));
     return 0;
   }
   if (result.unchanged) {
