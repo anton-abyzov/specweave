@@ -4,7 +4,7 @@ import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
 import {ChevronDown, Download, ShieldCheck} from 'lucide-react';
-import {SPECWITHCODE_RELEASE as release} from '../../data/specwithcodeRelease';
+import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop} from '../../data/specwithcodeRelease';
 import {providerSummary} from '../../data/tools';
 import styles from '../code.module.css';
 
@@ -19,8 +19,8 @@ const btnIcon = {size: 16, strokeWidth: 1.5, 'aria-hidden': true} as const;
 
 const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/download/`;
-const TITLE = 'Download SpecWithCode for Mac (free, macOS 13+, Apple silicon)';
-const DESCRIPTION = 'Download SpecWithCode (Spec with Code), the free AI coding agent workspace for Apple silicon Macs. Signed and notarized, for macOS 13 or later.';
+const TITLE = 'Download SpecWithCode for Mac, Windows and Linux (free)';
+const DESCRIPTION = 'Download SpecWithCode (Spec with Code), the free AI coding agent workspace, for Apple silicon Macs, Windows 10 and 11, and Linux.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg`;
 const SHA_URL = `${release.repoUrl}/releases/download/v${release.version}/SHA256SUMS`;
 const CHROME_URL = 'https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb';
@@ -29,6 +29,13 @@ const STEPS: {title: string; body: React.ReactNode}[] = [
   {title: 'Download the .dmg', body: <>Click Download for Mac. You get <code>SpecWithCode-arm64.dmg</code>, the newest release, straight from GitHub.</>},
   {title: 'Drag SpecWithCode to Applications', body: <>Open the .dmg and drag the app into Applications. It is signed with an Apple Developer ID and notarized, so it opens without a security override.</>},
   {title: 'Open it and add a provider', body: <>The app starts its local service for you. Sign in to a coding agent you already use, such as Claude Code or Codex, and start your first thread.</>},
+];
+
+const DESKTOP_NOTES: {name: string; detail: React.ReactNode}[] = [
+  {name: 'Windows', detail: <>Run <code>{desktop.exe.name}</code>. It installs for your user only, with no administrator prompt. The installer is not code-signed yet, so SmartScreen shows <strong>Windows protected your PC</strong> the first time: choose <strong>More info</strong>, then <strong>Run anyway</strong>.</>},
+  {name: 'Debian and Ubuntu', detail: <><code>sudo apt install ./{desktop.deb.name}</code> installs the app with a menu entry.</>},
+  {name: 'Other Linux', detail: <>Make the AppImage executable with <code>chmod +x</code> and run it. AppImages need FUSE 2 (<code>libfuse2</code>, or <code>libfuse2t64</code> on Ubuntu 24.04).</>},
+  {name: 'What differs', detail: <>Computer use controls a Mac screen and is macOS only. The app updates itself from new releases on Windows and Linux too; the .deb update asks for your password.</>},
 ];
 
 const NEXT: {name: string; detail: React.ReactNode}[] = [
@@ -41,7 +48,7 @@ const NEXT: {name: string; detail: React.ReactNode}[] = [
 const FAQ_TEXT: {q: string; a: string}[] = [
   {q: 'Is SpecWithCode free?', a: 'Yes. SpecWithCode is free and open source under the MIT license, with no account. You bring your own provider subscriptions or API keys and pay any provider charges directly.'},
   {q: 'Which Macs does SpecWithCode run on?', a: 'Apple silicon Macs (M1 or later) with macOS 13 or later. Intel Mac builds are not published yet; on an Intel Mac you can build the server from source.'},
-  {q: 'Is there a Windows or Linux download?', a: 'Not yet. Windows and Linux desktop builds are not published. A Linux machine (x64 or arm64) can join a SpecWithCode project as a worker machine.'},
+  {q: 'Is there a Windows or Linux download?', a: `Yes. SpecWithCode ${desktop.version} has a Windows installer for 64-bit Windows 10 and 11, and a Linux AppImage and .deb for x64. The Windows installer is not code-signed yet, so Windows asks you to confirm the first run. Computer use is macOS only.`},
   {q: 'Is the download safe?', a: 'Every release is built in GitHub Actions, signed with an Apple Developer ID and notarized by Apple. Each release also publishes SHA256SUMS so you can check the file you downloaded.'},
   {q: 'How do I update SpecWithCode?', a: 'Download the newest .dmg from this page and replace the app in Applications. When a machine runs an older server than your app, SpecWithCode shows an update notice in the conversation and in Settings › Connections.'},
 ];
@@ -64,7 +71,7 @@ const DOWNLOAD_LD = {
       '@id': `${PAGE_URL}#breadcrumb`,
       itemListElement: [
         {'@type': 'ListItem', position: 1, name: 'SpecWithCode', item: `${SITE}/code/`},
-        {'@type': 'ListItem', position: 2, name: 'Download for Mac', item: PAGE_URL},
+        {'@type': 'ListItem', position: 2, name: 'Download', item: PAGE_URL},
       ],
     },
     {
@@ -74,7 +81,7 @@ const DOWNLOAD_LD = {
       alternateName: 'Spec with Code',
       url: `${SITE}/code/`,
       applicationCategory: 'DeveloperApplication',
-      operatingSystem: 'macOS 13 or later (Apple silicon)',
+      operatingSystem: 'macOS 13 or later (Apple silicon), Windows 10 and 11 (x64), Linux (x64)',
       softwareVersion: release.version,
       fileSize: release.size,
       downloadUrl: release.dmgUrl,
@@ -124,7 +131,7 @@ export default function CodeDownload() {
             <span className={styles.productName}><Link to="/code/">SpecWithCode</Link></span>
             <span className={styles.productNote}>Free and open source</span>
           </p>
-          <h1>Download SpecWithCode for Mac</h1>
+          <h1>Download SpecWithCode</h1>
           <p>SpecWithCode, pronounced “Spec with Code”, brings your AI coding agents into one workspace.</p>
           <p className={styles.lead}>One free app for {providerSummary(4)}, on your own machines and the subscriptions you already pay for.</p>
           <div className={styles.actions}>
@@ -145,6 +152,24 @@ export default function CodeDownload() {
           </figure>
         </div>
       </header>
+
+      <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="windows-linux-title">
+        <div className={styles.sectionHead}>
+          <h2 id="windows-linux-title">Windows and Linux</h2>
+          <p>SpecWithCode {desktop.version} for 64-bit Windows 10 and 11 and for x64 Linux. Threads, the project coordinator, providers and pairing work as on a Mac. <a className="wv-link" href={desktop.notesUrl}>Release notes</a> · <a className="wv-link" href={desktop.sumsUrl}>SHA256SUMS</a></p>
+          <div className={styles.actions}>
+            <a className="wv-btn wv-btn--primary" href={desktop.exe.url} data-track="download_click" data-placement="download-page-windows"><Download {...btnIcon} />Windows ({desktop.exe.size})</a>
+            <a className="wv-btn wv-btn--secondary" href={desktop.appImage.url} data-track="download_click" data-placement="download-page-appimage"><Download {...btnIcon} />Linux AppImage ({desktop.appImage.size})</a>
+            <a className="wv-btn wv-btn--secondary" href={desktop.deb.url} data-track="download_click" data-placement="download-page-deb"><Download {...btnIcon} />Linux .deb ({desktop.deb.size})</a>
+          </div>
+        </div>
+        <ul className={clsx('wv-evidence', styles.list)}>
+          {DESKTOP_NOTES.map(item => <li key={item.name}>
+            <span className="wv-evidence__name">{item.name}</span>
+            <span className="wv-evidence__detail">{item.detail}</span>
+          </li>)}
+        </ul>
+      </section>
 
       <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="install-title">
         <div className={styles.sectionHead}>

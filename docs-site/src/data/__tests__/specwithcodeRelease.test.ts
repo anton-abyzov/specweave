@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest';
-import {SPECWITHCODE_RELEASE as release} from '../specwithcodeRelease';
+import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop} from '../specwithcodeRelease';
 
 const REPO = 'https://github.com/anton-abyzov/specwithcode';
 
@@ -23,4 +23,24 @@ describe('SpecWithCode download constant', () => {
     expect(res.status).toBe(200);
     expect(Number(res.headers.get('content-length'))).toBe(release.dmgBytes);
   }, 30_000);
+
+  it('pins the Windows and Linux installers to one release', () => {
+    expect(desktop.version).toMatch(/^\d+\.\d+\.\d+$/);
+    const base = `${REPO}/releases/download/v${desktop.version}`;
+    expect(desktop.exe.url).toBe(`${base}/SpecWithCode-${desktop.version}-x64.exe`);
+    expect(desktop.appImage.url).toBe(`${base}/SpecWithCode-${desktop.version}-x86_64.AppImage`);
+    expect(desktop.deb.url).toBe(`${base}/SpecWithCode-${desktop.version}-amd64.deb`);
+    for (const asset of [desktop.exe, desktop.appImage, desktop.deb]) {
+      expect(asset.bytes).toBeGreaterThan(20_000_000);
+      expect(asset.size).toBe(`${Math.round(asset.bytes / 1_000_000)} MB`);
+    }
+  });
+
+  it.skipIf(!process.env.CHECK_RELEASE_LINKS)('the Windows and Linux installers exist with the recorded sizes', async () => {
+    for (const asset of [desktop.exe, desktop.appImage, desktop.deb]) {
+      const res = await fetch(asset.url, {method: 'HEAD', redirect: 'follow'});
+      expect(res.status, asset.name).toBe(200);
+      expect(Number(res.headers.get('content-length')), asset.name).toBe(asset.bytes);
+    }
+  }, 60_000);
 });
