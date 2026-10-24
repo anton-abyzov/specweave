@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall pause start resume abandon complete task card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact require-increment small-fix jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
+set -l commands init uninstall pause start resume reopen abandon complete task card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact require-increment small-fix jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -14,6 +14,7 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a uninstal
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pause -d "Pause an active increment"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a start -d "Start a planned/backlog/paused increment (status -> active)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a resume -d "Resume a paused, abandoned or not-yet-started increment"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a reopen -d "Correct a completed increment back to planned (never active); needs --reason and --workspace"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a abandon -d "Abandon an increment"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a complete -d "Complete one or more increments (triggers GitHub/JIRA/ADO sync)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d "Task ledger: list | next | claim | done | release | block | skip | render | whoami"
@@ -91,6 +92,11 @@ complete -c specweave -n "__fish_seen_subcommand_from start" -l workspace -d "Se
 
 # resume
 complete -c specweave -n "__fish_seen_subcommand_from resume" -l workspace -d "Select the planning workspace explicitly"
+
+# reopen
+complete -c specweave -n "__fish_seen_subcommand_from reopen" -l reason -s r -d "Why it is reopened (kept in metadata.reopened)"
+complete -c specweave -n "__fish_seen_subcommand_from reopen" -l json -d "Print the result as JSON"
+complete -c specweave -n "__fish_seen_subcommand_from reopen" -l workspace -d "Select the planning workspace explicitly"
 
 # abandon
 complete -c specweave -n "__fish_seen_subcommand_from abandon" -l reason -s r -d "Reason for abandoning"

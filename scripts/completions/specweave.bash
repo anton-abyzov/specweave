@@ -13,7 +13,7 @@ _specweave_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    local main_commands="init uninstall pause start resume abandon complete task card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact require-increment small-fix jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get"
+    local main_commands="init uninstall pause start resume reopen abandon complete task card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact require-increment small-fix jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get"
     local global_options="--workspace"
 
     case "${prev}" in
@@ -39,6 +39,10 @@ _specweave_completions() {
             ;;
         resume)
             COMPREPLY=( $(compgen -W "--workspace --help" -- "${cur}") )
+            return 0
+            ;;
+        reopen)
+            COMPREPLY=( $(compgen -W "-r --reason --json --workspace --help" -- "${cur}") )
             return 0
             ;;
         abandon)
