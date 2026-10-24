@@ -153,6 +153,26 @@ export interface IncrementMetadata {
 
   /** Parent increment id when this increment is a split-off / follow-up child. */
   parent?: string;
+
+  /**
+   * Each `specweave reopen` of this increment, oldest first. The closure it
+   * undid (`approvedAt`, `closeReason`, `readyForReviewAt`) moves here, so a
+   * reopened increment keeps its history without showing a completion date.
+   */
+  reopened?: ReopenRecord[];
+}
+
+/** One `specweave reopen`: completed → planned, never active. */
+export interface ReopenRecord {
+  from: IncrementStatus.COMPLETED;
+  to: IncrementStatus.PLANNED;
+  at: string;
+  /** Agent id that ran the command (`SPECWEAVE_AGENT`, else `<tool>@<host>`). */
+  by: string;
+  reason: string;
+  approvedAt?: string;
+  closeReason?: string;
+  readyForReviewAt?: string;
 }
 
 /**

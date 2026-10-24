@@ -107,6 +107,16 @@ program
   });
 
 program
+  .command('reopen <increment-id>')
+  .description('Correct a completed increment back to planned (never active); needs --reason and --workspace')
+  .option('-r, --reason <text>', 'Why it is reopened (kept in metadata.reopened)')
+  .option('--json', 'Print the result as JSON')
+  .action(async (incrementId, options) => {
+    const { reopenCommand } = await import('../dist/src/cli/commands/reopen.js');
+    process.exitCode = await reopenCommand(incrementId, options);
+  });
+
+program
   .command('abandon <increment-id>')
   .description('Abandon an increment')
   .option('-r, --reason <text>', 'Reason for abandoning')
