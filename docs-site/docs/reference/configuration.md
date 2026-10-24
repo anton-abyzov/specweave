@@ -67,6 +67,21 @@ The single most useful edit is filling in `testing.commands`.
 |-------|---------|-------|
 | `leaseHours` | `2` | Hours before an unfinished claim is stale and another agent may take the task over. |
 
+### `git`
+
+Commits of the increment's own files, so specs, ledgers and claims reach other machines with a plain `git pull`. Both keys are off unless set to `true`.
+
+| Field | Default | Notes |
+|-------|---------|-------|
+| `autoCommitIncrement` | `false` | After `task claim`, `done`, `skip`, `block`, `release`, `create-increment` and `handoff`, commit that increment's `spec.md`, `ledger.jsonl` and `metadata.json`, plus `handoff.md` when the repo already tracks it. Nothing else: never `evidence/`, `reports/` or an ignored file. The commit uses a pathspec (`git commit --only -- <paths>`, after `git add` for new files), so other staged changes stay staged and out of it. Subject: `NNNN: <action> T-xx`, for example `1058: done T-02`. Hooks run. `--no-commit` skips it for one command. |
+| `autoPushIncrement` | `false` | After an auto-commit, push the branch to its upstream with a plain, fast-forward-only push through the upstream's remote as git config has it (HTTPS or SSH, whatever the checkout uses). It pushes only to a same-named branch on a remote, and only when every unpushed commit is an auto-commit (an auto-commit subject that changes only those files), so it never publishes your other commits or lands a feature branch on the branch it was cut from. Anything else (no upstream, a differently named or local upstream, a `pushRemote` elsewhere, a diverged branch, other unpushed commits) is a warning. `handoff` leaves this to its own branch push, so `--no-push` keeps everything local; it holds that push with a warning when auto-commits are all the branch has unpushed and its upstream is local or differently named. |
+
+A commit that cannot happen (a hook fails, `index.lock` exists, HEAD is detached, a merge, rebase, cherry-pick, revert or bisect is in progress, or `handoff` would push it to a differently named or local upstream) prints one `warning:` line on stderr and the command still exits 0. The ledger write already happened and the ledger is cumulative, so the next successful command commits what this one missed.
+
+```json
+{ "git": { "autoCommitIncrement": true, "autoPushIncrement": false } }
+```
+
 ### `limits`
 
 | Field | Default | Notes |
@@ -230,4 +245,4 @@ Also removed: `hooks.banner`, `hooks.post_increment_planning`, `hooks.post_task_
 **/ledger.jsonl merge=union
 ```
 
-They also add runtime folders such as `.specweave/state/` and `.specweave/logs/` to `.gitignore`. `.specweave/increments/` and `.specweave/memory/` are committed.
+They also add runtime folders such as `.specweave/state/` and `.specweave/logs/` to `.gitignore`. `.specweave/increments/` and `.specweave/memory/` are committed; [`git.autoCommitIncrement`](#git) commits each increment's own files as the CLI writes them.

@@ -121,6 +121,7 @@ complete -c specweave -n "__fish_seen_subcommand_from task" -l all-mine -d "With
 complete -c specweave -n "__fish_seen_subcommand_from task" -l write -d "With `render`: refresh a legacy tasks.md from the ledger"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l line -d "Card text for claim/done/block (max 100 chars, longer text is truncated)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l link -d "Card link for claim/done/block (PR URL, report path, artifact URL)"
+complete -c specweave -n "__fish_seen_subcommand_from task" -l no-commit -d "Skip the git.autoCommitIncrement commit of the increment files"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l json -d "Machine-readable output"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l workspace -d "Select the planning workspace explicitly"
 
@@ -131,6 +132,7 @@ complete -c specweave -n "__fish_seen_subcommand_from card" -l evidence -s e -d 
 complete -c specweave -n "__fish_seen_subcommand_from card" -l run -d "With `done` on a T-NN card: run <cmd>, exit 0 required"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l reason -d "Why the card waits (`wait`)"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l force -s f -d "Override a live claim (T-NN cards)"
+complete -c specweave -n "__fish_seen_subcommand_from card" -l no-commit -d "Skip the git.autoCommitIncrement commit of the increment files (T-NN cards)"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l json -d "Machine-readable output"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l workspace -d "Select the planning workspace explicitly"
 
@@ -178,6 +180,7 @@ complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l with-
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l planned -d "Create as \"planned\" instead of \"active\" (backlog work; start it with specweave start <id>)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l supersedes -d "Increment this one replaces (the old one is abandoned with a closeReason)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l parent -d "Parent increment (recorded as metadata.parent)"
+complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l no-commit -d "Skip the git.autoCommitIncrement commit of the new increment files"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l json -d "Output result as JSON (for programmatic use)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l workspace -d "Select the planning workspace explicitly"
 
@@ -196,6 +199,7 @@ complete -c specweave -n "__fish_seen_subcommand_from handoff" -l out -d "Overri
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l json -d "Output the full result as JSON (for programmatic use)"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l no-push -d "Keep the handoff local (by default the branch and a snapshot of your edits are pushed so `specweave pickup` finds them anywhere)"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l keep-claims -d "Keep your task claims instead of releasing them for the next agent"
+complete -c specweave -n "__fish_seen_subcommand_from handoff" -l no-commit -d "Skip the git.autoCommitIncrement commit of the increment files"
 complete -c specweave -n "__fish_seen_subcommand_from handoff" -l workspace -d "Select the planning workspace explicitly"
 
 # pickup

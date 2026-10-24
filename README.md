@@ -67,6 +67,8 @@ Running out mid-task? `specweave auto-handoff on`, once per machine, makes it au
 
 An increment is one folder, `.specweave/increments/NNNN-slug/`, with one file you read (`spec.md`) and one the CLI appends to (`ledger.jsonl`). Increments from 2.x with a `tasks.md` keep working unchanged.
 
+Set `"git": { "autoCommitIncrement": true }` in `.specweave/config.json` and `task claim|done|skip|block|release`, `create-increment` and `handoff` commit that increment's `spec.md`, `ledger.jsonl` and `metadata.json` as `NNNN: done T-02` and the like, through a pathspec, so the plan and its claims reach your other machines. Evidence and reports are never staged. `autoPushIncrement` also pushes, fast-forward only, when nothing but those commits is unpushed; `--no-commit` skips one command. See [configuration](https://spec-weave.com/docs/reference/configuration#git).
+
 ## Works the way Claude Code Projects work
 
 | Claude Code Projects | SpecWeave |
