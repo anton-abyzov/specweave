@@ -809,7 +809,7 @@ export class MetadataManager {
    *  - type: non-standard aliases mapped to canonical enum values
    *  - created/createdAt: legacy field renamed
    *  - externalLinks: ensured to exist (defaults to {})
-   *  - status/priority/testMode/coverageTarget: sensible defaults applied
+   *  - status/priority: sensible defaults applied
    *
    * @returns corrected metadata, whether any correction was made, and warnings
    */
@@ -942,15 +942,8 @@ export class MetadataManager {
       corrected = true;
     }
 
-    if (metadata.testMode === undefined) {
-      metadata.testMode = 'test-after';
-      corrected = true;
-    }
-
-    if (metadata.coverageTarget === undefined) {
-      metadata.coverageTarget = 80;
-      corrected = true;
-    }
+    // No testMode or coverageTarget default: test order and coverage are the
+    // user's opt-in (config `testing.mode` / `testing.coverage`), never implied.
 
     if (!metadata.type) {
       metadata.type = IncrementType.FEATURE;

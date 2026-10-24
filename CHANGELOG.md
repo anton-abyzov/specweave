@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Changed
+
+- TDD and coverage are fully opt-in. Increments no longer get `testMode: "test-after"` and `coverageTarget: 80` written into `metadata.json`; `specweave complete` checks coverage only when `testing.coverage.unit` is set (a stamped metadata target is ignored) and never assumes TDD; `generate-rubric` adds the coverage criterion only with a configured target. The packaged config schema now describes the 2.0 `testing.commands`, `testing.mode` and `testing.coverage` keys instead of the removed `tddEnforcement` and `defaultTestMode`. The sw-do skill says test-first order is optional instead of forbidding it.
+
 ## [3.1.9] - 2026-10-24
 
 ### Changed

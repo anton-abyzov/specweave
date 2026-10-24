@@ -96,13 +96,14 @@ describe('completion-validator coverage enforcement', () => {
     expect(result.errors.some((e: string) => e.includes('coverage'))).toBe(false);
   });
 
-  it('no coverage data at all (fresh project, default target 80) is not reported as 0% coverage', async () => {
+  it('no coverage data at all is not reported as 0% coverage', async () => {
     buildFs({
       '/mock-root/.specweave/increments/0007-test/metadata.json': JSON.stringify({
-        id: '0007-test', status: 'active', testMode: 'TDD', coverageTarget: 80,
+        id: '0007-test', status: 'active',
       }),
       '/mock-root/.specweave/increments/0007-test/spec.md': specOk,
       '/mock-root/.specweave/increments/0007-test/tasks.md': tasksOk,
+      '/mock-root/.specweave/config.json': JSON.stringify({ testing: { coverage: { unit: 80 } } }),
     });
     mockValidateCoverage.mockResolvedValue({
       passed: false, skipped: false, target: 80, actual: 0,
@@ -123,6 +124,7 @@ describe('completion-validator coverage enforcement', () => {
       }),
       '/mock-root/.specweave/increments/0002-test/spec.md': specOk,
       '/mock-root/.specweave/increments/0002-test/tasks.md': tasksOk,
+      '/mock-root/.specweave/config.json': JSON.stringify({ testing: { coverage: { unit: 80 } } }),
     });
 
     const result = await IncrementCompletionValidator.validateCompletion('0002-test');
@@ -171,21 +173,65 @@ describe('completion-validator coverage enforcement', () => {
     );
   });
 
-  it('falls back to metadata coverageTarget when config.json missing', async () => {
+  it('ignores a stamped metadata coverageTarget when testing.coverage is not set', async () => {
     buildFs({
       '/mock-root/.specweave/increments/0006-test/metadata.json': JSON.stringify({
-        id: '0006-test', status: 'active', testMode: 'TDD', coverageTarget: 60,
+        id: '0006-test', status: 'active', testMode: 'test-after', coverageTarget: 80,
       }),
       '/mock-root/.specweave/increments/0006-test/spec.md': specOk,
       '/mock-root/.specweave/increments/0006-test/tasks.md': tasksOk,
+      '/mock-root/.specweave/config.json': JSON.stringify({ testing: { commands: ['npm test'] } }),
+    });
+    mockValidateCoverage.mockResolvedValue({
+      passed: false, skipped: false, target: 80, actual: 40,
+      reason: 'Coverage 40.0% is below target 80%',
+      details: { lines: 40, functions: 40, branches: 40, statements: 40 },
+      coverageFile: '/mock-root/coverage/coverage-summary.json', format: 'istanbul',
     });
 
-    mockValidateCoverage.mockResolvedValue({ passed: true, actual: 70 });
+    const result = await IncrementCompletionValidator.validateCompletion('0006-test');
 
-    await IncrementCompletionValidator.validateCompletion('0006-test');
+    expect(mockValidateCoverage).not.toHaveBeenCalled();
+    expect(result.warnings.some((w: string) => /coverage/i.test(w))).toBe(false);
+  });
 
-    expect(mockValidateCoverage).toHaveBeenCalledWith(
-      expect.objectContaining({ coverageTarget: 60 }),
-    );
+  it('never defaults the test mode to TDD', async () => {
+    buildFs({
+      '/mock-root/.specweave/increments/0008-test/metadata.json': JSON.stringify({ id: '0008-test', status: 'active' }),
+      '/mock-root/.specweave/increments/0008-test/spec.md': specOk,
+      '/mock-root/.specweave/increments/0008-test/tasks.md': tasksOk,
+      '/mock-root/.specweave/config.json': JSON.stringify({ testing: { coverage: { unit: 80 } } }),
+    });
+    mockValidateCoverage.mockResolvedValue({ passed: true, actual: 90 });
+
+    await IncrementCompletionValidator.validateCompletion('0008-test');
+
+    expect(mockValidateCoverage).toHaveBeenCalledWith(expect.objectContaining({ testMode: 'test-after' }));
+  });
+  it('testing.mode none in config skips coverage even when metadata says test-after', async () => {
+    buildFs({
+      '/mock-root/.specweave/increments/0009-test/metadata.json': JSON.stringify({ id: '0009-test', status: 'active', testMode: 'test-after' }),
+      '/mock-root/.specweave/increments/0009-test/spec.md': specOk,
+      '/mock-root/.specweave/increments/0009-test/tasks.md': tasksOk,
+      '/mock-root/.specweave/config.json': JSON.stringify({ testing: { mode: 'none', coverage: { unit: 80 } } }),
+    });
+
+    await IncrementCompletionValidator.validateCompletion('0009-test');
+
+    expect(mockValidateCoverage).not.toHaveBeenCalled();
+  });
+
+  it('honours a 1.x testing.coverageTargets.unit opt-in', async () => {
+    buildFs({
+      '/mock-root/.specweave/increments/0010-test/metadata.json': JSON.stringify({ id: '0010-test', status: 'active' }),
+      '/mock-root/.specweave/increments/0010-test/spec.md': specOk,
+      '/mock-root/.specweave/increments/0010-test/tasks.md': tasksOk,
+      '/mock-root/.specweave/config.json': JSON.stringify({ testing: { coverageTargets: { unit: 85 } } }),
+    });
+    mockValidateCoverage.mockResolvedValue({ passed: true, actual: 90 });
+
+    await IncrementCompletionValidator.validateCompletion('0010-test');
+
+    expect(mockValidateCoverage).toHaveBeenCalledWith(expect.objectContaining({ coverageTarget: 85 }));
   });
 });

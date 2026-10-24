@@ -139,7 +139,6 @@ export interface AutoConfig {
   maxHours?: number;
   testCommand?: string;
   coverageThreshold?: number;
-  enforceTestFirst?: boolean;
   humanGated?: {
     patterns: string[];
     timeout: number;
@@ -166,8 +165,6 @@ export const DEFAULT_AUTO_CONFIG: AutoConfig = {
   requireLLMEval: false, // Set true to use LLM completion evaluation
   maxHours: 600,
   testCommand: 'npm test',
-  coverageThreshold: 80,
-  enforceTestFirst: false,
   humanGated: {
     patterns: ['deploy', 'migrate', 'publish', 'push --force', 'rm -rf', 'API_KEY', 'SECRET'],
     timeout: 1800,

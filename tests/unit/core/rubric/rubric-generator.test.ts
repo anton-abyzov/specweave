@@ -41,7 +41,6 @@ describe('generateRubric', () => {
 
   it('TC-003: generated rubric includes standard categories', () => {
     const md = generateRubric('0663-test', SPEC_WITH_ACS);
-    expect(md).toContain('## Test Coverage');
     expect(md).toContain('## Code Quality');
     expect(md).toContain('## Independent Evaluation');
   });
@@ -69,10 +68,16 @@ describe('generateRubric', () => {
     expect(md).toContain('>= 90%');
   });
 
+  it('TC-006b: no coverage criterion without a configured target', () => {
+    const md = generateRubric('0663-test', SPEC_WITH_ACS);
+    expect(md).not.toContain('## Test Coverage');
+    expect(md).not.toContain('R-D01');
+  });
+
   it('TC-007: empty spec generates only standard categories', () => {
     const md = generateRubric('0663-empty', EMPTY_SPEC);
     expect(md).not.toContain('- **Source**: AC-');
-    expect(md).toContain('## Test Coverage');
+    expect(md).not.toContain('## Test Coverage');
     expect(md).toContain('## Code Quality');
     expect(md).toContain('## Independent Evaluation');
   });
