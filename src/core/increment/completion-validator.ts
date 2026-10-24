@@ -210,31 +210,33 @@ export class IncrementCompletionValidator {
       // Best-effort: signal emission must never affect closure.
     }
 
-    // NEW (v1.0.105): Test coverage validation for TDD increments
-    // Validates that coverage meets target when testMode != 'none' and coverageTarget > 0
-    // See: ADR-0163 (TDD Enforcement Implementation)
+    // Coverage is opt-in: checked only when the user set `testing.coverage.unit`.
+    // A metadata.json `coverageTarget` is ignored, since older releases stamped
+    // 80 into every increment, and test order never defaults to TDD.
     try {
       const metadataPath = path.join(incrementPath, 'metadata.json');
       if (await fs.pathExists(metadataPath)) {
         const metadataContent = await fs.readFile(metadataPath, 'utf-8');
         const metadata = JSON.parse(metadataContent);
 
-        const testMode = (metadata.testMode || 'TDD') as TestMode;
-
-        // Resolve coverage target: config.json > metadata.json fallback
-        let coverageTarget = metadata.coverageTarget ?? 0;
+        let coverageTarget = 0;
+        let configMode: TestMode | undefined;
         try {
           const configPath = path.join(resolveEffectiveRoot(), '.specweave', 'config.json');
           if (await fs.pathExists(configPath)) {
             const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
-            const configTarget = config?.testing?.coverage?.unit;
+            // `coverageTargets` is the 1.x name, before migrate-to-2 rewrites it.
+            const configTarget = config?.testing?.coverage?.unit ?? config?.testing?.coverageTargets?.unit;
             if (typeof configTarget === 'number') {
               coverageTarget = configTarget;
             }
+            configMode = config?.testing?.mode;
           }
         } catch {
-          // Config read failed — fall back to metadata target
+          // Config read failed — no coverage target
         }
+
+        const testMode = (configMode || metadata.testMode || 'test-after') as TestMode;
 
         // Only validate if coverage target is set and testMode is not 'none'
         if (coverageTarget > 0 && testMode !== 'none') {
@@ -247,10 +249,7 @@ export class IncrementCompletionValidator {
           if (coverageResult.skipped) {
             logger.info(`Coverage validation skipped: ${coverageResult.reason}`);
           } else if (!coverageResult.coverageFile && !coverageResult.details) {
-            // No coverage data at all is missing evidence, not 0% coverage:
-            // create-increment writes coverageTarget 80 into every new
-            // increment, so a project without coverage tooling would warn
-            // "0.0% < 80%" on every close.
+            // No coverage data at all is missing evidence, not 0% coverage.
             logger.info(`Coverage validation skipped: ${coverageResult.reason}`);
           } else if (!coverageResult.passed) {
             // 2.0: coverage is evidence, not a gate — reports/verify.json is the

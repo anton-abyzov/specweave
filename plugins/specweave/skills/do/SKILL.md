@@ -26,9 +26,9 @@ hold, and notes left for you. No increment yet? Run sw-increment first.
    owns it, or add a task to spec.md `## Tasks`. Use the words in `GLOSSARY.md`, if
    the project has one, for every new name.
 4. Run the task's `Test`. Red means fix the code; never skip, weaken or delete a test.
-   Don't write tests first or add unit tests the task did not ask for (unless the
-   project's `testing` config or conventions require them): check the AC end to end,
-   the way a user would hit it.
+   Test-first order is optional: follow it only when the user, `testing.mode: TDD`
+   or the project's conventions ask. Don't add unit tests the task did not ask for;
+   check the AC end to end, the way a user would hit it.
 5. Commit with the increment id first: `git commit -m "0042: fold the ledger"`.
 6. `specweave task done T-03 --run "npm run test:e2e -- double-claim" --line "Wrote the ledger fold" --link <PR URL>`.
    Exit 5: the command failed and the task stays open. No `Test`? `--evidence "<sha> + what you checked"`.

@@ -19,13 +19,12 @@ status: defaults
 ### R-D01: Unit test coverage meets project target [advisory]
 - **Source**: project-default
 - **Evaluator**: coverage
-- **Verify**: Coverage output on new/modified files (authoritative gate: completion-validator validateCoverage, which blocks on real low coverage)
-- **Threshold**: >= configured coverageTarget (default 90%) line coverage
+- **Verify**: Coverage output on new/modified files (completion-validator validateCoverage warns on real low coverage)
+- **Threshold**: >= `testing.coverage.unit` line coverage
 - **Result**: [ ] PENDING
 
-> Advisory because coverage is hard-gated separately by `validateCoverage`. The
-> `coverage` rubric evaluator is not automated and would resolve to `skip`, which
-> blocks closure; keeping it advisory avoids double-gating every increment.
+> Opt-in: included only when the project sets `testing.coverage.unit`. There is no
+> default target. Advisory because the `coverage` rubric evaluator is not automated.
 
 ---
 

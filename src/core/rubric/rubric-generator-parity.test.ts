@@ -1,9 +1,9 @@
 /**
  * Parity tests for rubric generation (0865 T-002 / AC-US1-01, AC-US1-02).
  *
- * The generator must emit one blocking criterion per AC plus the 4 inherited
- * defaults (R-D01..R-D04). A parity test asserts criterion count == AC count + 4
- * so the rubric fails loudly on drift. ensureRubricFile must be idempotent
+ * The generator must emit one blocking criterion per AC plus the inherited
+ * defaults (R-D02, R-D03; R-D01 only with a coverage target). A parity test
+ * asserts criterion count == AC count + 2 so the rubric fails loudly on drift. ensureRubricFile must be idempotent
  * (no-clobber without --refresh, regenerate with --refresh).
  */
 
@@ -49,8 +49,8 @@ function readCriteria(content: string): Array<{ id: string; severity: string; so
   return criteria;
 }
 
-/** Inherited project defaults the generator always appends: R-D01, R-D02, R-D03. */
-const DEFAULT_CRITERIA = 3;
+/** Inherited project defaults appended without a coverage target: R-D02, R-D03. */
+const DEFAULT_CRITERIA = 2;
 
 describe('ensureRubricFile parity (0865 AC-US1-01/02)', () => {
   let dir: string;
@@ -63,7 +63,7 @@ describe('ensureRubricFile parity (0865 AC-US1-01/02)', () => {
     await fsp.rm(dir, { recursive: true, force: true });
   });
 
-  it('TC-005: N ACs → root rubric.md non-template with exactly N+3 criteria (round-trips)', async () => {
+  it('TC-005: N ACs → root rubric.md non-template with exactly N+2 criteria (round-trips)', async () => {
     const N = 5;
     await fsp.writeFile(path.join(dir, 'spec.md'), makeSpec(N), 'utf-8');
 
@@ -76,7 +76,7 @@ describe('ensureRubricFile parity (0865 AC-US1-01/02)', () => {
     // Not a template placeholder.
     expect(content).not.toMatch(/status:\s*template/);
 
-    // Exactly N + 3 criteria.
+    // Exactly N + 2 criteria.
     const parsed = { criteria: readCriteria(content) };
     expect(parsed.criteria.length).toBe(N + DEFAULT_CRITERIA);
 
