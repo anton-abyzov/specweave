@@ -98,6 +98,8 @@ export interface ReopenOptions {
     beforeCommit?: () => void;
     /** After spec.md is renamed into place, before metadata.json is. */
     afterSpecCommit?: () => void;
+    /** During a rollback, after the restored spec.md is staged, before its compare and rename. */
+    beforeRestore?: () => void;
   };
 }
 
@@ -211,15 +213,22 @@ function replaceFile(file: string, content: string): void {
  * only if spec.md still holds exactly what this reopen wrote: another writer's
  * edit is never overwritten, it is reported instead.
  */
-function restoreSpec(specFile: string, specBefore: string, specAfter: string, cause: unknown): void {
+function restoreSpec(specFile: string, specBefore: string, specAfter: string, cause: unknown, beforeRestore?: () => void): void {
   const why = cause instanceof Error ? cause.message : String(cause);
-  if (readOr(specFile, '') !== specAfter) {
-    throw new Error(`${why}; ${specFile} was edited by another writer meanwhile and is left as it is. Its frontmatter says status: planned while metadata.json still says completed: run specweave reopen again, or set the line back to completed.`);
+  let tmp: string;
+  try {
+    tmp = stageFile(specFile, specBefore);
+  } catch (stageError) {
+    throw new Error(`${why}; restoring ${specFile} also failed: ${stageError instanceof Error ? stageError.message : String(stageError)}`);
   }
   try {
-    replaceFile(specFile, specBefore);
-  } catch (restoreError) {
-    throw new Error(`${why}; restoring ${specFile} also failed: ${restoreError instanceof Error ? restoreError.message : String(restoreError)}`);
+    beforeRestore?.();
+    if (readOr(specFile, '') !== specAfter) {
+      throw new Error(`${why}; ${specFile} was edited by another writer meanwhile and is left as it is. Its frontmatter says status: planned while metadata.json still says completed: run specweave reopen again, or set the line back to completed.`);
+    }
+    fs.renameSync(tmp, specFile);
+  } finally {
+    fs.rmSync(tmp, { force: true });
   }
 }
 
@@ -357,7 +366,7 @@ export function reopenIncrement(opts: ReopenOptions): ReopenResult {
       fs.renameSync(metadataTmp, metadataFile);
     } catch (e) {
       for (const tmp of staged) fs.rmSync(tmp, { force: true });
-      if (specCommitted) restoreSpec(specFile, specBefore!, specAfter!, e);
+      if (specCommitted) restoreSpec(specFile, specBefore!, specAfter!, e, opts.hooks?.beforeRestore);
       throw e;
     }
 

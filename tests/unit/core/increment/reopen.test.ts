@@ -376,6 +376,22 @@ describe('transaction safety (AC-02, AC-04)', () => {
     noTemps(dir);
   });
 
+  it('a spec edit while the rollback is staged is kept too', () => {
+    const root = workspace();
+    const dir = increment(root, '1009-ps23', { frontmatter: true });
+    const metadata = file(dir, 'metadata.json');
+    expect(() => reopenIncrement({
+      incrementId: '1009', reason: 'r', workspace: root, env,
+      hooks: {
+        afterSpecCommit: () => { throw new Error('rename failed'); },
+        beforeRestore: () => fs.appendFileSync(path.join(dir, 'spec.md'), '\n## Notes\nadded during rollback\n'),
+      },
+    })).toThrow(/edited by another writer meanwhile and is left as it is/);
+    expect(file(dir, 'spec.md')).toContain('added during rollback');
+    expect(file(dir, 'metadata.json')).toBe(metadata);
+    noTemps(dir);
+  });
+
   it('a second reopen while one holds the lock is refused; the first audit is kept', () => {
     const root = workspace();
     const dir = increment(root, '1009-ps23');
