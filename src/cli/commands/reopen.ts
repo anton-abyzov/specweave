@@ -39,8 +39,8 @@ export async function reopenCommand(incrementId: string, opts: ReopenCommandOpti
     out(`${result.id} is already reopened (planned since ${result.at}, by ${result.by}). Nothing changed.`);
   } else {
     out(chalk.green(`Reopened ${result.id}: completed → planned.`) + ` Reason: ${result.reason}`);
-    const closed = result.previous.approvedAt ? `closed ${result.previous.approvedAt}` : 'closure';
-    out(chalk.gray(`  The ${closed} is kept in metadata.reopened; the ledger and reports are unchanged.`));
+    const closure = result.previous.approvedAt ? `closure of ${result.previous.approvedAt}` : 'closure';
+    out(chalk.gray(`  The ${closure} is kept in metadata.reopened; the ledger and reports are unchanged.`));
   }
   if (result.unfinished.length) {
     out(`  Unfinished: ${result.unfinished.map((t) => `${t.task} ${t.status}${t.by ? ` (${t.by})` : ''}`).join(', ')}`);

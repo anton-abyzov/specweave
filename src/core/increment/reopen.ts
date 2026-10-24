@@ -7,22 +7,30 @@
  * before anything is written, and a refusal changes nothing:
  *
  * 1. a reason (stored in the audit record);
- * 2. an explicit workspace (`--workspace` or `SPECWEAVE_WORKSPACE`), and the
- *    increment folder must really live inside it;
+ * 2. an explicit workspace (`--workspace` or `SPECWEAVE_WORKSPACE`); the
+ *    increment folder must really live inside it, and its metadata.json,
+ *    spec.md and ledger.jsonl must be regular files, never symlinks;
  * 3. status `completed`;
  * 4. no task claimed, stale or blocked by another agent. Ownership moves only
  *    through `specweave task release`, never through this command.
  *
- * The ledger, reports/ and the spec body are left as they are; the closure
- * moves into `metadata.reopened[]`.
+ * Nothing here goes through MetadataManager.read/write or ConfigManager: those
+ * persist schema and config repairs, which a refusal must not do. Reopens of
+ * one increment are serialized by an exclusive lock file. Ledger writers take
+ * no lock, so the ledger and metadata bytes are compared again just before
+ * metadata.json is replaced; any change aborts and restores spec.md.
+ *
+ * The ledger, reports/ and the spec body are left byte-identical; only the
+ * frontmatter `status:` line changes, and the closure moves into
+ * `metadata.reopened[]`.
  *
  * @module core/increment/reopen
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { MetadataManager } from './metadata-manager.js';
-import { DisciplineChecker } from './discipline-checker.js';
+import { randomBytes } from 'crypto';
+import { resolveDisciplineLimits } from './discipline-checker.js';
 import {
   IncrementStatus,
   LEGACY_STATUS_MAP,
@@ -40,7 +48,9 @@ export type ReopenRefusal =
   | 'not-found'
   | 'outside-workspace'
   | 'not-completed'
-  | 'foreign-owner';
+  | 'foreign-owner'
+  | 'busy'
+  | 'changed';
 
 export class ReopenRefused extends Error {
   constructor(readonly code: ReopenRefusal, message: string, readonly owners: UnfinishedTask[] = []) {
@@ -79,14 +89,17 @@ export interface ReopenOptions {
   workspace?: string;
   env?: NodeJS.ProcessEnv;
   now?: Date;
+  /** Tests only: runs after spec.md is written, just before the final re-check and the metadata write. */
+  beforeMetadataWrite?: () => void;
 }
 
 const HELD: ReadonlySet<TaskLedgerStatus> = new Set(['claimed', 'stale', 'blocked']);
+const LOCK_FILE = '.reopen.lock';
+const CLOSURE_FIELDS = ['approvedAt', 'closeReason', 'readyForReviewAt'] as const;
 
-function readStatus(metadataFile: string): { status: string; raw: Record<string, any> } {
-  const raw = JSON.parse(fs.readFileSync(metadataFile, 'utf8'));
-  const status = typeof raw?.status === 'string' ? raw.status : '';
-  return { status: LEGACY_STATUS_MAP[status.toLowerCase()] ?? status, raw };
+function normalStatus(raw: unknown): string {
+  const status = typeof raw === 'string' ? raw : '';
+  return LEGACY_STATUS_MAP[status.toLowerCase()] ?? status;
 }
 
 function activeCount(root: string): number {
@@ -95,18 +108,20 @@ function activeCount(root: string): number {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     try {
-      const { status } = readStatus(path.join(dir, entry.name, 'metadata.json'));
-      if (countsTowardWipLimit(status as IncrementStatus)) count++;
+      const raw = JSON.parse(fs.readFileSync(path.join(dir, entry.name, 'metadata.json'), 'utf8'));
+      if (countsTowardWipLimit(normalStatus(raw?.status) as IncrementStatus)) count++;
     } catch { /* no or unreadable metadata: not active */ }
   }
   return count;
 }
 
+/** The advisory limit, read without ConfigManager (whose load migrates and rewrites config.json). */
 function activeLimit(root: string): number {
   try {
-    return new DisciplineChecker(root).getLimits().activeIncrements;
+    const config = JSON.parse(fs.readFileSync(path.join(root, '.specweave', 'config.json'), 'utf8'));
+    return resolveDisciplineLimits(config?.limits).activeIncrements;
   } catch {
-    return 0;
+    return resolveDisciplineLimits(undefined).activeIncrements;
   }
 }
 
@@ -144,6 +159,76 @@ function workspaceRoot(selected: string | undefined): string {
   return root;
 }
 
+/** 'missing', 'file', or 'other' (a symlink, folder or device), without following links. */
+function entryKind(file: string): 'missing' | 'file' | 'other' {
+  try {
+    return fs.lstatSync(file).isFile() ? 'file' : 'other';
+  } catch {
+    return 'missing';
+  }
+}
+
+function readOr(file: string, fallback: string): string {
+  return entryKind(file) === 'file' ? fs.readFileSync(file, 'utf8') : fallback;
+}
+
+/**
+ * Replace `file` through a fresh temp file in the same folder. The temp is
+ * created exclusively (O_CREAT|O_EXCL), so a planted file or symlink at that
+ * name makes the write fail instead of being followed.
+ */
+function replaceFile(file: string, content: string): void {
+  const tmp = `${file}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`;
+  const mode = fs.statSync(file).mode & 0o777;
+  const fd = fs.openSync(tmp, 'wx', mode);
+  try {
+    fs.writeFileSync(fd, content, 'utf8');
+    fs.fsyncSync(fd);
+  } finally {
+    fs.closeSync(fd);
+  }
+  try {
+    fs.renameSync(tmp, file);
+  } catch (e) {
+    fs.rmSync(tmp, { force: true });
+    throw e;
+  }
+}
+
+/**
+ * Set the frontmatter `status:` line, leaving every other byte as it was. A spec
+ * with no frontmatter, or no top-level status line in it, is returned unchanged:
+ * 3.0 specs keep their status in metadata.json only.
+ */
+export function withFrontmatterStatus(content: string, status: string): string {
+  const open = content.match(/^---(\r?\n)/);
+  if (!open) return content;
+  const start = open[0].length;
+  const close = /(^|\r?\n)---[ \t]*(\r?\n|$)/g;
+  close.lastIndex = start - open[1].length;
+  const end = close.exec(content);
+  if (!end) return content;
+  const frontmatter = content.slice(start, end.index);
+  const updated = frontmatter.replace(/^status:[^\r\n]*/m, `status: ${status}`);
+  return updated === frontmatter ? content : content.slice(0, start) + updated + content.slice(end.index);
+}
+
+function acquireLock(dir: string, id: string): () => void {
+  const lock = path.join(dir, LOCK_FILE);
+  let fd: number;
+  try {
+    fd = fs.openSync(lock, 'wx');
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'EEXIST') {
+      throw new ReopenRefused('busy', `Another reopen of ${id} is running (${lock}). If none is, delete that file and run again.`);
+    }
+    throw e;
+  }
+  fs.writeSync(fd, `${process.pid} ${new Date().toISOString()}\n`);
+  fs.closeSync(fd);
+  return () => fs.rmSync(lock, { force: true });
+}
+
 export function reopenIncrement(opts: ReopenOptions): ReopenResult {
   const env = opts.env ?? process.env;
   const reason = opts.reason?.trim() ?? '';
@@ -156,56 +241,92 @@ export function reopenIncrement(opts: ReopenOptions): ReopenResult {
   }
   if (!resolved) throw new ReopenRefused('not-found', `No increment "${opts.incrementId}" in workspace ${root}.`);
   const id = resolved;
-  const dir = path.join(root, '.specweave', 'increments', id);
+  const dir = canonicalPath(path.join(root, '.specweave', 'increments', id));
+  if (!isWithin(root, dir)) {
+    throw new ReopenRefused('outside-workspace', `${id} resolves outside workspace ${root} (${dir}); reopen it from the workspace that owns it.`);
+  }
   const metadataFile = path.join(dir, 'metadata.json');
-  let realDir: string;
-  let realMetadata: string;
-  try {
-    realDir = canonicalPath(dir);
-    realMetadata = canonicalPath(metadataFile);
-  } catch {
+  const specFile = path.join(dir, 'spec.md');
+  const ledgerFile = ledgerPath(dir);
+  for (const file of [metadataFile, specFile, ledgerFile]) {
+    if (entryKind(file) === 'other') {
+      throw new ReopenRefused('outside-workspace', `${file} is a symlink or not a regular file; reopen only rewrites real files inside the workspace.`);
+    }
+  }
+  if (entryKind(metadataFile) === 'missing') {
     throw new ReopenRefused('not-completed', `${id} has no metadata.json, so it was never completed.`);
   }
-  if (!isWithin(root, realDir) || !isWithin(realDir, realMetadata)) {
-    throw new ReopenRefused('outside-workspace', `${id} resolves outside workspace ${root} (${realMetadata}); reopen it from the workspace that owns it.`);
-  }
 
-  const { status, raw } = readStatus(realMetadata);
-  const limit = activeLimit(root);
-  if (status === IncrementStatus.PLANNED && Array.isArray(raw.reopened) && raw.reopened.length) {
-    const last = raw.reopened[raw.reopened.length - 1] as ReopenRecord;
-    return {
-      id, root, from: IncrementStatus.COMPLETED, to: IncrementStatus.PLANNED, at: last.at, by: last.by, reason: last.reason,
-      previous: { approvedAt: last.approvedAt, closeReason: last.closeReason, readyForReviewAt: last.readyForReviewAt },
-      unfinished: unfinishedTasks(realDir), unchanged: true, active: { count: activeCount(root), limit },
+  const release = acquireLock(dir, id);
+  try {
+    const metadataBefore = fs.readFileSync(metadataFile, 'utf8');
+    const raw = JSON.parse(metadataBefore) as Record<string, any>;
+    const status = normalStatus(raw.status);
+    const limit = activeLimit(root);
+
+    if (status === IncrementStatus.PLANNED && Array.isArray(raw.reopened) && raw.reopened.length) {
+      const last = raw.reopened[raw.reopened.length - 1] as ReopenRecord;
+      return {
+        id, root, from: IncrementStatus.COMPLETED, to: IncrementStatus.PLANNED, at: last.at, by: last.by, reason: last.reason,
+        previous: { approvedAt: last.approvedAt, closeReason: last.closeReason, readyForReviewAt: last.readyForReviewAt },
+        unfinished: unfinishedTasks(dir), unchanged: true, active: { count: activeCount(root), limit },
+      };
+    }
+    if (status !== IncrementStatus.COMPLETED) {
+      const hint = status === IncrementStatus.ABANDONED ? ' An abandoned increment comes back with specweave resume.' : '';
+      throw new ReopenRefused('not-completed', `${id} is ${status || 'unknown'}; only a completed increment can be reopened.${hint}`);
+    }
+
+    const by = getAgentId(env);
+    const ledgerBefore = readOr(ledgerFile, '');
+    const unfinished = unfinishedTasks(dir);
+    const foreign = unfinished.filter((t) => HELD.has(t.status) && t.by && t.by !== by);
+    if (foreign.length) {
+      throw new ReopenRefused(
+        'foreign-owner',
+        `${id} has tasks held by another agent: ${foreign.map((t) => `${t.task} ${t.status} by ${t.by}`).join(', ')}. ` +
+          `Only that agent can reopen it (you are ${by}); ownership moves with specweave task release, not here.`,
+        foreign,
+      );
+    }
+
+    const at = (opts.now ?? new Date()).toISOString();
+    const previous: ReopenResult['previous'] = {};
+    for (const key of CLOSURE_FIELDS) if (raw[key]) previous[key] = raw[key];
+    const record: ReopenRecord = { from: IncrementStatus.COMPLETED, to: IncrementStatus.PLANNED, at, by, reason, ...previous };
+    const next: Record<string, any> = {
+      ...raw,
+      status: IncrementStatus.PLANNED,
+      lastActivity: at,
+      updated: at,
+      reopened: [...(Array.isArray(raw.reopened) ? raw.reopened : []), record],
     };
-  }
-  if (status !== IncrementStatus.COMPLETED) {
-    const hint = status === IncrementStatus.ABANDONED ? ' An abandoned increment comes back with specweave resume.' : '';
-    throw new ReopenRefused('not-completed', `${id} is ${status || 'unknown'}; only a completed increment can be reopened.${hint}`);
-  }
+    for (const key of CLOSURE_FIELDS) delete next[key];
+    const metadataAfter = JSON.stringify(next, null, 2) + (metadataBefore.endsWith('\n') ? '\n' : '');
 
-  const by = getAgentId(env);
-  const unfinished = unfinishedTasks(realDir);
-  const foreign = unfinished.filter((t) => HELD.has(t.status) && t.by && t.by !== by);
-  if (foreign.length) {
-    throw new ReopenRefused(
-      'foreign-owner',
-      `${id} has tasks held by another agent: ${foreign.map((t) => `${t.task} ${t.status} by ${t.by}`).join(', ')}. ` +
-        `Only that agent can reopen it (you are ${by}); ownership moves with specweave task release, not here.`,
-      foreign,
-    );
-  }
+    const specBefore = entryKind(specFile) === 'file' ? fs.readFileSync(specFile, 'utf8') : undefined;
+    const specAfter = specBefore === undefined ? undefined : withFrontmatterStatus(specBefore, IncrementStatus.PLANNED);
+    const specChanged = specBefore !== undefined && specAfter !== specBefore;
+    if (specChanged) replaceFile(specFile, specAfter!);
+    try {
+      opts.beforeMetadataWrite?.();
+      if (readOr(ledgerFile, '') !== ledgerBefore || fs.readFileSync(metadataFile, 'utf8') !== metadataBefore) {
+        throw new ReopenRefused('changed', `${id} changed while it was being reopened (a ledger or metadata write); nothing was changed. Run it again.`);
+      }
+      replaceFile(metadataFile, metadataAfter);
+    } catch (e) {
+      if (specChanged) {
+        try {
+          replaceFile(specFile, specBefore!);
+        } catch (restoreError) {
+          throw new Error(`${e instanceof Error ? e.message : String(e)}; restoring ${specFile} also failed: ${restoreError instanceof Error ? restoreError.message : String(restoreError)}`);
+        }
+      }
+      throw e;
+    }
 
-  const at = (opts.now ?? new Date()).toISOString();
-  MetadataManager.reopenToPlanned(id, { at, by, reason }, root);
-  return {
-    id, root, from: IncrementStatus.COMPLETED, to: IncrementStatus.PLANNED, at, by, reason,
-    previous: {
-      ...(raw.approvedAt ? { approvedAt: raw.approvedAt } : {}),
-      ...(raw.closeReason ? { closeReason: raw.closeReason } : {}),
-      ...(raw.readyForReviewAt ? { readyForReviewAt: raw.readyForReviewAt } : {}),
-    },
-    unfinished, unchanged: false, active: { count: activeCount(root), limit },
-  };
+    return { id, root, from: IncrementStatus.COMPLETED, to: IncrementStatus.PLANNED, at, by, reason, previous, unfinished, unchanged: false, active: { count: activeCount(root), limit } };
+  } finally {
+    release();
+  }
 }

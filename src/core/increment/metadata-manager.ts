@@ -21,8 +21,7 @@ import {
   isStale,
   shouldAutoAbandon,
   migrateLegacyStatus,
-  UNKNOWN_STATUS_FALLBACK,
-  type ReopenRecord
+  UNKNOWN_STATUS_FALLBACK
 } from '../types/increment-metadata.js';
 import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
@@ -515,53 +514,6 @@ export class MetadataManager {
     // explicit close-on-complete settings `specweave complete` honours).
 
     return metadata;
-  }
-
-  /**
-   * `specweave reopen`: completed → planned, outside VALID_TRANSITIONS so no
-   * other caller (or computeTransitionPath) gains this edge. The closure fields
-   * move into a `reopened[]` record; the active-increment state is not touched,
-   * because a planned increment is never active. spec.md frontmatter is written
-   * first and restored if metadata.json then fails, as in updateStatus.
-   */
-  static reopenToPlanned(
-    incrementId: string,
-    audit: { at: string; by: string; reason: string },
-    rootDir: string
-  ): IncrementMetadata {
-    const metadata = this.read(incrementId, rootDir);
-    if (metadata.status !== IncrementStatus.COMPLETED) {
-      throw new MetadataError(`Only a completed increment can be reopened; ${incrementId} is ${metadata.status}`, incrementId);
-    }
-    const record: ReopenRecord = {
-      from: IncrementStatus.COMPLETED,
-      to: IncrementStatus.PLANNED,
-      ...audit,
-      ...(metadata.approvedAt ? { approvedAt: metadata.approvedAt } : {}),
-      ...(metadata.closeReason ? { closeReason: metadata.closeReason } : {}),
-      ...(metadata.readyForReviewAt ? { readyForReviewAt: metadata.readyForReviewAt } : {}),
-    };
-    const next: IncrementMetadata & { updated?: string } = {
-      ...metadata,
-      status: IncrementStatus.PLANNED,
-      lastActivity: audit.at,
-      updated: audit.at,
-      reopened: [...(Array.isArray(metadata.reopened) ? metadata.reopened : []), record],
-    };
-    delete next.approvedAt;
-    delete next.closeReason;
-    delete next.readyForReviewAt;
-
-    const specPath = path.join(rootDir, '.specweave', 'increments', incrementId, 'spec.md');
-    const specBefore = fs.existsSync(specPath) ? fs.readFileSync(specPath, 'utf-8') : undefined;
-    this.updateSpecMdStatusSync(incrementId, IncrementStatus.PLANNED, rootDir);
-    try {
-      this.write(incrementId, next, rootDir);
-    } catch (error) {
-      if (specBefore !== undefined) fs.writeFileSync(specPath, specBefore);
-      throw error;
-    }
-    return next;
   }
 
   /**

@@ -161,31 +161,31 @@ describe('refusals change nothing (AC-03, AC-04)', () => {
 
   it('needs a reason', () => {
     const root = workspace();
-    const dir = increment(root, '1009-ps23');
-    const before = snapshot(dir);
+    increment(root, '1009-ps23');
+    const before = snapshot(root);
     expect(refusal(() => reopenIncrement({ incrementId: '1009', reason: '  ', workspace: root, env })).code).toBe('no-reason');
-    expect(snapshot(dir)).toEqual(before);
+    expect(snapshot(root)).toEqual(before);
   });
 
   it('needs an explicit workspace', () => {
     const root = workspace();
-    const dir = increment(root, '1009-ps23');
-    const before = snapshot(dir);
+    increment(root, '1009-ps23');
+    const before = snapshot(root);
     const cwd = vi.spyOn(process, 'cwd').mockReturnValue(root);
     expect(refusal(() => reopenIncrement({ incrementId: '1009', reason: 'r', env })).code).toBe('no-workspace');
     cwd.mockRestore();
-    expect(snapshot(dir)).toEqual(before);
+    expect(snapshot(root)).toEqual(before);
   });
 
   it('rejects a workspace that does not hold the increment (wrong root)', () => {
     const owner = workspace();
     const other = workspace();
-    const dir = increment(owner, '1009-ps23');
-    const before = snapshot(dir);
+    increment(owner, '1009-ps23');
+    const before = [snapshot(owner), snapshot(other)];
     const e = refusal(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: other, env }));
     expect(e.code).toBe('not-found');
     expect(e.message).toContain(other);
-    expect(snapshot(dir)).toEqual(before);
+    expect([snapshot(owner), snapshot(other)]).toEqual(before);
   });
 
   it('rejects an increment folder that resolves outside the workspace', () => {
@@ -193,31 +193,31 @@ describe('refusals change nothing (AC-03, AC-04)', () => {
     const other = workspace();
     const dir = increment(owner, '1009-ps23');
     fs.symlinkSync(dir, path.join(other, '.specweave', 'increments', '1009-ps23'), 'dir');
-    const before = snapshot(dir);
+    const before = snapshot(owner);
     expect(refusal(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: other, env })).code).toBe('outside-workspace');
-    expect(snapshot(dir)).toEqual(before);
+    expect(snapshot(owner)).toEqual(before);
   });
 
   it.each(['active', 'planned', 'paused', 'abandoned'])('rejects a %s increment', (status) => {
     const root = workspace();
-    const dir = increment(root, '1009-ps23', { status });
-    const before = snapshot(dir);
+    increment(root, '1009-ps23', { status });
+    const before = snapshot(root);
     const e = refusal(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env }));
     expect(e.code).toBe('not-completed');
     if (status === 'abandoned') expect(e.message).toContain('specweave resume');
-    expect(snapshot(dir)).toEqual(before);
+    expect(snapshot(root)).toEqual(before);
   });
 
   it('rejects tasks blocked, claimed or stale under another agent and names them', () => {
     const root = workspace();
-    const dir = increment(root, '1009-ps23', {
+    increment(root, '1009-ps23', {
       ledger: [
         { t: 'T-01', e: 'block', by: 'ps23-main', at: iso(5 * HOUR), note: 'waits' },
         { t: 'T-02', e: 'claim', by: 'ps23-main', at: iso(10 * HOUR) },
         { t: 'T-03', e: 'claim', by: 'codex@m3', at: iso(0.1 * HOUR) },
       ],
     });
-    const before = snapshot(dir);
+    const before = snapshot(root);
     const e = refusal(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env: { SPECWEAVE_AGENT: 'claude@m4' } }));
     expect(e.code).toBe('foreign-owner');
     expect(e.owners).toEqual([
@@ -226,7 +226,7 @@ describe('refusals change nothing (AC-03, AC-04)', () => {
       { task: 'T-03', status: 'claimed', by: 'codex@m3' },
     ]);
     expect(e.message).toContain('specweave task release');
-    expect(snapshot(dir)).toEqual(before);
+    expect(snapshot(root)).toEqual(before);
   });
 
   it('a holder of every open task may reopen; another holder still refuses it', () => {
@@ -239,6 +239,26 @@ describe('refusals change nothing (AC-03, AC-04)', () => {
     });
     expect(refusal(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env })).owners)
       .toEqual([{ task: 'T-02', status: 'claimed', by: 'codex@m3' }]);
+  });
+
+  it('a refusal leaves legacy config limits alone (no migration write)', () => {
+    const root = workspace({ limits: { maxActiveIncrements: 1, hardCap: 2 } });
+    increment(root, '1009-ps23', { status: 'active' });
+    const before = snapshot(root);
+    expect(refusal(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env })).code).toBe('not-completed');
+    expect(snapshot(root)).toEqual(before);
+  });
+
+  it.each(['metadata.json', 'spec.md', 'ledger.jsonl'])('refuses a symlinked %s and writes nothing', (name) => {
+    const root = workspace();
+    const outside = workspace();
+    const dir = increment(root, '1009-ps23');
+    const target = path.join(outside, name);
+    fs.renameSync(path.join(dir, name), target);
+    fs.symlinkSync(target, path.join(dir, name));
+    const before = [snapshot(root), snapshot(outside)];
+    expect(refusal(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env })).code).toBe('outside-workspace');
+    expect([snapshot(root), snapshot(outside)]).toEqual(before);
   });
 });
 
@@ -265,6 +285,85 @@ describe('capacity and repeats (AC-05)', () => {
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     expect(await reopenCommand('1009', { reason: 'second', workspace: root, env })).toBe(0);
     expect(snapshot(dir)).toEqual(before);
+  });
+});
+
+describe('transaction safety (AC-02, AC-04)', () => {
+  const env = { SPECWEAVE_AGENT: 'ps23-main' };
+
+  it('changes only the frontmatter status line, even without a final newline', () => {
+    const root = workspace();
+    const dir = increment(root, '1009-ps23');
+    const spec = '---\r\ntitle: "x: y"\r\nstatus: completed\r\nowner: ps23-main\r\n---\r\n# Body\r\n\r\n---\r\nstatus: not frontmatter';
+    fs.writeFileSync(path.join(dir, 'spec.md'), spec);
+    reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env });
+    expect(fs.readFileSync(path.join(dir, 'spec.md'), 'utf8')).toBe(spec.replace('status: completed', 'status: planned'));
+  });
+
+  it('keeps incomplete legacy metadata as written: no schema repair, only the reopen fields change', () => {
+    const root = workspace();
+    const dir = increment(root, '1009-ps23');
+    const legacy = { id: '1009-ps23', status: 'done', approvedAt: '2026-10-20T10:00:00.000Z', custom: { keep: [1, 2] } };
+    fs.writeFileSync(path.join(dir, 'metadata.json'), JSON.stringify(legacy) + '\n');
+    fs.writeFileSync(path.join(dir, 'spec.md'), '---\nstatus: done\nbroken: [\n---\n' + SPEC_BODY);
+    reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env, now: new Date('2026-10-23T22:00:00.000Z') });
+    const m = meta(dir);
+    expect(Object.keys(m)).toEqual(['id', 'status', 'custom', 'lastActivity', 'updated', 'reopened']);
+    expect(m).toMatchObject({ id: '1009-ps23', status: 'planned', custom: { keep: [1, 2] } });
+    expect(m.reopened[0]).toMatchObject({ approvedAt: '2026-10-20T10:00:00.000Z', by: 'ps23-main' });
+    expect(fs.readFileSync(path.join(dir, 'spec.md'), 'utf8')).toBe('---\nstatus: planned\nbroken: [\n---\n' + SPEC_BODY);
+  });
+
+  it('a ledger write between the checks and the commit aborts and restores spec.md', () => {
+    const root = workspace();
+    const dir = increment(root, '1009-ps23', { frontmatter: true });
+    const before = snapshot(root);
+    const e = refusal(() => reopenIncrement({
+      incrementId: '1009', reason: 'r', workspace: root, env,
+      beforeMetadataWrite: () => fs.appendFileSync(path.join(dir, 'ledger.jsonl'), JSON.stringify({ t: 'T-02', e: 'claim', by: 'codex@m3', at: new Date().toISOString() }) + '\n'),
+    }));
+    expect(e.code).toBe('changed');
+    const after = snapshot(root);
+    expect(after[path.join('.specweave', 'increments', '1009-ps23', 'spec.md')]).toBe(before[path.join('.specweave', 'increments', '1009-ps23', 'spec.md')]);
+    expect(after[path.join('.specweave', 'increments', '1009-ps23', 'metadata.json')]).toBe(before[path.join('.specweave', 'increments', '1009-ps23', 'metadata.json')]);
+    expect(meta(dir).status).toBe('completed');
+  });
+
+  it('a failed metadata write restores spec.md and releases the lock', () => {
+    const root = workspace();
+    const dir = increment(root, '1009-ps23', { frontmatter: true });
+    const before = snapshot(root);
+    expect(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env, beforeMetadataWrite: () => { throw new Error('disk full'); } }))
+      .toThrow('disk full');
+    expect(snapshot(root)).toEqual(before);
+    expect(fs.existsSync(path.join(dir, '.reopen.lock'))).toBe(false);
+  });
+
+  it('a second reopen while one holds the lock is refused; the first audit is kept', () => {
+    const root = workspace();
+    const dir = increment(root, '1009-ps23');
+    let inner: ReopenRefused | undefined;
+    reopenIncrement({
+      incrementId: '1009', reason: 'first', workspace: root, env,
+      beforeMetadataWrite: () => { inner = refusal(() => reopenIncrement({ incrementId: '1009', reason: 'second', workspace: root, env })); },
+    });
+    expect(inner?.code).toBe('busy');
+    expect(meta(dir).reopened.map((r: { reason: string }) => r.reason)).toEqual(['first']);
+    expect(fs.existsSync(path.join(dir, '.reopen.lock'))).toBe(false);
+  });
+
+  it('never follows a planted temp-file symlink out of the workspace', () => {
+    const root = workspace();
+    const outside = workspace();
+    const dir = increment(root, '1009-ps23', { frontmatter: true });
+    const evidence = path.join(outside, 'evidence.json');
+    fs.writeFileSync(evidence, 'external evidence');
+    for (const name of ['metadata.json.tmp', 'spec.md.tmp']) fs.symlinkSync(evidence, path.join(dir, name));
+    reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env });
+    expect(fs.readFileSync(evidence, 'utf8')).toBe('external evidence');
+    expect(fs.lstatSync(path.join(dir, 'metadata.json')).isFile()).toBe(true);
+    expect(meta(dir).status).toBe('planned');
+    expect(fs.readdirSync(dir).filter((n) => n.endsWith('.tmp')).sort()).toEqual(['metadata.json.tmp', 'spec.md.tmp']);
   });
 });
 
