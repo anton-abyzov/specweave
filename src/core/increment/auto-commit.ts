@@ -289,8 +289,7 @@ function unstage(git: (args: string[]) => GitRun, files: string[]): boolean {
  */
 function pushToUpstream(git: (args: string[], timeout?: number) => GitRun, branch: string, result: AutoCommitResult): void {
   const notPushed = (why: string) => result.warnings.push(`${result.subject ?? 'increment commit'} not pushed: ${why}`);
-  const remote = git(['config', '--get', `branch.${branch}.remote`]).out;
-  const merge = git(['config', '--get', `branch.${branch}.merge`]).out;
+  const { remote, merge } = upstreamOf(git, branch) ?? { remote: '', merge: '' };
   const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']).out;
   if (!remote || remote === '.' || !merge || !upstream) {
     notPushed(`${branch} has no upstream on a remote (set one with \`git push -u\`)`);
@@ -327,18 +326,29 @@ function pushToUpstream(git: (args: string[], timeout?: number) => GitRun, branc
 }
 
 /**
+ * The branch's upstream as git resolves `@{u}` (and so `pushHandoff`): the
+ * first `merge` value, none when half set. `config --get` would read the last.
+ */
+function upstreamOf(git: (args: string[]) => GitRun, branch: string): { remote: string; merge: string; short: string } | null {
+  const ref = `refs/heads/${branch}`;
+  const r = git(['for-each-ref', '--format=%(refname)%00%(upstream:remotename)%00%(upstream:remoteref)%00%(upstream:short)', ref]);
+  for (const line of r.out.split('\n')) {
+    const [name, remote = '', merge = '', short = ''] = line.split('\0');
+    if (name === ref) return remote && merge ? { remote, merge, short } : null;
+  }
+  return null;
+}
+
+/**
  * Why pushing `branch` to its upstream would land it somewhere else: a local
  * upstream or a differently named branch. Undefined when it is a same-named
- * branch on a remote, or when there is no upstream at all (a half-set one,
- * remote without merge or the reverse, does not resolve as `@{u}` either).
+ * branch on a remote, or when there is no upstream at all.
  */
 function upstreamProblem(git: (args: string[]) => GitRun, branch: string): string | undefined {
-  const remote = git(['config', '--get', `branch.${branch}.remote`]).out;
-  const merge = git(['config', '--get', `branch.${branch}.merge`]).out;
-  if (!remote || !merge) return undefined;
-  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']).out || `${remote}/${merge.replace(/^refs\/heads\//, '')}`;
-  if (remote === '.') return `${branch} tracks the local branch ${upstream}`;
-  if (merge !== `refs/heads/${branch}`) return `${branch} tracks ${upstream}, a different branch`;
+  const up = upstreamOf(git, branch);
+  if (!up) return undefined;
+  if (up.remote === '.') return `${branch} tracks the local branch ${up.short}`;
+  if (up.merge !== `refs/heads/${branch}`) return `${branch} tracks ${up.short}, a different branch`;
   return undefined;
 }
 
