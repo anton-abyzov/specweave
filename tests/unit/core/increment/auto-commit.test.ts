@@ -143,6 +143,18 @@ describe('commit', () => {
     expect(git(repo, 'ls-files', '--', `${INC}/ledger.jsonl`)).toBe('');
   });
 
+  it('filters an ignored file in a non-ASCII folder', () => {
+    write('.gitignore', '.specweave/state/\n.specweave/increments/*/ledger.jsonl\n');
+    git(repo, 'commit', '-qam', 'ignore ledgers');
+    const dir = '.specweave/increments/0043-проект';
+    write(`${dir}/spec.md`, '# Проект\n');
+    write(`${dir}/ledger.jsonl`, '{}\n');
+    const r = autoCommitIncrement(repo, path.join(repo, dir), { incrementId: '0043-проект', action: 'create' });
+    expect(r.status).toBe('committed');
+    expect(git(repo, '-c', 'core.quotePath=false', 'show', '--name-only', '--format=', 'HEAD')).toBe(`${dir}/spec.md`);
+    expect(staged()).toEqual([]);
+  });
+
   it('reports nothing when the folder is ignored or unchanged', () => {
     writeIncrement();
     run();
@@ -202,6 +214,24 @@ describe('failures stay warnings', () => {
     expect(git(repo, 'rev-parse', 'HEAD')).toBe(before);
     expect(staged()).toEqual(['src/other.ts']);
     expect(git(repo, 'status', '--porcelain', '--', `${INC}/spec.md`)).toBe(`?? ${INC}/spec.md`);
+  });
+
+  it('never stages a deletion when another lane committed the file meanwhile', () => {
+    // The hook plays a second lane: it commits spec.md through its own index, then fails ours.
+    const spec = `${INC}/spec.md`;
+    hook('pre-commit', [
+      `export GIT_INDEX_FILE="${path.join(base, 'other-index')}"`,
+      'git read-tree HEAD',
+      `git update-index --add --cacheinfo 100644,$(git hash-object -w ${spec}),${spec}`,
+      'git update-ref HEAD "$(git commit-tree "$(git write-tree)" -p HEAD -m "other lane")"',
+      'exit 1',
+    ].join('\n'));
+    writeIncrement();
+    const r = run();
+    expect(r.status).toBe('failed');
+    expect(headSubject()).toBe('other lane');
+    expect(git(repo, 'diff', '--cached', '--name-status')).not.toContain(`D\t${spec}`);
+    expect(git(repo, 'status', '--porcelain', '--', spec)).toBe('');
   });
 
   it('skips a detached HEAD', () => {

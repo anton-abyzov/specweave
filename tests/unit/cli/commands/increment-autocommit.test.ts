@@ -200,6 +200,15 @@ describe('task commands', () => {
     expect(stderr.join('')).not.toContain('HEAD subject "0042: claim');
   });
 
+  it('a work commit whose body quotes an auto-commit subject still counts', async () => {
+    config({ autoCommitIncrement: true });
+    git(repo, 'commit', '-q', '--allow-empty', '-m', '0042: squash the form work', '-m', '0042: done T-09');
+    const work = git(repo, 'rev-parse', '--short', 'HEAD');
+    git(repo, 'commit', '-q', '--allow-empty', '-m', '0042: claim T-01');
+    expect(await task('done', 'T-01', { evidence: 'tests pass' })).toBe(0);
+    expect(ledger().find((e) => e.e === 'done')?.evidence).toContain(`HEAD ${work}`);
+  });
+
   it('JSON output carries the commit', async () => {
     config({ autoCommitIncrement: true });
     expect(await task('done', 'T-01', { evidence: 'ok', json: true })).toBe(0);
