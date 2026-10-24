@@ -289,9 +289,8 @@ function unstage(git: (args: string[]) => GitRun, files: string[]): boolean {
  */
 function pushToUpstream(git: (args: string[], timeout?: number) => GitRun, branch: string, result: AutoCommitResult): void {
   const notPushed = (why: string) => result.warnings.push(`${result.subject ?? 'increment commit'} not pushed: ${why}`);
-  const { remote, merge } = upstreamOf(git, branch) ?? { remote: '', merge: '' };
-  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']).out;
-  if (!remote || remote === '.' || !merge || !upstream) {
+  const up = upstreamOf(git, branch);
+  if (!up || up.remote === '.') {
     notPushed(`${branch} has no upstream on a remote (set one with \`git push -u\`)`);
     return;
   }
@@ -301,54 +300,80 @@ function pushToUpstream(git: (args: string[], timeout?: number) => GitRun, branc
     return;
   }
   const pushRemote = git(['config', '--get', `branch.${branch}.pushRemote`]).out || git(['config', '--get', 'remote.pushDefault']).out;
-  if (pushRemote && pushRemote !== remote) {
-    notPushed(`${branch} pushes to ${pushRemote}, not its upstream ${remote}; push it yourself`);
+  if (pushRemote && pushRemote !== up.remote) {
+    notPushed(`${branch} pushes to ${pushRemote}, not its upstream ${up.remote}; push it yourself`);
+    return;
+  }
+  if (git(['rev-parse', '--verify', '--quiet', '@{u}']).code !== 0) {
+    notPushed(`${up.short} has not been fetched; fetch first`);
     return;
   }
   if (git(['merge-base', '--is-ancestor', '@{u}', 'HEAD']).code !== 0) {
-    notPushed(`${branch} has diverged from ${upstream}; pull first`);
+    notPushed(`${branch} has diverged from ${up.short}; pull first`);
     return;
   }
-  const pending = git(['log', '--format=%s', '@{u}..HEAD']);
-  const others = pending.code === 0 ? pending.out.split('\n').filter((s) => s && !isAutoCommitSubject(s)).length : -1;
+  const others = unpushedOthers(git);
   if (others !== 0) {
     notPushed(others > 0
       ? `${others} other unpushed commit${others === 1 ? '' : 's'} on ${branch} would go with it; push yourself`
-      : `could not list the unpushed commits (${firstLine(pending.err)})`);
+      : 'could not list the unpushed commits');
     return;
   }
-  const pushed = git(['push', '--quiet', remote, `HEAD:${merge}`], PUSH_TIMEOUT_MS);
+  const pushed = git(['push', '--quiet', up.remote, `HEAD:${up.merge}`], PUSH_TIMEOUT_MS);
   if (pushed.code !== 0) {
     notPushed(`git push failed (${firstLine(pushed.err) || `exit ${pushed.code}`})`);
     return;
   }
-  result.pushed = upstream;
+  result.pushed = up.short;
+}
+
+const BOOKKEEPING_FILES = new Set<string>([...AUTO_COMMIT_FILES, ...TRACKED_ONLY_FILES]);
+
+/**
+ * Unpushed commits that are not auto-commits, or -1 when they cannot be
+ * listed. An auto-commit has an auto subject and touches only bookkeeping
+ * files, so a code commit titled `0042: done T-02` still counts.
+ */
+function unpushedOthers(git: (args: string[]) => GitRun): number {
+  const log = git(['-c', 'core.quotePath=false', 'log', '--format=%x00%s', '--name-only', '@{u}..HEAD']);
+  if (log.code !== 0) return -1;
+  return log.out.split('\0').slice(1).filter((entry) => {
+    const [subject = '', ...rest] = entry.split('\n');
+    const files = rest.filter(Boolean);
+    return !(isAutoCommitSubject(subject) && files.length && files.every((f) => BOOKKEEPING_FILES.has(path.posix.basename(f))));
+  }).length;
 }
 
 /**
  * The branch's upstream as git resolves `@{u}` (and so `pushHandoff`): the
  * first `merge` value, none when half set. `config --get` would read the last.
+ * `tracking` is the remote-tracking ref, empty when no fetch refspec maps it.
  */
-function upstreamOf(git: (args: string[]) => GitRun, branch: string): { remote: string; merge: string; short: string } | null {
+function upstreamOf(git: (args: string[]) => GitRun, branch: string): { remote: string; merge: string; short: string; tracking: string } | null {
   const ref = `refs/heads/${branch}`;
-  const r = git(['for-each-ref', '--format=%(refname)%00%(upstream:remotename)%00%(upstream:remoteref)%00%(upstream:short)', ref]);
+  const r = git(['for-each-ref', '--format=%(refname)%00%(upstream:remotename)%00%(upstream:remoteref)%00%(upstream:short)%00%(upstream)', ref]);
   for (const line of r.out.split('\n')) {
-    const [name, remote = '', merge = '', short = ''] = line.split('\0');
-    if (name === ref) return remote && merge ? { remote, merge, short } : null;
+    const [name, remote = '', merge = '', short = '', tracking = ''] = line.split('\0');
+    if (name === ref) return remote && merge ? { remote, merge, short, tracking } : null;
   }
   return null;
 }
 
 /**
  * Why pushing `branch` to its upstream would land it somewhere else: a local
- * upstream or a differently named branch. Undefined when it is a same-named
- * branch on a remote, or when there is no upstream at all.
+ * upstream, a differently named branch, or a fetch refspec that files it under
+ * another name (`pushHandoff` pushes to the name it reads off `@{u}`).
+ * Undefined when it is a same-named branch on a remote, or when there is no
+ * upstream at all.
  */
 function upstreamProblem(git: (args: string[]) => GitRun, branch: string): string | undefined {
   const up = upstreamOf(git, branch);
   if (!up) return undefined;
   if (up.remote === '.') return `${branch} tracks the local branch ${up.short}`;
   if (up.merge !== `refs/heads/${branch}`) return `${branch} tracks ${up.short}, a different branch`;
+  if (up.tracking !== `refs/remotes/${up.remote}/${branch}`) {
+    return `${branch}'s upstream is fetched as ${up.short || 'no remote-tracking branch'}, not ${up.remote}/${branch}`;
+  }
   return undefined;
 }
 

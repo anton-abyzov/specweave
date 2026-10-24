@@ -449,6 +449,45 @@ describe('push', () => {
     expect(remoteHead()).toBe(before);
   });
 
+  it('skips a same-named upstream that a fetch refspec files under another name', () => {
+    pushOn();
+    git(repo, 'checkout', '-q', '-b', 'feat/x');
+    git(repo, 'push', '-q', '-u', 'origin', 'feat/x');
+    git(repo, 'config', 'remote.origin.fetch', '+refs/heads/*:refs/remotes/origin/team/*');
+    git(repo, 'fetch', '-q');
+    git(repo, 'branch', '-q', '--set-upstream-to=origin/team/feat/x');
+    writeIncrement();
+    const r = run({ callerPushesBranch: true });
+    expect(r.status).toBe('skipped');
+    expect(r.warnings[0]).toContain("feat/x's upstream is fetched as origin/team/feat/x, not origin/feat/x");
+    expect(git(remote, 'for-each-ref', '--format=%(refname)', 'refs/heads/team')).toBe('');
+  });
+
+  it('does not push a code commit that borrows an auto-commit subject', () => {
+    pushOn();
+    write('src/feature.ts', 'export {};\n');
+    git(repo, 'add', 'src/feature.ts');
+    git(repo, 'commit', '-qm', '0042: done T-02');
+    writeIncrement();
+    const before = remoteHead();
+    const r = run();
+    expect(r.status).toBe('committed');
+    expect(r.pushed).toBeUndefined();
+    expect(r.warnings[0]).toContain('1 other unpushed commit on develop');
+    expect(remoteHead()).toBe(before);
+  });
+
+  it('says so when the upstream has not been fetched', () => {
+    pushOn();
+    git(repo, 'checkout', '-q', '-b', 'feat/z');
+    git(repo, 'config', 'branch.feat/z.remote', 'origin');
+    git(repo, 'config', 'branch.feat/z.merge', 'refs/heads/feat/z');
+    writeIncrement();
+    const r = run();
+    expect(r.status).toBe('committed');
+    expect(r.warnings[0]).toContain('origin/feat/z has not been fetched');
+  });
+
   it('treats a half-set upstream as none when the caller pushes the branch', () => {
     git(repo, 'checkout', '-q', '-b', 'feat/y');
     git(repo, 'config', 'branch.feat/y.remote', 'origin');
