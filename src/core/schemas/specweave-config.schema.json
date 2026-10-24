@@ -563,6 +563,22 @@
         }
       }
     },
+    "git": {
+      "type": "object",
+      "description": "Commits of the increment's own spec.md, ledger.jsonl and metadata.json",
+      "properties": {
+        "autoCommitIncrement": {
+          "type": "boolean",
+          "default": false,
+          "description": "Commit those files (pathspec only, hooks run) after task, create-increment and handoff; --no-commit skips one command"
+        },
+        "autoPushIncrement": {
+          "type": "boolean",
+          "default": false,
+          "description": "After an auto-commit, fast-forward push the branch to its upstream"
+        }
+      }
+    },
     "testing": {
       "type": "object",
       "description": "Testing configuration including TDD mode, coverage targets, and browser automation",

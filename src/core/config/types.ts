@@ -765,6 +765,17 @@ export interface TasksConfig {
 }
 
 /**
+ * Commits of the increment's own bookkeeping files (spec.md, ledger.jsonl,
+ * metadata.json). Read by core/increment/auto-commit.ts.
+ */
+export interface IncrementGitConfig {
+  /** Commit those files after `task`, `create-increment` and `handoff`. Default false. */
+  autoCommitIncrement?: boolean;
+  /** Then fast-forward push the branch to its upstream. Default false. */
+  autoPushIncrement?: boolean;
+}
+
+/**
  * Main SpecWeave configuration
  */
 /**
@@ -822,6 +833,9 @@ export interface SpecWeaveConfig {
 
   /** Task-ledger settings. Read by core/tasks/resolve-increment.ts. */
   tasks?: TasksConfig;
+
+  /** Opt-in commit (and push) of increment files. Read by core/increment/auto-commit.ts. */
+  git?: IncrementGitConfig;
 
   /** External tracker sync (GitHub first-class; Jira/ADO community). */
   sync?: SyncConfiguration;
@@ -908,6 +922,7 @@ export const KNOWN_CONFIG_KEYS = [
   'planning',
   'auto',
   'tasks',
+  'git',
   'sync',
   'livingDocs',
   'lsp',
