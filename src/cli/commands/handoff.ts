@@ -154,6 +154,9 @@ export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<
     throw err;
   }
 
+  // Commit warnings go to stderr, also with --json, like the task commands'.
+  for (const w of result.commit?.warnings ?? []) process.stderr.write(`warning: ${w}\n`);
+
   if (opts.json) {
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
     return;
@@ -169,7 +172,7 @@ export async function handoffCommand(opts: HandoffCommandOptions = {}): Promise<
   if (result.push?.wipRef) what.push('pushed your uncommitted edits');
   else if (result.push?.handoffRef) what.push('pushed the handoff');
   out.push(`Handed off${result.incrementId ? ` ${result.incrementId}` : ''}${what.length ? ` (${what.join(', ')})` : ''}.`);
-  for (const w of [...(result.commit?.warnings ?? []), ...(result.push?.warnings ?? [])]) out.push(`warning: ${w}`);
+  for (const w of result.push?.warnings ?? []) out.push(`warning: ${w}`);
   if (result.push?.handoffRef) {
     out.push('To continue in any tool, machine or account, say "pick up" there (or run `specweave pickup`).');
   } else if (opts.inline) {

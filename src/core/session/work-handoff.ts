@@ -215,6 +215,7 @@ export async function buildWorkHandoff(repoRoot: string, opts: WorkHandoffOption
     commit = autoCommitIncrement(effectiveRoot, incDir, {
       incrementId, action: 'handoff', commit: opts.commit,
       push: opts.push === false || branchPushCarriesIt ? false : undefined,
+      callerPushesBranch: branchPushCarriesIt,
     });
   }
   // The snapshot is taken after the doc is written, so it carries the doc.
