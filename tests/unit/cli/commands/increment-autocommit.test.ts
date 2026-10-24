@@ -307,6 +307,21 @@ describe('handoff', () => {
     expect(git(remote, 'rev-parse', 'refs/heads/develop')).toBe(before);
   });
 
+  it('skips the commit when a fetch refspec files the upstream under another name', async () => {
+    config({ autoCommitIncrement: true });
+    git(repo, 'push', '-q');
+    git(repo, 'checkout', '-q', '-b', 'feat/x');
+    git(repo, 'push', '-q', '-u', 'origin', 'feat/x');
+    git(repo, 'config', 'remote.origin.fetch', '+refs/heads/*:refs/remotes/origin/team/*');
+    git(repo, 'fetch', '-q');
+    git(repo, 'branch', '-q', '--set-upstream-to=origin/team/feat/x');
+    const head = git(repo, 'rev-parse', 'HEAD');
+    const result = await buildWorkHandoff(repo, { incrementId: INC_ID, agent: 'tester' });
+    expect(result.commit?.status).toBe('skipped');
+    expect(git(repo, 'rev-parse', 'HEAD')).toBe(head);
+    expect(git(remote, 'for-each-ref', '--format=%(refname)', 'refs/heads/team')).toBe('');
+  });
+
   it('handoff --json still prints commit warnings on stderr', async () => {
     config({ autoCommitIncrement: true });
     git(repo, 'checkout', '-q', '--detach');
