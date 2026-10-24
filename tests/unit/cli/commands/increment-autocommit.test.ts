@@ -322,6 +322,32 @@ describe('handoff', () => {
     expect(git(remote, 'for-each-ref', '--format=%(refname)', 'refs/heads/team')).toBe('');
   });
 
+  it('holds the branch push when only earlier auto-commits would land on a differently named upstream', async () => {
+    config({ autoCommitIncrement: true });
+    git(repo, 'push', '-q');
+    // `git checkout -b feat/x origin/develop` tracks origin/develop.
+    git(repo, 'checkout', '-q', '-b', 'feat/x', 'origin/develop');
+    expect(await task('claim', 'T-01')).toBe(0);
+    expect(subjects()[0]).toBe('0042: claim T-01');
+    const before = git(remote, 'rev-parse', 'refs/heads/develop');
+    const result = await buildWorkHandoff(repo, { incrementId: INC_ID, agent: 'tester' });
+    expect(result.commit?.status).toBe('skipped');
+    expect(result.push?.branch).toBeUndefined();
+    expect(result.push?.warnings.join('\n')).toContain('branch not pushed: feat/x tracks origin/develop, a different branch, and only increment auto-commits are unpushed');
+    expect(git(remote, 'rev-parse', 'refs/heads/develop')).toBe(before);
+    expect(git(remote, 'for-each-ref', '--format=%(refname)', 'refs/heads/specweave-handoff')).toBe('refs/heads/specweave-handoff');
+  });
+
+  it('still pushes a same-named branch that is ahead by auto-commits', async () => {
+    config({ autoCommitIncrement: true });
+    git(repo, 'checkout', '-q', '-b', 'feat/x');
+    git(repo, 'push', '-q', '-u', 'origin', 'feat/x');
+    expect(await task('claim', 'T-01')).toBe(0);
+    const result = await buildWorkHandoff(repo, { incrementId: INC_ID, agent: 'tester' });
+    expect(result.push?.branch).toBe('feat/x');
+    expect(git(remote, 'rev-parse', 'refs/heads/feat/x')).toBe(git(repo, 'rev-parse', 'HEAD'));
+  });
+
   it('handoff --json still prints commit warnings on stderr', async () => {
     config({ autoCommitIncrement: true });
     git(repo, 'checkout', '-q', '--detach');

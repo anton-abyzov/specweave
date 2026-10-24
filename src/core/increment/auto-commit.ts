@@ -327,21 +327,44 @@ function pushToUpstream(git: (args: string[], timeout?: number) => GitRun, branc
   result.pushed = up.short;
 }
 
-const BOOKKEEPING_FILES = new Set<string>([...AUTO_COMMIT_FILES, ...TRACKED_ONLY_FILES]);
+/** An increment's bookkeeping file, in `_archive`/`_abandoned`/`_paused` too. */
+const BOOKKEEPING_PATH = /(^|\/)\.specweave\/increments\/(_[a-z]+\/)?[^/]+\/(spec\.md|ledger\.jsonl|metadata\.json|handoff\.md)$/;
 
 /**
  * Unpushed commits that are not auto-commits, or -1 when they cannot be
- * listed. An auto-commit has an auto subject and touches only bookkeeping
- * files, so a code commit titled `0042: done T-02` still counts.
+ * listed. An auto-commit has an auto subject and touches only increment
+ * bookkeeping files, so a code commit titled `0042: done T-02` still counts.
+ * `--no-renames` lists a rename's source path too.
  */
 function unpushedOthers(git: (args: string[]) => GitRun): number {
-  const log = git(['-c', 'core.quotePath=false', 'log', '--format=%x00%s', '--name-only', '@{u}..HEAD']);
+  const log = git(['-c', 'core.quotePath=false', '-c', 'log.showSignature=false', 'log', '--no-renames', '--format=%x00%s', '--name-only', '@{u}..HEAD']);
   if (log.code !== 0) return -1;
   return log.out.split('\0').slice(1).filter((entry) => {
     const [subject = '', ...rest] = entry.split('\n');
     const files = rest.filter(Boolean);
-    return !(isAutoCommitSubject(subject) && files.length && files.every((f) => BOOKKEEPING_FILES.has(path.posix.basename(f))));
+    return !(isAutoCommitSubject(subject) && files.length && files.every((f) => BOOKKEEPING_PATH.test(f)));
   }).length;
+}
+
+/**
+ * Why `handoff` should hold its branch push: the branch is ahead of a local
+ * or differently named upstream by auto-commits alone, so the push would land
+ * only this bookkeeping there. Undefined otherwise, including when other
+ * commits are unpushed (the branch push is then the user's, as before).
+ */
+export function autoCommitPushHold(dir: string): string | undefined {
+  const at = gitLocate(dir);
+  if (!at) return undefined;
+  const git = (args: string[]) => runGit(at.top, args);
+  const head = git(['symbolic-ref', '--quiet', 'HEAD']);
+  if (head.code !== 0 || !head.out.startsWith('refs/heads/')) return undefined;
+  const branch = head.out.slice('refs/heads/'.length);
+  const problem = upstreamProblem(git, branch);
+  // Without a resolvable `@{u}` the handoff pushes to a same-named branch.
+  if (!problem || git(['rev-parse', '--verify', '--quiet', '@{u}']).code !== 0) return undefined;
+  const ahead = Number(git(['rev-list', '--count', '@{u}..HEAD']).out || '0');
+  if (!ahead || unpushedOthers(git) !== 0) return undefined;
+  return `${problem}, and only increment auto-commits are unpushed; push them yourself`;
 }
 
 /**

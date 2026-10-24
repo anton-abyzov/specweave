@@ -477,6 +477,19 @@ describe('push', () => {
     expect(remoteHead()).toBe(before);
   });
 
+  it('does not push an auto-titled commit outside the increment folders', () => {
+    pushOn();
+    write('docs/private/spec.md', 'private\n');
+    git(repo, 'add', 'docs/private/spec.md');
+    git(repo, 'commit', '-qm', '0042: done T-02');
+    writeIncrement();
+    const before = remoteHead();
+    const r = run();
+    expect(r.pushed).toBeUndefined();
+    expect(r.warnings[0]).toContain('1 other unpushed commit on develop');
+    expect(remoteHead()).toBe(before);
+  });
+
   it('says so when the upstream has not been fetched', () => {
     pushOn();
     git(repo, 'checkout', '-q', '-b', 'feat/z');
