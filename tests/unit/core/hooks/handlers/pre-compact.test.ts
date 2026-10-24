@@ -138,14 +138,19 @@ describe('pre-compact', () => {
       mkActive(repo, '0001-one', '0002-two');
       home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-precompact-home-'));
       write(studioThreadBindingFile('thread-b', home), { version: 1, threadId: 'thread-b', incrementId: '0002-two', root: repo });
-      const saved = { HOME: process.env.HOME, T: process.env.SPECWEAVE_STUDIO_THREAD_ID };
+      // os.homedir() reads HOME on POSIX and USERPROFILE on Windows.
+      const keys = ['HOME', 'USERPROFILE', 'SPECWEAVE_STUDIO_THREAD_ID'] as const;
+      const saved = keys.map((k) => process.env[k]);
       process.env.HOME = home;
+      process.env.USERPROFILE = home;
       process.env.SPECWEAVE_STUDIO_THREAD_ID = 'thread-b';
       try {
         expect(await writeAutoHandoff(createContext(repo), {}, 'auto: pre-compact')).toBe(true);
       } finally {
-        if (saved.HOME === undefined) delete process.env.HOME; else process.env.HOME = saved.HOME;
-        if (saved.T === undefined) delete process.env.SPECWEAVE_STUDIO_THREAD_ID; else process.env.SPECWEAVE_STUDIO_THREAD_ID = saved.T;
+        keys.forEach((k, i) => {
+          if (saved[i] === undefined) delete process.env[k];
+          else process.env[k] = saved[i];
+        });
       }
       const docs = handoffDocs(repo).join('\n');
       expect(docs).toContain('0002-two');
