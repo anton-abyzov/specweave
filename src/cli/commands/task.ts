@@ -2,7 +2,7 @@
  * CLI: `specweave task <action> …` — the multi-vendor task ledger.
  *
  *   task whoami                         print the agent id
- *   task list [inc] [--json]            table: task, status, by, evidence
+ *   task list [inc] [--json [--full]]   table: task, status, by, evidence
  *   task next [inc] [--json]            first open task with deps met + no Files overlap
  *   task claim T-01 [inc] [--force]     append a claim (exit 3 lost race, 4 Files overlap)
  *   task done T-01 [inc] --evidence "…" | --run "<cmd>"   (exit 5 when the command fails;
@@ -15,6 +15,10 @@
  * `claim`, `done` and `block` accept `--line "<card text>"` (max 100 chars,
  * longer text is truncated with a warning) and `--link <url or path>`; they
  * feed the card checklist (`specweave cards --md`).
+ *
+ * `--json` on `list` and `done` prints compact JSON: a `--run` evidence shows
+ * its command line and HEAD, with `evidenceBytes` and `evidenceLog` in place of
+ * the 50-line output tail. `--full` prints the evidence verbatim, pretty-printed.
  *
  * `inc` defaults to the single active increment. Every command is read+append
  * only on ledger.jsonl. Task definitions (spec.md `## Tasks`, or a legacy
@@ -40,6 +44,7 @@ import {
   normalizeTaskId,
   writeRenderedTasksMd,
   renderBoardTable,
+  compactEvidence,
   type TaskBoard,
   type BoardTask,
 } from '../../core/tasks/task-board.js';
@@ -55,6 +60,8 @@ export interface TaskCommandOptions {
   /** Alias of --note; mandatory for `skip`. */
   reason?: string;
   json?: boolean;
+  /** With `--json` on `list` / `done`: print evidence verbatim, pretty-printed. */
+  full?: boolean;
   allMine?: boolean;
   /** `render --write`: refresh a legacy tasks.md from the ledger. */
   write?: boolean;
@@ -141,11 +148,16 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   for (const w of board.warnings) err(`warning: ${w}`);
 
   if (action === 'list') {
-    if (opts.json) {
+    if (opts.json && opts.full) {
       out(JSON.stringify({
         increment: inc.id, agent, counts: board.counts, malformed: board.fold.malformed,
         tasks: board.tasks.map((t) => ({ id: t.id, title: t.title, status: t.state.status, by: t.state.by, since: t.state.since, evidence: t.state.evidence, note: t.state.note, files: t.filesAffected ?? [], test: t.test, acs: t.acs ?? [] })),
       }, null, 2));
+    } else if (opts.json) {
+      out(JSON.stringify({
+        increment: inc.id, agent, counts: board.counts, malformed: board.fold.malformed,
+        tasks: board.tasks.map((t) => ({ id: t.id, title: t.title, status: t.state.status, by: t.state.by, since: t.state.since, ...compactEvidence(t.state.evidence), note: t.state.note, files: t.filesAffected ?? [], test: t.test, acs: t.acs ?? [] })),
+      }));
     } else {
       out(`${inc.id} — agent ${agent}`);
       out(renderBoardTable(board));
@@ -268,7 +280,9 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       }
       const c = board.counts;
       const allDone = c.done + c.skipped === c.total && c.total > 0;
-      out(opts.json ? JSON.stringify({ done: taskId, evidence, log: logPath ? rel(projectRoot, logPath) : undefined, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}) }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
+      const log = logPath ? rel(projectRoot, logPath) : undefined;
+      const shown: { evidence?: string; evidenceBytes?: number } = opts.full ? { evidence } : compactEvidence(evidence);
+      out(opts.json ? JSON.stringify({ done: taskId, evidence: shown.evidence, evidenceBytes: shown.evidenceBytes, log, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}) }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
       if (allDone) finishedAll(inc.id);
       return 0;
     }

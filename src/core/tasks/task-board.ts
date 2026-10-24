@@ -280,3 +280,37 @@ export function writeRenderedTasksMd(board: TaskBoard): boolean {
   if (after !== before) fs.writeFileSync(tasksFile, after, 'utf-8');
   return after !== before;
 }
+
+/** What `task list --json` and `task done --json` print for one task's evidence. */
+export interface CompactEvidence {
+  evidence?: string;
+  /** UTF-8 size of the stored evidence; set only when the view left lines out. */
+  evidenceBytes?: number;
+  /** Full command output of a `--run` (`reports/task-T-NN.txt`). */
+  evidenceLog?: string;
+}
+
+const RUN_HEAD_RE = / → exit 0$/;
+const LOG_LINE_PREFIX = 'log: ';
+const HEAD_LINE_RE = /^HEAD [0-9a-f]{7,40}$/;
+
+/**
+ * Compact view of a ledger `evidence` string. `task done --run` stores
+ * `<cmd> → exit 0`, `log: <path>`, the last 50 output lines, any `--evidence`
+ * text and `HEAD <sha>`. The view keeps the command line and the HEAD line and
+ * points at the log instead of repeating the tail; `evidenceBytes` says how
+ * much the ledger holds. Evidence an agent wrote by hand is returned
+ * unchanged. The ledger itself is never touched: `--full` prints it verbatim.
+ */
+export function compactEvidence(evidence: string | undefined): CompactEvidence {
+  if (!evidence) return { evidence };
+  const lines = evidence.split('\n');
+  if (lines.length < 3 || !RUN_HEAD_RE.test(lines[0]) || !lines[1].startsWith(LOG_LINE_PREFIX)) return { evidence };
+  const last = lines[lines.length - 1];
+  const kept = [lines[0], ...(HEAD_LINE_RE.test(last) ? [last] : [])];
+  return {
+    evidence: kept.join('\n'),
+    evidenceBytes: Buffer.byteLength(evidence, 'utf8'),
+    evidenceLog: lines[1].slice(LOG_LINE_PREFIX.length).trim(),
+  };
+}

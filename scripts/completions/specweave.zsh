@@ -149,7 +149,8 @@ _specweave() {
                         '--write[With `render`\: refresh a legacy tasks.md from the ledger]' \
                         '--line[Card text for claim/done/block (max 100 chars, longer text is truncated)]' \
                         '--link[Card link for claim/done/block (PR URL, report path, artifact URL)]' \
-                        '--json[Machine-readable output]' \
+                        '--json[Machine-readable output (compact\: --run evidence shows its command, HEAD, byte count and log path)]' \
+                        '--full[With --json on list/done\: print evidence verbatim, pretty-printed]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;

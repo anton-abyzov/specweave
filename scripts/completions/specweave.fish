@@ -121,7 +121,8 @@ complete -c specweave -n "__fish_seen_subcommand_from task" -l all-mine -d "With
 complete -c specweave -n "__fish_seen_subcommand_from task" -l write -d "With `render`: refresh a legacy tasks.md from the ledger"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l line -d "Card text for claim/done/block (max 100 chars, longer text is truncated)"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l link -d "Card link for claim/done/block (PR URL, report path, artifact URL)"
-complete -c specweave -n "__fish_seen_subcommand_from task" -l json -d "Machine-readable output"
+complete -c specweave -n "__fish_seen_subcommand_from task" -l json -d "Machine-readable output (compact: --run evidence shows its command, HEAD, byte count and log path)"
+complete -c specweave -n "__fish_seen_subcommand_from task" -l full -d "With --json on list/done: print evidence verbatim, pretty-printed"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l workspace -d "Select the planning workspace explicitly"
 
 # card

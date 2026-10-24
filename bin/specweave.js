@@ -154,7 +154,8 @@ program
   .option('--write', 'With `render`: refresh a legacy tasks.md from the ledger')
   .option('--line <text>', 'Card text for claim/done/block (max 100 chars, longer text is truncated)')
   .option('--link <url>', 'Card link for claim/done/block (PR URL, report path, artifact URL)')
-  .option('--json', 'Machine-readable output')
+  .option('--json', 'Machine-readable output (compact: --run evidence shows its command, HEAD, byte count and log path)')
+  .option('--full', 'With --json on list/done: print evidence verbatim, pretty-printed')
   .action(async (action, taskOrIncrement, increment, options) => {
     const { taskCommand } = await import('../dist/src/cli/commands/task.js');
     process.exitCode = await taskCommand(action, taskOrIncrement, increment, options);

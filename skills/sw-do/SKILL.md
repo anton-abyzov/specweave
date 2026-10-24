@@ -37,7 +37,9 @@ hold, and notes left for you. No increment yet? Run sw-increment first.
    `specweave task skip T-03 --reason "<why>"`. Then back to 1.
 
 Commands take the increment id last (`specweave task next 0042`) when more than one
-increment is active. `specweave task list` shows the whole board. For a status, print
+increment is active. `specweave task list` shows the whole board. With `--json`, a `--run`
+evidence shows its command and HEAD plus `evidenceLog` and `evidenceBytes`; open the log,
+or add `--full`, only when you need the output itself. For a status, print
 `specweave cards --md`: one `✓ / ✱ / ○ text (link)` line per task. Work with no
 increment: `specweave card add "<text>"`, then `card start|done|wait C-01`.
 
@@ -92,16 +94,27 @@ Out of tokens, switching tool or account: `specweave handoff --reason "<why>"` (
 ## Manual path (no CLI)
 
 Read the tasks from spec.md and the state from `ledger.jsonl`: the next task is the lowest
-T-id nobody holds whose Files no live claim holds. Append one JSON object per line, keys
-in this order, UTF-8, LF:
+T-id nobody holds whose Files no live claim holds. Print only each task's last event, not
+the whole file (evidence fills most of it). That event is the task's state unless the task
+was already done or skipped, or another agent's claim under 2 hours old still holds it.
 
 ```bash
 L=.specweave/increments/0042-ledger-fold/ledger.jsonl
-printf '%s\n' '{"t":"T-01","e":"claim","by":"codex@mbp","at":"2026-09-02T10:00:00Z"}' >> "$L"
+grep -o '^{"t":"[^"]*","e":"[^"]*","by":"[^"]*","at":"[^"]*"' "$L" | awk -F'"' '$4 != "*" { s[$4] = $0 } END { for (t in s) print s[t] }' | sort
 ```
 
 ```powershell
 $L = '.specweave\increments\0042-ledger-fold\ledger.jsonl'
+$s = @{}; Get-Content $L -Encoding UTF8 | ForEach-Object { $o = $_ | ConvertFrom-Json; if ($o.t -ne '*') { $s[$o.t] = "$($o.e) $($o.by) $($o.at)" } }; $s.GetEnumerator() | Sort-Object Name
+```
+
+Append one JSON object per line, keys in this order, UTF-8, LF:
+
+```bash
+printf '%s\n' '{"t":"T-01","e":"claim","by":"codex@mbp","at":"2026-09-02T10:00:00Z"}' >> "$L"
+```
+
+```powershell
 $line = '{"t":"T-01","e":"done","by":"codex@win","at":"2026-09-02T11:30:00Z","evidence":"npm run test:e2e -- double-claim exit 0 / a1b2c3d"}'
 [IO.File]::AppendAllText($L, $line + "`n", [Text.UTF8Encoding]::new($false))
 ```

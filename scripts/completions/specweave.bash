@@ -54,7 +54,7 @@ _specweave_completions() {
             return 0
             ;;
         task)
-            COMPREPLY=( $(compgen -W "-f --force -e --evidence --run -n --note --reason --all-mine --write --line --link --json --workspace --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-f --force -e --evidence --run -n --note --reason --all-mine --write --line --link --json --full --workspace --help" -- "${cur}") )
             return 0
             ;;
         card)
