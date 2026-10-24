@@ -17,8 +17,11 @@
  * Nothing here goes through MetadataManager.read/write or ConfigManager: those
  * persist schema and config repairs, which a refusal must not do. Reopens of
  * one increment are serialized by an exclusive lock file. Ledger writers take
- * no lock, so the ledger and metadata bytes are compared again just before
- * metadata.json is replaced; any change aborts and restores spec.md.
+ * no lock, so both new files are staged and flushed first, then the ledger,
+ * metadata and spec bytes are compared with the ones checked, and only renames
+ * follow. Any difference aborts with nothing changed. What remains is the gap
+ * between that compare and the renames; closing it needs every ledger writer
+ * to take the same lock.
  *
  * The ledger, reports/ and the spec body are left byte-identical; only the
  * frontmatter `status:` line changes, and the closure moves into
@@ -89,8 +92,13 @@ export interface ReopenOptions {
   workspace?: string;
   env?: NodeJS.ProcessEnv;
   now?: Date;
-  /** Tests only: runs after spec.md is written, just before the final re-check and the metadata write. */
-  beforeMetadataWrite?: () => void;
+  /** Tests only: fault and race injection points in the commit. */
+  hooks?: {
+    /** After both temp files are staged, before the final re-check and the renames. */
+    beforeCommit?: () => void;
+    /** After spec.md is renamed into place, before metadata.json is. */
+    afterSpecCommit?: () => void;
+  };
 }
 
 const HELD: ReadonlySet<TaskLedgerStatus> = new Set(['claimed', 'stale', 'blocked']);
@@ -173,25 +181,45 @@ function readOr(file: string, fallback: string): string {
 }
 
 /**
- * Replace `file` through a fresh temp file in the same folder. The temp is
- * created exclusively (O_CREAT|O_EXCL), so a planted file or symlink at that
- * name makes the write fail instead of being followed.
+ * Write `content` to a fresh, flushed temp file next to `file`, ready to be
+ * renamed over it. The temp is created exclusively (O_CREAT|O_EXCL), so a
+ * planted file or symlink at that name makes the write fail instead of being
+ * followed.
  */
-function replaceFile(file: string, content: string): void {
+function stageFile(file: string, content: string): string {
   const tmp = `${file}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`;
   const mode = fs.statSync(file).mode & 0o777;
   const fd = fs.openSync(tmp, 'wx', mode);
   try {
     fs.writeFileSync(fd, content, 'utf8');
     fs.fsyncSync(fd);
-  } finally {
-    fs.closeSync(fd);
-  }
-  try {
-    fs.renameSync(tmp, file);
   } catch (e) {
+    fs.closeSync(fd);
     fs.rmSync(tmp, { force: true });
     throw e;
+  }
+  fs.closeSync(fd);
+  return tmp;
+}
+
+function replaceFile(file: string, content: string): void {
+  fs.renameSync(stageFile(file, content), file);
+}
+
+/**
+ * Undo the spec.md status line after metadata.json could not be written, but
+ * only if spec.md still holds exactly what this reopen wrote: another writer's
+ * edit is never overwritten, it is reported instead.
+ */
+function restoreSpec(specFile: string, specBefore: string, specAfter: string, cause: unknown): void {
+  const why = cause instanceof Error ? cause.message : String(cause);
+  if (readOr(specFile, '') !== specAfter) {
+    throw new Error(`${why}; ${specFile} was edited by another writer meanwhile and is left as it is. Its frontmatter says status: planned while metadata.json still says completed: run specweave reopen again, or set the line back to completed.`);
+  }
+  try {
+    replaceFile(specFile, specBefore);
+  } catch (restoreError) {
+    throw new Error(`${why}; restoring ${specFile} also failed: ${restoreError instanceof Error ? restoreError.message : String(restoreError)}`);
   }
 }
 
@@ -307,21 +335,29 @@ export function reopenIncrement(opts: ReopenOptions): ReopenResult {
     const specBefore = entryKind(specFile) === 'file' ? fs.readFileSync(specFile, 'utf8') : undefined;
     const specAfter = specBefore === undefined ? undefined : withFrontmatterStatus(specBefore, IncrementStatus.PLANNED);
     const specChanged = specBefore !== undefined && specAfter !== specBefore;
-    if (specChanged) replaceFile(specFile, specAfter!);
+
+    // Stage and flush both files first, so the re-check below is followed only by renames.
+    const staged: string[] = [];
+    let specCommitted = false;
     try {
-      opts.beforeMetadataWrite?.();
-      if (readOr(ledgerFile, '') !== ledgerBefore || fs.readFileSync(metadataFile, 'utf8') !== metadataBefore) {
-        throw new ReopenRefused('changed', `${id} changed while it was being reopened (a ledger or metadata write); nothing was changed. Run it again.`);
+      const metadataTmp = stageFile(metadataFile, metadataAfter);
+      staged.push(metadataTmp);
+      const specTmp = specChanged ? stageFile(specFile, specAfter!) : undefined;
+      if (specTmp) staged.push(specTmp);
+      opts.hooks?.beforeCommit?.();
+      if (readOr(ledgerFile, '') !== ledgerBefore || fs.readFileSync(metadataFile, 'utf8') !== metadataBefore
+        || (specBefore !== undefined && readOr(specFile, '') !== specBefore)) {
+        throw new ReopenRefused('changed', `${id} changed while it was being reopened (a ledger, metadata or spec write); nothing was changed. Run it again.`);
       }
-      replaceFile(metadataFile, metadataAfter);
+      if (specTmp) {
+        fs.renameSync(specTmp, specFile);
+        specCommitted = true;
+        opts.hooks?.afterSpecCommit?.();
+      }
+      fs.renameSync(metadataTmp, metadataFile);
     } catch (e) {
-      if (specChanged) {
-        try {
-          replaceFile(specFile, specBefore!);
-        } catch (restoreError) {
-          throw new Error(`${e instanceof Error ? e.message : String(e)}; restoring ${specFile} also failed: ${restoreError instanceof Error ? restoreError.message : String(restoreError)}`);
-        }
-      }
+      for (const tmp of staged) fs.rmSync(tmp, { force: true });
+      if (specCommitted) restoreSpec(specFile, specBefore!, specAfter!, e);
       throw e;
     }
 

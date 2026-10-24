@@ -314,29 +314,66 @@ describe('transaction safety (AC-02, AC-04)', () => {
     expect(fs.readFileSync(path.join(dir, 'spec.md'), 'utf8')).toBe('---\nstatus: planned\nbroken: [\n---\n' + SPEC_BODY);
   });
 
-  it('a ledger write between the checks and the commit aborts and restores spec.md', () => {
+  const noTemps = (dir: string) => expect(fs.readdirSync(dir).filter((n) => n.endsWith('.tmp') || n === '.reopen.lock')).toEqual([]);
+  const file = (dir: string, name: string) => fs.readFileSync(path.join(dir, name), 'utf8');
+
+  it('a ledger claim after the files are staged aborts with nothing changed', () => {
     const root = workspace();
     const dir = increment(root, '1009-ps23', { frontmatter: true });
-    const before = snapshot(root);
+    const [spec, metadata] = [file(dir, 'spec.md'), file(dir, 'metadata.json')];
     const e = refusal(() => reopenIncrement({
       incrementId: '1009', reason: 'r', workspace: root, env,
-      beforeMetadataWrite: () => fs.appendFileSync(path.join(dir, 'ledger.jsonl'), JSON.stringify({ t: 'T-02', e: 'claim', by: 'codex@m3', at: new Date().toISOString() }) + '\n'),
+      hooks: { beforeCommit: () => fs.appendFileSync(path.join(dir, 'ledger.jsonl'), JSON.stringify({ t: 'T-02', e: 'claim', by: 'codex@m3', at: new Date().toISOString() }) + '\n') },
     }));
     expect(e.code).toBe('changed');
-    const after = snapshot(root);
-    expect(after[path.join('.specweave', 'increments', '1009-ps23', 'spec.md')]).toBe(before[path.join('.specweave', 'increments', '1009-ps23', 'spec.md')]);
-    expect(after[path.join('.specweave', 'increments', '1009-ps23', 'metadata.json')]).toBe(before[path.join('.specweave', 'increments', '1009-ps23', 'metadata.json')]);
-    expect(meta(dir).status).toBe('completed');
+    expect([file(dir, 'spec.md'), file(dir, 'metadata.json')]).toEqual([spec, metadata]);
+    noTemps(dir);
   });
 
-  it('a failed metadata write restores spec.md and releases the lock', () => {
+  it('a metadata edit after the files are staged is kept, not overwritten', () => {
+    const root = workspace();
+    const dir = increment(root, '1009-ps23');
+    const edited = JSON.stringify({ ...meta(dir), note: 'concurrent edit' }, null, 2);
+    const e = refusal(() => reopenIncrement({
+      incrementId: '1009', reason: 'r', workspace: root, env,
+      hooks: { beforeCommit: () => fs.writeFileSync(path.join(dir, 'metadata.json'), edited) },
+    }));
+    expect(e.code).toBe('changed');
+    expect(file(dir, 'metadata.json')).toBe(edited);
+    noTemps(dir);
+  });
+
+  it('a failure before the renames leaves the workspace as it was', () => {
     const root = workspace();
     const dir = increment(root, '1009-ps23', { frontmatter: true });
     const before = snapshot(root);
-    expect(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env, beforeMetadataWrite: () => { throw new Error('disk full'); } }))
+    expect(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env, hooks: { beforeCommit: () => { throw new Error('disk full'); } } }))
       .toThrow('disk full');
     expect(snapshot(root)).toEqual(before);
-    expect(fs.existsSync(path.join(dir, '.reopen.lock'))).toBe(false);
+    noTemps(dir);
+  });
+
+  it('a failed metadata rename restores spec.md', () => {
+    const root = workspace();
+    const dir = increment(root, '1009-ps23', { frontmatter: true });
+    const before = snapshot(root);
+    expect(() => reopenIncrement({ incrementId: '1009', reason: 'r', workspace: root, env, hooks: { afterSpecCommit: () => { throw new Error('rename failed'); } } }))
+      .toThrow('rename failed');
+    expect(snapshot(root)).toEqual(before);
+    noTemps(dir);
+  });
+
+  it('never rolls back over another writer\'s spec edit; it reports the conflict', () => {
+    const root = workspace();
+    const dir = increment(root, '1009-ps23', { frontmatter: true });
+    const metadata = file(dir, 'metadata.json');
+    expect(() => reopenIncrement({
+      incrementId: '1009', reason: 'r', workspace: root, env,
+      hooks: { afterSpecCommit: () => { fs.appendFileSync(path.join(dir, 'spec.md'), '\n## Notes\nadded meanwhile\n'); throw new Error('rename failed'); } },
+    })).toThrow(/edited by another writer meanwhile and is left as it is/);
+    expect(file(dir, 'spec.md')).toContain('added meanwhile');
+    expect(file(dir, 'metadata.json')).toBe(metadata);
+    noTemps(dir);
   });
 
   it('a second reopen while one holds the lock is refused; the first audit is kept', () => {
@@ -345,11 +382,11 @@ describe('transaction safety (AC-02, AC-04)', () => {
     let inner: ReopenRefused | undefined;
     reopenIncrement({
       incrementId: '1009', reason: 'first', workspace: root, env,
-      beforeMetadataWrite: () => { inner = refusal(() => reopenIncrement({ incrementId: '1009', reason: 'second', workspace: root, env })); },
+      hooks: { beforeCommit: () => { inner = refusal(() => reopenIncrement({ incrementId: '1009', reason: 'second', workspace: root, env })); } },
     });
     expect(inner?.code).toBe('busy');
     expect(meta(dir).reopened.map((r: { reason: string }) => r.reason)).toEqual(['first']);
-    expect(fs.existsSync(path.join(dir, '.reopen.lock'))).toBe(false);
+    noTemps(dir);
   });
 
   it('never follows a planted temp-file symlink out of the workspace', () => {
