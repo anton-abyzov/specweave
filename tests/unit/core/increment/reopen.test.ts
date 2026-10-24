@@ -435,7 +435,7 @@ describe('CLI (AC-05, AC-06)', () => {
     expect(await reopenCommand('1010', { reason: 'r', json: true, workspace: other, env: { SPECWEAVE_AGENT: 'ps23-main' } })).toBe(0);
     const json = JSON.parse(lines.join(''));
     expect(Object.keys(json)).toEqual(expect.arrayContaining(['id', 'root', 'from', 'to', 'at', 'by', 'reason', 'previous', 'unfinished']));
-    expect(json).toMatchObject({ id: '1010-q', root: other, from: 'completed', to: 'planned' });
+    expect(json).toMatchObject({ id: '1010-q', root: other, from: 'completed', to: 'planned', next: 'specweave start 1010-q' });
   });
 
   it('exits 1 with a JSON error on a refusal', async () => {
