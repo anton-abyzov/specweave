@@ -18,7 +18,10 @@
  *
  * `git.autoPushIncrement: true` then pushes the branch to its upstream with a
  * plain (fast-forward only) push, through the upstream's remote as git config
- * has it, so the remote URL (HTTPS or SSH) is whatever the checkout uses.
+ * has it, so the remote URL (HTTPS or SSH) is whatever the checkout uses. It
+ * pushes only to a same-named branch on a real remote, and only when every
+ * unpushed commit is one of these auto-commits, so it never publishes other
+ * work or lands a feature branch on the branch it was cut from.
  *
  * @module core/increment/auto-commit
  */
@@ -81,7 +84,13 @@ export interface AutoCommitResult {
   warnings: string[];
 }
 
-const ACTION_SUBJECT = /^\d{3,}[A-Za-z]?: (?:(?:claim|done|skip|block|release) T-[\w.-]+(?:, T-[\w.-]+)*(?: and \d+ more)?|create increment|handoff)$/;
+/**
+ * Subjects {@link autoCommitIncrement} writes, as a POSIX extended regex that
+ * `git log -E --grep` and JavaScript read the same way.
+ */
+export const AUTO_COMMIT_SUBJECT_ERE =
+  '^[0-9]{3,}[A-Za-z]?: (((claim|done|skip|block|release) T-[A-Za-z0-9_.-]+(, T-[A-Za-z0-9_.-]+)*( and [0-9]+ more)?)|create increment|handoff)$';
+const ACTION_SUBJECT = new RegExp(AUTO_COMMIT_SUBJECT_ERE);
 
 /** Is this a subject {@link autoCommitIncrement} writes? */
 export function isAutoCommitSubject(subject: string): boolean {
@@ -121,13 +130,20 @@ function runGit(cwd: string, args: string[], timeout = COMMIT_TIMEOUT_MS): GitRu
   return { code: r.status ?? -1, out: (r.stdout ?? '').trim(), err: (r.stderr ?? '').trim() };
 }
 
+/**
+ * Top of the checkout holding `dir` and `dir`'s path inside it, both as Git
+ * spells them (symlinks resolved, on-disk letter case), or null outside Git.
+ */
+function gitLocate(dir: string): { top: string; prefix: string } | null {
+  const r = runGit(dir, ['rev-parse', '--show-toplevel', '--show-prefix']);
+  if (r.code !== 0) return null;
+  const [top, prefix = ''] = r.out.split('\n');
+  return top ? { top, prefix } : null;
+}
+
 /** Top of the checkout holding `dir`, or null outside Git. */
 export function gitTopFor(dir: string): string | null {
-  let start: string;
-  try { start = fs.realpathSync(dir); } catch { return null; }
-  const r = runGit(start, ['rev-parse', '--show-toplevel']);
-  if (r.code !== 0 || !r.out) return null;
-  try { return fs.realpathSync(r.out); } catch { return r.out; }
+  return gitLocate(dir)?.top ?? null;
 }
 
 /** Commit (and optionally push) the increment's own files. Never throws. */
@@ -147,8 +163,9 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
     warnings: [`${req.incrementId} files not committed: ${why}; the ledger is saved, commit it later`],
   });
 
-  const top = gitTopFor(incDir);
-  if (!top) return notCommitted('skipped', 'not a git repository');
+  const located = gitLocate(incDir);
+  if (!located) return notCommitted('skipped', 'not a git repository');
+  const top = located.top;
   const git = (args: string[], timeout?: number) => runGit(top, args, timeout);
 
   // A repo mid-operation must not get a commit in the middle of it.
@@ -163,9 +180,9 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   ];
   const paths = git(['rev-parse', '--path-format=absolute', ...markers.flatMap(([m]) => ['--git-path', m])]);
   if (paths.code !== 0) return notCommitted('skipped', `git rev-parse failed (${firstLine(paths.err)})`);
-  const located = paths.out.split('\n');
+  const markerPaths = paths.out.split('\n');
   for (let i = 0; i < markers.length; i++) {
-    if (located[i] && fs.existsSync(located[i])) return notCommitted('skipped', markers[i][1]);
+    if (markerPaths[i] && fs.existsSync(markerPaths[i])) return notCommitted('skipped', markers[i][1]);
   }
   const branch = git(['symbolic-ref', '--quiet', '--short', 'HEAD']);
   if (branch.code !== 0 || !branch.out) return notCommitted('skipped', 'detached HEAD');
@@ -175,14 +192,12 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   const candidates: string[] = [];
   const trackedOnly: string[] = [];
   for (const dir of [incDir, ...(req.alsoDirs ?? [])]) {
-    let real: string;
-    try { real = fs.realpathSync(dir); } catch { continue; }
-    const rel = path.relative(top, real);
-    if (rel.startsWith('..') || path.isAbsolute(rel)) continue;
+    // Git names the folder inside the repo, so case and symlinks match its index.
+    const at = dir === incDir ? located : gitLocate(dir);
+    if (!at || at.top !== top) continue;
     const add = (list: string[], name: string) => {
-      const file = path.join(real, name);
-      const st = fs.lstatSync(file, { throwIfNoEntry: false });
-      if (st?.isFile()) list.push(path.relative(top, file).split(path.sep).join('/'));
+      const st = fs.lstatSync(path.join(dir, name), { throwIfNoEntry: false });
+      if (st?.isFile()) list.push(`${at.prefix}${name}`);
     };
     for (const name of AUTO_COMMIT_FILES) add(candidates, name);
     for (const name of TRACKED_ONLY_FILES) add(trackedOnly, name);
@@ -213,9 +228,11 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   const subject = autoCommitSubject(req.incrementId, req.action, req.tasks);
   const commit = git(['commit', '--only', '--quiet', '-m', subject, '--', ...files]);
   if (commit.code !== 0) {
-    // Leave the index as the command found it.
-    if (fresh.length) git(['rm', '--cached', '--quiet', '--', ...fresh]);
     const why = firstLine(commit.err) || firstLine(commit.out) || `exit ${commit.code}`;
+    // Leave the index as the command found it; another lane may hold the lock briefly.
+    if (fresh.length && !unstage(git, fresh)) {
+      return notCommitted('failed', `git commit failed (${why}), and ${fresh.join(', ')} stay staged (git rm --cached failed)`);
+    }
     return notCommitted('failed', `git commit failed (${why})`);
   }
   const sha = git(['rev-parse', '--short', 'HEAD']).out || undefined;
@@ -224,18 +241,48 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   return result;
 }
 
-/** Plain push of HEAD to the branch's upstream, only when it is strictly ahead. */
+/** Take files `git add` staged back out of the index, retrying briefly on a held lock. */
+function unstage(git: (args: string[]) => GitRun, files: string[]): boolean {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 200);
+    if (git(['rm', '--cached', '--quiet', '--', ...files]).code === 0) return true;
+  }
+  return false;
+}
+
+/**
+ * Plain push of HEAD to the branch's upstream. Only to a same-named branch on
+ * a real remote that is also where git would push, and only when every
+ * unpushed commit is an auto-commit; anything else is a warning.
+ */
 function pushToUpstream(git: (args: string[], timeout?: number) => GitRun, branch: string, result: AutoCommitResult): void {
   const notPushed = (why: string) => result.warnings.push(`${result.subject ?? 'increment commit'} not pushed: ${why}`);
   const remote = git(['config', '--get', `branch.${branch}.remote`]).out;
   const merge = git(['config', '--get', `branch.${branch}.merge`]).out;
   const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']).out;
-  if (!remote || !merge || !upstream) {
-    notPushed(`${branch} has no upstream (set one with \`git push -u\`)`);
+  if (!remote || remote === '.' || !merge || !upstream) {
+    notPushed(`${branch} has no upstream on a remote (set one with \`git push -u\`)`);
+    return;
+  }
+  if (merge !== `refs/heads/${branch}`) {
+    notPushed(`${branch} tracks ${upstream}, a different branch; push it yourself`);
+    return;
+  }
+  const pushRemote = git(['config', '--get', `branch.${branch}.pushRemote`]).out || git(['config', '--get', 'remote.pushDefault']).out;
+  if (pushRemote && pushRemote !== remote) {
+    notPushed(`${branch} pushes to ${pushRemote}, not its upstream ${remote}; push it yourself`);
     return;
   }
   if (git(['merge-base', '--is-ancestor', '@{u}', 'HEAD']).code !== 0) {
     notPushed(`${branch} has diverged from ${upstream}; pull first`);
+    return;
+  }
+  const pending = git(['log', '--format=%s', '@{u}..HEAD']);
+  const others = pending.code === 0 ? pending.out.split('\n').filter((s) => s && !isAutoCommitSubject(s)).length : -1;
+  if (others !== 0) {
+    notPushed(others > 0
+      ? `${others} other unpushed commit${others === 1 ? '' : 's'} on ${branch} would go with it; push yourself`
+      : `could not list the unpushed commits (${firstLine(pending.err)})`);
     return;
   }
   const pushed = git(['push', '--quiet', remote, `HEAD:${merge}`], PUSH_TIMEOUT_MS);

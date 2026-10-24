@@ -48,7 +48,7 @@ import {
 import { resolveIncrement, readLeaseHours, ensureIncrementStarted, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
 import { readSpecAcs, type AcEntry } from '../../core/tasks/verify-runner.js';
 import { tasksFileName } from '../../core/tasks/tasks-source.js';
-import { autoCommitIncrement, describeAutoCommit, isAutoCommitSubject, type AutoCommitRequest, type AutoCommitResult } from '../../core/increment/auto-commit.js';
+import { autoCommitIncrement, describeAutoCommit, AUTO_COMMIT_SUBJECT_ERE, type AutoCommitRequest, type AutoCommitResult } from '../../core/increment/auto-commit.js';
 
 export interface TaskCommandOptions {
   force?: boolean;
@@ -369,10 +369,9 @@ function firstLine(s: string): string {
  */
 function lastWorkCommit(cwd: string): { sha: string; subject: string } | undefined {
   try {
-    const rows = execFileSync('git', ['log', '-n', '50', '--format=%h%x09%s'], { cwd, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] })
-      .split('\n').filter(Boolean)
-      .map((l) => { const tab = l.indexOf('\t'); return { sha: l.slice(0, tab), subject: l.slice(tab + 1) }; });
-    return rows.find((r) => !isAutoCommitSubject(r.subject)) ?? rows[0];
+    const line = execFileSync('git', ['log', '-1', '--format=%h%x09%s', '-E', '--invert-grep', `--grep=${AUTO_COMMIT_SUBJECT_ERE}`], { cwd, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    const tab = line.indexOf('\t');
+    return tab > 0 ? { sha: line.slice(0, tab), subject: line.slice(tab + 1) } : undefined;
   } catch {
     return undefined;
   }

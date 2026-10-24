@@ -73,7 +73,7 @@ Status changes never call GitHub, Jira or Azure DevOps. See [increment status re
 | `task skip T-01 --reason "<why>"` | Mark a task as not needed. Final; the reason is required. |
 | `task render` | Print the task board. `--write` refreshes a legacy `tasks.md`. |
 
-With [`git.autoCommitIncrement`](/docs/reference/configuration#git) on, `claim`, `done`, `release`, `block` and `skip` then commit the increment's `spec.md`, `ledger.jsonl` and `metadata.json` (never `evidence/` or `reports/`) as `NNNN: <action> T-xx`, through a pathspec so your other staged changes stay staged. `git.autoPushIncrement` also pushes it, fast-forward only. A commit that cannot happen is one warning and exit 0; `--no-commit` skips it.
+With [`git.autoCommitIncrement`](/docs/reference/configuration#git) on, `claim`, `done`, `release`, `block` and `skip` then commit the increment's `spec.md`, `ledger.jsonl` and `metadata.json` (never `evidence/` or `reports/`) as `NNNN: <action> T-xx`, through a pathspec so your other staged changes stay staged. `git.autoPushIncrement` also pushes it, fast-forward only, to a same-named upstream and only when nothing else is unpushed. A commit that cannot happen is one warning and exit 0; `--no-commit` skips it.
 
 | Command | Purpose | Useful flags |
 |---------|---------|--------------|

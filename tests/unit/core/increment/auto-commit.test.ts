@@ -307,6 +307,61 @@ describe('push', () => {
     expect(remoteHead()).toBe(theirs);
   });
 
+  const pushOn = () => {
+    config({ autoCommitIncrement: true, autoPushIncrement: true });
+    git(repo, 'commit', '-qam', 'push on');
+    git(repo, 'push', '-q');
+  };
+
+  it('never pushes a branch that tracks a differently named branch', () => {
+    pushOn();
+    // `git worktree add -b feat/x <path> origin/develop` tracks origin/develop.
+    git(repo, 'checkout', '-q', '-b', 'feat/x', '--track', 'origin/develop');
+    git(repo, 'commit', '-q', '--allow-empty', '-m', 'unreviewed feature work');
+    writeIncrement();
+    const before = remoteHead();
+    const r = run();
+    expect(r.status).toBe('committed');
+    expect(r.pushed).toBeUndefined();
+    expect(r.warnings[0]).toContain('tracks origin/develop, a different branch');
+    expect(remoteHead()).toBe(before);
+  });
+
+  it('never pushes to a local upstream', () => {
+    pushOn();
+    git(repo, 'checkout', '-q', '-b', 'side', '--track', 'develop');
+    writeIncrement();
+    const local = git(repo, 'rev-parse', 'refs/heads/develop');
+    const r = run();
+    expect(r.pushed).toBeUndefined();
+    expect(r.warnings[0]).toContain('no upstream on a remote');
+    expect(git(repo, 'rev-parse', 'refs/heads/develop')).toBe(local);
+  });
+
+  it('never publishes other unpushed commits', () => {
+    pushOn();
+    write('notes.md', 'hand-written\n');
+    git(repo, 'add', 'notes.md');
+    git(repo, 'commit', '-qm', '0042: hand commit');
+    writeIncrement();
+    const before = remoteHead();
+    const r = run();
+    expect(r.status).toBe('committed');
+    expect(r.pushed).toBeUndefined();
+    expect(r.warnings[0]).toContain('1 other unpushed commit on develop');
+    expect(remoteHead()).toBe(before);
+  });
+
+  it('pushes earlier auto-commits along with this one', () => {
+    pushOn();
+    writeIncrement();
+    run({ push: false });
+    fs.appendFileSync(path.join(repo, INC, 'ledger.jsonl'), '{"t":"T-01","e":"done"}\n');
+    const r = run({ action: 'done' });
+    expect(r.pushed).toBe('origin/develop');
+    expect(remoteHead()).toBe(git(repo, 'rev-parse', 'HEAD'));
+  });
+
   it('warns when the branch has no upstream', () => {
     config({ autoCommitIncrement: true, autoPushIncrement: true });
     git(repo, 'commit', '-qam', 'push on');
@@ -315,6 +370,30 @@ describe('push', () => {
     const r = run();
     expect(r.status).toBe('committed');
     expect(r.warnings[0]).toContain('no upstream');
+  });
+});
+
+const caseInsensitive = (() => {
+  const probe = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-CaseProbe-'));
+  try { return fs.existsSync(probe.toLowerCase()) || fs.existsSync(probe.toUpperCase()); } finally { fs.rmSync(probe, { recursive: true, force: true }); }
+})();
+
+describe('paths', () => {
+  it.skipIf(!caseInsensitive)('commits when the increment path is typed in another letter case', () => {
+    const typed = path.join(path.dirname(repo), path.basename(repo).toUpperCase(), INC);
+    writeIncrement();
+    const r = autoCommitIncrement(repo, typed, { incrementId: INC_ID, action: 'claim', tasks: ['T-01'] });
+    expect(r.status).toBe('committed');
+    expect(headFiles()).toEqual([`${INC}/ledger.jsonl`, `${INC}/metadata.json`, `${INC}/spec.md`]);
+  });
+
+  it('commits through a symlinked path to the repo', () => {
+    const link = path.join(base, 'link');
+    fs.symlinkSync(repo, link);
+    writeIncrement();
+    const r = autoCommitIncrement(link, path.join(link, INC), { incrementId: INC_ID, action: 'claim', tasks: ['T-01'] });
+    expect(r.status).toBe('committed');
+    expect(headFiles()).toContain(`${INC}/spec.md`);
   });
 });
 
