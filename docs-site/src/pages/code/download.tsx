@@ -34,7 +34,7 @@ const STEPS: {title: string; body: React.ReactNode}[] = [
 const DESKTOP_NOTES: {name: string; detail: React.ReactNode}[] = [
   {name: 'Windows', detail: <>Run <code>{desktop.exe.name}</code>. It installs for your user only, with no administrator prompt. The installer is not code-signed yet, so SmartScreen shows <strong>Windows protected your PC</strong> the first time: choose <strong>More info</strong>, then <strong>Run anyway</strong>.</>},
   {name: 'Debian and Ubuntu', detail: <><code>sudo apt install ./{desktop.deb.name}</code> installs the app with a menu entry.</>},
-  {name: 'Other Linux', detail: <>Make the AppImage executable with <code>chmod +x</code> and run it. AppImages need FUSE 2 (<code>libfuse2</code>, or <code>libfuse2t64</code> on Ubuntu 24.04).</>},
+  {name: 'Other Linux', detail: <>Make the AppImage executable with <code>chmod +x</code> and run it.</>},
   {name: 'What differs', detail: <>Computer use controls a Mac screen and is macOS only. The app updates itself from new releases on Windows and Linux too; the .deb update asks for your password.</>},
 ];
 
@@ -49,7 +49,7 @@ const FAQ_TEXT: {q: string; a: string}[] = [
   {q: 'Is SpecWithCode free?', a: 'Yes. SpecWithCode is free and open source under the MIT license, with no account. You bring your own provider subscriptions or API keys and pay any provider charges directly.'},
   {q: 'Which Macs does SpecWithCode run on?', a: 'Apple silicon Macs (M1 or later) with macOS 13 or later. Intel Mac builds are not published yet; on an Intel Mac you can build the server from source.'},
   {q: 'Is there a Windows or Linux download?', a: `Yes. SpecWithCode ${desktop.version} has a Windows installer for 64-bit Windows 10 and 11, and a Linux AppImage and .deb for x64. The Windows installer is not code-signed yet, so Windows asks you to confirm the first run. Computer use is macOS only.`},
-  {q: 'Is the download safe?', a: 'Every release is built in GitHub Actions, signed with an Apple Developer ID and notarized by Apple. Each release also publishes SHA256SUMS so you can check the file you downloaded.'},
+  {q: 'Is the download safe?', a: 'Every release is built in GitHub Actions. The Mac app is signed with an Apple Developer ID and notarized by Apple. The Windows installer and the Linux AppImage and .deb are not code-signed yet; check them against the SHA256SUMS-windows-linux file published with each release. The Mac download has its own SHA256SUMS file.'},
   {q: 'How do I update SpecWithCode?', a: 'Download the newest .dmg from this page and replace the app in Applications. When a machine runs an older server than your app, SpecWithCode shows an update notice in the conversation and in Settings › Connections.'},
 ];
 
