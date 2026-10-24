@@ -1,6 +1,6 @@
 # DORA Metrics Report
 
-**Generated**: Oct 23, 2026 at 6:04:52 AM
+**Generated**: Oct 24, 2026 at 6:03:30 PM
 **Period**: Last 30 days
 
 ---
@@ -38,7 +38,7 @@
 ## ⚡ Lead Time for Changes
 
 **Current**: 6.3 hours (⭐ High)
-**Percentiles**: P50 = 1.2h, P90 = 20.1h
+**Percentiles**: P50 = 1.6h, P90 = 20.1h
 
 **Industry Benchmarks**:
 - 🏆 Elite: Less than 1 hour
@@ -49,7 +49,7 @@
 ### Insights
 
 - ✅ **Strong Performance**: Lead time under 1 week is competitive
-- 📊 **Distribution**: 50% of changes deploy in 1.2h, 90% in 20.1h
+- 📊 **Distribution**: 50% of changes deploy in 1.6h, 90% in 20.1h
 - 📈 **Next Level**: Focus on reducing p90 to reach elite tier
 - 💡 **Tip**: Identify bottlenecks in slowest 10% of deployments
 
@@ -58,7 +58,7 @@
 ## ✅ Change Failure Rate
 
 **Current**: 0% (🏆 Elite)
-**Failed Releases**: 0 / 30
+**Failed Releases**: 0 / 33
 
 **Industry Benchmarks**:
 - 🏆 Elite: 0-15%
@@ -94,15 +94,15 @@
 
 ## 📈 Recent Activity
 
-### Recent Releases (30 in last 30 days)
+### Recent Releases (33 in last 30 days)
 
+- **[v3.1.9](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.9)** - Oct 24, 2026
+- **[v3.1.8](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.8)** - Oct 24, 2026
+- **[v3.1.7](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.7)** - Oct 23, 2026
 - **[v3.1.6](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.6)** - Oct 23, 2026
 - **[v3.1.5](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.5)** - Oct 21, 2026
-- **[v3.1.4](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.4)** - Oct 20, 2026
-- **[v3.1.3](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.3)** - Oct 20, 2026
-- **[v3.1.2](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.2)** - Oct 19, 2026
 
-_...and 25 more releases_
+_...and 28 more releases_
 
 ### Production Incidents
 
@@ -132,4 +132,4 @@ _...and 25 more releases_
 ---
 
 _This report was generated automatically by SpecWeave DORA Metrics Calculator_
-_Last updated: Oct 23, 2026_
+_Last updated: Oct 24, 2026_
