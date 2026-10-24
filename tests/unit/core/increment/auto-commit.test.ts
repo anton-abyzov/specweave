@@ -155,6 +155,18 @@ describe('commit', () => {
     expect(staged()).toEqual([]);
   });
 
+  it('treats a folder name with glob characters literally', () => {
+    const odd = '.specweave/increments/0044-x*';
+    write(`${odd}/spec.md`, '# odd\n');
+    write('.specweave/increments/0044-xyz/spec.md', '# neighbour\n');
+    write('.specweave/increments/0044-xyz/evidence/dump.json', '{}');
+    const r = autoCommitIncrement(repo, path.join(repo, odd), { incrementId: '0044-x*', action: 'create' });
+    expect(r.status).toBe('committed');
+    expect(headFiles()).toEqual([`${odd}/spec.md`]);
+    expect(git(repo, 'ls-files', '--', '.specweave/increments/0044-xyz')).toBe('');
+    expect(staged()).toEqual([]);
+  });
+
   it('reports nothing when the folder is ignored or unchanged', () => {
     writeIncrement();
     run();

@@ -70,6 +70,12 @@ export interface AutoCommitRequest {
   push?: boolean;
   /** Other increment folders the command changed (an increment it superseded). */
   alsoDirs?: string[];
+  /**
+   * The caller pushes the branch to its upstream right after (`handoff`):
+   * commit only when that upstream is a same-named branch on a remote, or when
+   * there is none yet (the caller then pushes to a same-named branch).
+   */
+  callerPushesBranch?: boolean;
 }
 
 export interface AutoCommitResult {
@@ -110,6 +116,13 @@ export function autoCommitSubject(incrementId: string, action: AutoCommitRequest
   }
   return head;
 }
+
+/**
+ * Literal pathspec, so a folder named with `*`, `?` or `[` never matches its
+ * neighbours. Per path rather than GIT_LITERAL_PATHSPECS, which the repo's
+ * hooks would inherit.
+ */
+const literal = (paths: string[]): string[] => paths.map((p) => `:(literal)${p}`);
 
 interface GitRun {
   code: number;
@@ -187,6 +200,10 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   const branch = git(['symbolic-ref', '--quiet', '--short', 'HEAD']);
   if (branch.code !== 0 || !branch.out) return notCommitted('skipped', 'detached HEAD');
   if (git(['rev-parse', '--verify', '--quiet', 'HEAD']).code !== 0) return notCommitted('skipped', 'no commits yet');
+  if (req.callerPushesBranch) {
+    const problem = upstreamProblem(git, branch.out);
+    if (problem) return notCommitted('skipped', `${problem}, and the handoff push would carry the commit there`);
+  }
 
   // Fixed file names at the top of each increment folder.
   const candidates: string[] = [];
@@ -205,7 +222,7 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   const all = [...candidates, ...trackedOnly];
   if (!all.length) return { status: 'nothing', warnings: [] };
 
-  const listed = git(['ls-files', '-z', '--', ...all]);
+  const listed = git(['ls-files', '-z', '--', ...literal(all)]);
   if (listed.code !== 0) return notCommitted('failed', `git ls-files failed (${firstLine(listed.err)})`);
   const tracked = new Set(listed.out.split('\0').filter(Boolean));
   const untracked = candidates.filter((p) => !tracked.has(p));
@@ -217,19 +234,19 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   const known = all.filter((p) => tracked.has(p));
 
   // What `--only` commits: the working-tree content of these paths against HEAD.
-  const changed = known.length ? git(['diff', '--quiet', 'HEAD', '--', ...known]).code === 1 : false;
+  const changed = known.length ? git(['diff', '--quiet', 'HEAD', '--', ...literal(known)]).code === 1 : false;
   if (!fresh.length && !changed) return { status: 'nothing', warnings: [] };
 
   const files = [...known, ...fresh];
   if (fresh.length) {
-    const added = git(['add', '--', ...fresh]);
+    const added = git(['add', '--', ...literal(fresh)]);
     if (added.code !== 0) {
       const why = `git add failed (${firstLine(added.err)})`;
       return notCommitted('failed', unstage(git, fresh) ? why : `${why}, and ${fresh.join(', ')} may stay staged`);
     }
   }
   const subject = autoCommitSubject(req.incrementId, req.action, req.tasks);
-  const commit = git(['commit', '--only', '--quiet', '-m', subject, '--', ...files]);
+  const commit = git(['commit', '--only', '--quiet', '-m', subject, '--', ...literal(files)]);
   if (commit.code !== 0) {
     const why = firstLine(commit.err) || firstLine(commit.out) || `exit ${commit.code}`;
     // Leave the index as the command found it; another lane may hold the lock briefly.
@@ -253,7 +270,7 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
 function unstage(git: (args: string[]) => GitRun, files: string[]): boolean {
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 200);
-    if (git(['reset', '--quiet', '--', ...files]).code === 0) return true;
+    if (git(['reset', '--quiet', '--', ...literal(files)]).code === 0) return true;
   }
   return false;
 }
@@ -272,8 +289,9 @@ function pushToUpstream(git: (args: string[], timeout?: number) => GitRun, branc
     notPushed(`${branch} has no upstream on a remote (set one with \`git push -u\`)`);
     return;
   }
-  if (merge !== `refs/heads/${branch}`) {
-    notPushed(`${branch} tracks ${upstream}, a different branch; push it yourself`);
+  const mismatch = upstreamProblem(git, branch);
+  if (mismatch) {
+    notPushed(`${mismatch}; push it yourself`);
     return;
   }
   const pushRemote = git(['config', '--get', `branch.${branch}.pushRemote`]).out || git(['config', '--get', 'remote.pushDefault']).out;
@@ -299,6 +317,21 @@ function pushToUpstream(git: (args: string[], timeout?: number) => GitRun, branc
     return;
   }
   result.pushed = upstream;
+}
+
+/**
+ * Why pushing `branch` to its upstream would land it somewhere else: a local
+ * upstream or a differently named branch. Undefined when it is a same-named
+ * branch on a remote, or when there is no upstream at all.
+ */
+function upstreamProblem(git: (args: string[]) => GitRun, branch: string): string | undefined {
+  const remote = git(['config', '--get', `branch.${branch}.remote`]).out;
+  const merge = git(['config', '--get', `branch.${branch}.merge`]).out;
+  if (!remote && !merge) return undefined;
+  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']).out || `${remote}/${merge.replace(/^refs\/heads\//, '')}`;
+  if (remote === '.') return `${branch} tracks the local branch ${upstream}`;
+  if (merge !== `refs/heads/${branch}`) return `${branch} tracks ${upstream}, a different branch`;
+  return undefined;
 }
 
 /** One line for the user, or undefined when nothing happened. */

@@ -10,6 +10,7 @@ import * as path from 'path';
 import { taskCommand } from '../../../../src/cli/commands/task.js';
 import { createIncrementCommand } from '../../../../src/cli/commands/create-increment.js';
 import { buildWorkHandoff } from '../../../../src/core/session/work-handoff.js';
+import { handoffCommand } from '../../../../src/cli/commands/handoff.js';
 
 const INC_ID = '0042-login-form';
 const INC = `.specweave/increments/${INC_ID}`;
@@ -266,6 +267,27 @@ describe('handoff', () => {
     const none = await buildWorkHandoff(repo, { incrementId: INC_ID, agent: 'tester', push: false, commit: false });
     expect(none.commit?.status).toBe('off');
     expect(git(repo, 'rev-parse', 'HEAD')).toBe(head);
+  });
+
+  it('skips the commit when the branch push would land it on a differently named upstream', async () => {
+    config({ autoCommitIncrement: true });
+    git(repo, 'push', '-q');
+    git(repo, 'checkout', '-q', '-b', 'feat/x', '--track', 'origin/develop');
+    const before = git(remote, 'rev-parse', 'refs/heads/develop');
+    const head = git(repo, 'rev-parse', 'HEAD');
+    const result = await buildWorkHandoff(repo, { incrementId: INC_ID, agent: 'tester' });
+    expect(result.commit?.status).toBe('skipped');
+    expect(result.commit?.warnings[0]).toContain('feat/x tracks origin/develop, a different branch');
+    expect(git(repo, 'rev-parse', 'HEAD')).toBe(head);
+    expect(git(remote, 'rev-parse', 'refs/heads/develop')).toBe(before);
+  });
+
+  it('handoff --json still prints commit warnings on stderr', async () => {
+    config({ autoCommitIncrement: true });
+    git(repo, 'checkout', '-q', '--detach');
+    await handoffCommand({ incrementId: INC_ID, cwd: repo, json: true, push: false });
+    expect(stderr.join('')).toMatch(/^warning: 0042-login-form files not committed: detached HEAD/m);
+    expect(() => JSON.parse(stdout.join(''))).not.toThrow();
   });
 
   it('a checkpoint never commits', async () => {
