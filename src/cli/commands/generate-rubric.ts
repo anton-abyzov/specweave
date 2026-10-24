@@ -97,11 +97,11 @@ export async function generateRubricCommand(
   }
 }
 
-/** `testing.coverage.unit` from config.json, when the user set one. */
+/** `testing.coverage.unit` (1.x: `coverageTargets.unit`) from config.json, when set. */
 function readCoverageTarget(projectRoot: string): number | undefined {
   try {
     const config = JSON.parse(readFileSync(path.join(projectRoot, '.specweave', 'config.json'), 'utf-8'));
-    const unit = config?.testing?.coverage?.unit;
+    const unit = config?.testing?.coverage?.unit ?? config?.testing?.coverageTargets?.unit;
     return typeof unit === 'number' && unit > 0 ? unit : undefined;
   } catch {
     return undefined;
