@@ -225,7 +225,8 @@ export class IncrementCompletionValidator {
           const configPath = path.join(resolveEffectiveRoot(), '.specweave', 'config.json');
           if (await fs.pathExists(configPath)) {
             const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
-            const configTarget = config?.testing?.coverage?.unit;
+            // `coverageTargets` is the 1.x name, before migrate-to-2 rewrites it.
+            const configTarget = config?.testing?.coverage?.unit ?? config?.testing?.coverageTargets?.unit;
             if (typeof configTarget === 'number') {
               coverageTarget = configTarget;
             }
@@ -235,7 +236,7 @@ export class IncrementCompletionValidator {
           // Config read failed — no coverage target
         }
 
-        const testMode = (metadata.testMode || configMode || 'test-after') as TestMode;
+        const testMode = (configMode || metadata.testMode || 'test-after') as TestMode;
 
         // Only validate if coverage target is set and testMode is not 'none'
         if (coverageTarget > 0 && testMode !== 'none') {

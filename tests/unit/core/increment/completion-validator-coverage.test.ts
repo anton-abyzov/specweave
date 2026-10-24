@@ -208,4 +208,30 @@ describe('completion-validator coverage enforcement', () => {
 
     expect(mockValidateCoverage).toHaveBeenCalledWith(expect.objectContaining({ testMode: 'test-after' }));
   });
+  it('testing.mode none in config skips coverage even when metadata says test-after', async () => {
+    buildFs({
+      '/mock-root/.specweave/increments/0009-test/metadata.json': JSON.stringify({ id: '0009-test', status: 'active', testMode: 'test-after' }),
+      '/mock-root/.specweave/increments/0009-test/spec.md': specOk,
+      '/mock-root/.specweave/increments/0009-test/tasks.md': tasksOk,
+      '/mock-root/.specweave/config.json': JSON.stringify({ testing: { mode: 'none', coverage: { unit: 80 } } }),
+    });
+
+    await IncrementCompletionValidator.validateCompletion('0009-test');
+
+    expect(mockValidateCoverage).not.toHaveBeenCalled();
+  });
+
+  it('honours a 1.x testing.coverageTargets.unit opt-in', async () => {
+    buildFs({
+      '/mock-root/.specweave/increments/0010-test/metadata.json': JSON.stringify({ id: '0010-test', status: 'active' }),
+      '/mock-root/.specweave/increments/0010-test/spec.md': specOk,
+      '/mock-root/.specweave/increments/0010-test/tasks.md': tasksOk,
+      '/mock-root/.specweave/config.json': JSON.stringify({ testing: { coverageTargets: { unit: 85 } } }),
+    });
+    mockValidateCoverage.mockResolvedValue({ passed: true, actual: 90 });
+
+    await IncrementCompletionValidator.validateCompletion('0010-test');
+
+    expect(mockValidateCoverage).toHaveBeenCalledWith(expect.objectContaining({ coverageTarget: 85 }));
+  });
 });
