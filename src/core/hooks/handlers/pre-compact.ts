@@ -54,14 +54,16 @@ export function handoffIncrement(
     thread ? readJsonSafe<{ root?: string; incrementId?: string }>(studioThreadBindingFile(thread, home)) : null,
   ];
   for (const b of bound) {
-    if (b?.root && b.incrementId && active.includes(b.incrementId) && sameProject(b.root, projectRoot)) return b.incrementId;
+    // Files from older or hand-edited versions may hold anything; skip them instead of throwing.
+    if (typeof b?.root !== 'string' || typeof b.incrementId !== 'string') continue;
+    if (active.includes(b.incrementId) && sameProject(b.root, projectRoot)) return b.incrementId;
   }
   return active[0];
 }
 
 /**
  * Write a handoff for this session's active increment within `budgetMs`.
- * Shared with the Stop handler. Never throws.
+ * Never throws.
  */
 export async function writeAutoHandoff(
   context: HookContext,

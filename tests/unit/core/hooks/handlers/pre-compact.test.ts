@@ -133,6 +133,17 @@ describe('pre-compact', () => {
       }
     });
 
+    it('skips a marker or binding whose root is not a string', () => {
+      repo = mkRepo();
+      home = fs.mkdtempSync(path.join(os.tmpdir(), 'sw-precompact-home-'));
+      write(workSessionFile('sess-bad', home), { version: 1, sessionId: 'sess-bad', kind: 'increment', incrementId: '0003-three', root: { a: 1 } });
+      write(studioThreadBindingFile('bad', home), { version: 1, incrementId: '0002-two', root: 7 });
+      write(studioThreadBindingFile('good', home), { version: 1, incrementId: '0002-two', root: repo });
+      const active = ['0001-one', '0002-two', '0003-three'];
+      expect(handoffIncrement(active, repo, { session_id: 'sess-bad' }, { env: { SPECWEAVE_STUDIO_THREAD_ID: 'bad' }, home })).toBe('0001-one');
+      expect(handoffIncrement(active, repo, { session_id: 'sess-bad' }, { env: { SPECWEAVE_STUDIO_THREAD_ID: 'good' }, home })).toBe('0002-two');
+    });
+
     it("writes the handoff for the thread's increment end to end", async () => {
       repo = mkRepo();
       mkActive(repo, '0001-one', '0002-two');
