@@ -48,7 +48,7 @@ import {
 import { resolveIncrement, readLeaseHours, ensureIncrementStarted, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
 import { readSpecAcs, type AcEntry } from '../../core/tasks/verify-runner.js';
 import { tasksFileName } from '../../core/tasks/tasks-source.js';
-import { autoCommitIncrement, describeAutoCommit, AUTO_COMMIT_SUBJECT_ERE, type AutoCommitRequest, type AutoCommitResult } from '../../core/increment/auto-commit.js';
+import { autoCommitIncrement, describeAutoCommit, isAutoCommitSubject, type AutoCommitRequest, type AutoCommitResult } from '../../core/increment/auto-commit.js';
 
 export interface TaskCommandOptions {
   force?: boolean;
@@ -368,13 +368,25 @@ function firstLine(s: string): string {
  * hide the work commit from the traceability check and the evidence).
  */
 function lastWorkCommit(cwd: string): { sha: string; subject: string } | undefined {
-  try {
-    const line = execFileSync('git', ['log', '-1', '--format=%h%x09%s', '-E', '--invert-grep', `--grep=${AUTO_COMMIT_SUBJECT_ERE}`], { cwd, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-    const tab = line.indexOf('\t');
-    return tab > 0 ? { sha: line.slice(0, tab), subject: line.slice(tab + 1) } : undefined;
-  } catch {
-    return undefined;
+  // Pages of subjects only: a body line that looks like an auto-commit subject
+  // (a squash of work and auto-commits) must not hide the work commit.
+  const page = 200;
+  for (let skip = 0; skip < 50 * page; skip += page) {
+    let out: string;
+    try {
+      out = execFileSync('git', ['log', `-n${page}`, `--skip=${skip}`, '--format=%h%x09%s'], { cwd, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
+    } catch {
+      return undefined;
+    }
+    const rows = out.split('\n').filter(Boolean);
+    for (const l of rows) {
+      const tab = l.indexOf('\t');
+      const subject = l.slice(tab + 1);
+      if (!isAutoCommitSubject(subject)) return { sha: l.slice(0, tab), subject };
+    }
+    if (rows.length < page) return undefined;
   }
+  return undefined;
 }
 
 /** The acceptance criteria a task covers, with their text from spec.md. */

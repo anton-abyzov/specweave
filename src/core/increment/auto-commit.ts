@@ -117,11 +117,11 @@ interface GitRun {
   err: string;
 }
 
-function runGit(cwd: string, args: string[], timeout = COMMIT_TIMEOUT_MS): GitRun {
+function runGit(cwd: string, args: string[], timeout = COMMIT_TIMEOUT_MS, input?: string): GitRun {
   const r = spawnSync('git', args, {
     cwd,
     encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
+    ...(input === undefined ? { stdio: ['ignore', 'pipe', 'pipe'] as const } : { input, stdio: ['pipe', 'pipe', 'pipe'] as const }),
     timeout,
     maxBuffer: 16 * 1024 * 1024,
     env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GIT_OPTIONAL_LOCKS: '0' },
@@ -166,7 +166,7 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   const located = gitLocate(incDir);
   if (!located) return notCommitted('skipped', 'not a git repository');
   const top = located.top;
-  const git = (args: string[], timeout?: number) => runGit(top, args, timeout);
+  const git = (args: string[], timeout?: number, input?: string) => runGit(top, args, timeout, input);
 
   // A repo mid-operation must not get a commit in the middle of it.
   const markers: Array<[string, string]> = [
@@ -209,10 +209,10 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   if (listed.code !== 0) return notCommitted('failed', `git ls-files failed (${firstLine(listed.err)})`);
   const tracked = new Set(listed.out.split('\0').filter(Boolean));
   const untracked = candidates.filter((p) => !tracked.has(p));
-  // check-ignore exits 1 when nothing is ignored, 0 when something is.
-  const ignoredRun = untracked.length ? git(['check-ignore', '--', ...untracked]) : { code: 1, out: '', err: '' };
+  // check-ignore exits 1 when nothing is ignored, 0 when something is; -z keeps non-ASCII paths unquoted.
+  const ignoredRun = untracked.length ? git(['check-ignore', '-z', '--stdin'], undefined, untracked.map((p) => `${p}\0`).join('')) : { code: 1, out: '', err: '' };
   if (ignoredRun.code > 1 || ignoredRun.code < 0) return notCommitted('failed', `git check-ignore failed (${firstLine(ignoredRun.err)})`);
-  const ignored = new Set(ignoredRun.out.split('\n').filter(Boolean));
+  const ignored = new Set(ignoredRun.out.split('\0').filter(Boolean));
   const fresh = untracked.filter((p) => !ignored.has(p));
   const known = all.filter((p) => tracked.has(p));
 
@@ -223,7 +223,10 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   const files = [...known, ...fresh];
   if (fresh.length) {
     const added = git(['add', '--', ...fresh]);
-    if (added.code !== 0) return notCommitted('failed', `git add failed (${firstLine(added.err)})`);
+    if (added.code !== 0) {
+      const why = `git add failed (${firstLine(added.err)})`;
+      return notCommitted('failed', unstage(git, fresh) ? why : `${why}, and ${fresh.join(', ')} may stay staged`);
+    }
   }
   const subject = autoCommitSubject(req.incrementId, req.action, req.tasks);
   const commit = git(['commit', '--only', '--quiet', '-m', subject, '--', ...files]);
@@ -231,7 +234,7 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
     const why = firstLine(commit.err) || firstLine(commit.out) || `exit ${commit.code}`;
     // Leave the index as the command found it; another lane may hold the lock briefly.
     if (fresh.length && !unstage(git, fresh)) {
-      return notCommitted('failed', `git commit failed (${why}), and ${fresh.join(', ')} stay staged (git rm --cached failed)`);
+      return notCommitted('failed', `git commit failed (${why}), and ${fresh.join(', ')} stay staged (git reset failed)`);
     }
     return notCommitted('failed', `git commit failed (${why})`);
   }
@@ -241,11 +244,16 @@ function commitIncrementFiles(incDir: string, req: AutoCommitRequest, push: bool
   return result;
 }
 
-/** Take files `git add` staged back out of the index, retrying briefly on a held lock. */
+/**
+ * Put the index entries of files `git add` staged back to HEAD, retrying
+ * briefly on a held lock. `reset` rather than `rm --cached`: when another lane
+ * committed the same file in the meantime, the entry matches HEAD instead of
+ * becoming a staged deletion.
+ */
 function unstage(git: (args: string[]) => GitRun, files: string[]): boolean {
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 200);
-    if (git(['rm', '--cached', '--quiet', '--', ...files]).code === 0) return true;
+    if (git(['reset', '--quiet', '--', ...files]).code === 0) return true;
   }
   return false;
 }
