@@ -516,6 +516,12 @@ increment: ${incrementId}
         JSON.stringify(coverageSummary, null, 2)
       );
 
+      // Coverage is opt-in: the user sets testing.coverage.unit
+      await fs.writeFile(
+        path.join(testRoot, '.specweave', 'config.json'),
+        JSON.stringify({ testing: { coverage: { unit: 80 } } })
+      );
+
       // Act
       const result = await IncrementCompletionValidator.validateCompletion(incrementId);
 
@@ -523,6 +529,12 @@ increment: ${incrementId}
       expect(result.isValid).toBe(true);
       expect(result.errors).toHaveLength(0);
       expect(result.warnings.some((w: string) => w.includes('coverage below target'))).toBe(true);
+
+      // Without a configured target the same low coverage is not reported,
+      // even though metadata.json still carries coverageTarget: 80.
+      await fs.writeFile(path.join(testRoot, '.specweave', 'config.json'), JSON.stringify({}));
+      const unset = await IncrementCompletionValidator.validateCompletion(incrementId);
+      expect(unset.warnings.some((w: string) => /coverage/i.test(w))).toBe(false);
     });
 
     it('should not warn when coverage meets target', async () => {

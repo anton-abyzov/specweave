@@ -13,6 +13,7 @@
  */
 
 import * as path from 'path';
+import { readFileSync } from 'fs';
 import { findProjectRoot } from '../../utils/find-project-root.js';
 import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
 import { ensureRubricFile } from '../../core/rubric/rubric-generator.js';
@@ -68,6 +69,7 @@ export async function generateRubricCommand(
   try {
     const result = await ensureRubricFile(resolved, incrementPath, {
       refresh: options.refresh,
+      coverageTarget: readCoverageTarget(projectRoot),
     });
     const message = result.written
       ? `Generated rubric at ${result.rubricPath}`
@@ -92,5 +94,16 @@ export async function generateRubricCommand(
       console.error(message);
     }
     return { success: false, incrementId: resolved, written: false, message };
+  }
+}
+
+/** `testing.coverage.unit` from config.json, when the user set one. */
+function readCoverageTarget(projectRoot: string): number | undefined {
+  try {
+    const config = JSON.parse(readFileSync(path.join(projectRoot, '.specweave', 'config.json'), 'utf-8'));
+    const unit = config?.testing?.coverage?.unit;
+    return typeof unit === 'number' && unit > 0 ? unit : undefined;
+  } catch {
+    return undefined;
   }
 }

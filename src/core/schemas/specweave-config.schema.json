@@ -565,70 +565,39 @@
     },
     "testing": {
       "type": "object",
-      "description": "Testing configuration including TDD mode, coverage targets, and browser automation",
+      "description": "Verification commands and optional test policy. Nothing here is set by default; TDD and coverage targets apply only when you set them.",
       "properties": {
-        "defaultTestMode": {
+        "commands": {
+          "type": "array",
+          "description": "Commands `specweave verify` runs, in order. Empty or unset means auto-detect (package.json test, lint, build; Cargo, pytest or Go).",
+          "items": { "type": "string" }
+        },
+        "mode": {
           "type": "string",
-          "description": "Default test mode for new increments",
-          "enum": ["TDD", "test-first", "test-after"],
-          "default": "test-after"
+          "description": "Optional. How tests are written for new work. Unset means no test-order rule. `TDD` adds 'all tests must pass' to `specweave auto` success criteria.",
+          "enum": ["TDD", "test-after", "manual", "none"]
         },
-        "defaultCoverageTarget": {
-          "type": "number",
-          "description": "Default code coverage target percentage",
-          "minimum": 0,
-          "maximum": 100,
-          "default": 80
-        },
-        "coverageTargets": {
+        "coverage": {
           "type": "object",
-          "description": "Per-level coverage targets",
+          "description": "Optional coverage targets. Unset means no coverage check. Below target is a warning at close, never a block.",
           "properties": {
             "unit": {
               "type": "number",
               "description": "Unit test line coverage target (Istanbul/c8 percentage)",
               "minimum": 0,
-              "maximum": 100,
-              "default": 80
+              "maximum": 100
             },
             "integration": {
               "type": "number",
               "description": "Integration test line coverage target (Istanbul/c8 percentage)",
               "minimum": 0,
-              "maximum": 100,
-              "default": 70
+              "maximum": 100
             },
             "e2e": {
               "type": "number",
-              "description": "E2E test pass-rate target (percentage of written Playwright tests that must pass, not line coverage)",
+              "description": "Share of written end-to-end tests that must pass (not line coverage)",
               "minimum": 0,
-              "maximum": 100,
-              "default": 100
-            }
-          },
-          "additionalProperties": false
-        },
-        "tddEnforcement": {
-          "type": "string",
-          "description": "TDD enforcement level: strict blocks GREEN without RED, warn shows warning, off disables",
-          "enum": ["strict", "warn", "off"],
-          "default": "warn"
-        },
-        "playwright": {
-          "type": "object",
-          "description": "Playwright browser automation configuration for dual-mode (CLI vs MCP)",
-          "properties": {
-            "preferCli": {
-              "type": "boolean",
-              "description": "Prefer @playwright/cli over MCP plugin for automation tasks (98% token reduction). Set false to always use MCP.",
-              "default": true
-            },
-            "cliFlags": {
-              "type": "array",
-              "description": "Additional flags to pass to playwright-cli commands",
-              "items": {
-                "type": "string"
-              }
+              "maximum": 100
             }
           },
           "additionalProperties": false
