@@ -143,7 +143,7 @@ export function GuideBody({tutorial: t, transcript = [], startAt}: {tutorial: Tu
         <section className={styles.section} aria-labelledby="steps-title">
           <h2 id="steps-title">Steps</h2>
           <ol className={styles.steps}>
-            {t.steps.map(step => <li key={step}><InlineCode text={step} /></li>)}
+            {t.steps.map(step => <li key={step}><span><InlineCode text={step} /></span></li>)}
           </ol>
         </section>
 

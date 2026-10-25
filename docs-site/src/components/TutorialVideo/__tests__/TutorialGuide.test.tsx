@@ -25,6 +25,16 @@ describe('GuideBody', () => {
     expect(container.querySelectorAll('ol li code').length).toBeGreaterThan(0);
   });
 
+  it('keeps each step one grid item, so inline code stays in the text column', () => {
+    const {container} = render(<GuideBody tutorial={guide('join-a-mac')} />);
+    const steps = [...container.querySelectorAll('ol li')].filter(li => li.querySelector('code'));
+    expect(steps.length).toBeGreaterThan(0);
+    for (const li of steps) {
+      expect(li.childNodes).toHaveLength(1);
+      expect(li.firstElementChild!.tagName).toBe('SPAN');
+    }
+  });
+
   it('marks this guide as the current step of its learning path', () => {
     const {container} = render(<GuideBody tutorial={guide('projects-and-threads')} />);
     const current = container.querySelector('.wv-thread li[aria-current="step"]');
