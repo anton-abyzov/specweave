@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-24T18:03:30.526Z",
+  "timestamp": "2026-10-25T18:07:41.772Z",
   "metrics": {
     "deploymentFrequency": {
       "value": 100,
@@ -8,18 +8,18 @@
       "description": "On-demand deployment capability (multiple deploys per day)"
     },
     "leadTime": {
-      "value": 6.3,
+      "value": 6.2,
       "unit": "hours",
       "tier": "High",
-      "p50": 1.6,
-      "p90": 20.1
+      "p50": 1.3,
+      "p90": 20.3
     },
     "changeFailureRate": {
       "value": 0,
       "unit": "percentage",
       "tier": "Elite",
       "failedReleases": 0,
-      "totalReleases": 33
+      "totalReleases": 34
     },
     "mttr": {
       "value": 0,
