@@ -59,7 +59,7 @@ This page summarizes SpecWeave releases through **3.1.10** (24 October 2026). Th
 
 ## SpecWithCode releases
 
-SpecWithCode, the desktop app, ships on its own schedule, often several times a day. The newest build is always the Latest release on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases), and the notes below cover releases up to 1.0.62. [Download SpecWithCode for Mac](/code/download/).
+SpecWithCode, the desktop app, ships on its own schedule, often several times a day. The newest build is always the Latest release on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases), and the notes below cover releases up to 1.0.62. [Download SpecWithCode for Mac, Windows or Linux](/code/download/).
 
 ### 1.0.54 to 1.0.62, 19 to 20 October 2026
 
