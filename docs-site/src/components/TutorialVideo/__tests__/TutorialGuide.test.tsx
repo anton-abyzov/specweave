@@ -27,7 +27,7 @@ describe('GuideBody', () => {
 
   it('keeps each step one grid item, so inline code stays in the text column', () => {
     const {container} = render(<GuideBody tutorial={guide('join-a-mac')} />);
-    const steps = [...container.querySelectorAll('ol li')].filter(li => li.querySelector('code'));
+    const steps = Array.from(container.querySelectorAll('ol li')).filter(li => li.querySelector('code'));
     expect(steps.length).toBeGreaterThan(0);
     for (const li of steps) {
       expect(li.childNodes).toHaveLength(1);
