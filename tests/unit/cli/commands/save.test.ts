@@ -53,6 +53,8 @@ async function createSaveTestRepo(testName: string) {
   delete cleanEnv.NODE_OPTIONS;
 
   await execAsync('git init', { cwd: repoDir, env: cleanEnv });
+  // Keep real commits independent of host-global hooks (scanners, Git LFS, etc.).
+  await execAsync('git config core.hooksPath .git/hooks', { cwd: repoDir, env: cleanEnv });
   await execAsync('git config user.email "test@specweave.dev"', { cwd: repoDir, env: cleanEnv });
   await execAsync('git config user.name "Test"', { cwd: repoDir, env: cleanEnv });
 
@@ -79,6 +81,7 @@ async function createUmbrellaRepo(testName: string) {
 
   // Initialize umbrella repo
   await execAsync('git init', { cwd: umbrellaDir, env: cleanEnv });
+  await execAsync('git config core.hooksPath .git/hooks', { cwd: umbrellaDir, env: cleanEnv });
   await execAsync('git config user.email "test@specweave.dev"', { cwd: umbrellaDir, env: cleanEnv });
   await execAsync('git config user.name "Test"', { cwd: umbrellaDir, env: cleanEnv });
 
@@ -89,6 +92,7 @@ async function createUmbrellaRepo(testName: string) {
     await fs.mkdir(childPath, { recursive: true });
 
     await execAsync('git init', { cwd: childPath, env: cleanEnv });
+    await execAsync('git config core.hooksPath .git/hooks', { cwd: childPath, env: cleanEnv });
     await execAsync('git config user.email "test@specweave.dev"', { cwd: childPath, env: cleanEnv });
     await execAsync('git config user.name "Test"', { cwd: childPath, env: cleanEnv });
 
@@ -1249,6 +1253,7 @@ describe('executeSave project root resolution (0879)', () => {
   async function gitRepo(dir: string): Promise<string> {
     await fs.mkdir(dir, { recursive: true });
     await execAsync('git init -q', { cwd: dir, env: cleanEnv });
+    await execAsync('git config core.hooksPath .git/hooks', { cwd: dir, env: cleanEnv });
     await execAsync('git config user.email "test@specweave.dev"', { cwd: dir, env: cleanEnv });
     await execAsync('git config user.name "Test"', { cwd: dir, env: cleanEnv });
     await fs.writeFile(path.join(dir, '.gitkeep'), '');
