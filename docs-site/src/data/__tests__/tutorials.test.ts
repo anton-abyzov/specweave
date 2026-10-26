@@ -14,6 +14,7 @@ import {
   formatDuration,
   getTutorial,
   guidePath,
+  inboundLinks,
   isoDuration,
   legacyRedirect,
   matchesProduct,
@@ -76,7 +77,7 @@ describe('tutorial catalogue v2', () => {
   });
 
   it('resolves learning paths into published steps and a count of planned ones', () => {
-    expect(PATHS.map(p => p.title)).toEqual(['Run work across agents', 'Run SpecWithCode', 'Ship a skill']);
+    expect(PATHS.map(p => p.title)).toEqual(['Run work across agents', 'Run SpecWithCode', 'Your agent in SpecWithCode', 'Ship a skill']);
     for (const path of PATHS) {
       const {published, planned} = resolvePath(path);
       expect(published.length + planned.length).toBe(path.steps.length);
@@ -84,6 +85,31 @@ describe('tutorial catalogue v2', () => {
     }
     expect(pathsFor('specweave-workflow').map(p => p.id)).toEqual(['run-work-across-agents']);
     expect(pathsFor('find-and-install-a-skill')).toEqual([]);
+  });
+
+  it('runs the per-agent series in order, with the planned Cursor episode counted', () => {
+    const series = PATHS.find(p => p.id === 'your-agent-in-specwithcode')!;
+    const {published, planned} = resolvePath(series);
+    expect(published.map(t => t.agent)).toEqual(['claude-code', 'codex', 'opencode', 'grok', 'antigravity']);
+    expect(planned.map(p => p.slug)).toEqual(['specwithcode-cursor']);
+    for (const t of published) expect(t.agentNotes?.length).toBeGreaterThan(0);
+  });
+
+  it('links every published guide from another guide or a learning path', () => {
+    for (const t of TUTORIALS) expect(inboundLinks(t.slug), t.slug).toBeGreaterThan(0);
+  });
+
+  it('gives every guide its own description', () => {
+    const descriptions = TUTORIALS.map(t => t.seoDescription ?? t.summary);
+    expect(new Set(descriptions).size).toBe(descriptions.length);
+  });
+
+  it('pins every chapter note to a real chapter start', () => {
+    const noted = TUTORIALS.filter(t => t.chapterNotes?.length);
+    expect(noted.map(t => t.slug)).toContain('how-specwithcode-works');
+    for (const t of noted) {
+      for (const note of t.chapterNotes!) expect(t.chapters.map(c => c.start)).toContain(note.start);
+    }
   });
 
   it('filters by product and by every word of a query', () => {
@@ -138,7 +164,8 @@ describe('structured data', () => {
     expect(tour.contentUrl).toBe('https://spec-weave.com/video/studio-tutorial.mp4');
     expect(tour.thumbnailUrl).toEqual(['https://spec-weave.com/img/studio/poster-tour-20261015.jpg']);
     expect(tour.duration).toBe('PT1M1S');
-    expect(tour.embedUrl).toBe('https://spec-weave.com/tutorials/specwithcode-tour/');
+    expect(tour).not.toHaveProperty('embedUrl');
+    expect(tour.description).toBe(getTutorial('specwithcode-tour')!.seoDescription);
     expect(tour.hasPart[1]).toMatchObject({'@type': 'Clip', startOffset: 4, endOffset: 15, url: 'https://spec-weave.com/tutorials/specwithcode-tour/?t=4'});
     expect(tour.uploadDate).toBe('2026-10-10T05:08:31Z');
     for (const video of data['@graph']) {
@@ -161,6 +188,14 @@ describe('structured data', () => {
     expect(article.video['@type']).toBe('VideoObject');
     expect(article.video.hasPart).toHaveLength(t.chapters.length);
     expect(crumbs.itemListElement.map((i: any) => i.name)).toEqual(['Home', 'Tutorials', t.title]);
+  });
+
+  it('puts the caption transcript in the VideoObject', () => {
+    const t = getTutorial('specweave-workflow')!;
+    const transcript = [{start: 0, title: 'One', text: 'First line.'}, {start: 5, title: 'Two', text: 'Second line.'}];
+    const [article] = buildGuideJsonLd(t, origin, transcript)['@graph'] as any[];
+    expect(article.video.transcript).toBe('First line. Second line.');
+    expect(buildGuideJsonLd(t, origin)['@graph'][0]).not.toHaveProperty('video.transcript');
   });
 
   it('lists every guide page on the hub without repeating the videos', () => {

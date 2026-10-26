@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec-weave.com/schemas/skill-marketplace.v1.json",
+  "title": "SpecWeave skill marketplace manifest",
+  "description": "Shape of plugins/specweave/marketplace.json: the skills a SpecWeave plugin ships, its optional skills, and the skills removed in each major release.",
+  "type": "object",
+  "required": ["plugin", "description", "skills"],
+  "properties": {
+    "$schema": {"type": "string"},
+    "plugin": {"type": "string", "description": "Plugin name."},
+    "description": {"type": "string"},
+    "skills": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/skill"}
+    },
+    "optionalSkills": {
+      "type": "object",
+      "description": "Skills shipped with the plugin but not loaded until a project enables them.",
+      "required": ["names"],
+      "properties": {
+        "note": {"type": "string"},
+        "names": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "removedIn2_0": {"$ref": "#/$defs/removed"},
+    "removedIn3_0": {"$ref": "#/$defs/removed"},
+    "removedIn3_1": {"$ref": "#/$defs/removed"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "skill": {
+      "type": "object",
+      "required": ["name", "path", "description", "deprecated"],
+      "properties": {
+        "name": {"type": "string", "description": "Skill name, for example sw:do."},
+        "path": {"type": "string", "description": "Path of the skill folder, relative to the plugin."},
+        "description": {"type": "string"},
+        "deprecated": {"type": "boolean"},
+        "optional": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "removed": {
+      "type": "object",
+      "description": "Skills removed in a release, each mapped to its replacement.",
+      "required": ["map"],
+      "properties": {
+        "note": {"type": "string"},
+        "map": {"type": "object", "additionalProperties": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}
