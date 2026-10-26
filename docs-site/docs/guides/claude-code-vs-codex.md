@@ -69,7 +69,7 @@ specweave init
 Switching isn't only for emergencies. Some teams let one tool implement and the other review, or run a Claude Code Projects thread and a Codex cloud task on separate increments at the same time. The ledger records which tool claimed and finished each task (`claude@laptop`, `codex@cloud`), so you can see afterwards who did what.
 
 :::tip Prefer a desktop app?
-[SpecWithCode](/code/) is a free, open-source Mac app that runs Claude Code and Codex side by side. When one subscription hits its limit, the thread continues on another signed-in provider by default. Watch [Keep working when a provider runs out](/tutorials/provider-runs-out/).
+[SpecWithCode](/code/) is a free Mac app with source available for inspection that runs Claude Code and Codex side by side. When one subscription hits its limit, the thread continues on another signed-in provider by default. Watch [Keep working when a provider runs out](/tutorials/provider-runs-out/).
 :::
 
 ## Common questions
