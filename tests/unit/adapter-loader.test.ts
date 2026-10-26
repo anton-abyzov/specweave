@@ -20,7 +20,12 @@ describe('AdapterLoader', () => {
   let adapterLoader: AdapterLoader;
 
   beforeEach(() => {
+    vi.stubEnv('SPECWEAVE_TOOL', undefined);
     adapterLoader = new AdapterLoader();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   describe('detectTool', () => {
