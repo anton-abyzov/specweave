@@ -5,7 +5,7 @@
  * 1. Templates are created with proper markers
  * 2. Template detection works correctly
  * 3. Full content is NOT created directly
- * 4. Templates require PM/Architect skills to complete
+ * 4. sw-increment fills the placeholders (no role-skill hand-off)
  *
  * @module template-creator.test
  * @since 1.0.162
@@ -157,8 +157,10 @@ describe('template-creator', () => {
       expect(content).toContain(TEMPLATE_MARKERS.COMPONENT);
       expect(content).toContain('[Technical summary of implementation approach]');
 
-      // Must contain the template warning comment
-      expect(content).toContain('TEMPLATE FILE - MUST BE COMPLETED VIA ARCHITECT SKILL');
+      // No hand-off to a retired Architect skill, and no stale tasks.md pointer
+      expect(content).not.toContain('ARCHITECT SKILL');
+      expect(content).not.toContain('tasks.md');
+      expect(content).toContain('[High-level testing approach; the tasks live in spec.md ## Tasks]');
     });
 
     it('keeps the task definitions in spec.md', async () => {
