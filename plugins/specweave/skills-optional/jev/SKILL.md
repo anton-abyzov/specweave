@@ -91,7 +91,10 @@ ledger task) · `guard "<command>"` · `screen <file>` · `failure <file>` · `a
 · `browse --goal "<goal>" --url "<url>"` (headless, allow-listed domains only, never types text Jev chose, skips
 pay/delete/sign-out controls unless `--allow-sensitive`) · `usage`. Each is `specweave jev <action>`; `--json` for
 machines. The guard can run as a Claude Code `PreToolUse` hook for one project: `specweave jev setup --guard-bash`
-(`--no-guard-bash` removes it). In every other tool, call `specweave jev guard` yourself.
+writes the config flag, the `.specweave/state/jev-guard.enabled` marker and a project-level `PreToolUse` hook
+(`--no-guard-bash` removes all three). In every other tool, call `specweave jev guard` yourself. Never send Jev
+code, prose, compaction, counting or date maths, another model's free-text output, or a question whose answers you
+cannot enumerate; below `jev.thresholds.route` treat the answer as no answer.
 
 ## Guard a shell command
 
@@ -108,7 +111,7 @@ arms: `destructive_remote` at confidence ≥ `guardDeny` (0.85); destructiveness
 scope; `local_irreversible` at confidence ≥ `guardDeny` *and* destructiveness ≥ `guardWarn` (0.5); or
 p(`local_irreversible`) + p(`destructive_remote`) ≥ `guardDeny` with destructiveness ≥ `guardWarn`. **Warn** when
 destructiveness ≥ `guardWarn` or the scope is `shared_or_remote`, `local_irreversible` or `destructive_remote` (a
-low-confidence remote reading never falls to allow). A denied command is the user's to approve.
+low-confidence remote reading never falls to allow). A denied command is the user's to approve: stop and ask; do not reword it, wrap it or edit config around it.
 
 ## Screen pulled text, triage a red run
 
