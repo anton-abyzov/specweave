@@ -28,7 +28,7 @@ specweave init .
 
 ## SpecWithCode: the free workspace on top
 
-[SpecWithCode](https://spec-weave.com/code/) is a desktop app built on SpecWeave. Describe the work once and a coordinator splits it across Claude Code, Codex, Grok or Cursor workers on your own machines, with the spec, evidence and handoff in git. It is built for teams of 2–10 people and free: no markup, no token resale, no seat fee to run agents on your own machines. Early access, Apple silicon Macs. [Download](https://spec-weave.com/code/) · [Pricing](https://spec-weave.com/pricing)
+[SpecWithCode](https://spec-weave.com/code/) is a desktop app built on SpecWeave. Describe the work once and a coordinator splits it across Claude Code, Codex, Grok or Cursor workers on your own machines, with the spec, evidence and handoff in git. It is built for teams of 2–10 people and free: no markup, no token resale, no seat fee to run agents on your own machines. Early access, for Apple silicon Macs, Windows 10 and 11, and Linux. [Download SpecWithCode](https://spec-weave.com/code/download/) · [Pricing](https://spec-weave.com/pricing)
 
 ## Keep your repositories where they are
 
