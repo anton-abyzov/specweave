@@ -1,3 +1,12 @@
+## [3.1.12] - 2026-10-26
+
+### Changed
+
+- chore(deps)(deps): bump the production-dependencies group with 2 updates (#2161)
+- chore(deps)(deps-dev): bump @playwright/test (#2160)
+- chore(deps)(deps-dev): bump the development-dependencies group with 2 updates (#2162)
+- chore(deps)(deps-dev): bump the vitest-ecosystem group with 3 updates (#2159)
+
 ## [3.1.11] - 2026-10-26
 
 ### Changed
