@@ -9,7 +9,7 @@
 
 import './check-node.js';
 
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import chalk from 'chalk';
 import { createRequire } from 'module';
 
@@ -250,7 +250,7 @@ program
   .option('--type <type>', 'Increment type (feature, hotfix, bug, refactor, experiment)', 'feature')
   .option('--priority <priority>', 'Priority (P1, P2, P3)', 'P1')
   .option('--project-root <path>', 'Override project root directory')
-  .option('--parallel', 'Opt into 3-agent fan-out planning (default: single-agent)')
+  .addOption(new Option('--parallel', 'Deprecated no-op (parallel planning was removed)').hideHelp())
   .option('--with-plan', 'Also scaffold plan.md (optional overflow; spec.md carries the Approach)')
   .option('--planned', 'Create as "planned" instead of "active" (backlog work; start it with specweave start <id>)')
   .option('--supersedes <increment-id>', 'Increment this one replaces (the old one is abandoned with a closeReason)')
