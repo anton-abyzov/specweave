@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
+import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import {
   PATHS,
@@ -45,8 +46,10 @@ const ORDERED = byRecency(TUTORIALS);
 
 function PathColumn({path}: {path: LearningPath}) {
   const {published, planned} = resolvePath(path);
+  // Guide pages link /tutorials/#path-<id>.
+  useBrokenLinks().collectAnchor(`path-${path.id}`);
   return (
-    <li className={styles.path}>
+    <li className={styles.path} id={`path-${path.id}`}>
       <h3 className={styles.pathTitle}>{path.title}</h3>
       <p className={styles.pathProduct}>{productLabel(path.product)}</p>
       <p className={styles.pathSummary}>{path.summary}</p>
