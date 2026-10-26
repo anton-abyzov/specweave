@@ -8,7 +8,7 @@ description: "Add a Linux machine on x64 or arm64, such as a Hetzner, DigitalOce
 
 A Linux machine you control can run workers for the coordinators on your Mac: a small VPS, a cloud VM or a box at home. It runs the same SpecWithCode server as a Mac worker; only the install differs. You rent the machine and sign its provider CLIs in with your own accounts. SpecWithCode does not start sessions on anyone else's cloud.
 
-Release 1.0.44 (18 October 2026) ships `studio-1.0.44-linux-x64-….tar.gz` and `studio-1.0.44-linux-arm64-….tar.gz` with a `SHA256SUMS` file ([release assets](https://github.com/anton-abyzov/specwithcode/releases/tag/v1.0.44)).
+Every release ships `studio-<version>-linux-x64-….tar.gz` and `studio-<version>-linux-arm64-….tar.gz` with a `SHA256SUMS` file ([latest release assets](https://github.com/anton-abyzov/specwithcode/releases/latest)).
 
 ## What you need
 
@@ -41,11 +41,11 @@ curl -fsSL https://github.com/anton-abyzov/specwithcode/releases/latest/download
 To install by hand instead, download the archive and its checksums, and verify them:
 
 ```bash
-VERSION=1.0.44
 ARCH=$(uname -m | sed 's/x86_64/x64/; s/aarch64/arm64/')
-BASE=https://github.com/anton-abyzov/specwithcode/releases/download/v$VERSION
+BASE=https://github.com/anton-abyzov/specwithcode/releases/latest/download
 curl -fsSLO "$BASE/SHA256SUMS"
-ARCHIVE=$(grep -o "studio-$VERSION-linux-$ARCH-[0-9a-f]*\.tar\.gz" SHA256SUMS | head -n1)
+ARCHIVE=$(grep -o "studio-[0-9.]*-linux-$ARCH-[0-9a-f]*\.tar\.gz" SHA256SUMS | head -n1)
+VERSION=$(echo "$ARCHIVE" | sed -E 's/^studio-([0-9.]+)-linux-.*/\1/')
 curl -fsSLO "$BASE/$ARCHIVE"
 grep "$ARCHIVE" SHA256SUMS | sha256sum -c -
 ```
