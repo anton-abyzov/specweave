@@ -117,7 +117,7 @@ npx vskill i handoff
 It needs only `git` and a shell. If `specweave` is installed it uses it; otherwise it writes a compatible `handoff.md` from your git state.
 
 :::tip Prefer a desktop app?
-[SpecWithCode](/code/) is a free, open-source Mac app that runs Claude Code and Codex side by side. When one subscription hits its limit, the thread continues on another signed-in provider by default. Watch [Keep working when a provider runs out](/tutorials/provider-runs-out/).
+[SpecWithCode](/code/) is a free Mac app with source available for inspection that runs Claude Code and Codex side by side. When one subscription hits its limit, the thread continues on another signed-in provider by default. Watch [Keep working when a provider runs out](/tutorials/provider-runs-out/).
 :::
 
 ## Common questions
