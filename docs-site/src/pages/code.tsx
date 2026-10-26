@@ -74,9 +74,9 @@ const FAQ: {q: string; a: React.ReactNode}[] = [
   {q: 'Can a subscription replace all API spending?', a: <>No. Use eligible plans through their supported coding agents. Limits, seat rules and provider terms still apply; API keys or extra usage may create separate charges. Enterprise billing may differ. Measure your own workload before claiming savings.</>},
   {q: 'What do I need to add another machine?', a: <>A Mac or a Linux machine (x64 or arm64) running SpecWithCode as a background service, Tailscale on every machine in the same tailnet, and that machine’s own project checkout and provider sign-ins. Then invite it and add the line on your main machine. Windows machines cannot run workers. Adding a machine does not add subscription entitlement or open your company network.</>},
   {q: 'Should one machine switch between accounts of the same provider?', a: <>We recommend against it. Keep each machine signed in to one account per provider and leave it that way. For more capacity, add a machine with its own subscriptions instead of switching accounts by hand.</>},
-  {q: 'What is free?', a: <>SpecWithCode is free and open source. You bring your provider accounts and pay any provider charges directly. The <Link className="wv-link" to="/docs/getting-started/">SpecWeave CLI</Link> keeps specs, task evidence and handoffs in git so another tool can continue the work.</>},
+  {q: 'What is free?', a: <>SpecWithCode is free, with source available. You bring your provider accounts and pay any provider charges directly. The <Link className="wv-link" to="/docs/getting-started/">SpecWeave CLI</Link> keeps specs, task evidence and handoffs in git so another tool can continue the work.</>},
   BRAND_FAQ,
-  {q: 'Is SpecWithCode a coding-agent harness?', a: <>SpecWithCode is an agentic development environment that coordinates existing coding agents. Claude Code, Codex and other supported agents keep their own execution runtimes. The app adds project coordination, worker threads, context handoffs and shared tools. It is an independent MIT fork of <a href="https://github.com/pingdotgg/t3code">T3 Code</a>; the <a href={`${release.repoUrl}/blob/main/UPSTREAM.md`}>source provenance</a> records that foundation.</>},
+  {q: 'Is SpecWithCode a coding-agent harness?', a: <>SpecWithCode is an agentic development environment that coordinates existing coding agents. Claude Code, Codex and other supported agents keep their own execution runtimes. The app adds project coordination, worker threads, context handoffs and shared tools. SpecWithCode is independently maintained, with its own settings, portable specs and handoff workflows.</>},
   {q: 'Do I need SpecWeave increments?', a: <>Increments are optional. We strongly recommend them for work that spans several agents or sessions: write the acceptance criteria, record task evidence and review the result before closing. Add skills for the work at hand, such as design, testing or code review. Passing checks supports those specific results; it does not guarantee bug-free software.</>},
 ];
 
@@ -86,9 +86,9 @@ const FAQ_TEXT: {q: string; a: string}[] = [
   {q: FAQ[1].q, a: 'No. Use eligible plans through their supported coding agents. Limits, seat rules and provider terms still apply; API keys or extra usage may create separate charges. Enterprise billing may differ. Measure your own workload before claiming savings.'},
   {q: FAQ[2].q, a: 'A Mac or a Linux machine (x64 or arm64) running SpecWithCode as a background service, Tailscale on every machine in the same tailnet, and that machine’s own project checkout and provider sign-ins. Then invite it and add the line on your main machine. Windows machines cannot run workers. Adding a machine does not add subscription entitlement or open your company network.'},
   {q: FAQ[3].q, a: 'We recommend against it. Keep each machine signed in to one account per provider and leave it that way. For more capacity, add a machine with its own subscriptions instead of switching accounts by hand.'},
-  {q: FAQ[4].q, a: 'SpecWithCode is free and open source. You bring your provider accounts and pay any provider charges directly. The SpecWeave CLI keeps specs, task evidence and handoffs in git so another tool can continue the work.'},
+  {q: FAQ[4].q, a: 'SpecWithCode is free, with source available. You bring your provider accounts and pay any provider charges directly. The SpecWeave CLI keeps specs, task evidence and handoffs in git so another tool can continue the work.'},
   BRAND_FAQ,
-  {q: FAQ[6].q, a: 'SpecWithCode is an agentic development environment that coordinates existing coding agents. Claude Code, Codex and other supported agents keep their own execution runtimes. The app adds project coordination, worker threads, context handoffs and shared tools. It is an independent MIT fork of T3 Code; the source provenance records that foundation.'},
+  {q: FAQ[6].q, a: 'SpecWithCode is an agentic development environment that coordinates existing coding agents. Claude Code, Codex and other supported agents keep their own execution runtimes. The app adds project coordination, worker threads, context handoffs and shared tools. SpecWithCode is independently maintained, with its own settings, portable specs and handoff workflows.'},
   {q: FAQ[7].q, a: 'Increments are optional. We strongly recommend them for work that spans several agents or sessions: write the acceptance criteria, record task evidence and review the result before closing. Add skills for the work at hand, such as design, testing or code review. Passing checks supports those specific results; it does not guarantee bug-free software.'},
 ];
 
@@ -127,7 +127,6 @@ const SPECWITHCODE_LD = {
       downloadUrl: release.dmgUrl,
       releaseNotes: release.notesUrl,
       codeRepository: release.repoUrl,
-      license: 'https://opensource.org/licenses/MIT',
       isAccessibleForFree: true,
       image: `${SITE}/img/studio/code-hero-worker-20261015.webp`,
       screenshot: `${SITE}/img/studio/code-hero-worker-20261015.webp`,
@@ -190,7 +189,7 @@ export default function Code() {
       <meta property="og:image" content={OG_IMAGE} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own Macs. Free and open source." />
+      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own Macs. Free, source available." />
       <meta name="twitter:image" content={OG_IMAGE} />
       <script type="application/ld+json">{JSON.stringify(SPECWITHCODE_LD)}</script>
     </Head>
@@ -200,10 +199,10 @@ export default function Code() {
           <p className={styles.product}>
             <img src="/img/studio/specwithcode-icon.png" alt="" width="28" height="28" />
             <span className={styles.productName}>SpecWithCode</span>
-            <span className={styles.productNote}>Free and open source</span>
+            <span className={styles.productNote}>Free, source available</span>
           </p>
           <h1>SpecWithCode: run Claude Code, Codex and Cursor agents on your own machines</h1>
-          <p className={styles.lead}>SpecWithCode (pronounced “Spec with Code”) is a free, open-source AI coding agent workspace on your own machines.</p>
+          <p className={styles.lead}>SpecWithCode (pronounced “Spec with Code”) is a free AI coding agent workspace on your own machines.</p>
           <p className={styles.lead}>One coordinator per project starts worker threads in {providerSummary(6)}, each on its own branch or worktree.</p>
           <div className={styles.actions}>
             <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for Mac</a>

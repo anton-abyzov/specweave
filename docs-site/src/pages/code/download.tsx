@@ -46,7 +46,7 @@ const NEXT: {name: string; detail: React.ReactNode}[] = [
 ];
 
 const FAQ_TEXT: {q: string; a: string}[] = [
-  {q: 'Is SpecWithCode free?', a: 'Yes. SpecWithCode is free and open source under the MIT license, with no account. You bring your own provider subscriptions or API keys and pay any provider charges directly.'},
+  {q: 'Is SpecWithCode free?', a: 'Yes. SpecWithCode is free, with no account. You bring your own provider subscriptions or API keys and pay any provider charges directly.'},
   {q: 'Which Macs does SpecWithCode run on?', a: 'Apple silicon Macs (M1 or later) with macOS 13 or later. Intel Mac builds are not published yet; on an Intel Mac you can build the server from source.'},
   {q: 'Is there a Windows or Linux download?', a: `Yes. SpecWithCode ${desktop.version} has a Windows installer for 64-bit Windows 10 and 11, and a Linux AppImage and .deb for x64. The Windows installer is not code-signed yet, so Windows asks you to confirm the first run. Computer use is macOS only.`},
   {q: 'Is the download safe?', a: 'Every release is built in GitHub Actions. The Mac app is signed with an Apple Developer ID and notarized by Apple. The Windows installer and the Linux AppImage and .deb are not code-signed yet; check them against the SHA256SUMS-windows-linux file published with each release. The Mac download has its own SHA256SUMS file.'},
@@ -87,7 +87,6 @@ const DOWNLOAD_LD = {
       downloadUrl: release.dmgUrl,
       installUrl: PAGE_URL,
       releaseNotes: release.notesUrl,
-      license: 'https://opensource.org/licenses/MIT',
       isAccessibleForFree: true,
       offers: {'@type': 'Offer', price: '0', priceCurrency: 'USD'},
     },
@@ -119,7 +118,7 @@ export default function CodeDownload() {
       <meta property="og:image" content={OG_IMAGE} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own Macs. Free and open source." />
+      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own Macs. Free, source available." />
       <meta name="twitter:image" content={OG_IMAGE} />
       <script type="application/ld+json">{JSON.stringify(DOWNLOAD_LD)}</script>
     </Head>
@@ -129,7 +128,7 @@ export default function CodeDownload() {
           <p className={styles.product}>
             <img src="/img/studio/specwithcode-icon.png" alt="" width="28" height="28" />
             <span className={styles.productName}><Link to="/code/">SpecWithCode</Link></span>
-            <span className={styles.productNote}>Free and open source</span>
+            <span className={styles.productNote}>Free, source available</span>
           </p>
           <h1>Download SpecWithCode</h1>
           <p>SpecWithCode, pronounced “Spec with Code”, brings your AI coding agents into one workspace.</p>
@@ -141,7 +140,7 @@ export default function CodeDownload() {
           <p className={styles.requirements}>SpecWithCode {release.version}, <code>SpecWithCode-arm64.dmg</code>, {release.size}. Apple silicon, macOS 13 or later. <a className="wv-link" href={release.notesUrl}>Release notes</a> · <a className="wv-link" href={SHA_URL}>SHA256SUMS</a></p>
           <div className={clsx('wv-note', styles.qualification)}>
             <ShieldCheck {...icon} />
-            <p><strong>Signed with an Apple Developer ID and notarized by Apple.</strong> The download comes straight from the open-source repository's GitHub releases.</p>
+            <p><strong>Signed with an Apple Developer ID and notarized by Apple.</strong> The download comes straight from the project's GitHub releases.</p>
           </div>
         </div>
         <div className={styles.heroShot}>
@@ -209,7 +208,7 @@ export default function CodeDownload() {
 
       <section className={clsx(styles.shell, styles.final)} aria-labelledby="download-final-title">
         <h2 id="download-final-title">Get SpecWithCode for Mac</h2>
-        <p>Free, open source, no account. Version {release.version} for Apple silicon Macs on macOS 13 or later.</p>
+        <p>Free, source available, no account. Version {release.version} for Apple silicon Macs on macOS 13 or later.</p>
         <div className={styles.actions}>
           <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="download-page-footer"><Download {...btnIcon} />Download SpecWithCode</a>
           <a className={clsx('wv-link', styles.finalLink)} href={release.repoUrl}>View source on GitHub</a>
