@@ -1,3 +1,9 @@
+## [3.1.13] - 2026-10-26
+
+### Changed
+
+- Fold subagent leftovers into the single loop (#2164)
+
 ## [3.1.12] - 2026-10-26
 
 ### Changed
