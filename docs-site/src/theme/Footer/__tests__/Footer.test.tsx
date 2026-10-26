@@ -45,6 +45,8 @@ describe('Footer', () => {
     expect(screen.getByText('Quick start')).toHaveAttribute('href', '/docs/getting-started');
     expect(screen.getByText('Tutorials')).toHaveAttribute('href', '/tutorials');
     expect(screen.getByText('Handoff and pickup')).toHaveAttribute('href', '/docs/guides/cross-tool-handoff');
+    expect(screen.getByText('SpecWithCode')).toHaveAttribute('href', '/code/');
+    expect(screen.getByText('Download SpecWithCode')).toHaveAttribute('href', '/code/download/');
     expect(screen.getByText('Privacy')).toHaveAttribute('href', '/privacy');
     expect(screen.getByText('Support')).toHaveAttribute('href', '/support');
   });

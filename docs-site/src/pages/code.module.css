@@ -266,6 +266,35 @@
 }
 
 /* ---------- Heading beside a hairline list ---------- */
+.guidesTitle {
+  margin-top: var(--wv-space-8);
+  font: 600 21px/28px var(--wv-font-sans);
+  color: var(--wv-ink);
+}
+
+.guides {
+  max-width: var(--wv-measure);
+  margin: var(--wv-space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--wv-line);
+}
+
+.guides li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--wv-space-1) var(--wv-space-4);
+  margin: 0;
+  padding: var(--wv-space-3) 0;
+  border-bottom: 1px solid var(--wv-line);
+}
+
+.guides span {
+  font-variant-numeric: tabular-nums;
+  color: var(--wv-muted);
+}
+
 .split {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);

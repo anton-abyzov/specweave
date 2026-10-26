@@ -42,10 +42,16 @@ describe('SpecWithCode landing page', () => {
   it('sources every competitor cell in the comparison and dates the check', () => {
     const rows = why.slice(why.indexOf('const ROWS'), why.indexOf('function Src'));
     for (const block of rows.split('cells: [').slice(1)) {
-      const cells = block.split(/,\n/).slice(1, 3);
+      // Column 1 is OpenCode; cloud-agent cells are sourced in the paragraph under the table.
+      const cells = block.split(/,\n/).slice(1, 2);
       for (const cell of cells) expect(cell).toMatch(/<Src href="https:\/\//);
     }
     expect(why).toMatch(/const CHECKED = '\d{1,2} \w+ \d{4}'/);
+  });
+
+  it('never compares SpecWithCode with T3 Code or calls it a fork', () => {
+    expect(copy).not.toMatch(/T3 Code|t3code/i);
+    expect(copy).not.toMatch(/\bfork(ed)? of\b/i);
   });
 
   it('describes SpecWeave increments as optional and read-only', () => {

@@ -90,7 +90,7 @@ Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) hav
 - **Start a fresh session per task.** A long transcript makes every later step more expensive. With the task state in the repository, a new session needs one `specweave pickup` to catch up.
 
 :::tip Prefer a desktop app?
-[SpecWithCode](/code/) is a free, open-source Mac app that runs Claude Code and Codex side by side. When one subscription hits its limit, the thread continues on another signed-in provider by default. Watch [Keep working when a provider runs out](/tutorials/provider-runs-out/).
+[SpecWithCode](/code/) is a free, source-available desktop app that runs Claude Code and Codex side by side. When one subscription hits its limit, the thread continues on another signed-in provider by default. Watch [Keep working when a provider runs out](/tutorials/provider-runs-out/).
 :::
 
 ## Common questions
