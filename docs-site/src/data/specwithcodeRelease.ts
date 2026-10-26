@@ -6,9 +6,9 @@
  * `gh release view vX.Y.Z -R anton-abyzov/specwithcode --json assets`.
  * After editing, run `CHECK_RELEASE_LINKS=1 npx vitest run specwithcodeRelease` to confirm the DMG exists.
  */
-const VERSION = '1.0.76';
+const VERSION = '1.0.94';
 const DMG_NAME = 'SpecWithCode-arm64.dmg';
-const DMG_BYTES = 161_282_848;
+const DMG_BYTES = 160_930_363;
 
 const REPO = 'https://github.com/anton-abyzov/specwithcode';
 
@@ -32,10 +32,10 @@ export const SPECWITHCODE_RELEASE = {
  * DESKTOP_VERSION and the byte sizes from
  * `gh release view vX.Y.Z -R anton-abyzov/specwithcode --json assets`.
  */
-const DESKTOP_VERSION = '1.0.76';
-const EXE_BYTES = 150_673_866;
-const APPIMAGE_BYTES = 165_060_577;
-const DEB_BYTES = 139_629_700;
+const DESKTOP_VERSION = '1.0.94';
+const EXE_BYTES = 151_018_403;
+const APPIMAGE_BYTES = 165_485_871;
+const DEB_BYTES = 140_719_472;
 
 const desktopAsset = (name: string, bytes: number) => ({
   name,
