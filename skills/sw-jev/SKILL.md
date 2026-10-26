@@ -89,11 +89,10 @@ curl -sS https://openrouter.ai/api/v1/systemone -H "Content-Type: application/js
 ledger task) · `guard "<command>"` · `screen <file>` · `failure <file>` · `ask --state @s.json --questions @q.json`
 · `browse --goal "<goal>" --url "<url>"` (headless, allow-listed domains only, never types text Jev chose, skips
 pay/delete/sign-out controls unless `--allow-sensitive`) · `usage`. Each is `specweave jev <action>`; `--json` for
-machines. The guard can run as a Claude Code `PreToolUse` hook for one project: `specweave jev setup --guard-bash`
-writes the config flag, the `.specweave/state/jev-guard.enabled` marker and a project-level `PreToolUse` hook
-(`--no-guard-bash` removes all three). In every other tool, call `specweave jev guard` yourself. Never send Jev
-code, prose, compaction, counting or date maths, another model's free-text output, or a question whose answers you
-cannot enumerate; below `jev.thresholds.route` treat the answer as no answer.
+machines. `specweave jev setup --guard-bash` writes the config flag, the `.specweave/state/jev-guard.enabled` marker
+and a project `PreToolUse` hook (`--no-guard-bash` removes all three); in other tools call `jev guard` yourself.
+Never send Jev code, prose, counting, date maths, another model's free text or a question whose answers you cannot
+enumerate; below `jev.thresholds.route` treat the answer as no answer.
 
 ## Guard a shell command
 
