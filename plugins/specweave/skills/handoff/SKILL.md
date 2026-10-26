@@ -80,14 +80,17 @@ hooks and the last usage reading.
 
 Claude Code also warns the model itself near and at the 5-hour limit, with a note that
 starts "[Usage limit approaching" or "[Usage limit reached". "Approaching" is a
-heads-up: mention it in one line and keep working. "Reached" is the handoff moment:
+heads-up: mention it in one line and keep working. "Reached" is the handoff moment
+unless auto-handoff is in checkpoint mode (`--mode checkpoint` / `--checkpoint-only`) or
+you are inside SpecWithCode; then mention it in one line and keep working. Otherwise
 finish the current edit, run `specweave handoff --reason "usage limit"` (one command; it
 needs no summary from you) and stop.
 
 Between handoffs every hook also saves a local checkpoint under
 `~/.specweave/checkpoints/` (no model, network, push or claim change; `pickup` does
 not apply it). `auto-handoff on --checkpoint-only` keeps only those checkpoints, for
-plans where credits or a proxy keep working past the limit. Inside SpecWithCode
+plans where credits or a proxy keep working past the limit, and never hands off on a
+usage note. Inside SpecWithCode
 (`SPECWEAVE_STUDIO_THREAD_ID` is set) do not hand off on a usage note: SpecWithCode switches
 the thread to another provider between turns, and a handoff would release its claims.
 
