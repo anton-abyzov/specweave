@@ -101,13 +101,6 @@ export interface CreateTemplateOptions {
   externalSource?: ExternalSourceInfo;
   /** Auto-generate increment ID atomically */
   autoId?: boolean;
-  /**
-   * Opt into 3-agent fan-out planning (0669 Wave 2, AC-US4-03).
-   * When true, the increment skill routes planning through team-lead.
-   * Default is single-agent planning. Persisted to metadata.planning
-   * so downstream skills can read it.
-   */
-  parallel?: boolean;
   /** Increment name suffix (used with autoId) */
   name?: string;
   /**
@@ -181,7 +174,6 @@ export async function createIncrementTemplates(
     externalSource,
     autoId,
     name,
-    parallel = false,
     withPlan = false,
     planned = false,
   } = options;
@@ -221,7 +213,6 @@ export async function createIncrementTemplates(
       updated: new Date().toISOString(),
       lastActivity: new Date().toISOString(),
       title,
-      ...(parallel ? { planning: { parallel } } : {}),
     };
 
     // Add external source tracking for imported issues (v1.0.272)

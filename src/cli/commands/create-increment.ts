@@ -41,11 +41,8 @@ export interface CreateIncrementOptions {
   json?: boolean;
   projectRoot?: string;
   /**
-   * Opt into 3-agent fan-out planning (0669 Wave 2, AC-US4-03).
-   * Default is single-agent planning; skills override when user-story
-   * count ≥ 10 or the feature description contains "parallel" /
-   * "team lead" / "fan out". When true, the increment skill hands
-   * the plan off to the team-lead skill for multi-agent authoring.
+   * @deprecated Hidden no-op kept so old callers do not fail on an unknown
+   * option. Parallel planning was removed; it prints a notice and writes nothing.
    */
   parallel?: boolean;
 
@@ -83,7 +80,6 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     priority,
     json = false,
     projectRoot: rawProjectRoot,
-    parallel = false,
     supersedes,
     parent,
     withPlan = false,
@@ -105,6 +101,10 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     throw new Error('Could not derive an increment name from the title; pass --name.');
   }
   const description = options.description ?? title;
+
+  if (options.parallel) {
+    console.error(chalk.yellow('--parallel is deprecated and does nothing: parallel planning was removed. Split tasks by disjoint Files to run them as sw-do lanes.'));
+  }
 
   // Resolve effective root: umbrella root in multi-repo, local root in single-repo
   const projectRoot = rawProjectRoot || resolveEffectiveRoot(process.cwd());
@@ -138,7 +138,6 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     projectRoot,
     autoId,
     name,
-    parallel,
     withPlan,
     planned,
   });

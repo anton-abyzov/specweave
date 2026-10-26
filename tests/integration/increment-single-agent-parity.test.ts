@@ -2,7 +2,7 @@
  * Single-agent planning parity test (0669 Wave 2, T-021/T-022).
  *
  * Verifies that a single-agent planning run produces output artifacts
- * with the same top-level structure as the 3-agent fan-out path:
+ * with the same top-level structure the retired 3-agent fan-out produced:
  *   - spec.md with an "Acceptance Criteria" section containing AC-US*-NN IDs
  *   - plan.md with a "Design" and "Rationale" heading
  *   - tasks.md with at least one T-NN task entry
@@ -10,7 +10,7 @@
  *
  * The fixture lives under `test/fixtures/single-agent-parity/` per the
  * task plan and represents the expected output of a single-agent
- * invocation with the parallel flag OFF.
+ * invocation (`--parallel` is now a deprecated no-op).
  */
 
 import { describe, it, expect } from 'vitest';

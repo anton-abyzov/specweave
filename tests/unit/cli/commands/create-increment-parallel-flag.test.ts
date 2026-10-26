@@ -1,61 +1,68 @@
 /**
- * Tests for the --parallel flag on create-increment (0669 Wave 2, T-019/T-020).
+ * `create-increment --parallel` is a hidden, deprecated no-op.
  *
- * AC-US4-03: `sw:increment --parallel` opts into 3-agent fan-out for
- * planning. The CLI bridge must:
- *   (a) register `--parallel` as a boolean commander option in bin/specweave.js
- *   (b) surface `parallel` on CreateIncrementOptions
- *   (c) propagate the flag into the template-creator invocation path.
+ * Parallel (team-lead) planning was removed. The option stays registered so
+ * old callers do not fail on an unknown option, but it is hidden from help,
+ * prints a one-line notice and writes no planning metadata.
  */
 
-import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 
-const BIN_PATH = resolve(
-  __dirname,
-  '..',
-  '..',
-  '..',
-  '..',
-  'bin',
-  'specweave.js',
-);
-const CMD_PATH = resolve(
-  __dirname,
-  '..',
-  '..',
-  '..',
-  '..',
-  'src',
-  'cli',
-  'commands',
-  'create-increment.ts',
-);
+const BIN_PATH = path.resolve(__dirname, '..', '..', '..', '..', 'bin', 'specweave.js');
+const binSource = fs.readFileSync(BIN_PATH, 'utf-8');
 
-const binSource = readFileSync(BIN_PATH, 'utf-8');
-const cmdSource = readFileSync(CMD_PATH, 'utf-8');
+describe('create-increment --parallel (deprecated no-op)', () => {
+  let tempDir: string;
 
-describe('create-increment --parallel flag (0669 T-019/T-020)', () => {
-  it('bin/specweave.js registers a --parallel boolean option on create-increment', () => {
-    // Locate the create-increment command block and assert the option exists.
-    const createIncBlock = binSource.split(".command('create-increment [title]')")[1];
-    expect(createIncBlock).toBeDefined();
-    const block = createIncBlock.slice(0, 2000);
-    expect(block).toMatch(/\.option\(['"]--parallel['"]/);
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-parallel-flag-'));
+    fs.mkdirSync(path.join(tempDir, '.specweave', 'increments'), { recursive: true });
+    fs.writeFileSync(
+      path.join(tempDir, '.specweave', 'config.json'),
+      JSON.stringify({ project: { name: 'test-project' } }),
+    );
   });
 
-  it('CreateIncrementOptions TypeScript interface declares a parallel field', () => {
-    expect(cmdSource).toMatch(/parallel\?:\s*boolean/);
+  afterEach(() => {
+    vi.restoreAllMocks();
+    fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it('createIncrementCommand reads options.parallel in its body', () => {
-    // The flag must be pulled out of options and used (e.g. passed through
-    // to the template-creator). A bare `parallel` reference is enough to
-    // show the CLI bridge has wired the flag — implementation depth is
-    // covered in T-020/T-022.
-    expect(cmdSource).toMatch(/\bparallel\b/);
-    // And specifically destructured alongside the other options.
-    expect(cmdSource).toMatch(/parallel\s*[,=}]/);
+  it('bin/specweave.js keeps --parallel registered but hidden from help', () => {
+    const block = binSource.split(".command('create-increment [title]')")[1].slice(0, 2000);
+    expect(block).toMatch(/new Option\('--parallel', '[^']*'\)\.hideHelp\(\)/);
+    expect(block).not.toMatch(/fan-out/);
+  });
+
+  it('prints a one-line notice and writes no planning metadata', async () => {
+    const errors: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+      errors.push(args.map(String).join(' '));
+    });
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const { createIncrementCommand } = await import(
+      '../../../../src/cli/commands/create-increment.js'
+    );
+
+    await createIncrementCommand({
+      id: '0001-parallel-noop',
+      title: 'Parallel no-op',
+      projectRoot: tempDir,
+      parallel: true,
+    });
+
+    const metadata = JSON.parse(
+      fs.readFileSync(
+        path.join(tempDir, '.specweave', 'increments', '0001-parallel-noop', 'metadata.json'),
+        'utf-8',
+      ),
+    );
+    expect(metadata.planning).toBeUndefined();
+    const notices = errors.filter((e) => e.includes('--parallel'));
+    expect(notices).toHaveLength(1);
+    expect(notices[0]).toContain('deprecated');
   });
 });

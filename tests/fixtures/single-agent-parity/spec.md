@@ -5,7 +5,7 @@
 
 ## Summary
 
-Demonstrates that a single agent, running Step 4 of the increment skill without the `--parallel` flag, produces the same top-level document structure as the 3-agent (PM + Architect + Planner) fan-out.
+Demonstrates that a single agent, running the increment skill, produces the full top-level document structure that the retired 3-agent (PM + Architect + Planner) fan-out used to produce.
 
 ## User Stories
 
