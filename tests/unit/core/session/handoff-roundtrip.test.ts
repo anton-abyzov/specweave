@@ -65,7 +65,7 @@ beforeEach(() => {
 });
 afterEach(() => fs.rmSync(base, { recursive: true, force: true }));
 
-describe('hand off and pick up across checkouts', () => {
+describe('hand off and pick up across checkouts', { timeout: 30_000 }, () => {  // real git clones; 5 s is too tight under parallel load
   it('moves claims, uncommitted edits and the next task to a fresh clone on another branch', async () => {
     const a = path.join(base, 'a');
     fs.appendFileSync(path.join(a, INC, 'ledger.jsonl'),
