@@ -175,7 +175,6 @@ complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l board
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l type -d "Increment type (feature, hotfix, bug, refactor, experiment)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l priority -d "Priority (P1, P2, P3)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l project-root -d "Override project root directory"
-complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l parallel -d "Opt into 3-agent fan-out planning (default: single-agent)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l with-plan -d "Also scaffold plan.md (optional overflow; spec.md carries the Approach)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l planned -d "Create as \"planned\" instead of \"active\" (backlog work; start it with specweave start <id>)"
 complete -c specweave -n "__fish_seen_subcommand_from create-increment" -l supersedes -d "Increment this one replaces (the old one is abandoned with a closeReason)"
