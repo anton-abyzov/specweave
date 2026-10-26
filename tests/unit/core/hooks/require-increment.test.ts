@@ -10,7 +10,7 @@ import { requireIncrementMessage } from '../../../../src/core/hooks/handlers/req
 import { appendEvent } from '../../../../src/core/tasks/ledger.js';
 import { recordIncrementWork } from '../../../../src/core/tasks/work-session.js';
 
-const KEYS = ['HOME', 'USERPROFILE', 'SPECWEAVE_STUDIO_THREAD_ID', 'CLAUDE_CODE_SESSION_ID', 'SPECWEAVE_SESSION_ID', 'SPECWEAVE_AGENT'];
+const KEYS = ['HOME', 'USERPROFILE', 'SPECWEAVE_STUDIO_THREAD_ID', 'CLAUDE_CODE_SESSION_ID', 'CODEX_SESSION_ID', 'SPECWEAVE_SESSION_ID', 'SPECWEAVE_AGENT'];
 let saved: Record<string, string | undefined>;
 let root: string;
 let home: string;
