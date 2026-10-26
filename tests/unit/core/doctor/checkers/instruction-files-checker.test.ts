@@ -124,6 +124,27 @@ describe('InstructionFilesChecker', () => {
     expect(map.get('pm')).toBe('sw:increment');
   });
 
+  it('follows a 2.0 replacement that was itself retired to its final value', () => {
+    const map = removedSkillReplacements(packageRoot());
+    expect(map.get('debug')).toBe('mattpocock/skills diagnosing-bugs');
+    expect(map.get('tdd-cycle')).toBe('mattpocock/skills tdd');
+    expect(map.get('e2e')).toBe('sw:do (check each AC end to end)');
+    expect(map.get('release-expert')).toBe('none');
+    for (const target of map.values()) expect(target).not.toMatch(/^skills-optional\//);
+  });
+
+  it('says "removed with no replacement" when the chain ends in none', async () => {
+    fs.writeFileSync(
+      path.join(dir, 'CLAUDE.md'),
+      merged('Close with `/sw:done`.', 'We used /sw:diagrams and /sw:debug.\n'),
+    );
+    const check = find((await checker.check(dir, {})).checks, 'references');
+    expect(check.status).toBe('warn');
+    expect(check.message).toContain('/sw:diagrams was removed with no replacement');
+    expect(check.message).toContain('/sw:debug was removed — its work is now mattpocock/skills diagnosing-bugs');
+    expect(check.message).not.toContain('its work is now none');
+  });
+
   it('fails on a leftover {{ placeholder and points at the line', async () => {
     fs.writeFileSync(path.join(dir, 'CLAUDE.md'), '# Project\n\n## Commands\n\n{{BUILD_COMMAND}}\n');
     const check = find((await checker.check(dir, {})).checks, 'placeholders');

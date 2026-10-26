@@ -82,7 +82,7 @@ _specweave_completions() {
             return 0
             ;;
         create-increment)
-            COMPREPLY=( $(compgen -W "--id --auto-id --name --title --description --project --board --type --priority --project-root --parallel --with-plan --planned --supersedes --parent --no-commit --json --workspace --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--id --auto-id --name --title --description --project --board --type --priority --project-root --with-plan --planned --supersedes --parent --no-commit --json --workspace --help" -- "${cur}") )
             return 0
             ;;
         handoff)

@@ -217,7 +217,6 @@ _specweave() {
                         '--type[Increment type (feature, hotfix, bug, refactor, experiment)]' \
                         '--priority[Priority (P1, P2, P3)]' \
                         '--project-root[Override project root directory]' \
-                        '--parallel[Opt into 3-agent fan-out planning (default\: single-agent)]' \
                         '--with-plan[Also scaffold plan.md (optional overflow; spec.md carries the Approach)]' \
                         '--planned[Create as "planned" instead of "active" (backlog work; start it with specweave start <id>)]' \
                         '--supersedes[Increment this one replaces (the old one is abandoned with a closeReason)]' \

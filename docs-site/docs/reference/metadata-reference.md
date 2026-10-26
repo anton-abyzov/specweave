@@ -55,7 +55,7 @@ Never edit `status` by hand. Use `start`, `pause`, `resume`, `abandon` and `comp
 | `updated` | Last change. Every ledger append also updates it. `lastActivity` is the same value, kept for 2.x increments. |
 | `title` | The title given to `create-increment`. |
 | `project`, `board` | Which workspace repo or board the increment belongs to, when there is more than one. |
-| `planning.parallel` | Present when created with `--parallel`. |
+| `planning.parallel` | Only in increments created before 3.1.13; `--parallel` is now a deprecated no-op. |
 | `testMode`, `coverageTarget` | Per-increment overrides of the `testing` config. Filled in with defaults when missing. |
 | `externalLinks` | Tracker issue numbers and URLs, written by `specweave sync push` or an import. Never hand-edit. |
 

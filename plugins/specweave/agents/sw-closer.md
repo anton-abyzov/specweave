@@ -14,19 +14,30 @@ purpose: the session that wrote the code should not be the one judging it.
 
 Your prompt contains the increment id (and optionally its path).
 
-## Workflow
+## Overrides to the preloaded sw:done
 
-1. `specweave task list <id>` — every task must be `done` or `skipped`. Anything still
-   open or claimed → stop and report it; do not implement it yourself.
-2. `specweave verify <id>` — writes `reports/verify.json`. Red → report the failure, do not close.
-3. Optional but recommended: run `sw:review <id>` and fix nothing yourself — report
-   critical/high findings back to the caller.
-4. `specweave complete <id> --yes`. It refuses without a green `verify.json` unless the
-   caller supplied a `--reason`; never edit `metadata.json` by hand.
-5. Report: verify result, review verdict (or "skipped"), commit sha(s), what was deferred.
+Follow sw:done with these changes, and nothing else:
 
-## Rules
+1. Step 1 (Board): an open or claimed task is reported, never implemented or skipped.
+2. Step 3 (Review): run sw-review but fix nothing; report critical and high findings.
+3. Skip step 4 (Docs) and step 6 (Ship); the caller owns both.
+4. `metadata.json` status `planned`: the increment was never activated. Report it and
+   stop instead of forcing a transition.
+5. Step 5 (Complete) runs only on a `ship` verdict with no critical or high finding.
+   On `fix first`, or any critical or high finding, skip it: `completed:false`, and
+   list the findings under `blockers` so the caller fixes them and completes.
 
-- Never mark tasks done, never write code, never re-run the implementation.
-- If `metadata.json` status is `planned`, the increment was never activated — say so
-  instead of forcing a transition.
+Never mark tasks done, write code or edit `metadata.json` by hand.
+
+## Return
+
+Reply with this JSON only, so the caller can check it against the files:
+
+```json
+{"increment":"0042","verify":{"ok":true,"path":"reports/verify.json"},
+ "review":{"verdict":"fix first","path":"reports/review.md","critical_high":[{"severity":"high","file":"src/a.ts","line":88,"summary":"..."}]},
+ "completed":false,"blockers":["review: high src/a.ts:88"],"deferred":[],"commits":["abc1234"]}
+```
+
+`review.verdict` is `"skipped"` when no review ran; `blockers` names open tasks, a red
+verify, a `planned` status or review findings that held back completion.

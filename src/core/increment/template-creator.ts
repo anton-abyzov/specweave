@@ -1,12 +1,11 @@
 /**
  * Increment Template Creator
  *
- * Creates TEMPLATE files for new increments that MUST be completed
- * via PM/Architect skills. This prevents Claude from writing full
- * content directly and bypassing the skill system.
+ * Creates TEMPLATE files for new increments. The sw-increment skill then
+ * fills spec.md (and plan.md when --with-plan is used) in place.
  *
- * CRITICAL: This is the ONLY sanctioned way to create increment files
- * during the increment skill execution.
+ * This is the sanctioned way to create increment files, so ids, metadata
+ * and the ledger stay consistent.
  *
  * @module template-creator
  * @since 1.0.162
@@ -21,7 +20,7 @@ import { IncrementStatus } from '../types/increment-metadata.js';
 
 /**
  * Template markers that indicate a file is still a template
- * and hasn't been completed by PM/Architect skills.
+ * and hasn't been filled in by sw-increment yet.
  */
 export const TEMPLATE_MARKERS = {
   /** Marker for unfilled user story titles */
@@ -101,13 +100,6 @@ export interface CreateTemplateOptions {
   externalSource?: ExternalSourceInfo;
   /** Auto-generate increment ID atomically */
   autoId?: boolean;
-  /**
-   * Opt into 3-agent fan-out planning (0669 Wave 2, AC-US4-03).
-   * When true, the increment skill routes planning through team-lead.
-   * Default is single-agent planning. Persisted to metadata.planning
-   * so downstream skills can read it.
-   */
-  parallel?: boolean;
   /** Increment name suffix (used with autoId) */
   name?: string;
   /**
@@ -143,9 +135,9 @@ export interface TemplateCreationResult {
 /**
  * Creates increment template files programmatically.
  *
- * CRITICAL: This function creates TEMPLATE files with placeholders
- * that MUST be completed via PM/Architect skills. It does NOT
- * allow full content to be written directly.
+ * Creates TEMPLATE files with placeholders. sw-increment fills spec.md
+ * (and plan.md when --with-plan is used); this function never writes
+ * full content itself.
  *
  * @param options - Template creation options
  * @returns Result of template creation
@@ -181,7 +173,6 @@ export async function createIncrementTemplates(
     externalSource,
     autoId,
     name,
-    parallel = false,
     withPlan = false,
     planned = false,
   } = options;
@@ -221,7 +212,6 @@ export async function createIncrementTemplates(
       updated: new Date().toISOString(),
       lastActivity: new Date().toISOString(),
       title,
-      ...(parallel ? { planning: { parallel } } : {}),
     };
 
     // Add external source tracking for imported issues (v1.0.272)
@@ -572,26 +562,6 @@ function generatePlanTemplate(options: { title: string }): string {
 
   return `# Implementation Plan: ${title}
 
-<!--
-====================================================================
-  TEMPLATE FILE - MUST BE COMPLETED VIA ARCHITECT SKILL
-====================================================================
-
-This is a TEMPLATE created by increment skill.
-DO NOT manually fill in the placeholders below.
-
-To complete this plan, run:
-  Tell Claude: "Design architecture for increment [ID]"
-
-This will activate the Architect skill which will:
-- Create system architecture diagrams
-- Define data models and API contracts
-- Document architecture decisions (ADRs)
-- Identify technical challenges
-
-====================================================================
--->
-
 ## Overview
 
 [Technical summary of implementation approach]
@@ -633,7 +603,7 @@ This will activate the Architect skill which will:
 
 ## Testing Strategy
 
-[High-level testing approach - details in tasks.md]
+[High-level testing approach; the tasks live in spec.md ## Tasks]
 
 ## Technical Challenges
 

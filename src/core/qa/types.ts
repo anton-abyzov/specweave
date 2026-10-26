@@ -300,43 +300,6 @@ export interface QAReport {
 }
 
 // ============================================================================
-// Configuration Types
-// ============================================================================
-
-export interface QAConfig {
-  enableAutoQAGate: boolean;
-  autoQAGateOnDone: boolean;
-  autoQACheckOnHook: boolean;
-  defaultMode: QAMode;
-  qualityGateThresholds: QualityGateThresholds;
-  subagents: {
-    specQuality: { enabled: boolean; weight: number };
-    riskAssessment: { enabled: boolean; weight: number };
-    testCoverage: { enabled: boolean; weight: number };
-    codeReview: { enabled: boolean; weight: number };
-    securityAudit: { enabled: boolean; weight: number };
-    performanceReview: { enabled: boolean; weight: number };
-  };
-  costOptimization: {
-    cacheResults: boolean;
-    cacheDuration: number;
-    skipUnchangedFiles: boolean;
-  };
-  integrations: {
-    cicd: {
-      enabled: boolean;
-      exitOnFail: boolean;
-      jsonOutput: boolean;
-    };
-    hooks: {
-      postTaskCompletion: boolean;
-      preDone: boolean;
-      postInc: boolean;
-    };
-  };
-}
-
-// ============================================================================
 // CLI Options Types
 // ============================================================================
 
