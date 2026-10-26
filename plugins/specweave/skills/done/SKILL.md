@@ -23,7 +23,10 @@ Closing is verify, review, complete. The one hard gate is a passing
    `review.crossModel` on, also `specweave review`: another model family reviews the
    diff (exit 3 means fix first). If the project has a `GLOSSARY.md`, run
    `specweave glossary check` and rename new code that uses an avoided word. Fix
-   critical and high findings, then verify again.
+   critical and high findings, then verify again. In a bloated context, spawn the
+   `sw-closer` agent as the fresh-context option; it returns JSON and fixes nothing, so
+   re-read `reports/verify.json` and the review report yourself rather than trusting its
+   summary, and fix any critical or high finding here.
 4. **Docs.** If commands, config or user-facing behaviour changed, update README,
    CHANGELOG and the `## Commands` table in AGENTS.md in the same branch.
 5. **Complete.** `specweave complete 0042`. It refuses without a passing verify unless
