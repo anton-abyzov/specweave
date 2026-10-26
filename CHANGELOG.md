@@ -1,3 +1,15 @@
+## [3.1.11] - 2026-10-26
+
+### Changed
+
+- 1080: archive older release notes before publishing templates (#2157)
+- spec-weave.com: fix 404s, index tutorial pages, strengthen /code (#2156)
+- 1080: remove blanket license claims from SpecWithCode guides (#2154)
+- docs: changelog page through 3.1.10, durable release lines (#2150)
+- docs: keep inline code in tutorial steps in the text column (#2151)
+- 1080: preserve product identity in templates and download pages (#2153)
+- Add SpecWithCode Windows and Linux downloads (1.0.76) (#2145)
+
 ## [3.1.10] - 2026-10-24
 
 ### Added
