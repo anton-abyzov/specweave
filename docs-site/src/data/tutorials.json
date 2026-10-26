@@ -442,7 +442,7 @@
         "captionsVtt": "/video/explainers/how-specwithcode-works.en.vtt",
         "audio": "narrated",
         "durationSeconds": 174.9,
-        "uploadDate": "2026-10-13",
+        "uploadDate": "2026-10-12",
         "publishedAt": "2026-10-12T22:46:23Z",
         "chapters": [
           {
@@ -903,7 +903,8 @@
       "guide": "/docs/studio/finish-a-thread",
       "related": [
         "provider-runs-out",
-        "review-with-another-model"
+        "review-with-another-model",
+        "agent-result-walkthrough"
       ]
     },
     {
@@ -1130,7 +1131,8 @@
       "guide": "/docs/studio/projects",
       "related": [
         "how-specwithcode-works",
-        "memory-and-usage"
+        "memory-and-usage",
+        "personal-and-connections"
       ]
     },
     {
@@ -1267,7 +1269,8 @@
       "guide": "/docs/studio/memory-and-usage",
       "related": [
         "projects-and-threads",
-        "plans-and-routines"
+        "plans-and-routines",
+        "personal-and-connections"
       ]
     },
     {
@@ -1340,7 +1343,8 @@
       "guide": "/code",
       "related": [
         "how-specwithcode-works",
-        "specweave-workflow"
+        "specweave-workflow",
+        "agent-result-walkthrough"
       ]
     },
     {
@@ -1480,6 +1484,7 @@
       "title": "Run your first task with Claude Code",
       "seoTitle": "SpecWithCode with Claude Code: plan, build, review",
       "summary": "Set up SpecWithCode with Claude Code, run one real task through a project, and review the result.",
+      "seoDescription": "Claude Code is on by default in SpecWithCode: confirm Ready to code in setup, then plan, build and review one task with SpecWeave skills.",
       "outcome": "You end with Claude Code having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
       "prerequisites": [
         "SpecWeave installed with `npm i -g specweave`",
@@ -1550,8 +1555,8 @@
       },
       "guide": null,
       "related": [
-        "projects-and-threads",
-        "specwithcode-codex"
+        "specwithcode-codex",
+        "projects-and-threads"
       ]
     },
     {
@@ -1560,6 +1565,7 @@
       "title": "Run your first task with Codex",
       "seoTitle": "SpecWithCode with Codex: plan, build and review one task",
       "summary": "Set up SpecWithCode with Codex, run one real task through a project, and review the result.",
+      "seoDescription": "Connect Codex in SpecWithCode setup with ChatGPT or your Codex CLI login, then plan, build and review one task with SpecWeave skills.",
       "outcome": "You end with Codex having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
       "prerequisites": [
         "SpecWeave installed with `npm i -g specweave`",
@@ -1630,8 +1636,8 @@
       },
       "guide": null,
       "related": [
-        "projects-and-threads",
-        "specwithcode-claude-code"
+        "specwithcode-opencode",
+        "projects-and-threads"
       ]
     },
     {
@@ -1640,6 +1646,7 @@
       "title": "Run your first task with OpenCode",
       "seoTitle": "SpecWithCode with OpenCode: plan, build and review one task",
       "summary": "Set up SpecWithCode with OpenCode, run one real task through a project, and review the result.",
+      "seoDescription": "Sign OpenCode in to a model provider, add it as a provider in SpecWithCode, then plan, build and review one task with SpecWeave skills.",
       "outcome": "You end with OpenCode having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
       "prerequisites": [
         "SpecWeave installed with `npm i -g specweave`",
@@ -1711,8 +1718,8 @@
       },
       "guide": null,
       "related": [
-        "projects-and-threads",
-        "specwithcode-claude-code"
+        "specwithcode-grok",
+        "projects-and-threads"
       ]
     },
     {
@@ -1721,6 +1728,7 @@
       "title": "Run your first task with Antigravity and Gemini",
       "seoTitle": "SpecWithCode with Antigravity: plan, build, review",
       "summary": "Set up SpecWithCode with Antigravity and Gemini, run one real task through a project, and review the result.",
+      "seoDescription": "Add Antigravity in SpecWithCode, install its own runtime, sign in with Google, then plan, build and review one task with SpecWeave skills.",
       "outcome": "You end with Antigravity having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
       "prerequisites": [
         "SpecWeave installed with `npm i -g specweave`",
@@ -1792,8 +1800,8 @@
       },
       "guide": null,
       "related": [
-        "projects-and-threads",
-        "specwithcode-claude-code"
+        "specwithcode-claude-code",
+        "projects-and-threads"
       ]
     },
     {
@@ -1802,6 +1810,7 @@
       "title": "Run your first task with Grok",
       "seoTitle": "SpecWithCode with Grok: plan, build and review one task",
       "summary": "Set up SpecWithCode with Grok, run one real task through a project, and review the result.",
+      "seoDescription": "Run grok --trust so Grok loads project skills, add Grok as an existing-CLI provider in SpecWithCode, then plan, build and review one task.",
       "outcome": "You end with Grok having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
       "prerequisites": [
         "SpecWeave installed with `npm i -g specweave`",
@@ -1873,8 +1882,8 @@
       },
       "guide": null,
       "related": [
-        "projects-and-threads",
-        "specwithcode-claude-code"
+        "specwithcode-antigravity",
+        "projects-and-threads"
       ]
     }
   ],
@@ -1982,6 +1991,20 @@
         "agents-use-a-browser",
         "specwithcode-browser",
         "agents-use-your-mac-and-chrome"
+      ]
+    },
+    {
+      "id": "your-agent-in-specwithcode",
+      "product": "specwithcode",
+      "title": "Your agent in SpecWithCode",
+      "summary": "One short tutorial per coding agent. Each connects the agent to SpecWithCode, plans one small change with a SpecWeave skill, builds it and reviews the result.",
+      "steps": [
+        "specwithcode-claude-code",
+        "specwithcode-codex",
+        "specwithcode-cursor",
+        "specwithcode-opencode",
+        "specwithcode-grok",
+        "specwithcode-antigravity"
       ]
     },
     {

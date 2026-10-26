@@ -6,8 +6,11 @@
  * The data lives in tutorials.json so plugins/tutorial-pages and scripts/verify-tutorials.mjs
  * can read it without a TypeScript toolchain. Only tutorials with real, first-party media are
  * in `tutorials`; recordings that do not exist yet stay in `planned` and never get a page.
+ * Per-guide extras (agent notes, terminal captures, chapter notes) live in tutorial-extras.json,
+ * keyed by slug, and are merged in by toTutorial.
  */
 import data from './tutorials.json';
+import extrasData from './tutorial-extras.json';
 
 export type AgentId = 'claude-code' | 'codex' | 'opencode' | 'antigravity' | 'grok' | 'cursor';
 /** `multi`: shows several agents (see agentsShown). `any`: works the same with every agent. */
@@ -42,6 +45,43 @@ export interface TutorialMedia {
    */
   publishedAt: string | null;
   chapters: TutorialChapter[];
+}
+
+/** A real terminal run from video/tutorials/<folder>/captures/, shown on the guide page. */
+export interface CaptureRef {
+  /** Repository-relative path, under video/tutorials/. */
+  file: string;
+  label: string;
+}
+
+/** A capture as plugins/tutorial-pages passes it to the page: trimmed, already redacted. */
+export interface TranscriptCapture {
+  label: string;
+  command: string;
+  exitCode: number | null;
+  stdout: string;
+  /** True when stdout was cut to the first lines. */
+  truncated: boolean;
+  capturedAt: string;
+}
+
+/** A correction shown under one transcript chapter, for recordings that predate the current app. */
+export interface ChapterNote {
+  /** Start of the chapter it belongs to, in seconds; must match a chapter start. */
+  start: number;
+  text: string;
+  to?: string;
+  label?: string;
+}
+
+/** Optional guide content kept outside tutorials.json, keyed by slug. */
+export interface TutorialExtras {
+  /** What differs for this agent, from the episode's SCRIPT.md sources and recording notes. */
+  agentNotes?: string[];
+  captures?: CaptureRef[];
+  chapterNotes?: ChapterNote[];
+  /** ISO date this guide's content last changed; the sitemap's lastmod. */
+  updatedAt?: string;
 }
 
 export interface TutorialAction {
@@ -82,7 +122,7 @@ export interface TutorialEntry {
  * A catalogue entry plus the flat media fields older callers read (`src`, `poster`,
  * `chapters`, ...). Both views describe the same file.
  */
-export interface Tutorial extends TutorialEntry, Omit<TutorialMedia, 'publishedAt'> {
+export interface Tutorial extends TutorialEntry, TutorialExtras, Omit<TutorialMedia, 'publishedAt'> {
   status: TutorialStatus;
   publishedAt: string | null;
 }
@@ -125,6 +165,7 @@ interface Catalogue {
 }
 
 const catalogue = data as unknown as Catalogue;
+const extras = extrasData as unknown as {schemaVersion: 1; guidesUpdatedAt: string; guides: Record<string, TutorialExtras>};
 
 export const AGENTS: ReadonlyArray<{id: AgentId; label: string}> = [
   {id: 'claude-code', label: 'Claude Code'},
@@ -142,7 +183,7 @@ export const PRODUCTS: ReadonlyArray<{id: CatalogueProduct; label: string}> = [
 ];
 
 export function toTutorial(entry: TutorialEntry): Tutorial {
-  return {...entry, ...entry.video, status: 'published'};
+  return {...entry, ...extras.guides[entry.slug], ...entry.video, status: 'published'};
 }
 
 export const TUTORIALS: readonly Tutorial[] = catalogue.tutorials.map(toTutorial);
@@ -233,6 +274,15 @@ export function resolvePath(path: LearningPath): {published: Tutorial[]; planned
   return {published, planned};
 }
 
+/**
+ * How many other guides link to this one: related lists of other published tutorials, plus
+ * learning paths hosted on this site. Every published guide should have at least one.
+ */
+export function inboundLinks(slug: string): number {
+  const related = TUTORIALS.filter(t => t.slug !== slug && t.related.includes(slug)).length;
+  return related + pathsFor(slug).length;
+}
+
 /** Learning paths on this site that include the tutorial. */
 export function pathsFor(slug: string): LearningPath[] {
   return PATHS.filter(p => !p.url && p.steps.includes(slug));
@@ -276,20 +326,29 @@ export function formatDate(isoDate: string): string {
 
 const publisher = (origin: string) => ({'@type': 'Organization', name: 'SpecWeave', url: origin});
 
-/** schema.org VideoObject for one tutorial, with Clip chapters; null until it has a first public time. */
-export function buildVideoObject(t: Tutorial, origin: string) {
+/** The caption transcript as one text, for the VideoObject's `transcript`. */
+export function transcriptText(transcript: readonly TranscriptSection[]): string {
+  return transcript.map(s => s.text).join(' ');
+}
+
+/**
+ * schema.org VideoObject for one tutorial, with Clip chapters; null until it has a first public
+ * time. There is no embedUrl: the guide page is not a player, and contentUrl names the file.
+ */
+export function buildVideoObject(t: Tutorial, origin: string, transcript: readonly TranscriptSection[] = []) {
   if (!t.publishedAt) return null;
   const duration = t.durationSeconds;
+  const text = transcriptText(transcript);
   return {
     '@type': 'VideoObject',
     '@id': `${tutorialUrl(origin, t.slug)}#video`,
     name: t.title,
-    description: t.summary,
+    description: t.seoDescription ?? t.summary,
     thumbnailUrl: [`${origin}${t.poster}`],
     uploadDate: t.publishedAt,
     duration: isoDuration(duration),
     contentUrl: `${origin}${t.src}`,
-    embedUrl: tutorialUrl(origin, t.slug),
+    ...(text ? {transcript: text} : {}),
     inLanguage: 'en',
     isAccessibleForFree: true,
     publisher: publisher(origin),
@@ -319,9 +378,9 @@ function breadcrumbs(items: Array<{name: string; url: string}>) {
 }
 
 /** Guide page: a TechArticle carrying its VideoObject, plus breadcrumbs. */
-export function buildGuideJsonLd(t: Tutorial, origin: string) {
+export function buildGuideJsonLd(t: Tutorial, origin: string, transcript: readonly TranscriptSection[] = []) {
   const url = tutorialUrl(origin, t.slug);
-  const video = buildVideoObject(t, origin);
+  const video = buildVideoObject(t, origin, transcript);
   return {
     '@context': 'https://schema.org',
     '@graph': [
