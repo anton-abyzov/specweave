@@ -39,7 +39,7 @@ const DESKTOP_NOTES: {name: string; detail: React.ReactNode}[] = [
 ];
 
 const NEXT: {name: string; detail: React.ReactNode}[] = [
-  {name: 'Run your first task', detail: <>Step-by-step videos for <Link className="wv-link" to="/tutorials/specwithcode-claude-code/">Claude Code</Link>, <Link className="wv-link" to="/tutorials/specwithcode-codex/">Codex</Link>, <Link className="wv-link" to="/tutorials/specwithcode-opencode/">OpenCode</Link> and <Link className="wv-link" to="/tutorials/specwithcode-grok/">Grok</Link>.</>},
+  {name: 'Run your first task', detail: <>Step-by-step videos for <Link className="wv-link" to="/tutorials/specwithcode-claude-code/">Claude Code</Link>, <Link className="wv-link" to="/tutorials/specwithcode-codex/">Codex</Link>, <Link className="wv-link" to="/tutorials/specwithcode-opencode/">OpenCode</Link>, <Link className="wv-link" to="/tutorials/specwithcode-grok/">Grok</Link> and <Link className="wv-link" to="/tutorials/specwithcode-antigravity/">Antigravity</Link>.</>},
   {name: 'Never wait on a usage limit', detail: <>When one provider runs out, the same thread continues on another with its context. See <Link className="wv-link" to="/tutorials/provider-runs-out/">Keep working when a provider runs out</Link>.</>},
   {name: 'Let agents use your Chrome', detail: <>Add the free SpecWithCode extension from the <a className="wv-link" href={CHROME_URL}>Chrome Web Store</a> and pair it in Settings › Chrome. Agents then work in your own Chrome, in a tab group you can see.</>},
   {name: 'Add another machine', detail: <>Pair a second Mac or a Linux worker over Tailscale. See <Link className="wv-link" to="/tutorials/add-a-machine/">Add a second machine</Link>.</>},

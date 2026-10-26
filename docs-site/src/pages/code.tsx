@@ -11,7 +11,7 @@ import WhySpecWithCode from '../components/ecosystem/WhySpecWithCode';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import {SPECWITHCODE_RELEASE as release} from '../data/specwithcodeRelease';
 import {providerSummary} from '../data/tools';
-import {buildVideoObject, getTutorial} from '../data/tutorials';
+import {PATHS, TUTORIALS, buildVideoObject, byRecency, formatDuration, getTutorial, guidePath, resolvePath, type Tutorial} from '../data/tutorials';
 import styles from './code.module.css';
 
 /*
@@ -97,7 +97,13 @@ const PAGE_URL = `${SITE}/code/`;
 const TITLE = 'SpecWithCode (Spec with Code): Claude Code & Codex workspace';
 const DESCRIPTION = 'SpecWithCode (Spec with Code) is a free AI coding agent workspace. Run Claude Code, Codex and Cursor on your own machines with your existing accounts.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg`;
+/** The SpecWithCode explainer on the AI Power YouTube channel. */
+const EXPLAINER_URL = 'https://www.youtube.com/watch?v=eCLJSZ8wo9w';
 const tour = getTutorial('specwithcode-tour');
+// Server-rendered list of every SpecWithCode guide; the per-agent series gets its own heading.
+const agentPath = PATHS.find(p => p.id === 'your-agent-in-specwithcode');
+const AGENT_GUIDES = agentPath ? resolvePath(agentPath).published : [];
+const OTHER_GUIDES = byRecency(TUTORIALS.filter(t => t.product === 'specwithcode' && !AGENT_GUIDES.includes(t)));
 const tourVideo = tour ? buildVideoObject(tour, SITE) : null;
 
 const SPECWITHCODE_LD = {
@@ -121,12 +127,23 @@ const SPECWITHCODE_LD = {
       url: PAGE_URL,
       applicationCategory: 'DeveloperApplication',
       applicationSubCategory: 'AI coding agent workspace',
-      operatingSystem: 'macOS 13 or later (Apple silicon); Linux workers',
+      // Same wording as /code/download/, which offers the Mac, Windows and Linux builds.
+      operatingSystem: 'macOS 13 or later (Apple silicon), Windows 10 and 11 (x64), Linux (x64)',
       softwareVersion: release.version,
       fileSize: release.size,
       downloadUrl: release.dmgUrl,
       releaseNotes: release.notesUrl,
       codeRepository: release.repoUrl,
+      sameAs: [release.repoUrl],
+      // The explainer is about the app, not the app itself, so it is subjectOf, not sameAs.
+      subjectOf: {
+        '@type': 'VideoObject',
+        name: 'Claude Code + Codex on All Your Machines | SpecWithCode',
+        url: EXPLAINER_URL,
+        embedUrl: 'https://www.youtube.com/embed/eCLJSZ8wo9w',
+        thumbnailUrl: 'https://i.ytimg.com/vi/eCLJSZ8wo9w/maxresdefault.jpg',
+        uploadDate: '2026-10-13',
+      },
       isAccessibleForFree: true,
       image: `${SITE}/img/studio/code-hero-worker-20261015.webp`,
       screenshot: `${SITE}/img/studio/code-hero-worker-20261015.webp`,
@@ -170,6 +187,15 @@ function InviteCommand() {
   </div>;
 }
 
+function GuideList({guides}: {guides: readonly Tutorial[]}) {
+  return <ul className={styles.guides}>
+    {guides.map(t => <li key={t.slug}>
+      <Link className="wv-link" to={guidePath(t.slug)}>{t.title}</Link>
+      <span>{formatDuration(t.durationSeconds)}</span>
+    </li>)}
+  </ul>;
+}
+
 function Evidence({items}: {items: {name: string; detail: React.ReactNode}[]}) {
   return <ul className={clsx('wv-evidence', styles.list)}>
     {items.map(item => <li key={item.name}>
@@ -208,7 +234,7 @@ export default function Code() {
             <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for Mac</a>
             <a className="wv-btn wv-btn--secondary wv-btn--lg" href="#workflow">See how it works</a>
           </div>
-          <p className={styles.requirements}>Version {release.version}, {release.size}. Apple silicon, macOS 13 or later, early access. Signed with Developer ID and notarized by Apple. Linux machines can join as workers. <Link className="wv-link" to="/docs/reference/changelog#specwithcode-releases">What is new in {release.version}</Link> · <Link className="wv-link" to="/code/download/">Download and install steps</Link></p>
+          <p className={styles.requirements}>Version {release.version}, {release.size}. Apple silicon, macOS 13 or later, early access. Signed with Developer ID and notarized by Apple. Linux machines can join as workers. <Link className="wv-link" to="/docs/reference/changelog#specwithcode-releases">What is new in {release.version}</Link> · <Link className="wv-link" to="/code/download/">Download SpecWithCode for Mac, Windows or Linux</Link></p>
           <div className={clsx('wv-note', styles.qualification)}>
             <Info {...icon} />
             <p><strong>Cloud models still receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>
@@ -317,9 +343,22 @@ export default function Code() {
       <section className={clsx(styles.shell, styles.section)} id="watch" aria-labelledby="watch-title">
         <div className={styles.sectionHead}>
           <h2 id="watch-title">Watch the recording: one goal, two workers</h2>
-          <p>Follow a coordinator, a Codex thread and a Claude Code thread through a small coding task. The recording predates 1.0, so some screens have changed since, and the later usage-limit example is simulated.</p>
+          <p>Follow a coordinator, a Codex thread and a Claude Code thread through a small coding task. The recording predates 1.0, so some screens have changed since, and the later usage-limit example is simulated. Or watch the <a className="wv-link" href={EXPLAINER_URL}>SpecWithCode explainer on YouTube</a>.</p>
         </div>
         <StudioTutorialVideo />
+      </section>
+
+      <section className={clsx(styles.shell, styles.section)} id="tutorials" aria-labelledby="tutorials-title">
+        <div className={styles.sectionHead}>
+          <h2 id="tutorials-title">SpecWithCode tutorials</h2>
+          <p>Short guides built on real recordings, each with its steps and full transcript. <Link className="wv-link" to="/tutorials?product=specwithcode">All tutorials</Link></p>
+        </div>
+        {AGENT_GUIDES.length > 0 && <>
+          <h3 className={styles.guidesTitle}>Run your first task with your agent</h3>
+          <GuideList guides={AGENT_GUIDES} />
+        </>}
+        <h3 className={styles.guidesTitle}>Projects, threads and machines</h3>
+        <GuideList guides={OTHER_GUIDES} />
       </section>
 
       <section className={clsx(styles.shell, styles.section, styles.faq)} aria-labelledby="questions-title">
