@@ -43,7 +43,7 @@ Most commands that take an increment id accept the short number (`0042`) and fal
 
 | Command | Purpose | Useful flags |
 |---------|---------|--------------|
-| `specweave create-increment [title]` | Create `.specweave/increments/NNNN-slug/` with `metadata.json` and `spec.md`. The number is reserved atomically. | `--with-plan` (also `plan.md`), `--planned` (create as planned, not active), `--no-commit` (skip the [`git.autoCommitIncrement`](/docs/reference/configuration#git) commit), `--supersedes <id>`, `--parent <id>`, `--type <type>`, `--priority <P1\|P2\|P3>`, `--parallel` (records `planning.parallel: true` in `metadata.json`, a hint that planning may fan out to parallel agents; single-agent planning is the default), `--json` |
+| `specweave create-increment [title]` | Create `.specweave/increments/NNNN-slug/` with `metadata.json` and `spec.md`. The number is reserved atomically. | `--with-plan` (also `plan.md`), `--planned` (create as planned, not active), `--no-commit` (skip the [`git.autoCommitIncrement`](/docs/reference/configuration#git) commit), `--supersedes <id>`, `--parent <id>`, `--type <type>`, `--priority <P1\|P2\|P3>`, `--json` |
 | `specweave next-id` | Print the next free increment number. Prefer `create-increment`. | `--name <slug>`, `--project <id>` |
 | `specweave start <id>` | Move a planned or paused increment to active. | |
 | `specweave pause <id>` | Pause an active increment. | `-r, --reason <text>` |
