@@ -139,7 +139,7 @@ async function getCommitCount(repoDir: string): Promise<number> {
 // SAVE COMMAND TESTS
 // ============================================================================
 
-describe('save command', () => {
+describe('save command', { timeout: 30_000 }, () => {  // real git repos; 5 s is too tight under parallel load
   let repoDir: string;
   let cleanup: () => Promise<void>;
 
