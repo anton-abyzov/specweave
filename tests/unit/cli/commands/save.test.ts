@@ -1238,7 +1238,7 @@ describe('save command', { timeout: 30_000 }, () => {  // real git repos; 5 s is
 // command scanned the cwd for nested git repos and would commit and push in each.
 // The root is now the git toplevel enclosing the cwd, and the nested-repo scan only
 // runs from a SpecWeave project root (or with --all).
-describe('executeSave project root resolution (0879)', () => {
+describe('executeSave project root resolution (0879)', { timeout: 30_000 }, () => {  // real git repos
   let cwdSpy: ReturnType<typeof vi.spyOn> | undefined;
   let exitCodeBefore: typeof process.exitCode;
   const dirs: string[] = [];
