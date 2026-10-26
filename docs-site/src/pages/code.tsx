@@ -134,7 +134,16 @@ const SPECWITHCODE_LD = {
       downloadUrl: release.dmgUrl,
       releaseNotes: release.notesUrl,
       codeRepository: release.repoUrl,
-      sameAs: [release.repoUrl, EXPLAINER_URL],
+      sameAs: [release.repoUrl],
+      // The explainer is about the app, not the app itself, so it is subjectOf, not sameAs.
+      subjectOf: {
+        '@type': 'VideoObject',
+        name: 'Claude Code + Codex on All Your Machines | SpecWithCode',
+        url: EXPLAINER_URL,
+        embedUrl: 'https://www.youtube.com/embed/eCLJSZ8wo9w',
+        thumbnailUrl: 'https://i.ytimg.com/vi/eCLJSZ8wo9w/maxresdefault.jpg',
+        uploadDate: '2026-10-13',
+      },
       isAccessibleForFree: true,
       image: `${SITE}/img/studio/code-hero-worker-20261015.webp`,
       screenshot: `${SITE}/img/studio/code-hero-worker-20261015.webp`,
