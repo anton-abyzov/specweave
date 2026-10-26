@@ -7,7 +7,9 @@
 //
 // Rules: every published tutorial plays from first-party files with WebVTT captions and ordered
 // chapters; planned tutorials claim no media; learning paths and related links name real slugs;
-// the studio docs embed catalogued videos through <TutorialEmbed> rather than raw <video> tags.
+// every guide has its own description and at least one inbound link; agent guides carry their
+// agent notes (src/data/tutorial-extras.json); the studio docs embed catalogued videos through
+// <TutorialEmbed> and leave the transcript to the guide page, so the two do not duplicate.
 import assert from 'node:assert/strict';
 import {existsSync, readFileSync, realpathSync, statSync} from 'node:fs';
 import {dirname, isAbsolute, relative, resolve, sep} from 'node:path';
@@ -27,6 +29,12 @@ const ISO_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\
 const MEDIA_KEYS = ['video', 'src', 'poster', 'captionsVtt', 'durationSeconds', 'chapters', 'publishedAt', 'uploadDate'];
 /** Brand copy rules: no exclamation marks, no emoji, no arrows. */
 const BANNED = [/!/, /\p{Extended_Pictographic}/u, /[←-⇿⟰-⟿]/];
+/** Captured terminal output may hold "!" (it is real output), but no emoji or arrows. */
+const BANNED_OUTPUT = BANNED.slice(1);
+const CAPTURE_ROOT = 'video/tutorials';
+const AGENT_SERIES = 'your-agent-in-specwithcode';
+/** Share of a built guide's 5-word phrases that must appear on no other guide page. */
+export const MIN_UNIQUE_SHARE = 0.4;
 /** Studio docs that embed the studio-projects walkthroughs. */
 export const STUDIO_DOCS = {
   'studio/projects.md': ['projects-and-threads', 'personal-and-connections'],
@@ -167,7 +175,58 @@ export function verifyCatalogue(siteRoot = defaultSiteRoot, {probe = true} = {})
       assert(path.steps.some(slug => published.has(slug)), `path ${path.id}: needs at least one published step on this site`);
     }
   }
-  return {published: catalogue.tutorials.length, planned: catalogue.planned.length, paths: catalogue.paths.length, catalogue};
+  const extras = verifyExtras(siteRoot, catalogue);
+
+  const descriptions = new Map();
+  for (const t of catalogue.tutorials) {
+    const description = t.seoDescription ?? t.summary;
+    assert(!descriptions.has(description), `${t.slug}: same description as ${descriptions.get(description)}`);
+    descriptions.set(description, t.slug);
+    const inbound = catalogue.tutorials.filter(o => o.slug !== t.slug && o.related.includes(t.slug)).length
+      + catalogue.paths.filter(p => p.url === undefined && p.steps.includes(t.slug)).length;
+    assert(inbound > 0, `${t.slug}: no other guide or learning path links to it`);
+  }
+  // The per-agent series repeats the same beats, so each episode carries what differs for its agent.
+  const series = catalogue.paths.find(p => p.id === AGENT_SERIES);
+  assert(series, `learning path ${AGENT_SERIES} is missing`);
+  for (const slug of series.steps.filter(slug => published.has(slug))) {
+    assert(extras.guides[slug]?.agentNotes?.length, `${slug}: agent series guides need agentNotes in tutorial-extras.json`);
+  }
+  return {published: catalogue.tutorials.length, planned: catalogue.planned.length, paths: catalogue.paths.length, catalogue, extras};
+}
+
+/** src/data/tutorial-extras.json: agent notes, terminal captures and chapter notes per published guide. */
+export function verifyExtras(siteRoot, catalogue) {
+  const extras = JSON.parse(readFileSync(resolve(siteRoot, 'src/data/tutorial-extras.json'), 'utf8'));
+  assert.equal(extras.schemaVersion, 1, 'tutorial-extras.json must be schema v1');
+  assert(/^\d{4}-\d{2}-\d{2}$/.test(extras.guidesUpdatedAt), 'tutorial-extras.json: guidesUpdatedAt must be YYYY-MM-DD');
+  const bySlug = new Map(catalogue.tutorials.map(t => [t.slug, t]));
+  const repoRoot = resolve(siteRoot, '..');
+  for (const [slug, extra] of Object.entries(extras.guides)) {
+    const label = `extras ${slug}`;
+    const t = bySlug.get(slug);
+    assert(t, `${label}: not a published tutorial`);
+    for (const [i, note] of (extra.agentNotes ?? []).entries()) copy(note, `${label}.agentNotes[${i}]`);
+    for (const ref of extra.captures ?? []) {
+      copy(ref.label, `${label}: capture label`);
+      const file = resolve(repoRoot, ref.file);
+      const rel = relative(resolve(repoRoot, CAPTURE_ROOT), file);
+      assert(rel && !rel.startsWith('..') && !isAbsolute(rel) && ref.file.endsWith('.json'), `${label}: capture ${ref.file} must be under ${CAPTURE_ROOT}/`);
+      assert(existsSync(file), `${label}: missing capture ${ref.file}`);
+      const run = JSON.parse(readFileSync(file, 'utf8'));
+      text(run.command, `${label}: ${ref.file} command`);
+      assert(!Number.isNaN(Date.parse(run.capturedAt)), `${label}: ${ref.file} has no capturedAt`);
+      for (const rule of BANNED_OUTPUT) assert(!rule.test(`${run.command}\n${run.stdout ?? ''}`), `${label}: ${ref.file} output breaks the copy rules (${rule})`);
+    }
+    for (const note of extra.chapterNotes ?? []) {
+      copy(note.text, `${label}: chapter note`);
+      assert(t.video.chapters.some(c => c.start === note.start), `${label}: chapter note at ${note.start}s matches no chapter start`);
+      if (note.to !== undefined) assert(/^\/[a-z0-9]/.test(note.to), `${label}: chapter note link must be a site path`);
+      if (note.label !== undefined) copy(note.label, `${label}: chapter note label`);
+    }
+    if (extra.updatedAt !== undefined) assert(/^\d{4}-\d{2}-\d{2}$/.test(extra.updatedAt), `${label}: updatedAt must be YYYY-MM-DD`);
+  }
+  return extras;
 }
 
 /** The studio docs embed their walkthroughs through <TutorialEmbed>, and the release manifest matches the catalogue. */
@@ -177,6 +236,7 @@ export function verifyStudioDocs(siteRoot = defaultSiteRoot, catalogue, manifest
     const source = readFileSync(resolve(siteRoot, 'docs', page), 'utf8');
     assert(!/<video\b|<iframe\b/.test(source), `${page}: use <TutorialEmbed>, not a raw media tag`);
     assert(source.includes("import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';"), `${page}: missing TutorialEmbed import`);
+    assert(!/<summary>Read the transcript/.test(source), `${page}: the transcript belongs on the guide page; link to it instead`);
     for (const slug of slugs) {
       assert(bySlug.has(slug), `${page}: embeds ${slug}, which is not published`);
       assert(source.includes(`<TutorialEmbed slug="${slug}" />`), `${page}: does not embed ${slug}`);
@@ -198,9 +258,29 @@ export function verifyStudioDocs(siteRoot = defaultSiteRoot, catalogue, manifest
   return Object.keys(STUDIO_DOCS).length;
 }
 
-/** After `npm run build`: one page per published tutorial with one h1, its canonical URL and structured data. */
+/** The guide's own text: the <article>, without tags, scripts or entities. */
+export function articleText(html) {
+  const start = html.indexOf('<article');
+  const end = html.indexOf('</article>', start);
+  const body = start === -1 ? html : html.slice(start, end === -1 ? undefined : end);
+  return body.replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ');
+}
+
+/** Distinct 5-word phrases, lower-cased. */
+export function shingles(text, size = 5) {
+  const words = text.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'.-]*/gu) ?? [];
+  const set = new Set();
+  for (let i = 0; i + size <= words.length; i++) set.add(words.slice(i, i + size).join(' '));
+  return set;
+}
+
+/**
+ * After `npm run build`: one page per published tutorial with one h1, its canonical URL and
+ * structured data, the transcript open on the page, and enough text that no other guide repeats.
+ */
 export function verifyBuilt(siteRoot = defaultSiteRoot, catalogue, origin = 'https://spec-weave.com') {
   const hub = resolve(siteRoot, 'build/tutorials/index.html');
+  const pages = new Map();
   assert(existsSync(hub), 'build/tutorials/index.html is missing');
   for (const t of catalogue.tutorials) {
     const file = resolve(siteRoot, 'build/tutorials', t.slug, 'index.html');
@@ -212,6 +292,21 @@ export function verifyBuilt(siteRoot = defaultSiteRoot, catalogue, origin = 'htt
     assert(html.includes('"TechArticle"') && html.includes('"BreadcrumbList"'), `${t.slug}: structured data missing`);
     if (t.video.publishedAt) assert(html.includes('"VideoObject"') && html.includes('"Clip"'), `${t.slug}: VideoObject missing`);
     assert(html.includes(t.video.src), `${t.slug}: video not on the page`);
+    if (t.transcript === 'captions') {
+      assert(html.includes('id="transcript-title"'), `${t.slug}: transcript missing`);
+      assert(!/<summary>\s*<h2 id="transcript-title"/.test(html), `${t.slug}: transcript is collapsed in <details>`);
+    }
+    if (t.video.publishedAt) {
+      assert(html.includes('"transcript":'), `${t.slug}: VideoObject has no transcript`);
+      assert(!html.includes('"embedUrl"'), `${t.slug}: VideoObject still has an embedUrl`);
+    }
+    pages.set(t.slug, shingles(articleText(html)));
+  }
+  for (const [slug, own] of pages) {
+    const others = new Set();
+    for (const [other, set] of pages) if (other !== slug) for (const s of set) others.add(s);
+    const unique = [...own].filter(s => !others.has(s)).length / own.size;
+    assert(unique >= MIN_UNIQUE_SHARE, `${slug}: only ${Math.round(unique * 100)}% of its 5-word phrases are on no other guide page`);
   }
   for (const p of catalogue.planned) {
     assert(!existsSync(resolve(siteRoot, 'build/tutorials', p.slug, 'index.html')), `planned tutorial has a page: ${p.slug}`);

@@ -35,10 +35,49 @@ describe('GuideBody', () => {
     }
   });
 
-  it('marks this guide as the current step of its learning path', () => {
+  it('places the guide in its learning path with the guides before and after it', () => {
     const {container} = render(<GuideBody tutorial={guide('projects-and-threads')} />);
-    const current = container.querySelector('.wv-thread li[aria-current="step"]');
-    expect(current).toHaveTextContent('Run a project with a coordinator and workers');
+    expect(container.textContent).toMatch(/Step 3 of \d+ in Run SpecWithCode/);
+    expect(screen.getByRole('link', {name: 'Run SpecWithCode'})).toHaveAttribute('href', '/tutorials/#path-run-specwithcode');
+    expect(container.querySelector('a[rel="prev"]')).toHaveAttribute('href', '/tutorials/start-specwithcode/');
+    expect(container.querySelector('a[rel="next"]')).toHaveAttribute('href', '/tutorials/plans-and-routines/');
+    expect(container.querySelector('.wv-thread')).toBeNull();
+  });
+
+  it('prints the transcript open on the page, with an anchor and a start link per chapter', () => {
+    const sections = [
+      {start: 0, title: 'Intro', text: 'Grok in SpecWithCode.'},
+      {start: 22.6, title: 'Connect Grok', text: 'Open SpecWithCode.'},
+    ];
+    const {container} = render(<GuideBody tutorial={guide('specwithcode-grok')} transcript={sections} />);
+    const heading = container.querySelector('#transcript-title')!;
+    expect(heading.tagName).toBe('H2');
+    expect(heading.closest('details')).toBeNull();
+    expect(container.querySelector('h3#t-22 a')).toHaveAttribute('href', '/tutorials/specwithcode-grok/?t=22#video');
+    expect(container.querySelector('h3#t-0 a')).toHaveAttribute('href', '/tutorials/specwithcode-grok/#video');
+  });
+
+  it('shows the agent notes and the recorded terminal runs of an agent guide', () => {
+    const captures = [{label: 'After `grok --trust`', command: 'grok --trust inspect --json', exitCode: 0, stdout: 'sw-do\nsw-increment', truncated: false, capturedAt: '2026-10-11T05:03:35.230Z'}];
+    const {container} = render(<GuideBody tutorial={guide('specwithcode-grok')} captures={captures} />);
+    expect(screen.getByRole('heading', {name: 'Using Grok with SpecWithCode'})).toBeInTheDocument();
+    expect(container.textContent).toContain('as recorded on SpecWithCode 0.2.6');
+    expect(container.textContent).toContain('trusted_folders.toml');
+    expect(container.querySelector('pre')).toHaveTextContent('$ grok --trust inspect --json sw-do sw-increment');
+    expect(screen.getByText(/Exit code 0, captured 11 October 2026\./)).toBeInTheDocument();
+  });
+
+  it('shows a chapter note under the chapter it corrects', () => {
+    const sections = [{start: 44.1, title: 'Connect your machines', text: 'Old setup.'}];
+    const {container} = render(<GuideBody tutorial={guide('how-specwithcode-works')} transcript={sections} />);
+    const note = container.querySelector('#t-44')!.parentElement!.querySelector('aside');
+    expect(note).toHaveTextContent('machines join over Tailscale');
+    expect(note!.querySelector('a')).toHaveAttribute('href', '/tutorials/join-a-mac/');
+  });
+
+  it('links the SpecWithCode product page from every SpecWithCode guide', () => {
+    const {container} = render(<GuideBody tutorial={guide('agent-result-walkthrough')} />);
+    expect(container.querySelector('ul[aria-label="About this guide"] a')).toHaveAttribute('href', '/code/');
   });
 
   it('states the recorded version and the current SpecWithCode release', () => {

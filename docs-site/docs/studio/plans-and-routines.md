@@ -55,23 +55,6 @@ The separate [SpecWeave CLI project hub](../guides/portable-projects.md) stores 
 
 <TutorialEmbed slug="plans-and-routines" />
 
-Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
+Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the guide page for the dense desktop interface.
 
-<details>
-<summary>Read the transcript: Plan, verify and schedule</summary>
-
-1. Add a plan when acceptance needs evidence. Ordinary chat does not require the CLI.
-2. Write a short spec, one acceptance criterion and a task.
-3. Review the executable and literal arguments. Saving the command does not run it.
-4. Verification runs a real local process. A nonzero exit remains failed.
-5. We now create ready.txt in the synthetic source folder. The previous failed receipt stays unchanged.
-6. Choose a new attempt deliberately. The new receipt records the successful exit.
-7. Recheck reads the same receipt. It cannot launch that verification again.
-8. An existing SpecWeave ledger stays authoritative. Its done entry remains external, unverified evidence.
-9. Routines keep their project and host scope. This demonstration routine is disabled.
-10. Pause the project to refuse new work. It does not kill an already running turn.
-11. New routine runs remain blocked while the project is paused.
-12. Deletion requires the exact project name. This is a disposable synthetic project.
-13. Deleting project history leaves its source folder intact.
-
-</details>
+Steps and full transcript: [Plan, verify and schedule](/tutorials/plans-and-routines/#transcript-title)

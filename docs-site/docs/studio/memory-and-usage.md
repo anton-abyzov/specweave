@@ -59,19 +59,6 @@ Return to [SpecWithCode projects](./projects.md) or continue with [plans and rou
 
 <TutorialEmbed slug="memory-and-usage" />
 
-Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
+Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the guide page for the dense desktop interface.
 
-<details>
-<summary>Read the transcript: Shared facts, honest usage</summary>
-
-1. Keep the project goal, instructions and durable facts together.
-2. Instructions guide future turns. They do not replace a provider's native history.
-3. Memory belongs to this project. Open a file to review its contents.
-4. Give a lasting decision its own small Markdown file.
-5. Save the decision. SpecWithCode checks the file revision before replacing it.
-6. Reload and reopen the file to confirm that the decision persisted.
-7. A different project keeps a different memory collection.
-8. Usage comes from recorded provider turns. Missing data remains visible.
-9. No provider turn ran in this walkthrough. An equivalent cost estimate is not a bill.
-
-</details>
+Steps and full transcript: [Shared facts, honest usage](/tutorials/memory-and-usage/#transcript-title)

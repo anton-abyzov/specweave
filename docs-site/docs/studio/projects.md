@@ -114,47 +114,19 @@ If another window changed the settings, reload the current version before saving
 
 <TutorialEmbed slug="projects-and-threads" />
 
-Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
+Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the guide page for the dense desktop interface.
 
 This walkthrough verifies native project coordination with Claude and Codex, including thread reuse, project memory and usage. It does not establish byte-for-byte preservation of global account metadata. Device deployment is checked separately.
 
-<details>
-<summary>Read the transcript: One project, independent threads</summary>
-
-1. Verified here: native project coordination. Device deployment is checked separately.
-2. Coordinator and worker defaults are independent. Existing threads retain their own model choices.
-3. This Codex coordinator completed the verified native run. Its conversation stays in the project.
-4. This Claude conversation completed in the verified native run. No new inference starts in this recording.
-5. The coordinator keeps the routing history while worker details open on the right.
-6. Resolve organizes finished work without deleting its history.
-7. Reopen the same thread when related work returns.
-8. Open Usage to compare the actual coordinator and worker token totals by model.
-9. Thread shares explain where tokens went. Cache reporting can be incomplete, and API-equivalent cost is not money paid.
-
-</details>
+Steps and full transcript: [One project, independent threads](/tutorials/projects-and-threads/#transcript-title)
 
 ### Personal projects, folders and tools
 
 <TutorialEmbed slug="personal-and-connections" />
 
-Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the transcript below for the dense desktop interface.
+Narrated walkthrough with English captions and synthetic project data. On a phone, use fullscreen or the guide page for the dense desktop interface.
 
-<details>
-<summary>Read the transcript: Personal projects, folders and tools</summary>
-
-1. This Personal project uses app-managed storage and starts without a Git repository.
-2. Personal projects keep the same project-specific memory, routines and usage views.
-3. Its execution device owns the storage. Extra folders and repositories are optional.
-4. Add an existing synthetic folder and save its access grant. This does not move the folder.
-5. A repository URL can coexist with that folder. Associate the owned local checkout before saving.
-6. Match checks the checkout's actual remote identity. This walkthrough performs no network clone.
-7. Save a local MCP command separately. This example is an owned, inert discovery fixture.
-8. Check discovers MCP tools. It does not verify a Gmail, Calendar or other external service account.
-9. Choose and save exactly the tools this project may use. Calls still follow SpecWithCode's approval rules.
-10. Revoke removes future access. Restoring requires a new discovery check and fresh tool grants.
-11. The command runs as the device's user. No external account or AI provider was contacted in this walkthrough.
-
-</details>
+Steps and full transcript: [Personal projects, folders and tools](/tutorials/personal-and-connections/#transcript-title)
 
 ## Next steps
 
