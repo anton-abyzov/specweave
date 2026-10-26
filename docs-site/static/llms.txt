@@ -2,15 +2,15 @@
 
 > SpecWeave is an open-source CLI (npm package `specweave`, MIT) that keeps AI coding work in git as one short spec.md per piece of work, an append-only task ledger and a handoff. When Claude Code, Codex or another agent hits a usage limit, `specweave handoff` records the state and pushes the uncommitted edits, and `specweave pickup` continues it in Codex, Grok Build, Gemini CLI, Cursor, Copilot or a second account of the same tool. One AGENTS.md of about 760 tokens is the instruction file every agent reads.
 
-SpecWithCode (pronounced "Spec with Code"; free, independently maintained, notarized macOS download at https://spec-weave.com/code/) is the workspace built on that record: one place for project agents (like Claude Code Projects), personal agents (like OpenAI Dots or Hermes; SpecWithCode's Personal projects have memory, plans, scheduled routines, a Telegram channel to the coordinator and optional read-only Google access) and coding agents. A project has a coordinator and workers, each on its own coding agent and model (Claude Code, Codex, Grok Build, Cursor, OpenCode, GitHub Copilot and others), running on machines the user owns, reached over the local network, SSH or Tailscale.
+SpecWithCode (pronounced "Spec with Code"; free, source available, independently maintained; product page https://spec-weave.com/code/, downloads for Apple silicon Macs, Windows 10 and 11 and Linux at https://spec-weave.com/code/download/) is the workspace built on that record: one place for project agents (like Claude Code Projects), personal agents (like OpenAI Dots or Hermes; SpecWithCode's Personal projects have memory, plans, scheduled routines, a Telegram channel to the coordinator and optional read-only Google access) and coding agents. A project has a coordinator and workers, each on its own coding agent and model (Claude Code, Codex, Grok Build, Cursor, OpenCode, GitHub Copilot and others), running on machines the user owns, reached over the local network, SSH or Tailscale.
 
 Install: `npm install -g specweave`, then `specweave init` in a repository.
 
 ## Start here
 
 - [What is SpecWeave?](https://spec-weave.com/docs/overview/introduction/): the spec, the ledger and the handoff in one page
-- [SpecWithCode](https://spec-weave.com/code/): features and comparison for the desktop app
-- [Download SpecWithCode for Mac](https://spec-weave.com/code/download/): free notarized .dmg for Apple silicon, macOS 13+, with install steps
+- [SpecWithCode](https://spec-weave.com/code/): the free AI coding agent workspace: a coordinator and worker threads per project, usage limits and fallbacks, your own machines
+- [Download SpecWithCode](https://spec-weave.com/code/download/): free notarized .dmg for Apple silicon (macOS 13+), a Windows 10 and 11 installer, and a Linux AppImage and .deb, with install steps
 - [SpecWithCode overview](https://spec-weave.com/docs/overview/studio/): every AI agent in one workspace on your own machines
 - [How it works](https://spec-weave.com/docs/overview/how-it-works/): the daily loop from spec to closed increment
 - [Installation](https://spec-weave.com/docs/getting-started/installation/): install, update, uninstall
@@ -21,7 +21,6 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 - [How SpecWithCode works](https://spec-weave.com/tutorials/how-specwithcode-works/): machines, subscriptions, limits and threads
 - [Keep working when a provider runs out](https://spec-weave.com/tutorials/provider-runs-out/): a thread at a Claude Code usage limit continues on Codex
 - [Start SpecWithCode](https://spec-weave.com/tutorials/start-specwithcode/): add a project, ask the coordinator, watch two workers report back
-- [SpecWithCode vs T3 Code and OpenCode](https://spec-weave.com/docs/compare/specwithcode-vs-opencode-t3-code/)
 - [SpecWithCode vs BridgeMind](https://spec-weave.com/docs/compare/specwithcode-vs-bridgemind/)
 
 ## Switching tools and accounts

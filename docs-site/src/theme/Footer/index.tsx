@@ -39,6 +39,8 @@ const COLUMNS = [
   {
     title: 'Project',
     links: [
+      {label: 'SpecWithCode', to: '/code/'},
+      {label: 'Download SpecWithCode', to: '/code/download/'},
       {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave'},
       {label: 'npm', href: 'https://www.npmjs.com/package/specweave'},
       {label: 'Pricing', to: '/pricing'},
