@@ -46,7 +46,7 @@ const ORDERED = byRecency(TUTORIALS);
 function PathColumn({path}: {path: LearningPath}) {
   const {published, planned} = resolvePath(path);
   return (
-    <li className={styles.path}>
+    <li className={styles.path} id={`path-${path.id}`}>
       <h3 className={styles.pathTitle}>{path.title}</h3>
       <p className={styles.pathProduct}>{productLabel(path.product)}</p>
       <p className={styles.pathSummary}>{path.summary}</p>

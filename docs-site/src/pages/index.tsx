@@ -102,12 +102,12 @@ export default function Home() {
       <section className={h.hero}>
         <div className={h.heroText}>
           <h1>Switch AI tools without losing your place.</h1>
-          <p className={h.lead}>SpecWeave writes the plan and every finished task into git, so Claude Code, Codex or any other agent can pick up the same work. SpecWithCode (pronounced “Spec with Code”) runs those agents on your own machines and subscriptions.</p>
+          <p className={h.lead}>SpecWeave writes the plan and every finished task into git, so Claude Code, Codex or any other agent can pick up the same work. <Link className={base.textLink} to="/code/">SpecWithCode</Link> (pronounced “Spec with Code”) runs those agents on your own machines and subscriptions.</p>
           <div className={h.actions}>
             <a className={base.primary} href={release.dmgUrl} aria-label={downloadLabel}>Download for Mac</a>
             <Link className={base.secondary} to="/product">Get the CLI</Link>
           </div>
-          <p className={h.requirements}>Both free. The app needs Apple silicon and macOS 13 or later.</p>
+          <p className={h.requirements}>Both free. The app runs on Apple silicon Macs with macOS 13 or later, Windows 10 and 11, and Linux: <Link className={base.textLink} to="/code/download/">download SpecWithCode</Link>.</p>
           <InstallCommand hint="The open-source CLI: MIT licensed, local first, no account." />
         </div>
         <figure className={clsx('wv-window', h.heroShot, h.crop)}>
@@ -144,7 +144,7 @@ export default function Home() {
           <li>
             <div className={h.familyName}>
               <h3>SpecWithCode</h3>
-              <p className={h.kind}>Free Mac app. Version {release.version}.</p>
+              <p className={h.kind}>Free app for Mac, Windows and Linux. Version {release.version}.</p>
             </div>
             <div className={h.familyBody}>
               <p>A coordinator per project starts worker threads in the agents you already pay for, on your own machines. Each thread shows its SpecWeave increment and task progress, and its reports are saved beside the increment. Start here if you want one window for several agents.</p>
