@@ -117,11 +117,12 @@ export function generateRubric(
   lines.push('');
   lines.push('## Code Quality');
   lines.push('');
-  lines.push('### R-D02: No critical, high, or medium code review findings [blocking]');
+  lines.push('### R-D02: No critical or high code review findings [advisory]');
   lines.push('- **Source**: project-default');
   lines.push('- **Evaluator**: sw:review');
-  lines.push('- **Verify**: reports/review.json findings');
+  lines.push('- **Verify**: newest reports/review*.md verdict and its critical/high findings (what closure-gate.ts reads)');
   lines.push('- **Threshold**: critical === 0 AND high === 0');
+  lines.push('- **Note**: `specweave complete` only reports this as a notice; `reports/verify.json` is the one blocking gate');
   lines.push('- **Result**: [ ] PENDING');
   lines.push('');
 
@@ -129,11 +130,12 @@ export function generateRubric(
   lines.push('');
   lines.push('## Independent Evaluation');
   lines.push('');
-  lines.push('### R-D03: Adversarial review found nothing blocking [blocking]');
+  lines.push('### R-D03: Review verdict is ship [advisory]');
   lines.push('- **Source**: project-default');
   lines.push('- **Evaluator**: sw:review');
-  lines.push('- **Verify**: reports/review.json (ok + findings)');
-  lines.push('- **Threshold**: ok !== false AND no critical/high findings');
+  lines.push('- **Verify**: newest reports/review*.md verdict line (parseVerdict in closure-gate.ts)');
+  lines.push('- **Threshold**: verdict is not "fix first"');
+  lines.push('- **Note**: `specweave complete` only reports this as a notice; `reports/verify.json` is the one blocking gate');
   lines.push('- **Result**: [ ] PENDING');
   lines.push('');
 

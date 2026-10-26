@@ -27,14 +27,4 @@ describe('agent-spawn-count', () => {
       throw new Error(`Spawn ratio ${ratio.toFixed(2)} exceeds 50% target. Expected ≤ ${PRE_0669_BASELINE_SPAWNS * 0.5} spawns, got ${spawnCount}`);
     }
   }, { iterations: 1 });
-
-  bench('fan-out reduction: --parallel flag still works when needed', async () => {
-    // When --parallel is explicitly requested, spawning is allowed
-    // This just verifies the benchmark framework is wired up
-    const parallelSpawnCount = PRE_0669_BASELINE_SPAWNS;
-    const ratio = parallelSpawnCount / PRE_0669_BASELINE_SPAWNS;
-    if (ratio > 1.5) {
-      throw new Error('Parallel mode spawned too many agents');
-    }
-  }, { iterations: 1 });
 });

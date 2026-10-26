@@ -69,9 +69,28 @@ export function removedSkillReplacements(root: string): Map<string, string> {
   try {
     const manifest = JSON.parse(
       fs.readFileSync(path.join(root, 'plugins', 'specweave', 'marketplace.json'), 'utf8'),
-    ) as { removedIn2_0?: { map?: Record<string, string> } };
+    ) as {
+      removedIn2_0?: { map?: Record<string, string> };
+      removedIn3_0?: { map?: Record<string, string> };
+      removedIn3_1?: { map?: Record<string, string> };
+    };
+    // A 2.0 replacement may itself have been retired later (skills-optional/debug
+    // in 3.1, for example): follow the later maps to the final replacement.
+    const later: Record<string, string> = {
+      ...(manifest.removedIn3_0?.map ?? {}),
+      ...(manifest.removedIn3_1?.map ?? {}),
+    };
+    const resolve = (target: string): string => {
+      const seen = new Set<string>();
+      let current = target;
+      while (Object.prototype.hasOwnProperty.call(later, current) && !seen.has(current)) {
+        seen.add(current);
+        current = later[current];
+      }
+      return current;
+    };
     for (const [from, to] of Object.entries(manifest.removedIn2_0?.map ?? {})) {
-      out.set(from.replace(/^sw:/, ''), to);
+      out.set(from.replace(/^sw:/, ''), resolve(to));
     }
   } catch {
     // no manifest: every miss simply reports as "resolves to nothing"
@@ -82,8 +101,9 @@ export function removedSkillReplacements(root: string): Map<string, string> {
 /** How a `/sw:<name>` or `specweave <cmd>` miss is described to the user. */
 function describeMiss(label: string, replacement: string | undefined): string {
   if (!replacement) return `${label} resolves to nothing`;
+  if (replacement === 'none') return `${label} was removed with no replacement`;
   const target = replacement.startsWith('sw:') ? `/${replacement}` : replacement;
-  return `${label} was removed in 2.0 — its work is now ${target}`;
+  return `${label} was removed — its work is now ${target}`;
 }
 
 export class InstructionFilesChecker implements HealthChecker {

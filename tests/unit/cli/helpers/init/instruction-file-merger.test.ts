@@ -488,6 +488,27 @@ describe('mergeInstructionFile — conditional (when=) sections', () => {
     const claudeOn = mergeInstructionFile(null, claudeTemplate(), 'claude', V, NAME, { commands: CMDS, flags: { umbrella: true } });
     expect(claudeOn.content).not.toContain('SW:SECTION:umbrella');
   });
+
+  it('drops the legacy project-hub block once the managed hub section renders', () => {
+    const legacyHub =
+      '<!-- specweave:project-hub -->\n## Shared project context\nRead .specweave/project/hub.json for the project goal.\n<!-- /specweave:project-hub -->\n';
+    const base = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
+    const existing = base.content + '\n## Mine\n\nkeep me\n\n' + legacyHub;
+
+    const merged = mergeInstructionFile(existing, agentsTemplate(), 'agents', V, NAME, { commands: CMDS, flags: { hub: true } });
+    expect(merged.content.match(/SW:SECTION:hub /g)).toHaveLength(1);
+    expect(merged.content).not.toContain('<!-- specweave:project-hub -->');
+    expect(merged.content).not.toContain('## Shared project context');
+    expect(merged.content.match(/hub\.json/g)?.length).toBe(1);
+    expect(merged.content).toContain('keep me');
+    expect(merged.warnings.some(w => w.includes('legacy project-hub block'))).toBe(true);
+    const again = mergeInstructionFile(merged.content, agentsTemplate(), 'agents', V, NAME, { commands: CMDS, flags: { hub: true } });
+    expect(again.action).toBe('unchanged');
+
+    // Without hub.json the managed section is off, so the hand-written block stays.
+    const kept = mergeInstructionFile(existing, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
+    expect(kept.content).toContain('<!-- specweave:project-hub -->');
+  });
 });
 
 describe('fillCommandPlaceholders', () => {

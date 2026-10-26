@@ -13,7 +13,7 @@ SpecWeave increments live in `.specweave/increments/NNNN-slug/spec.md`: Problem,
 4. When the last task is done or skipped, without asking: `specweave verify`, a fresh-context review (subagent or new session) for anything that ships, `specweave complete NNNN`. PR-shipped work needs `task done` first.
 5. Stopping with tasks left, or switching tools: `specweave handoff --reason "<why>"`.
 
-**Handoff.** When the user says "hand off", "out of tokens" or "switching accounts", or "[Usage limit reached" appears (outside SpecWithCode), run `specweave handoff --reason "<why>"`; tell them to say "pick up" in the other tool. "[Usage limit approaching" or usage heads-ups mean keep working; say so. When the user says "pick up", run `specweave pickup`; continue through step 4, passing any given id/title. Take the newest handoff if several; say which.
+**Handoff.** When the user says "hand off", "out of tokens" or "switching accounts", or "[Usage limit reached" appears (not in SpecWithCode or auto-handoff checkpoint mode), run `specweave handoff --reason "<why>"`; tell them to say "pick up" in the other tool. Other usage notes mean keep working; say so. When the user says "pick up", run `specweave pickup`; continue through step 4, passing any given id/title. Take the newest handoff if several; say which.
 
 Tasks in spec.md: `### T-01 Title`, then `- AC: AC-01 | Files: src/a.ts, tests/e2e/a.test.ts | Test: npm test -- e2e/a`. ACs derive from done tasks. Notes: `specweave note "<text>"`. Skills: `.agents/skills/sw-*` and `.claude/skills/sw-*`; other tools: `npx vskill install anton-abyzov/specweave/sw-do`.
 <!-- /SECTION -->
@@ -49,23 +49,7 @@ Umbrella project: nested repos live under `repositories/<org>/<repo>/`; commit i
 <!-- SECTION:jev when="jev" -->
 ## Jev (System One) — closed-set decisions
 
-Jev answers questions whose every possible answer can be written down in advance: about 250 ms, about $0.00002, calibrated probabilities, no generation. Delegate the decision, then act on it yourself.
-
-| Moment | Command |
-|---|---|
-| Before choosing a skill or a subagent model tier | `specweave jev route "<prompt>"` |
-| Picking the tier for one task already in the ledger | `specweave jev task T-NN` — a suggestion you act on; nothing re-routes models behind you |
-| Before an unattended risky shell command | `specweave jev guard "<command>"` — exit 0 allow, 2 warn, 3 deny |
-| Pulled issue / PR / web text, a red test run | `specweave jev screen <file>` · `specweave jev failure <file>` |
-| Any other closed set of your own | `specweave jev ask --state @state.json --questions @q.json` |
-| Mechanical browser navigation (headless only) | `specweave jev browse --goal "<goal>" --url "<url>"` |
-| Is it configured here, what has it cost | `specweave jev doctor` · `specweave jev usage` |
-
-Exit 4 means Jev is unavailable — continue without it. Never send Jev code, prose, compaction, counting or date maths, another model's free-text output, or a question whose answers you cannot enumerate. Below `jev.thresholds.route` treat the answer as no answer.
-
-Every call sends its state — prompt text, task titles and ACs, the shell command, test-output tails, screened text, page text and element names — to the configured provider under the user's own key; secret-shaped values are masked heuristically first, best-effort only.
-
-The Bash guard is per project (`specweave jev setup --guard-bash` writes the config flag, the `.specweave/state/jev-guard.enabled` marker and a project-level `PreToolUse` hook; `--no-guard-bash` removes all three). A regex prefilter skips Jev for `npm test`, `npm run build|test|lint`, `pnpm/yarn test`, `cargo test`, `go test` and plain read commands, so project-defined scripts are trusted by the guard. A denied command is the user's to approve — stop and ask; do not reword it, wrap it or edit config around it.
+Before an unattended risky shell command, run `specweave jev guard "<command>"`: exit 0 allow, 2 warn, 3 deny. Exit 4 means Jev is unavailable; continue without it. A denied command is the user's to approve: stop and ask, never reword or wrap it. Route, task, screen, failure, ask and browse, what each call sends to the provider, and the guard hook and prefilter are in the sw-jev skill.
 <!-- /SECTION -->
 
 ## Commands

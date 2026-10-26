@@ -30,22 +30,24 @@ status: defaults
 
 ## Code Quality
 
-### R-D02: No critical or high code review findings [blocking]
+### R-D02: No critical or high code review findings [advisory]
 - **Source**: project-default
 - **Evaluator**: sw:review
-- **Verify**: review.json findings
+- **Verify**: newest reports/review*.md verdict and its critical/high findings (what closure-gate.ts reads)
 - **Threshold**: critical === 0 AND high === 0
+- **Note**: `specweave complete` only reports this as a notice; `reports/verify.json` is the one blocking gate
 - **Result**: [ ] PENDING
 
 ---
 
 ## Independent Evaluation
 
-### R-D03: Review verdict is ship [blocking]
+### R-D03: Review verdict is ship [advisory]
 - **Source**: project-default
 - **Evaluator**: sw:review
-- **Verify**: review.json ok
-- **Threshold**: ok !== false
+- **Verify**: newest reports/review*.md verdict line (parseVerdict in closure-gate.ts)
+- **Threshold**: verdict is not "fix first"
+- **Note**: `specweave complete` only reports this as a notice; `reports/verify.json` is the one blocking gate
 - **Result**: [ ] PENDING
 
 ### R-D04: Independent reviewer was a fresh context [advisory]
