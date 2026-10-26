@@ -565,6 +565,9 @@ function dedupeBlocks(texts: string[]): string[] {
 // Rendering
 // ---------------------------------------------------------------------------
 
+/** The hand-written block `specweave project init` appends (src/cli/commands/project.ts). */
+const LEGACY_HUB_BLOCK = /<!-- specweave:project-hub -->[\s\S]*?<!-- \/specweave:project-hub -->\n?/g;
+
 function wrap(id: string, body: string, version: string): string {
   return `<!-- SW:SECTION:${id} version="${version}" -->\n${body}\n<!-- SW:END:${id} -->`;
 }
@@ -725,6 +728,22 @@ export function mergeInstructionFile(
     const preCount = pre.length;
     pre = deduped.slice(0, preCount).filter(Boolean);
     segs = segs.map((s, i) => ({ ...s, content: deduped[preCount + i] })).filter(s => s.content);
+  }
+
+  // `specweave project init` appends a small hub block to folders with no
+  // managed template. Once the managed `hub` section renders it owns that
+  // instruction, so the legacy block is dropped instead of kept twice.
+  if (renderedIds.includes('hub')) {
+    let droppedHub = false;
+    const dropHub = (text: string): string => {
+      const next = text.replace(LEGACY_HUB_BLOCK, '');
+      if (next === text) return text;
+      droppedHub = true;
+      return next.replace(/\n{3,}/g, '\n\n').trim();
+    };
+    pre = pre.map(dropHub).filter(Boolean);
+    segs = segs.map(s => ({ ...s, content: dropHub(s.content) })).filter(s => s.content);
+    if (droppedHub) warnings.push('Removed the legacy project-hub block; the managed "hub" section replaces it');
   }
 
   const attached = new Map<string, string[]>();
