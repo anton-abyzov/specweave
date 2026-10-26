@@ -18,9 +18,10 @@ status: defaults
 
 ## Code Quality
 
-### R-D02: No critical code review findings [blocking]
+### R-D02: No critical or high code review findings [advisory]
 - **Source**: project-default
-- **Evaluator**: sw:code-reviewer
-- **Verify**: code-review-report.json
+- **Evaluator**: sw:review
+- **Verify**: newest reports/review*.md verdict and its critical/high findings (what closure-gate.ts reads)
 - **Threshold**: critical === 0 AND high === 0
+- **Note**: `specweave complete` only reports this as a notice; `reports/verify.json` is the one blocking gate
 - **Result**: [ ] PENDING

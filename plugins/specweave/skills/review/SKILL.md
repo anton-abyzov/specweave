@@ -35,9 +35,12 @@ This is also the quality check: its verdict says whether the increment is ready.
    restate the implementation) →
    portability (bash-only commands, `\` paths, BOMs, `>>` in PowerShell).
    `--full`: run the three lenses correctness, security and spec compliance separately
-   (in parallel if your tool has subagents) and merge, dropping duplicates.
-4. **Report** in the shape below. Optional machine form, `reports/review.json`:
-   `{"ok":false,"findings":[{"severity":"high","file":"src/a.ts","line":88,"summary":"..."}]}`.
+   (in parallel if your tool has subagents). Each lens returns only a JSON list of
+   `{"severity","file","line","summary","verified"}`; merge by deduping on (file,line),
+   then re-open every line yourself before it goes in the report.
+4. **Report** in the shape below; `specweave complete` reads its verdict line. Optional
+   machine form, `reports/review.json`, nothing gates on it:
+   `{"ok":false,"findings":[{"severity":"high","file":"src/a.ts","line":88,"summary":"...","verified":true}]}`.
 5. **Hand back.** Each critical or high finding becomes a task in spec.md
    (`### T-09 Fix empty evidence` + `- AC: AC-02 | Files: ... | Test: ...`) for sw-do, or
    is fixed and re-tested now. Then verify again and close with sw-done.
