@@ -1,17 +1,18 @@
 ---
 sidebar_position: 6
 title: Changelog
-description: "SpecWeave release notes: the 3.1 line adds reopen, task cards, the Timeline, opt-in skills, grill-me, the glossary and cross-model review; the 3.0 line brought handoff and pickup, auto-handoff, auto-compact and the Decide step."
+description: "SpecWeave release notes: the 3.1 line adds reopen, increment auto-commit, task cards, the Timeline, opt-in skills, grill-me, the glossary and cross-model review; the 3.0 line brought handoff and pickup, auto-handoff, auto-compact and the Decide step."
 ---
 
 # Changelog
 
-The current release is **SpecWeave 3.1.9**, published 24 October 2026. Install or upgrade with `npm i -g specweave@latest`, then run `specweave update` in each project. The complete history is in [CHANGELOG.md on GitHub](https://github.com/anton-abyzov/specweave/blob/develop/CHANGELOG.md), and every tag is on the [releases page](https://github.com/anton-abyzov/specweave/releases).
+This page summarizes SpecWeave releases through **3.1.10** (24 October 2026). The newest version is always the `latest` tag on [npm](https://www.npmjs.com/package/specweave), which `npm view specweave version` prints. Install or upgrade with `npm i -g specweave@latest`, then run `specweave update` in each project. The complete history is in [CHANGELOG.md on GitHub](https://github.com/anton-abyzov/specweave/blob/develop/CHANGELOG.md), and every tag is on the [releases page](https://github.com/anton-abyzov/specweave/releases).
 
-## 3.1.1 to 3.1.9, 18 to 24 October 2026
+## 3.1.1 to 3.1.10, 18 to 24 October 2026
 
 | Version | Date | What changed |
 |---|---|---|
+| 3.1.10 | 24 Oct | Opt-in auto-commit of increment files: `git.autoCommitIncrement` commits only the increment's own files after task, card, create and handoff commands, and `git.autoPushIncrement` pushes to a same-name upstream only when every unpushed commit is such an auto-commit. TDD and coverage are fully opt-in. Auto-handoffs resume the increment the session works on. |
 | 3.1.9 | 24 Oct | `specweave reopen --json` includes `next: "specweave start <id>"`, the separate activation step. |
 | 3.1.8 | 24 Oct | `specweave --workspace <root> reopen <id> --reason "<text>"` moves a completed increment back to `planned` without activating it. The old closure is kept in `metadata.reopened`, and the ledger and reports are unchanged. |
 | 3.1.7 | 23 Oct | Increments are recommended, not required: the `remind` message tells the agent to carry on when a change does not need one. `enforce` stays opt-in. |
@@ -58,7 +59,7 @@ The current release is **SpecWeave 3.1.9**, published 24 October 2026. Install o
 
 ## SpecWithCode releases
 
-SpecWithCode, the desktop app, ships on its own schedule; every release is on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases). The current release is 1.0.76, published 24 October 2026. [Download SpecWithCode for Mac](/code/download/).
+SpecWithCode, the desktop app, ships on its own schedule, often several times a day. The newest build is always the Latest release on the [SpecWithCode releases page](https://github.com/anton-abyzov/specwithcode/releases), and the notes below cover releases up to 1.0.62. [Download SpecWithCode for Mac, Windows or Linux](/code/download/).
 
 ### 1.0.54 to 1.0.62, 19 to 20 October 2026
 
