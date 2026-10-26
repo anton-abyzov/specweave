@@ -1,6 +1,6 @@
 # DORA Metrics Report
 
-**Generated**: Oct 25, 2026 at 6:07:41 PM
+**Generated**: Oct 26, 2026 at 6:18:58 AM
 **Period**: Last 30 days
 
 ---
@@ -10,7 +10,7 @@
 | Metric | Value | Tier | Status |
 |--------|-------|------|--------|
 | **Deployment Frequency** | 100 deploys/month | 🏆 Elite | ✅ |
-| **Lead Time for Changes** | 6.2 hours | ⭐ High | ✅ |
+| **Lead Time for Changes** | 6.4 hours | ⭐ High | ✅ |
 | **Change Failure Rate** | 0% | 🏆 Elite | ✅ |
 | **Mean Time to Recovery** | 0 minutes | ⚪ N/A | ℹ️ |
 
@@ -37,8 +37,8 @@
 
 ## ⚡ Lead Time for Changes
 
-**Current**: 6.2 hours (⭐ High)
-**Percentiles**: P50 = 1.3h, P90 = 20.3h
+**Current**: 6.4 hours (⭐ High)
+**Percentiles**: P50 = 1.1h, P90 = 20.8h
 
 **Industry Benchmarks**:
 - 🏆 Elite: Less than 1 hour
@@ -49,7 +49,7 @@
 ### Insights
 
 - ✅ **Strong Performance**: Lead time under 1 week is competitive
-- 📊 **Distribution**: 50% of changes deploy in 1.3h, 90% in 20.3h
+- 📊 **Distribution**: 50% of changes deploy in 1.1h, 90% in 20.8h
 - 📈 **Next Level**: Focus on reducing p90 to reach elite tier
 - 💡 **Tip**: Identify bottlenecks in slowest 10% of deployments
 
@@ -58,7 +58,7 @@
 ## ✅ Change Failure Rate
 
 **Current**: 0% (🏆 Elite)
-**Failed Releases**: 0 / 34
+**Failed Releases**: 0 / 30
 
 **Industry Benchmarks**:
 - 🏆 Elite: 0-15%
@@ -94,7 +94,7 @@
 
 ## 📈 Recent Activity
 
-### Recent Releases (34 in last 30 days)
+### Recent Releases (30 in last 30 days)
 
 - **[v3.1.10](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.10)** - Oct 25, 2026
 - **[v3.1.9](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.9)** - Oct 24, 2026
@@ -102,7 +102,7 @@
 - **[v3.1.7](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.7)** - Oct 23, 2026
 - **[v3.1.6](https://github.com/anton-abyzov/specweave/releases/tag/v3.1.6)** - Oct 23, 2026
 
-_...and 29 more releases_
+_...and 25 more releases_
 
 ### Production Incidents
 
@@ -132,4 +132,4 @@ _...and 29 more releases_
 ---
 
 _This report was generated automatically by SpecWeave DORA Metrics Calculator_
-_Last updated: Oct 25, 2026_
+_Last updated: Oct 26, 2026_
