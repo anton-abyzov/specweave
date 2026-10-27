@@ -75,6 +75,10 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: '22'
+          cache: npm
 
-      - name: Validate every SKILL.md has a `version:` frontmatter
+      - name: Install dependencies (the validator parses YAML)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate every SKILL.md has a `metadata.version`
         run: node scripts/validation/validate-skill-versions.cjs

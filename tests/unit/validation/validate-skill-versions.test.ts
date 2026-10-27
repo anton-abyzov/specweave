@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
-const { versionProblem } = require('../../../scripts/validation/validate-skill-versions.cjs') as {
-  versionProblem: (content: string) => string | null;
-};
+import { versionProblem } from '../../../scripts/validation/validate-skill-versions.cjs';
 
 const skill = (frontmatter: string) => `---\n${frontmatter}\n---\n# body\n`;
 
