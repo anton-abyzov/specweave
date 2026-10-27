@@ -140,6 +140,13 @@ describe('AC acceptance in verify (1096 AC-03, AC-04)', () => {
     expect(ac4.acceptance).toBe('open');
   });
 
+  it('keeps a multi-line authorization on one verify.md bullet', async () => {
+    const incDir = mk([skip('AC-03', '2026-10-27T11:01:00Z', { authorization: 'line one\nline two' })]);
+    await runVerify(root, '0001-demo', incDir, { commands: [], reason: 'fixture' });
+    const md = fs.readFileSync(path.join(incDir, 'reports', 'verify.md'), 'utf-8');
+    expect(md).toContain('authorization: line one line two (recorded by');
+  });
+
   it('pickup --json carries the same acceptance per AC', () => {
     mk(LEDGER);
     const result = buildPickup(root, { incrementId: '0001-demo', agent: 'tester', checkpointHome: root });

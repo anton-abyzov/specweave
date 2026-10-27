@@ -25,6 +25,8 @@ import { loadTaskBoard } from '../tasks/task-board.js';
 import { hasTasksFile } from '../tasks/tasks-source.js';
 import { incrementsDir, listActiveIncrementIds, readLeaseHours } from '../tasks/resolve-increment.js';
 import { readSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
+import { acsLeftToClose } from '../tasks/accepted-skip.js';
+import type { TaskBoard } from '../tasks/task-board.js';
 import { scrubSecrets } from './handoff-secret-scrub.js';
 import { extractKeepBlocks } from './handoff-doc-format.js';
 import { readTitle, ageMs } from './pickup.js';
@@ -267,9 +269,10 @@ export async function buildHandoffIndex(root: string, opts: HandoffIndexOptions 
     let tasksDone = 0;
     let tasksTotal = 0;
     let acs = readSpecAcs(dir);
+    let board: TaskBoard | null = null;
     if (hasTasksFile(dir)) {
       try {
-        const board = loadTaskBoard(dir, { leaseHours });
+        board = loadTaskBoard(dir, { leaseHours });
         tasksDone = board.counts.done + board.counts.skipped;
         tasksTotal = board.counts.total;
         acs = deriveAcStatus(acs, board);
@@ -286,7 +289,8 @@ export async function buildHandoffIndex(root: string, opts: HandoffIndexOptions 
       status: readStatus(dir),
       tasksDone,
       tasksTotal,
-      openAcs: acs.filter((a) => !a.done).map((a) => a.id),
+      // A skipped-accepted AC (closed only by accepted skips) is not open.
+      openAcs: acsLeftToClose(acs, board).map((a) => a.id),
       totalAcs: acs.length,
       lastActivityAt: lastActivity(dir),
       waits: readWaits(dir).map(scrub),
