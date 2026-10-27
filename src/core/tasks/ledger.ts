@@ -382,7 +382,7 @@ export function foldLedger(events: LedgerEvent[], opts: FoldOptions = {}): Ledge
       const problem = acceptSkipProblem(ev);
       if (problem) { ignored.push({ event: ev, reason: problem }); continue; }
       const ac = ev.t.toUpperCase();
-      if (acceptedSkips.some((s) => s.ac === ac && s.check === ev.check)) {
+      if (acceptedSkips.some((s) => s.ac === ac && s.check.toLowerCase() === ev.check!.toLowerCase())) {
         ignored.push({ event: ev, reason: `${ac} check ${ev.check} already accepted` });
         continue;
       }

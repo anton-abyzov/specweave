@@ -56,6 +56,11 @@ export function acCloses(a: { done: boolean; acceptance?: AcAcceptance }): boole
   return a.done || a.acceptance === 'skipped-accepted';
 }
 
+/** ACs that still keep the increment from closing: neither met nor skipped-accepted. */
+export function acsLeftToClose(acs: AcEntry[], board: TaskBoard | null): AcAcceptanceEntry[] {
+  return deriveAcAcceptance(acs, board).filter((a) => !acCloses(a));
+}
+
 /** JSON shape of an AC for `task list --json` and `pickup --json`. */
 export function acJson(a: AcAcceptanceEntry) {
   return { id: a.id, text: a.text, done: a.done, via: a.via ?? 'none', acceptance: a.acceptance, tasks: a.tasks ?? [], waivers: a.waivers };

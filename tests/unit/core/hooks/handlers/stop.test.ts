@@ -111,6 +111,24 @@ describe('stop (auto loop driver)', () => {
     expect(res.reason).toContain('all_complete_needs_closure');
   });
 
+  it('a skipped-accepted AC is not work left; the loop reaches closure (1096)', async () => {
+    repo = mkRepo();
+    writeAutoMode(repo, { active: true, incrementIds: ['0003-accepted'] });
+    const dir = path.join(repo, '.specweave', 'increments', '0003-accepted');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'metadata.json'), JSON.stringify({ increment: '0003-accepted', status: 'active' }));
+    fs.writeFileSync(path.join(dir, 'spec.md'), [
+      '# Accepted', '', '## Acceptance Criteria', '- [ ] AC-01: prints', '- [ ] AC-02: needs a license', '',
+      '## Tasks', '', '### T-01 Print', '- AC: AC-01 | Files: a.js | Test: true', '',
+    ].join('\n'));
+    fs.writeFileSync(path.join(dir, 'ledger.jsonl'), [
+      '{"t":"T-01","e":"done","by":"a","at":"2026-10-27T10:00:00Z","evidence":"true"}',
+      '{"t":"AC-02","e":"accept-skip","by":"a","at":"2026-10-27T10:01:00Z","check":"lic","reason":"no license","acceptedBy":"anton","acceptedAt":"2026-10-27","authorization":"ok to skip"}', '',
+    ].join('\n'));
+    process.chdir(repo);
+    expect((await stop()).reason).toContain('all_complete_needs_closure');
+  });
+
   it('one-file increment: finished tasks meet their ACs and the loop reaches closure', async () => {
     // 3.0 never ticks AC boxes; the ledger decides. Before, the loop never saw
     // "all done" on a spec.md-only increment and ran into auto.maxTurns.
