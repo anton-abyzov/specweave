@@ -1,7 +1,8 @@
 ---
 description: Build the shared language - interview the user term by term and write GLOSSARY.md with what each term means in the business, the data, the code and the UI. Use for "glossary", "ubiquitous language".
 argument-hint: "[term...] [--check]"
-version: 1.0.0
+metadata:
+  version: "1.0.0"
 ---
 
 # sw-glossary: one word for one thing, everywhere

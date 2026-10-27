@@ -1,7 +1,8 @@
 ---
 description: Adversarial review of an increment before it ships, by a fresh context or another model family; every finding cites path:line and is re-verified. Use for "review", "qa", "critique this".
 argument-hint: "[increment-id] [--full]"
-version: 3.1.0
+metadata:
+  version: "3.1.0"
 ---
 
 # sw-review: adversarial review with citations

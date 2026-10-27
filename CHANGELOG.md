@@ -1,3 +1,10 @@
+## [Unreleased]
+
+### Changed
+
+- `sw-grill-me` is a core skill: it ships in the plugin (`/sw:grill-me` in Claude Code, `$sw:grill-me` in Codex) and in every project. An opt-in copy at an umbrella root never reached threads that start inside a child repository, because Claude Code and Codex stop looking for project skills at that repository's root. `specweave skills enable grill-me` now says it is core instead of failing; `planning.deepInterview: deep` still makes sw-increment run it.
+- Skill frontmatter follows the Agent Skills spec: the version moved to `metadata.version`, and every skill has `agents/openai.yaml` with a Codex display name ("SpecWeave Do"). sw-do and sw-handoff no longer list "continue" as a trigger.
+
 ## [3.1.13] - 2026-10-26
 
 ### Changed

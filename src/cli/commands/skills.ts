@@ -1,7 +1,7 @@
 /**
  * CLI: `specweave skills [list|enable|disable] [names...]` — which SpecWeave
- * skills this project has. Core skills are always on; optional ones (grill-me,
- * glossary, sync, project, jev) are turned on in `.specweave/config.json`
+ * skills this project has. Core skills are always on; optional ones
+ * (glossary, sync, project, jev) are turned on in `.specweave/config.json`
  * (`skills.enabled` / `skills.disabled`) or detected from the project's files.
  * `enable` and `disable` write the config and reinstall the project copies.
  *
@@ -89,11 +89,16 @@ export async function skillsCommand(
     return 1;
   }
   const optional = new Set(catalog.optional.map((s) => s.name));
-  for (const name of wanted) {
-    if (catalog.core.includes(name)) {
-      err(`sw-${name} is a core skill and is always installed.`);
-      return 1;
-    }
+  const core = wanted.filter((name) => catalog.core.includes(name));
+  if (verb === 'disable' && core.length) {
+    err(`sw-${core[0]} is a core skill and is always installed.`);
+    return 1;
+  }
+  // Enabling a core skill changes nothing; skills that became core (grill-me in
+  // 3.1.14) keep answering the old `enable` command instead of failing it.
+  for (const name of core) out(`sw-${name} is a core skill and is always installed.`);
+  const changed = wanted.filter((name) => !catalog.core.includes(name));
+  for (const name of changed) {
     if (!optional.has(name)) {
       err(`Unknown skill "${name}". Optional skills: ${[...optional].join(', ')}`);
       return 1;
@@ -112,7 +117,8 @@ export async function skillsCommand(
   const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string').map((x) => x.replace(/^sw-/, '')) : []);
   const enabled = new Set(list(skills.enabled));
   const disabled = new Set(list(skills.disabled));
-  for (const name of wanted) {
+  if (changed.length === 0) return 0;
+  for (const name of changed) {
     if (verb === 'enable') { enabled.add(name); disabled.delete(name); }
     else { disabled.add(name); enabled.delete(name); }
   }
@@ -130,7 +136,7 @@ export async function skillsCommand(
     out(JSON.stringify({ skills: states, written: result.written, removed: result.removedSkills, kept: result.keptSkills }, null, 2));
     return 0;
   }
-  for (const name of wanted) {
+  for (const name of changed) {
     const state = states.find((s) => s.name === name)!;
     out(`${state.on ? '●' : '○'} sw-${name}: ${describe(state)}`);
   }

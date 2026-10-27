@@ -73,7 +73,7 @@ A committed `.specweave/memory/` folder uses the same format as Claude Code proj
 
 The portable skills are the only source. The Claude Code plugin, the project copies in `.claude/skills/` and the Codex copies in `.agents/skills/` are generated from them. 3.0 shipped 11, after `qa` folded into `review` and `task` into `do`. Project skills are namespaced (`sw-do`, `sw-review` and so on), so they no longer collide with other skills.
 
-The set is now six core skills that every project gets (increment, do, auto, done, review, handoff) and five optional ones a project turns on with `specweave skills enable` or by detection (grill-me, glossary, sync, project, jev). `brainstorm` and `team` are retired. See the [skills reference](/docs/reference/skills).
+The set is now six core skills that every project gets (increment, do, auto, done, review, handoff) and five optional ones a project turns on with `specweave skills enable` or by detection (grill-me, glossary, sync, project, jev). `brainstorm` and `team` are retired. In 3.1.14 grill-me became a core skill, which makes seven core and four optional. See the [skills reference](/docs/reference/skills).
 
 ### A lighter `init`
 

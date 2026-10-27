@@ -96,7 +96,10 @@ export function lintSkill(dir) {
   if (content.startsWith('﻿')) add('starts with a UTF-8 BOM');
   if (content.includes('\r\n')) add('contains CRLF line endings');
   const lines = content.replace(/\r\n/g, '\n').split('\n');
-  if (lines.length > MAX_LINES) add(`${lines.length} lines (max ${MAX_LINES})`);
+  // The cap is on instructions: frontmatter metadata does not count against it.
+  const frontmatterLines = (content.replace(/\r\n/g, '\n').match(/^---\n[\s\S]*?\n---\n/)?.[0] ?? '').split('\n').length - 1;
+  const bodyLines = lines.length - frontmatterLines;
+  if (bodyLines > MAX_LINES) add(`${bodyLines} lines after the frontmatter (max ${MAX_LINES})`);
 
   const fm = parseFrontmatter(content);
   if (!fm) {
