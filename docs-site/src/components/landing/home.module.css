@@ -61,7 +61,7 @@
 .heroShot {
   min-width: 0;
   width: 100%;
-  max-width: 560px;
+  max-width: 640px;
   align-self: center;
   justify-self: start;
 }
@@ -342,13 +342,12 @@
   display: block;
 }
 
-/* "View full size" only where the capture is shrunk past legibility. */
+/* The capture is the whole app window, so it is always shrunk: keep the full-size link. */
 .home .fullSize {
-  display: none;
+  white-space: nowrap;
 }
 
-/* Phones: show the readable part of the capture (the reply and the two worker rows) at
-   a legible scale, and offer the whole image. */
+/* Phones: show the coordinator's report and the Threads pane at a legible scale. */
 @media (max-width: 600px) {
   .crop .cropFrame {
     overflow: hidden;
@@ -356,14 +355,10 @@
   }
 
   .crop .cropFrame img {
-    width: 160%;
+    width: 166%;
     max-width: none;
     height: auto;
-    margin-top: -24%;
-  }
-
-  .home .fullSize {
-    display: inline;
+    margin-left: -66%;
   }
 }
 
