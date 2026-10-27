@@ -48,8 +48,8 @@ specweave ac accept-skip AC-03 0042 --check <check-id> --reason "<why it cannot 
   --accepted-by <person> --authorization "<their words, or a message/thread ref>" [--accepted-at 2026-10-27]
 ```
 
-This appends one `accept-skip` line to `ledger.jsonl`; the ledger is append-only, so
-a pair already accepted is refused. Ordinary unavailability never authorizes it; only
+This records one `accept-skip` event in the increment's ledger, which is never rewritten,
+so an AC and check already accepted is refused. Ordinary unavailability never authorizes it; only
 the user's own words do. An accepted skip is never verification: it does not tick the
 AC or count toward met ACs, and other work on the AC stays as it was. `specweave ac
 list` and the `--json` of `task list`, `verify` and `pickup` show each AC's
