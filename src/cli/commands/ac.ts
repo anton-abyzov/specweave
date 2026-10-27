@@ -118,8 +118,9 @@ export async function acCommand(action: string, a?: string, b?: string, opts: Ac
 
   // Nothing to weigh the waiver against: no task cites the AC, so this one
   // check would close the whole AC (and a task citing it in a form the parser
-  // ignores would be hidden). Ask for an explicit confirmation.
-  const uncovered = !ac.done && !(ac.tasks ?? []).length;
+  // ignores would be hidden). Ask for an explicit confirmation, also when the
+  // AC is ticked today: un-ticking it later would leave the waiver alone.
+  const uncovered = !(ac.tasks ?? []).length;
   if (uncovered && !opts.uncovered) {
     err(`${ac.id} has no task citing it, so this accepted skip would close the whole AC, not just check ${check}. ` +
       `Check that no task cites ${ac.id} (\`specweave task list ${inc.id}\`), then re-run with --uncovered if every remaining check of ${ac.id} is skipped. Nothing written.`);

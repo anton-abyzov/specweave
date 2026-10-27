@@ -72,6 +72,21 @@ describe('specweave ac accept-skip (1096 AC-01)', () => {
     expect(ledgerLines()).toHaveLength(1);
   });
 
+  it('asks for --uncovered on a ticked AC no task cites, so re-opening it later cannot close it unconfirmed', async () => {
+    const spec = path.join(inc, 'spec.md');
+    fs.writeFileSync(spec, '# Demo\n\n## Acceptance Criteria\n- [x] AC-01: Ticked by hand\n');
+    expect(await acCommand('accept-skip', 'AC-01', '0001', { ...REQUIRED, uncovered: false, cwd: root })).toBe(1);
+    expect(errs.join('')).toContain('AC-01 has no task citing it');
+    expect(ledgerLines()).toHaveLength(0);
+
+    expect(await acCommand('accept-skip', 'AC-01', '0001', { ...REQUIRED, cwd: root })).toBe(0);
+    expect(errs.join('')).toContain('warning: AC-01 has no task citing it');
+    fs.writeFileSync(spec, '# Demo\n\n## Acceptance Criteria\n- [ ] AC-01: Ticked by hand\n');
+    out.length = 0;
+    expect(await acCommand('list', '0001', undefined, { cwd: root, json: true })).toBe(0);
+    expect(JSON.parse(out.join('')).criteria[0]).toMatchObject({ id: 'AC-01', acceptance: 'skipped-accepted', uncovered: true });
+  });
+
   it.each([
     ['check', 101],
     ['reason', 1001],
