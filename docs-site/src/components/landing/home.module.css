@@ -342,8 +342,13 @@
   display: block;
 }
 
-/* The capture is the whole app window, so it is always shrunk: keep the full-size link. */
+/* "View full size" only where the capture is shrunk past legibility. */
 .home .fullSize {
+  display: none;
+}
+
+/* The hero capture is the whole app window, so it is always shrunk: keep its link. */
+.home .heroFullSize {
   white-space: nowrap;
 }
 
@@ -359,6 +364,10 @@
     max-width: none;
     height: auto;
     margin-left: -20%;
+  }
+
+  .home .fullSize {
+    display: inline;
   }
 }
 

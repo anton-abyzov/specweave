@@ -114,9 +114,9 @@ export default function Home() {
         <figure className={clsx('wv-window', h.heroShot, h.crop)}>
           <div className="wv-window__bar"><span>SpecWithCode</span><span>trip-budget</span></div>
           <div className={h.cropFrame}>
-            <StudioWindowShot eager />
+            <StudioWindowShot eager linked />
           </div>
-          <figcaption>{STUDIO_WINDOW.caption} <StudioWindowFullSize className={clsx('wv-link', h.fullSize)} /></figcaption>
+          <figcaption>{STUDIO_WINDOW.caption} <StudioWindowFullSize className={clsx('wv-link', h.heroFullSize)} /></figcaption>
         </figure>
       </section>
 
