@@ -228,8 +228,13 @@ export function skillFolderOwner(
  * Core folders are SpecWeave's and always rewritten. An optional skill is written
  * only into an empty place or SpecWeave's unchanged copy, and an optional skill
  * that is off is removed only when its folder is SpecWeave's unchanged copy;
- * everything else is left alone and listed in `keptSkills`.
+ * everything else is left alone and listed in `keptSkills`. A core skill that
+ * used to be optional keeps that protection, so a copy someone edited or wrote
+ * while it was opt-in survives the promotion.
  */
+/** Core skills that were optional in an earlier release (grill-me became core in 3.1.14). */
+const PROMOTED_FROM_OPTIONAL = new Set(['grill-me']);
+
 export function installProjectSkills(
   projectRoot: string,
   options: InstallProjectSkillsOptions = {},
@@ -249,7 +254,7 @@ export function installProjectSkills(
     const files = shippedCopy(state.tier === 'core' ? sourceDir : optionalDir, name);
     for (const base of PROJECT_SKILL_DIRS) {
       const skillDir = path.posix.join(base, projectSkillName(name));
-      if (state.tier === 'optional' && !hasSymlinkSegment(root, base)) {
+      if ((state.tier === 'optional' || PROMOTED_FROM_OPTIONAL.has(name)) && !hasSymlinkSegment(root, base)) {
         const owner = skillFolderOwner(path.join(root, skillDir), name);
         if (owner === 'edited' || owner === 'foreign') {
           result.keptSkills.push(skillDir);
