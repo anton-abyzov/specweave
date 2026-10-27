@@ -100,7 +100,7 @@ export async function acCommand(action: string, a?: string, b?: string, opts: Ac
     return 1;
   }
   const check = opts.check!.trim();
-  const prior = ac.waivers.find((w) => w.check === check);
+  const prior = ac.waivers.find((w) => w.check.toLowerCase() === check.toLowerCase());
   if (prior) {
     err(`${ac.id} check ${check} is already accepted (by ${prior.acceptedBy} at ${prior.acceptedAt}). The ledger is append-only; nothing written.`);
     return 1;

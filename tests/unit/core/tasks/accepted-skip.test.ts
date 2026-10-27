@@ -48,6 +48,12 @@ describe('accept-skip ledger event (1096 AC-02)', () => {
     ]);
   });
 
+  it('treats check ids that differ only in case as the same check', () => {
+    const fold = foldLedger([skip('AC-03', '2026-10-27T11:00:00Z', { check: 'Foo' }), skip('ac-03', '2026-10-27T11:01:00Z', { check: 'foo' })]);
+    expect(fold.acceptedSkips.map((s) => s.check)).toEqual(['Foo']);
+    expect(fold.ignored[0].reason).toBe('AC-03 check foo already accepted');
+  });
+
   it('folds a ledger without accept-skip exactly as before', () => {
     const fold = foldLedger([{ t: 'T-01', e: 'skip', by: 'a', at: '2026-10-27T10:00:00Z', note: 'not needed' }]);
     expect(fold.acceptedSkips).toEqual([]);
@@ -122,6 +128,18 @@ describe('AC acceptance in verify (1096 AC-03, AC-04)', () => {
     expect(md).toContain(`- AC-03 check \`wonder-full-shown-when-entitled\` — ${WAIVER.reason}. Accepted by anton at 2026-10-27; authorization: ${WAIVER.authorization}`);
   });
 
+  it.each([
+    ['claimed', [{ t: 'T-02', e: 'claim', by: 'b', at: new Date().toISOString() }]],
+    ['blocked', [{ t: 'T-02', e: 'block', by: 'b', at: '2026-10-27T09:00:00Z', note: 'waiting' }]],
+    ['stale', [{ t: 'T-02', e: 'claim', by: 'b', at: '2026-10-01T09:00:00Z' }]],
+  ] as Array<[string, LedgerEvent[]]>)('keeps an AC open while a covering task is %s', async (status, extra) => {
+    const incDir = mk([...LEDGER, ...extra]);
+    const { report } = await runVerify(root, '0001-demo', incDir, { commands: [], reason: 'fixture' });
+    const ac4 = report.acs.items!.find((i) => i.id === 'AC-04')!;
+    expect(ac4.tasks).toEqual([{ id: 'T-02', status }]);
+    expect(ac4.acceptance).toBe('open');
+  });
+
   it('pickup --json carries the same acceptance per AC', () => {
     mk(LEDGER);
     const result = buildPickup(root, { incrementId: '0001-demo', agent: 'tester', checkpointHome: root });
@@ -130,6 +148,13 @@ describe('AC acceptance in verify (1096 AC-03, AC-04)', () => {
     expect(byId['AC-02'].acceptance).toBe('mixed');
     expect(result.text).toContain('ACs 2/5 met, 1 skipped (accepted)');
     expect(result.text).toContain('Accepted skip AC-03 wonder-full-shown-when-entitled');
+  });
+
+  it('leaves the compact SessionStart pickup without criteria', () => {
+    mk(LEDGER);
+    const compact = buildPickup(root, { incrementId: '0001-demo', compact: true, agent: 'tester', checkpointHome: root });
+    expect(compact.criteria).toBeUndefined();
+    expect(compact.text).not.toContain('Accepted skip');
   });
 });
 
