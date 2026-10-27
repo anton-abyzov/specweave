@@ -8,6 +8,7 @@ import base from './continuity.module.css';
 import h from '../components/landing/home.module.css';
 import HomeHandoff from '../components/landing/HomeHandoff';
 import InstallCommand from '../components/landing/InstallCommand';
+import StudioWindowShot, { STUDIO_WINDOW, StudioWindowFullSize } from '../components/ecosystem/StudioWindowShot';
 import { SPECWITHCODE_RELEASE as release } from '../data/specwithcodeRelease';
 
 /*
@@ -111,11 +112,11 @@ export default function Home() {
           <InstallCommand hint="The open-source CLI: MIT licensed, local first, no account." />
         </div>
         <figure className={clsx('wv-window', h.heroShot, h.crop)}>
-          <div className="wv-window__bar"><span>SpecWithCode</span><span>Coordinator</span></div>
-          <a className={h.cropFrame} href="/img/studio/flow-dispatch-20261015.webp" aria-label="Open the full-size screenshot of the coordinator starting two workers">
-            <img src="/img/studio/flow-dispatch-20261015.webp" width={1064} height={680} fetchPriority="high" alt="SpecWithCode coordinator starting two workers in parallel: Write tip.py CLI on Codex, with approval requested, and README usage for tip.py on Claude Code, working" />
-          </a>
-          <figcaption>One coordinator starts a Codex worker and a Claude Code worker. SpecWithCode 1.0.21, 15 October 2026. <a className={clsx('wv-link', h.fullSize)} href="/img/studio/flow-dispatch-20261015.webp">View full size</a></figcaption>
+          <div className="wv-window__bar"><span>SpecWithCode</span><span>trip-budget</span></div>
+          <div className={h.cropFrame}>
+            <StudioWindowShot eager linked />
+          </div>
+          <figcaption>{STUDIO_WINDOW.caption} <StudioWindowFullSize className={clsx('wv-link', h.heroFullSize)} /></figcaption>
         </figure>
       </section>
 
