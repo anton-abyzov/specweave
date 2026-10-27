@@ -157,6 +157,21 @@ describe('installProjectSkills', () => {
     expect(result.keptSkills.sort()).toEqual(['.agents/skills/sw-glossary', '.claude/skills/sw-project']);
   });
 
+  it('keeps an edited or hand-written sw-grill-me now that grill-me is core, and updates an unchanged one', () => {
+    installProjectSkills(root);
+    const claudeCopy = '.claude/skills/sw-grill-me';
+    fs.appendFileSync(path.join(root, claudeCopy, 'SKILL.md'), '\nmy rounds\n');
+    write(`${claudeCopy}/notes.md`, 'my notes');
+    write('.agents/skills/sw-grill-me/SKILL.md', '---\nname: sw-grill-me\ndescription: mine\n---\nmine\n');
+    const result = installProjectSkills(root);
+    expect(result.keptSkills.sort()).toEqual(['.agents/skills/sw-grill-me', claudeCopy]);
+    expect(fs.readFileSync(path.join(root, claudeCopy, 'SKILL.md'), 'utf-8')).toMatch(/my rounds\n$/);
+    expect(exists(`${claudeCopy}/notes.md`)).toBe(true);
+    expect(fs.readFileSync(path.join(root, '.agents/skills/sw-grill-me/SKILL.md'), 'utf-8')).toMatch(/^---\nname: sw-grill-me\ndescription: mine/);
+    fs.rmSync(path.join(root, claudeCopy), { recursive: true });
+    expect(installProjectSkills(root).written).toContain(`${claudeCopy}/SKILL.md`);
+  });
+
   it('treats an unmanifested folder as SpecWeave\'s only when every file is one 3.0.x installed', () => {
     write('.claude/skills/sw-sync/SKILL.md', 'old copy');
     const sha = (s: string) => createHash('sha256').update(s).digest('hex');
