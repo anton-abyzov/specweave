@@ -60,6 +60,9 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
     }
   } else {
     info.push(`verify ok (${verify.ranAt}; ${verify.commands.length} command(s); ACs ${verify.acs.done}/${verify.acs.total})`);
+    // Accepted skips close an AC without verifying it: name every one.
+    const accepted = (verify.acs.items ?? []).filter((a) => a.acceptance === 'skipped-accepted').map((a) => a.id);
+    if (accepted.length) info.push(`skipped (accepted), not verified: ${accepted.join(', ')} — see reports/verify.md`);
     // An `ok` report that still has open ACs can only come from a spec with no
     // AC lines at all, or a hand-edited verify.json. Say so out loud.
     const unchecked = describeUncheckedAcs(verify.acs);

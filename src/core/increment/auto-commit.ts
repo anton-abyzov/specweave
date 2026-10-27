@@ -60,8 +60,8 @@ export function readAutoCommitConfig(projectRoot: string): AutoCommitConfig {
 export interface AutoCommitRequest {
   /** Increment folder name; its number starts the subject. */
   incrementId: string;
-  /** claim, done, skip, block, release, create or handoff. */
-  action: 'claim' | 'done' | 'skip' | 'block' | 'release' | 'create' | 'handoff';
+  /** claim, done, skip, block, release, create, handoff or accept-skip. */
+  action: 'claim' | 'done' | 'skip' | 'block' | 'release' | 'create' | 'handoff' | 'accept-skip';
   /** Task ids the action recorded. */
   tasks?: string[];
   /** `--no-commit` passes false. */

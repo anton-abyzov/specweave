@@ -21,6 +21,7 @@ import { loadTaskBoard, nextTask, type TaskBoard } from '../tasks/task-board.js'
 import { hasTasksFile } from '../tasks/tasks-source.js';
 import { incrementsDir, listActiveIncrementIds, listStartableIncrementIds, readLeaseHours } from '../tasks/resolve-increment.js';
 import { readSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
+import { acCloses, acJson, deriveAcAcceptance } from '../tasks/accepted-skip.js';
 import { foldCards, readOriginUrl, renderChecklist } from '../tasks/cards.js';
 import { branchCards, branchCardsPath, currentBranch } from '../tasks/branch-cards.js';
 import { readIntentContext } from '../intent/portable-context.js';
@@ -53,6 +54,8 @@ export interface PickupResult {
   text: string;
   /** Increment the full form focused on, if any. */
   incrementId?: string;
+  /** The focused increment's ACs with `acceptance` and accepted-skip `waivers` (full form only). */
+  criteria?: Array<ReturnType<typeof acJson>>;
 }
 
 /** Build the pickup text. Returns empty text when there is nothing to say. */
@@ -65,6 +68,7 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
   const ids = opts.incrementId ? [opts.incrementId] : active.length ? active : listStartableIncrementIds(projectRoot);
   const focus = ids.length === 1 ? ids[0] : undefined;
   const L: string[] = [];
+  let criteria: PickupResult['criteria'];
 
   const intents = readIntentContext(projectRoot);
   if (intents) L.push(intents);
@@ -72,7 +76,9 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
   if (!opts.compact) L.push(`SpecWeave pickup · you are ${agent}`);
 
   if (focus && !opts.compact) {
-    L.push(...describeFocus(projectRoot, path.join(incRoot, focus), focus, agent, leaseHours));
+    const detail = describeFocus(projectRoot, path.join(incRoot, focus), focus, agent, leaseHours);
+    L.push(...detail.lines);
+    criteria = detail.criteria;
   } else {
     for (const id of ids.slice(0, MAX_INCREMENTS_LISTED)) L.push(summaryLine(path.join(incRoot, id), id, leaseHours));
     if (ids.length > MAX_INCREMENTS_LISTED) L.push(`(+${ids.length - MAX_INCREMENTS_LISTED} more active increments)`);
@@ -113,21 +119,22 @@ export function buildPickup(projectRoot: string, opts: PickupOptions = {}): Pick
   if (!opts.compact && ids.length === 0 && !intents) {
     L.push('No open increment. Start one with `specweave create-increment "<title>"`.');
   }
-  return { text: L.join('\n'), incrementId: focus };
+  return { text: L.join('\n'), incrementId: focus, ...(criteria ? { criteria } : {}) };
 }
 
 // ── Increment detail ───────────────────────────────────────────────────────
 
-function describeFocus(projectRoot: string, dir: string, id: string, agent: string, leaseHours: number): string[] {
+function describeFocus(projectRoot: string, dir: string, id: string, agent: string, leaseHours: number): { lines: string[]; criteria: PickupResult['criteria'] } {
   const L: string[] = [];
   const title = readTitle(dir);
   const status = readStatus(dir);
   const board = safeBoard(dir, leaseHours);
-  const acs = board ? deriveAcStatus(readSpecAcs(dir), board) : readSpecAcs(dir);
+  const acs = deriveAcAcceptance(board ? deriveAcStatus(readSpecAcs(dir), board) : readSpecAcs(dir), board);
   const metAcs = acs.filter((a) => a.done).length;
+  const acceptedAcs = acs.filter((a) => a.acceptance === 'skipped-accepted').length;
   const counts = board?.counts;
   const taskBit = counts ? ` · tasks ${counts.done + counts.skipped}/${counts.total} done` : '';
-  const acBit = acs.length ? ` · ACs ${metAcs}/${acs.length} met` : '';
+  const acBit = acs.length ? ` · ACs ${metAcs}/${acs.length} met${acceptedAcs ? `, ${acceptedAcs} skipped (accepted)` : ''}` : '';
   const header = `Increment ${id}${title ? ` "${title}"` : ''} (${status})${taskBit}${acBit}`;
 
   if (!board) L.push(header);
@@ -158,10 +165,13 @@ function describeFocus(projectRoot: string, dir: string, id: string, agent: stri
       }
     }
   }
-  const unmet = acs.filter((a) => !a.done);
+  const unmet = acs.filter((a) => !acCloses(a));
   if (!board && unmet.length) L.push(`Open ACs: ${unmet.map((a) => a.id).join(', ')}`);
+  for (const a of acs) {
+    for (const w of a.waivers) L.push(`Accepted skip ${a.id} ${w.check}: ${oneLine(w.reason, 120)} (by ${w.acceptedBy}, ${w.acceptedAt}; not verified)`);
+  }
   L.push(`Spec: ${rel(projectRoot, path.join(dir, 'spec.md'))}`);
-  return L;
+  return { lines: L, criteria: acs.map(acJson) };
 }
 
 function summaryLine(dir: string, id: string, leaseHours: number): string {

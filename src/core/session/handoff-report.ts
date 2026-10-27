@@ -140,6 +140,7 @@ function label(e: LedgerEvent): string {
     case 'handoff': return 'handed off';
     case 'pickup': return 'picked up';
     case 'wait': return 'waits on';
+    case 'accept-skip': return 'recorded an accepted skip';
   }
 }
 

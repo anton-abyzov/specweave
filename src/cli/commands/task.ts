@@ -46,7 +46,8 @@ import {
   type BoardTask,
 } from '../../core/tasks/task-board.js';
 import { resolveIncrement, readLeaseHours, ensureIncrementStarted, IncrementResolutionError } from '../../core/tasks/resolve-increment.js';
-import { readSpecAcs, type AcEntry } from '../../core/tasks/verify-runner.js';
+import { readSpecAcs, deriveAcStatus, type AcEntry } from '../../core/tasks/verify-runner.js';
+import { acJson, deriveAcAcceptance } from '../../core/tasks/accepted-skip.js';
 import { tasksFileName } from '../../core/tasks/tasks-source.js';
 import { autoCommitIncrement, describeAutoCommit, isAutoCommitSubject, type AutoCommitRequest, type AutoCommitResult } from '../../core/increment/auto-commit.js';
 
@@ -160,6 +161,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       out(JSON.stringify({
         increment: inc.id, agent, counts: board.counts, malformed: board.fold.malformed,
         tasks: board.tasks.map((t) => ({ id: t.id, title: t.title, status: t.state.status, by: t.state.by, since: t.state.since, evidence: t.state.evidence, note: t.state.note, files: t.filesAffected ?? [], test: t.test, acs: t.acs ?? [] })),
+        criteria: deriveAcAcceptance(deriveAcStatus(acsOf(), board), board).map(acJson),
       }, null, 2));
     } else {
       out(`${inc.id} — agent ${agent}`);
