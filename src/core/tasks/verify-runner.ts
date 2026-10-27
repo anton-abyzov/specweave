@@ -278,8 +278,9 @@ export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResul
   if (report.acceptedSkips?.length) {
     L.push('### Accepted skips (not verified)');
     L.push('');
+    const flat = (v: string) => v.replace(/\s+/g, ' ').trim();
     for (const s of report.acceptedSkips) {
-      L.push(`- ${s.ac} check \`${s.check}\` — ${s.reason}. Accepted by ${s.acceptedBy} at ${s.acceptedAt}; authorization: ${s.authorization} (recorded by ${s.by} at ${s.at})`);
+      L.push(`- ${s.ac} check \`${flat(s.check)}\` — ${flat(s.reason)}. Accepted by ${flat(s.acceptedBy)} at ${s.acceptedAt}; authorization: ${flat(s.authorization)} (recorded by ${s.by} at ${s.at})`);
     }
     L.push('');
   }
