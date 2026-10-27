@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall pause start resume reopen abandon complete task card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact require-increment small-fix jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
+set -l commands init uninstall pause start resume reopen abandon complete task ac card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact require-increment small-fix jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -18,6 +18,7 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a reopen -
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a abandon -d "Abandon an increment"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a complete -d "Complete one or more increments (triggers GitHub/JIRA/ADO sync)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a task -d "Task ledger: list | next | claim | done | release | block | skip | render | whoami"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a ac -d "Acceptance criteria: accept-skip <AC-id> [inc] (a person accepted skipping one named check; never verification) | list [inc]"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a card -d "Cards: add \"<text>\" | start <id> | done <id> | wait <id> | list. T-NN ids alias `task`; C-NN cards live in .specweave/cards/<branch>.jsonl"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a cards -d "Print the card checklist: a header, a blank line, then one ✓ / ✱ / ○ line per card with its link"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -d ""
@@ -124,6 +125,16 @@ complete -c specweave -n "__fish_seen_subcommand_from task" -l link -d "Card lin
 complete -c specweave -n "__fish_seen_subcommand_from task" -l no-commit -d "Skip the git.autoCommitIncrement commit of the increment files"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l json -d "Machine-readable output"
 complete -c specweave -n "__fish_seen_subcommand_from task" -l workspace -d "Select the planning workspace explicitly"
+
+# ac
+complete -c specweave -n "__fish_seen_subcommand_from ac" -l check -d "With accept-skip: the named check of the AC that is skipped (required)"
+complete -c specweave -n "__fish_seen_subcommand_from ac" -l reason -d "With accept-skip: why the check cannot be run, e.g. no license (required)"
+complete -c specweave -n "__fish_seen_subcommand_from ac" -l accepted-by -d "With accept-skip: the person who accepted the skip (required)"
+complete -c specweave -n "__fish_seen_subcommand_from ac" -l authorization -d "With accept-skip: their words, quoted, or a message/thread reference (required)"
+complete -c specweave -n "__fish_seen_subcommand_from ac" -l accepted-at -d "With accept-skip: when they accepted it, ISO-8601 (default: now)"
+complete -c specweave -n "__fish_seen_subcommand_from ac" -l no-commit -d "Skip the git.autoCommitIncrement commit of the increment files"
+complete -c specweave -n "__fish_seen_subcommand_from ac" -l json -d "Machine-readable output"
+complete -c specweave -n "__fish_seen_subcommand_from ac" -l workspace -d "Select the planning workspace explicitly"
 
 # card
 complete -c specweave -n "__fish_seen_subcommand_from card" -l line -d "Card text (max 100 chars)"

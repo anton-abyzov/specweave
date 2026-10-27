@@ -39,6 +39,26 @@ Closing is verify, review, complete. The one hard gate is a passing
 Report in one paragraph: verify result, review verdict (or "skipped"), commits,
 anything deferred.
 
+## Accepted skips
+
+When a check of an AC cannot be run because the user lacks an installation or a
+license, and the user explicitly accepts skipping that named check, record it:
+
+```bash
+specweave ac accept-skip AC-03 0042 --check <check-id> --reason "<why it cannot run>" \
+  --accepted-by <person> --authorization "<their words, or a message/thread ref>" [--accepted-at 2026-10-27]
+```
+
+This appends one `accept-skip` line to `ledger.jsonl`; the ledger is append-only, so
+a pair already accepted is refused. Ordinary unavailability never authorizes it; only
+the user's own words do. An accepted skip is never verification: it does not tick the
+AC or count toward met ACs, and other work on the AC stays as it was. `specweave ac
+list` and the `--json` of `task list`, `verify` and `pickup` show each AC's
+`acceptance`: `met`, `mixed` (met by its tasks or checkbox, plus an accepted skip),
+`skipped-accepted` (not met, no task citing it is unresolved, at least one accepted
+skip) or `open`. A skipped-accepted AC lets `specweave complete` pass; `verify.md`,
+`verify.json` (`acceptedSkips`, `acs.skippedAccepted`) and the closure output name it.
+
 ## Manual path (no CLI)
 
 Check every task in spec.md has a `done` or `skip` line in `ledger.jsonl`. Run the
