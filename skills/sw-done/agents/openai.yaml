@@ -1,0 +1,3 @@
+interface:
+  display_name: "SpecWeave Done"
+  short_description: "Verify, review and close an increment"

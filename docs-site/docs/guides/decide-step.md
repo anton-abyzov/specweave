@@ -45,7 +45,7 @@ A clear request asks nothing. "Fix the typo in the README" goes straight to the 
 | Value | Behaviour |
 |---|---|
 | `"critical"` (default) | As above: at most five questions. |
-| `"deep"` | Runs the full [grill-me](/docs/guides/grill-and-glossary) interview, in rounds, with no cap. Also installs that skill. |
+| `"deep"` | Runs the full [grill-me](/docs/guides/grill-and-glossary) interview for every new increment, in rounds, with no cap. grill-me is a core skill, so nothing needs installing. |
 | `"off"` | States the defaults and asks nothing. |
 
 A 2.x project with `"warn"` reads as `"critical"`. The step never blocks: with `"off"`, or when you answer "your call", the agent proceeds on its stated defaults.

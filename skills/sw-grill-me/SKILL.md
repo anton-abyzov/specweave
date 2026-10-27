@@ -1,7 +1,8 @@
 ---
 description: Interview the user relentlessly, in rounds, until every decision in a plan is settled; facts are your job, decisions are theirs. Use for "grill me", "interview me", "stress-test this plan".
 argument-hint: "[topic or increment-id]"
-version: 1.0.0
+metadata:
+  version: "1.0.0"
 ---
 
 # sw-grill-me: settle every decision before building
@@ -85,9 +86,9 @@ while `### Open` has entries.
 
 ## Configuration
 
-`specweave skills enable grill-me` installs this skill; `planning.deepInterview: deep`
-in `.specweave/config.json` installs it too and makes sw-increment run it for every
-new increment. `critical` (the default) keeps sw-increment to at most 5 questions.
+Every project has this skill. `planning.deepInterview: deep` in `.specweave/config.json`
+makes sw-increment run it for every new increment; `critical` (the default) keeps
+sw-increment to at most 5 questions.
 
 ## Manual path (no CLI)
 

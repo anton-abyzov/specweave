@@ -114,6 +114,7 @@ const limitModes: Array<{ mode: string; what: string; when: string }> = [
 
 const coreSkills: Array<[string, string]> = [
   ['sw-increment', 'Plans the increment as one spec.md and asks the critical decisions first.'],
+  ['sw-grill-me', 'Interviews you in rounds until every decision in a plan is settled. With planning.deepInterview set to deep, every new increment runs it.'],
   ['sw-do', 'Works the increment task by task: claim, implement inside its files, test, commit, done with evidence. Alone, unattended or in parallel lanes.'],
   ['sw-auto', 'Runs an increment unattended until every task is done, then verifies and closes it.'],
   ['sw-review', 'An adversarial review by a fresh context or another model family. Every finding cites a file and line.'],
@@ -122,7 +123,6 @@ const coreSkills: Array<[string, string]> = [
 ];
 
 const optionalSkills: Array<[string, React.ReactNode]> = [
-  ['sw-grill-me', <>Interviews you in rounds until every decision in a plan is settled. On with <code>planning.deepInterview: deep</code>.</>],
   ['sw-glossary', <>Builds <code>GLOSSARY.md</code>, the project's shared words. <code>specweave glossary check --strict</code> fails CI on drift.</>],
   ['sw-sync', <>Pushes increments to GitHub, Jira or Azure DevOps. On when the project has a tracker.</>],
   ['sw-project', <>Reads and updates the project hub. On when <code>.specweave/project/hub.json</code> exists.</>],
@@ -245,7 +245,7 @@ export default function Product() {
 
       <section className={`${styles.section} ${s.ruled}`} id="skills">
         <div className={styles.sectionHeading}>
-          <h2>Six skills by default, five when you need them</h2>
+          <h2>Seven skills by default, four when you need them</h2>
           <p>Skills are short instructions your agent loads on demand. Since {CLI_VERSION}, the optional ones turn on when your project calls for them. <code className={s.inlineCode}>specweave skills list</code> shows why each is on, and <code className={s.inlineCode}>enable</code> or <code className={s.inlineCode}>disable</code> changes it.</p>
         </div>
         <div className={s.skillCols}>

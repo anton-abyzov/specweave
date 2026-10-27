@@ -27,7 +27,7 @@ This page describes BMAD as [its repository and docs](https://github.com/bmad-co
 
 ## Where BMAD is strong
 
-- **Planning a new product.** When the hard part is deciding what to build, BMAD's analyst, PM, UX and architect workflows push you through research, requirements, user experience and architecture before any code. SpecWeave's optional `grill-me` interview settles the open decisions, but BMAD goes much deeper.
+- **Planning a new product.** When the hard part is deciding what to build, BMAD's analyst, PM, UX and architect workflows push you through research, requirements, user experience and architecture before any code. SpecWeave's `grill-me` interview settles the open decisions, but BMAD goes much deeper.
 - **Separate documents for separate roles.** A PRD, an architecture document and a UX spec are easy to review on their own and to hand to people who don't read code.
 - **Scale tracks.** A bug fix can take the Quick Flow and skip the PRD, so the ceremony grows with the project.
 

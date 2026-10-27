@@ -1,6 +1,6 @@
 {
   "name": "sw",
-  "description": "Portable intent and verified progress across coding tools. Six core workflow skills plus opt-in grill-me, glossary, sync, project and jev, two default lifecycle hooks, and a deterministic CLI and live local dashboard.",
+  "description": "Portable intent and verified progress across coding tools. Seven core workflow skills (grill-me among them) plus opt-in glossary, sync, project and jev, two default lifecycle hooks, and a deterministic CLI and live local dashboard.",
   "version": "3.1.13",
   "author": {
     "name": "SpecWeave Team",

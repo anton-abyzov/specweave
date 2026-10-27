@@ -51,14 +51,14 @@ function scratchCheckout(): string {
 }
 
 describe('generate-skills', () => {
-  it('ships 6 core skills in the plugin and 5 opt-in skills beside it', async () => {
+  it('ships 7 core skills in the plugin and 4 opt-in skills beside it', async () => {
     const { SKILL_NAMES } = await load();
     expect([...SKILL_NAMES].sort()).toEqual(
       ['auto', 'do', 'done', 'glossary', 'grill-me', 'handoff', 'increment', 'jev', 'project', 'review', 'sync'],
     );
     const dirs = (sub: string) => fs.readdirSync(path.join(REPO_ROOT, 'plugins', 'specweave', sub)).sort();
-    expect(dirs('skills')).toEqual(['auto', 'do', 'done', 'handoff', 'increment', 'review']);
-    expect(dirs('skills-optional')).toEqual(['glossary', 'grill-me', 'jev', 'project', 'sync']);
+    expect(dirs('skills')).toEqual(['auto', 'do', 'done', 'grill-me', 'handoff', 'increment', 'review']);
+    expect(dirs('skills-optional')).toEqual(['glossary', 'jev', 'project', 'sync']);
     const catalog = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'plugins', 'specweave', 'skills-catalog.json'), 'utf-8'));
     expect(catalog).toEqual(JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'skills', 'catalog.json'), 'utf-8')));
   });

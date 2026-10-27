@@ -92,7 +92,7 @@ A commit that cannot happen (a hook fails, `index.lock` exists, HEAD is detached
 
 | Field | Default | Notes |
 |-------|---------|-------|
-| `deepInterview` | `"critical"` | Depth of sw-increment's Decide step before spec.md is written. `"critical"` asks at most 5 decisions, each with a recommended answer. `"deep"` runs the sw-grill-me interview in rounds with no cap, and installs that skill. `"off"` asks nothing. Answers and defaults go under `## Decisions` in spec.md. It never blocks. A 2.x `"warn"` reads as `"critical"`. |
+| `deepInterview` | `"critical"` | Depth of sw-increment's Decide step before spec.md is written. `"critical"` asks at most 5 decisions, each with a recommended answer. `"deep"` runs the sw-grill-me interview for every new increment, in rounds with no cap (sw-grill-me is a core skill, always installed). `"off"` asks nothing. Answers and defaults go under `## Decisions` in spec.md. It never blocks. A 2.x `"warn"` reads as `"critical"`. |
 
 ### `auto`
 
@@ -178,18 +178,18 @@ Jev (System One) is off until `specweave jev setup` writes `"enabled": true` aft
 
 ### `skills`
 
-Which optional skills the project installs. The six core skills (increment, do, auto, done, review, handoff) are always installed and cannot be disabled. `specweave skills enable` and `disable` write these lists for you.
+Which optional skills the project installs. The seven core skills (increment, grill-me, do, auto, done, review, handoff) are always installed and cannot be disabled. `specweave skills enable` and `disable` write these lists for you.
 
 ```json
-{ "skills": { "enabled": ["grill-me", "glossary"], "disabled": ["sync"] } }
+{ "skills": { "enabled": ["glossary"], "disabled": ["sync"] } }
 ```
 
 | Field | Notes |
 |-------|-------|
-| `enabled` | Optional skills to install even when nothing detects them: `grill-me`, `glossary`, `sync`, `project`, `jev`. |
+| `enabled` | Optional skills to install even when nothing detects them: `glossary`, `sync`, `project`, `jev`. A `grill-me` left here from an older version does nothing. |
 | `disabled` | Optional skills to leave out even when detected. |
 
-An optional skill that neither list names is on when the project detects it: `planning.deepInterview: "deep"` (grill-me), a `GLOSSARY.md` or `GLOSSARY-MAP.md` at the root (glossary), a configured tracker (sync), `.specweave/project/hub.json` (project) and `jev.enabled` (jev). `specweave update` removes SpecWeave's copy of an optional skill that is off. See the [skills reference](/docs/reference/skills#optional-skills).
+An optional skill that neither list names is on when the project detects it: a `GLOSSARY.md` or `GLOSSARY-MAP.md` at the root (glossary), a configured tracker (sync), `.specweave/project/hub.json` (project) and `jev.enabled` (jev). `specweave update` removes SpecWeave's copy of an optional skill that is off. See the [skills reference](/docs/reference/skills#optional-skills).
 
 ### `review`
 

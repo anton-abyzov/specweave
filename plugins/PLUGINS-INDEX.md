@@ -1,6 +1,6 @@
 # SpecWeave plugins index
 
-**Plugins**: 1 (`sw`) · **Skills**: 6 core + 5 optional · **Commands**: 0 · **Hooks**: 2 default
+**Plugins**: 1 (`sw`) · **Skills**: 7 core + 4 optional · **Commands**: 0 · **Hooks**: 2 default
 
 The 1.x `commands/` namespace is gone: anything deterministic is a `specweave`
 CLI subcommand, and the model-judgement procedures are the skills below.
@@ -21,7 +21,7 @@ CLI subcommand, and the model-judgement procedures are the skills below.
 | "Hand off" / "pick up" / "out of tokens" | `sw:handoff` |
 | "Push to GitHub" / "import issues" (optional) | `sw:sync` |
 | "Run until done" | `sw:auto` |
-| "Grill me" / "interview me" (optional) | `sw:grill-me` |
+| "Grill me" / "interview me" | `sw:grill-me` |
 | "Glossary" / "what does Order mean here" (optional) | `sw:glossary` |
 | "Project brief" / "what is this project about" (optional) | `sw:project` |
 | "Jev" / "system one" / a decision whose answers can all be enumerated first (optional) | `sw:jev` |
@@ -37,7 +37,7 @@ project's `.claude/settings.json`. `--no-guard-bash` removes all three.
 
 ## Optional skills
 
-`grill-me`, `glossary`, `sync`, `project` and `jev` ship in
+`glossary`, `sync`, `project` and `jev` ship in
 `plugins/specweave/skills-optional/` and install per project when enabled or detected:
 `specweave skills` lists them, `specweave skills enable <name>` turns one on.
 

@@ -1,7 +1,8 @@
 ---
-description: Hand work to another tool, account or machine and pick it up there, in two words. Use when the user says "hand off", "hand off all", "out of tokens", "switching accounts", "pick up" or "continue".
+description: Hand work to another tool, account or machine and pick it up there, in two words. Use when the user says "hand off", "hand off all", "out of tokens", "switching accounts" or "pick up".
 argument-hint: "[--reason \"...\"] [--next \"...\"]"
-version: 3.0.0
+metadata:
+  version: "3.0.0"
 ---
 <!-- Generated from skills/sw-handoff/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 

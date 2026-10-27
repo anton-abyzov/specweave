@@ -1,5 +1,5 @@
 interface:
-  display_name: "SpecWeave auto"
+  display_name: "SpecWeave Auto"
   short_description: "Run an increment unattended until done"
 policy:
   allow_implicit_invocation: false

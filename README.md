@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/specweave"><img src="https://img.shields.io/npm/v/specweave?color=brightgreen" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/skills-6%20core%20%2B%205%20optional-8B5CF6" alt="6 core + 5 optional skills" />
+  <img src="https://img.shields.io/badge/skills-7%20core%20%2B%204%20optional-8B5CF6" alt="7 core + 4 optional skills" />
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT" /></a>
   <a href="https://discord.gg/UYg4BGJ65V"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
 </p>
@@ -80,33 +80,33 @@ Set `"git": { "autoCommitIncrement": true }` in `.specweave/config.json` and `ta
 
 Project memory in claude.ai stays with one account. `.specweave/memory/` travels with the code, so Codex, Grok and a second Claude subscription start from the same decisions.
 
-## Six core skills, five optional
+## Seven core skills, four optional
 
-The CLI is the product and runs in any tool or in CI. The skills expose it to coding agents: `/sw:<name>` in Claude Code, `sw-<name>` in `.claude/skills/` (for Projects threads, where plugins do not load) and `.agents/skills/` (Codex, Grok).
+The CLI is the product and runs in any tool or in CI. The skills expose it to coding agents: the plugin answers to `/sw:<name>` in Claude Code and `$sw:<name>` in Codex, and project copies named `sw-<name>` live in `.claude/skills/` (for Projects threads, where plugins do not load) and `.agents/skills/` (Codex, Grok). [Run a skill](https://spec-weave.com/docs/reference/skills#run-a-skill) lists the syntax for each tool.
 
 Core, in every project:
 
 | Skill | Use it for |
 |-------|------------|
 | `increment` | Settle your decisions, then plan the work as one `spec.md`. |
+| `grill-me` | An interview in rounds, each question with a recommended answer, recorded under `## Decisions` (after Matt Pocock's grilling). |
 | `do` | Claim a task, implement it, close it with evidence; also unattended, or in parallel lanes. |
 | `auto` | The unattended run of `do`, started by you, until the tasks run out. |
 | `review` | Adversarial review by a fresh context or another model family; findings cite `path:line`. |
 | `done` | Verify, review, `specweave complete`. |
 | `handoff` | "Hand off" and "pick up". |
 
-Optional, installed per project when enabled or detected (in Claude Code they are `/sw-grill-me` and so on):
+Optional, installed per project when enabled or detected (in Claude Code they are `/sw-glossary` and so on):
 
 | Skill | Use it for | Detected by |
 |-------|------------|-------------|
-| `grill-me` | An interview in rounds, each question with a recommended answer, recorded under `## Decisions` (after Matt Pocock's grilling). | `planning.deepInterview: deep` |
 | `glossary` | `GLOSSARY.md`: each domain term across business, data, code and UI, with words to avoid. | a `GLOSSARY.md` or `GLOSSARY-MAP.md` |
 | `sync` | GitHub, Jira and Azure DevOps, only when you run it. | a configured tracker |
 | `project` | Shared goals, artifacts and briefs across tools. | `.specweave/project/hub.json` |
 | `jev` | Closed-set decisions in about 250 ms via Jev. | `jev.enabled` |
 
 ```bash
-specweave skills enable grill-me glossary   # turn optional skills on (list, disable)
+specweave skills enable glossary            # turn optional skills on (list, disable)
 specweave glossary check --strict           # avoided words and stale names; exit 1 for CI
 specweave review                            # another model family reviews the diff; exit 0 ship, 3 fix first
 ```
@@ -181,7 +181,7 @@ Cursor tells AI "use Tailwind." SpecWeave tells AI "build a checkout flow agains
 
 **LSP Code Intelligence** — 198x faster than grep, 0 false positives. Semantic references, definitions, and types.
 
-**6 core skills, 5 optional, one source** — the same skills for Claude Code, Codex and Grok; see [Six core skills, five optional](#six-core-skills-five-optional).
+**7 core skills, 4 optional, one source** — the same skills for Claude Code, Codex and Grok; see [Seven core skills, four optional](#seven-core-skills-four-optional).
 
 **Built for teams of 2–10 people** — Compliance audit trails. Brownfield analysis. Multi-repo workspaces.
 

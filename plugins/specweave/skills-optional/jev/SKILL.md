@@ -1,7 +1,8 @@
 ---
 description: Use Jev or optional OpenAI Decisions for bounded routing, shell-command risk, text screening and failure triage. Use for "jev", "system one", or "classify this".
 argument-hint: "[doctor|setup|ask|route|task|guard|screen|failure|browse|usage]"
-version: 3.0.1
+metadata:
+  version: "3.0.1"
 ---
 <!-- Generated from skills/sw-jev/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
