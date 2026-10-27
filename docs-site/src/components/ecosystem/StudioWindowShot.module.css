@@ -1,0 +1,14 @@
+.shot {
+  display: block;
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+html[data-theme='dark'] .light,
+html:not([data-theme='dark']) .dark {
+  display: none !important;
+}
