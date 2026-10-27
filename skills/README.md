@@ -17,7 +17,17 @@ removes. Everything else is generated from this folder, so edit only here:
   skills the project enabled or detects, into `.claude/skills/sw-<name>/` (Claude Code,
   including cloud sessions where plugins do not load) and `.agents/skills/sw-<name>/`
   (Codex, Grok and others). `specweave skills` lists them; `specweave skills enable
-  grill-me glossary` turns optional ones on.
+  glossary` turns an optional one on.
+
+Run one by its id; the display name is only a label:
+
+| Where | Plugin skill | Project copy |
+|---|---|---|
+| Claude Code | `/sw:do 0042` | `/sw-do 0042` |
+| Codex | `$sw:do 0042` (a typed `/sw:do` is plain text there) | `$sw-do 0042` |
+| SpecWithCode | pick it from `/` or `$`, or type `$sw:do 0042` | `$sw-do 0042` |
+| Cursor, GitHub Copilot | none | `/sw-do` |
+| Gemini CLI, OpenCode | none | the model picks it from the description |
 
 Install one into any other tool with [vskill](https://verified-skill.com):
 
@@ -40,6 +50,7 @@ Core:
 | Skill | Use it when |
 |---|---|
 | [sw-increment](sw-increment/SKILL.md) | planning work: settle the decisions, then one spec.md with ACs and tasks |
+| [sw-grill-me](sw-grill-me/SKILL.md) | being interviewed in rounds until every decision is settled |
 | [sw-do](sw-do/SKILL.md) | implementing task by task through the ledger, alone, unattended or in parallel lanes |
 | [sw-auto](sw-auto/SKILL.md) | the user types it to run an increment unattended (it points at sw-do) |
 | [sw-review](sw-review/SKILL.md) | adversarial review before shipping, by a fresh context or another model |
@@ -50,7 +61,6 @@ Optional (on when enabled in `.specweave/config.json`, or detected):
 
 | Skill | Use it when | Detected by |
 |---|---|---|
-| [sw-grill-me](sw-grill-me/SKILL.md) | being interviewed in rounds until every decision is settled | `planning.deepInterview: deep` |
 | [sw-glossary](sw-glossary/SKILL.md) | building GLOSSARY.md: each term across business, data, code and UI | `GLOSSARY.md` at the root |
 | [sw-sync](sw-sync/SKILL.md) | GitHub, Jira or Azure DevOps | a configured tracker |
 | [sw-project](sw-project/SKILL.md) | shared goal, memory, work items and briefs | `.specweave/project/hub.json` |
@@ -61,8 +71,15 @@ sw-done. sw-handoff whenever you stop.
 
 ## Rules for editing
 
-- No `name:` in the frontmatter (the folder name is the skill name; installers add it).
-  `description` (at most 200 characters), `argument-hint` and `version` are required.
+- Frontmatter follows the [Agent Skills spec](https://agentskills.io/specification):
+  no `name:` (the folder name is the skill name; installers write `name: sw-<name>`
+  into project copies, and plugin hosts namespace the folder as `sw:<name>`),
+  `description` (at most 200 characters, the key use first) and `metadata.version`.
+  `argument-hint` and `disable-model-invocation` are the only extensions (Claude Code;
+  Copilot and Cursor read the second); strict validators such as `agentskills
+  validate` reject them, and every runtime that loads these skills accepts them.
+- `agents/openai.yaml` gives Codex a display name ("SpecWeave Do") and, for a skill
+  only the user starts, `policy.allow_implicit_invocation: false`.
 - Tool-neutral: no tool calls of one vendor. A feature only some tools have is written
   as "if your tool supports subagents, ...". `disable-model-invocation: true` (ignored
   by tools that do not know it) marks a skill only the user starts.

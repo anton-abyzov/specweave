@@ -1,7 +1,8 @@
 ---
 description: Close a SpecWeave increment - every task done or skipped, specweave verify green, a fresh-context review, then specweave complete. Use for "close it", "we are done", "finish up".
 argument-hint: "[increment-id] [--reason \"...\"]"
-version: 3.1.0
+metadata:
+  version: "3.1.0"
 ---
 <!-- Generated from skills/sw-done/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 

@@ -12,21 +12,22 @@ SpecWeave does not depend on Claude Code. Everything that matters is a file in g
 
 | Tool | Instructions | Skills |
 |---|---|---|
-| Claude Code, including Projects threads | `CLAUDE.md`, which imports `AGENTS.md` | the `sw` plugin (`/sw:do`), or `.claude/skills/sw-*` |
-| Codex (CLI, app and cloud) | `AGENTS.md` | `.agents/skills/sw-*`, invoked as `$sw-do` |
+| Claude Code, including Projects threads | `CLAUDE.md`, which imports `AGENTS.md` | the `sw` plugin (`/sw:do`), or `.claude/skills/sw-*` (`/sw-do`) |
+| Codex (CLI, app and cloud) | `AGENTS.md` | the `sw` plugin (`$sw:do`), or `.agents/skills/sw-*` (`$sw-do`) |
 | Grok Build | `AGENTS.md` and `CLAUDE.md` | `.grok/skills/`, `.agents/skills/` and Claude Code skills |
-| Cursor, GitHub Copilot, Gemini CLI, OpenCode | `AGENTS.md` | their own skill folders, or the CLI directly |
+| Cursor, GitHub Copilot | `AGENTS.md` | `.agents/skills/sw-*` or `.claude/skills/sw-*`, invoked as `/sw-do` |
+| Gemini CLI, OpenCode | `AGENTS.md` | their own skill folders; the model picks a skill from its description, or use the CLI directly |
 
 `AGENTS.md` is the single, short instruction file. It tells every agent to start with `specweave pickup` and describes the loop below, so a tool that reads nothing else still knows what to do.
 
-`specweave init` writes `AGENTS.md` and `CLAUDE.md` and installs the six core skills, plus any optional ones the project turns on (`specweave skills`), twice: as `.claude/skills/sw-<name>/` for Claude Code and `.agents/skills/sw-<name>/` for Codex and other tools that read that folder, so switching tools needs no reinstall. For a tool that looks elsewhere, install the portable skills one at a time:
+`specweave init` writes `AGENTS.md` and `CLAUDE.md` and installs the seven core skills, plus any optional ones the project turns on (`specweave skills`), twice: as `.claude/skills/sw-<name>/` for Claude Code and `.agents/skills/sw-<name>/` for Codex and other tools that read that folder, so switching tools needs no reinstall. For a tool that looks elsewhere, install the portable skills one at a time:
 
 ```bash
 npx vskill install anton-abyzov/specweave/sw-do
 npx vskill install anton-abyzov/specweave/sw-handoff
 ```
 
-You never have to name a skill. Asking in plain words ("plan this", "do the next task", "hand off", "pick up where I left off") works in every tool, because the instructions map those requests to the same commands.
+[Run a skill](/docs/reference/skills#run-a-skill) lists the exact syntax per tool and which forms were checked. You never have to name a skill. Asking in plain words ("plan this", "do the next task", "hand off", "pick up where I left off") works in every tool, because the instructions map those requests to the same commands.
 
 ## The loop with only the CLI
 

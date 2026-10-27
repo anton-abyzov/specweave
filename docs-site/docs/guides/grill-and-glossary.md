@@ -1,30 +1,30 @@
 ---
 title: "Grill me and the glossary: settle every decision and every word before building"
 sidebar_label: Grill me and glossary
-description: "Two optional SpecWeave skills: sw-grill-me interviews you in rounds until every decision in a plan is settled, and sw-glossary writes GLOSSARY.md so one word means one thing in the business, the data, the code and the UI. specweave glossary check keeps the code in line."
+description: "Two SpecWeave skills: sw-grill-me (core) interviews you in rounds until every decision in a plan is settled, and sw-glossary (optional) writes GLOSSARY.md so one word means one thing in the business, the data, the code and the UI. specweave glossary check keeps the code in line."
 ---
 
 # Grill me and the glossary
 
-Most wrong builds start with a gap between what you meant and what the agent assumed. Two optional skills close it before any code is written:
+Most wrong builds start with a gap between what you meant and what the agent assumed. Two skills close it before any code is written:
 
 - **sw-grill-me** interviews you in rounds until every decision in a plan is settled.
 - **sw-glossary** writes `GLOSSARY.md`, the project's shared language, so an Order is an Order in the meeting, the database, the code and the UI.
 
-Both arrived in SpecWeave 3.1.0 (17 October 2026). Neither is installed by default; the six core skills are increment, do, auto, done, review and handoff.
+Both arrived in SpecWeave 3.1.0 (17 October 2026). grill-me is now one of the seven core skills (increment, grill-me, do, auto, done, review and handoff), so every project and the `sw` plugin have it. glossary is optional.
 
-## Turn them on
+## Turn on the glossary
 
 ```bash
-specweave skills enable grill-me glossary
+specweave skills enable glossary
 specweave skills list
 ```
 
-`enable` writes `skills.enabled` in `.specweave/config.json` and installs the project copies. A project also gets them on its own when its files call for them: `planning.deepInterview: "deep"` installs grill-me, and a `GLOSSARY.md` or `GLOSSARY-MAP.md` at the root installs glossary. `specweave skills disable <name>` keeps a detected one out.
+`enable` writes `skills.enabled` in `.specweave/config.json` and installs the project copies. A project also gets glossary on its own when a `GLOSSARY.md` or `GLOSSARY-MAP.md` sits at the root. `specweave skills disable glossary` keeps a detected one out. grill-me needs no step: it is always installed, and `specweave skills enable grill-me` only says so.
 
 ## Grill me
 
-Say "grill me", "interview me" or "stress-test this plan" in any tool with the skill. The agent then:
+Say "grill me", "interview me" or "stress-test this plan", or run it by name (`/sw:grill-me` in Claude Code, `$sw:grill-me` in Codex; see [Run a skill](/docs/reference/skills#run-a-skill)). The agent then:
 
 1. **Reads first.** The code the plan touches, the config, the open increment and the glossary. It drafts the problem, scope and approach itself.
 2. **Maps every open decision** and what each depends on, including the ones people forget: non-goals, failures and edge cases, security, rollout, and how a machine will check that it works.
@@ -43,7 +43,7 @@ Say "grill me", "interview me" or "stress-test this plan" in any tool with the s
 
 The answers land in the increment's `spec.md` under `## Decisions`, split into Asked, Defaulted and Open, and are applied to Scope, the acceptance criteria and Approach. The do skill refuses to run unattended while `### Open` has entries.
 
-Use grill-me at a project's start or before a change whose shape is unclear. A clear, small request does not need it; the [Decide step](/docs/guides/decide-step) in every new increment already asks the few decisions that matter.
+Use grill-me at a project's start or before a change whose shape is unclear. A clear, small request does not need it; the [Decide step](/docs/guides/decide-step) in every new increment already asks the few decisions that matter. Set `planning.deepInterview: "deep"` to have sw-increment run grill-me for every new increment.
 
 ## The glossary
 

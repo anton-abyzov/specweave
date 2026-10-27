@@ -13,7 +13,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export type DetectRule = 'deep-interview' | 'glossary-file' | 'tracker' | 'hub' | 'jev';
+export type DetectRule = 'glossary-file' | 'tracker' | 'hub' | 'jev';
 
 export interface OptionalSkill {
   name: string;
@@ -76,8 +76,6 @@ function trackerConfigured(config: Record<string, any> | undefined): string | un
 /** Why a detect rule matches in this project, or undefined when it does not. */
 export function detectSkill(rule: DetectRule | undefined, projectRoot: string, config: Record<string, any> | undefined): string | undefined {
   switch (rule) {
-    case 'deep-interview':
-      return config?.planning?.deepInterview === 'deep' ? 'planning.deepInterview: deep' : undefined;
     case 'glossary-file':
       for (const f of ['GLOSSARY.md', 'GLOSSARY-MAP.md']) if (fs.existsSync(path.join(projectRoot, f))) return f;
       return undefined;

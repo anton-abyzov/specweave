@@ -22,7 +22,7 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a card -d 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a cards -d "Print the card checklist: a header, a blank line, then one ✓ / ✱ / ○ line per card with its link"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -d ""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a review -d "Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a skills -d "List the project's SpecWeave skills, or enable/disable optional ones (grill-me, glossary, sync, project, jev)"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a skills -d "List the project's SpecWeave skills, or enable/disable optional ones (glossary, sync, project, jev)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a glossary -d "Check GLOSSARY.md against the code (avoided words used as identifiers, Data/Code names that no longer exist); list prints the terms"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment \"Add login form\""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs"

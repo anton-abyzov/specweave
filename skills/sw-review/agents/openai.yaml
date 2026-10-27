@@ -1,0 +1,3 @@
+interface:
+  display_name: "SpecWeave Review"
+  short_description: "Adversarial review of an increment before it ships"

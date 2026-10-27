@@ -12,7 +12,7 @@ Generating code was never the hard part. The hard parts come after the chat ends
 
 SpecWeave's method is intent-first development: settle what you want, and how a machine will check it, before any code is written. The agent reads the code first and answers every question of fact itself. It asks you only the decisions that are yours, each with a recommended answer, and records them under `## Decisions` in `spec.md`. Then it writes acceptance criteria and gives each task a test command. Code comes after that, and a task counts as done only when its test passes.
 
-Two optional skills sharpen the intent. sw-grill-me interviews you in rounds when the shape of the work is unclear. sw-glossary keeps one word for one thing in `GLOSSARY.md`, so an Order is an Order in the conversation, the database, the code and the UI.
+Two skills sharpen the intent. sw-grill-me, a core skill, interviews you in rounds when the shape of the work is unclear. sw-glossary, an optional one, keeps one word for one thing in `GLOSSARY.md`, so an Order is an Order in the conversation, the database, the code and the UI.
 
 ## Three failures SpecWeave is built for
 

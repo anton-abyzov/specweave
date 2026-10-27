@@ -97,7 +97,7 @@ SpecWeave plugins are **open-source markdown files** — no compiled code, no bi
 
 ```bash
 # Inspect any SpecWeave skill before using it
-cat plugins/specweave/skills/grill/SKILL.md
+cat plugins/specweave/skills/grill-me/SKILL.md
 
 # Check what hooks will execute
 cat plugins/specweave/hooks/user-prompt-submit.sh

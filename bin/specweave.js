@@ -218,7 +218,7 @@ program
 // Skills command - which SpecWeave skills this project has; turn optional ones on or off
 program
   .command('skills [action] [names...]')
-  .description('List the project\'s SpecWeave skills, or enable/disable optional ones (grill-me, glossary, sync, project, jev)')
+  .description('List the project\'s SpecWeave skills, or enable/disable optional ones (glossary, sync, project, jev)')
   .option('--json', 'Print as JSON')
   .action(async (action, names, options) => {
     const { skillsCommand } = await import('../dist/src/cli/commands/skills.js');

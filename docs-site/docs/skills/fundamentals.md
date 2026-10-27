@@ -102,6 +102,8 @@ Deploy $ARGUMENTS to production:
 | `argument-hint` | Autocomplete hint shown in UI |
 | `hooks` | Lifecycle hooks scoped to this skill |
 
+The [Agent Skills specification](https://agentskills.io/specification) defines only `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools` at the top level; the other fields are Claude Code extensions that other tools may ignore. SpecWeave's own skills keep their version under `metadata` (see [Standards](/docs/reference/skills#standards)).
+
 ### Three Invocation Methods
 
 Skills can be triggered three ways:
@@ -344,13 +346,13 @@ SpecWeave is delivered as Claude Code plugins through two marketplaces. Here's w
 
 ### The Marketplaces
 
-**SpecWeave marketplace** (`anton-abyzov/specweave`) ships **1 unified plugin**, `sw`, with the six core SpecWeave skills:
+**SpecWeave marketplace** (`anton-abyzov/specweave`) ships **1 unified plugin**, `sw`, with the seven core SpecWeave skills:
 
 | Plugin | Skills | Domain |
 |--------|--------|--------|
-| `sw` (unified) | increment, do, auto, done, review, handoff | Planning, task-by-task work (alone, unattended or in parallel lanes), review, closing, cross-tool handoff |
+| `sw` (unified) | increment, grill-me, do, auto, done, review, handoff | Planning, the decision interview, task-by-task work (alone, unattended or in parallel lanes), review, closing, cross-tool handoff |
 
-The same skills are also generated as project skills (`sw-do`, `sw-review` and so on) in `.claude/skills/` and `.agents/skills/`, so cloud sessions and Codex get them without the plugin. Five optional skills (grill-me, glossary, sync, project, jev) are not in the plugin: a project turns them on with `specweave skills enable`, or when it detects their trigger, and gets them only as project skills (`/sw-grill-me`).
+The same skills are also generated as project skills (`sw-do`, `sw-review` and so on) in `.claude/skills/` and `.agents/skills/`, so cloud sessions and Codex get them without the plugin. Four optional skills (glossary, sync, project, jev) are not in the plugin: a project turns them on with `specweave skills enable`, or when it detects their trigger, and gets them only as project skills (`/sw-glossary`).
 
 **vskill marketplace** (`anton-abyzov/vskill`) provides **9 more plugins with 19 skills** (vskill 1.2.9, counted from its `plugins/` folder on 18 October 2026). The domain ones:
 
@@ -436,8 +438,8 @@ This loads "skill memories" — corrections you've made that persist across sess
 3. **Marketplace = a catalog** -- lists plugins and where to download them via `marketplace.json`
 4. **Commands = old name for skills** -- `.claude/commands/` still works, but skills are the current standard
 5. **Namespacing prevents conflicts** -- plugin skills become `/plugin:skill`
-6. **Three invocation methods** -- natural language (auto-trigger), slash command (`sw:&lt;name&gt;`), or the skill name in other AI tools (`$sw-&lt;name&gt;` in Codex)
-7. **Real scale** -- SpecWeave ships 6 core skills in 1 unified plugin and 5 optional project skills; vskill adds 9 plugins with 19 skills (1.2.9, 18 October 2026), and verified-skill.com lists the community skills
+6. **Three invocation methods** -- natural language (auto-trigger), slash command (`sw:&lt;name&gt;`), or the skill name in other AI tools (`$sw:&lt;name&gt;` for the plugin in Codex, `$sw-&lt;name&gt;` for a project copy)
+7. **Real scale** -- SpecWeave ships 7 core skills in 1 unified plugin and 4 optional project skills; vskill adds 9 plugins with 19 skills (1.2.9, 18 October 2026), and verified-skill.com lists the community skills
 
 ---
 

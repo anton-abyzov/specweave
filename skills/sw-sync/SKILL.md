@@ -1,7 +1,8 @@
 ---
 description: Sync SpecWeave increments with GitHub, Jira or Azure DevOps - push progress, pull or import issues, check token and health, run setup. Use for "sync", "push to GitHub", "import issues".
 argument-hint: "push|pull|status|setup [increment-id]"
-version: 3.0.0
+metadata:
+  version: "3.0.0"
 ---
 
 # sw-sync: external tracker sync

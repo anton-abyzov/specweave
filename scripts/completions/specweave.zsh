@@ -21,7 +21,7 @@ commands=(
     'cards:Print the card checklist\: a header, a blank line, then one ✓ / ✱ / ○ line per card with its link'
     'verify:'
     'review:Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md'
-    'skills:List the project'\''s SpecWeave skills, or enable/disable optional ones (grill-me, glossary, sync, project, jev)'
+    'skills:List the project'\''s SpecWeave skills, or enable/disable optional ones (glossary, sync, project, jev)'
     'glossary:Check GLOSSARY.md against the code (avoided words used as identifiers, Data/Code names that no longer exist); list prints the terms'
     'create-increment:Create increment template files (metadata.json, spec.md, tasks.md). Short form\: specweave create-increment "Add login form"'
     'handoff:Hand off your work\: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs'
