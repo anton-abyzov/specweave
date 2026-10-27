@@ -161,6 +161,22 @@ program
     process.exitCode = await taskCommand(action, taskOrIncrement, increment, options);
   });
 
+// AC command - acceptance criteria on the ledger (accepted skips of named checks)
+program
+  .command('ac <action> [acOrIncrement] [increment]')
+  .description('Acceptance criteria: accept-skip <AC-id> [inc] (a person accepted skipping one named check; never verification) | list [inc]')
+  .option('--check <id>', 'With accept-skip: the named check of the AC that is skipped (required)')
+  .option('--reason <text>', 'With accept-skip: why the check cannot be run, e.g. no license (required)')
+  .option('--accepted-by <who>', 'With accept-skip: the person who accepted the skip (required)')
+  .option('--authorization <text>', 'With accept-skip: their words, quoted, or a message/thread reference (required)')
+  .option('--accepted-at <date>', 'With accept-skip: when they accepted it, ISO-8601 (default: now)')
+  .option('--no-commit', 'Skip the git.autoCommitIncrement commit of the increment files')
+  .option('--json', 'Machine-readable output')
+  .action(async (action, acOrIncrement, increment, options) => {
+    const { acCommand } = await import('../dist/src/cli/commands/ac.js');
+    process.exitCode = await acCommand(action, acOrIncrement, increment, options);
+  });
+
 // Card command - one-line checklist cards on the ledger (T-NN aliases task; C-NN is branch-keyed)
 program
   .command('card <action> [idOrText] [increment]')

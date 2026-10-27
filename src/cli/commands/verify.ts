@@ -11,6 +11,7 @@ import { resolveIncrement, readLeaseHours, IncrementResolutionError } from '../.
 import { detectSessionId } from '../../core/tasks/ledger.js';
 import { recordIncrementWork } from '../../core/tasks/work-session.js';
 import { runVerify, describeUncheckedAcs, NO_COMMANDS_MESSAGE } from '../../core/tasks/verify-runner.js';
+import { acCloses } from '../../core/tasks/accepted-skip.js';
 
 export interface VerifyCommandOptions {
   json?: boolean;
@@ -53,13 +54,15 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
     for (const r of result.results) out(`${r.exit === 0 ? 'ok  ' : 'FAIL'} ${r.cmd} (exit ${r.exit})`);
     if (result.results.length === 0 && result.report.reason) out(`No verification commands (${result.source}); accepted — reason: ${result.report.reason}`);
     const { report } = result;
-    out(`ACs ${report.acs.done}/${report.acs.total} · tasks ${report.tasks.done}/${report.tasks.total} done (${report.tasks.skipped} skipped)`);
+    const accepted = report.acs.skippedAccepted ? ` + ${report.acs.skippedAccepted} skipped (accepted)` : '';
+    out(`ACs ${report.acs.done}/${report.acs.total}${accepted} · tasks ${report.tasks.done}/${report.tasks.total} done (${report.tasks.skipped} skipped)`);
     const unchecked = describeUncheckedAcs(report.acs);
     if (unchecked) {
       out(`  ${unchecked} — tick them in spec.md (\`- [x] AC-01 …\`) or close with \`specweave complete ${inc.id} --reason "<why>"\``);
-      for (const a of result.acs.filter((x) => !x.done)) out(`    [ ] ${a.id} ${a.text}`.trimEnd());
+      for (const a of result.acs.filter((x) => !acCloses(x))) out(`    [ ] ${a.id} ${a.text}`.trimEnd());
     }
     for (const s of report.skipped) out(`  skipped ${s.id}: ${s.reason ?? '(no reason recorded)'}`);
+    for (const s of report.acceptedSkips ?? []) out(`  accepted skip ${s.ac} ${s.check}: ${s.reason} (accepted by ${s.acceptedBy} ${s.acceptedAt}; not verified)`);
     if (report.ledgerMalformed) out(`  ${report.ledgerMalformed} malformed ledger line(s) skipped`);
     out(`${report.ok ? 'PASS' : 'FAIL'} → ${path.relative(cwd, result.mdPath).split(path.sep).join('/')}`);
     if (report.ok) out(`Next: specweave complete ${inc.id}`);

@@ -63,6 +63,18 @@ describe('IncrementCompletionValidator.countOpenACs (ledger-derived)', () => {
     expect(await IncrementCompletionValidator.countOpenACs(id)).toBe(1);
   });
 
+  it('does not count an AC closed only by accepted skips (1096)', async () => {
+    const skip = JSON.stringify({ t: 'AC-US2-01', e: 'accept-skip', by: 'tester', at: '2026-10-27T00:00:00.000Z', check: 'needs-license', reason: 'no license', acceptedBy: 'anton', acceptedAt: '2026-10-27', authorization: 'ok to skip' });
+    const skipT2 = JSON.stringify({ t: 'T-002', e: 'skip', by: 'tester', at: '2026-10-27T00:00:01.000Z', note: 'needs a license' });
+    fs.writeFileSync(path.join(dir, 'ledger.jsonl'), [done('T-001'), skip].join('\n') + '\n');
+    expect(await IncrementCompletionValidator.countOpenACs(id)).toBe(1); // T-002 still open
+    fs.writeFileSync(path.join(dir, 'ledger.jsonl'), [done('T-001'), skip, skipT2].join('\n') + '\n');
+    expect(await IncrementCompletionValidator.countOpenACs(id)).toBe(0);
+
+    fs.writeFileSync(path.join(dir, 'tasks.md'), '# Tasks\n\n### T-001: One\n**Status**: [ ] pending\n');
+    expect(await IncrementCompletionValidator.countOpenACs(id)).toBe(2); // checkbox fallback minus AC-US2-01
+  });
+
   it('falls back to spec.md checkboxes when no task references an AC', async () => {
     fs.writeFileSync(path.join(dir, 'tasks.md'), '# Tasks\n\n### T-001: One\n**Status**: [ ] pending\n');
     fs.writeFileSync(path.join(dir, 'ledger.jsonl'), done('T-001') + '\n');

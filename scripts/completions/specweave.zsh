@@ -17,6 +17,7 @@ commands=(
     'abandon:Abandon an increment'
     'complete:Complete one or more increments (triggers GitHub/JIRA/ADO sync)'
     'task:Task ledger\: list | next | claim | done | release | block | skip | render | whoami'
+    'ac:Acceptance criteria\: accept-skip <AC-id> [inc] (a person accepted skipping one named check; never verification) | list [inc]'
     'card:Cards\: add "<text>" | start <id> | done <id> | wait <id> | list. T-NN ids alias `task`; C-NN cards live in .specweave/cards/<branch>.jsonl'
     'cards:Print the card checklist\: a header, a blank line, then one ✓ / ✱ / ○ line per card with its link'
     'verify:'
@@ -149,6 +150,18 @@ _specweave() {
                         '--write[With `render`\: refresh a legacy tasks.md from the ledger]' \
                         '--line[Card text for claim/done/block (max 100 chars, longer text is truncated)]' \
                         '--link[Card link for claim/done/block (PR URL, report path, artifact URL)]' \
+                        '--no-commit[Skip the git.autoCommitIncrement commit of the increment files]' \
+                        '--json[Machine-readable output]' \
+                        '--workspace[Select the planning workspace explicitly]' \
+                        '--help[Show help]'
+                    ;;
+                ac)
+                    _arguments \
+                        '--check[With accept-skip\: the named check of the AC that is skipped (required)]' \
+                        '--reason[With accept-skip\: why the check cannot be run, e.g. no license (required)]' \
+                        '--accepted-by[With accept-skip\: the person who accepted the skip (required)]' \
+                        '--authorization[With accept-skip\: their words, quoted, or a message/thread reference (required)]' \
+                        '--accepted-at[With accept-skip\: when they accepted it, ISO-8601 (default\: now)]' \
                         '--no-commit[Skip the git.autoCommitIncrement commit of the increment files]' \
                         '--json[Machine-readable output]' \
                         '--workspace[Select the planning workspace explicitly]' \

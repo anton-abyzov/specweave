@@ -35,6 +35,7 @@ import { logHook, readActiveIncrements, readJsonSafe } from './utils.js';
 import { loadTaskBoard } from '../../tasks/task-board.js';
 import { hasTasksFile } from '../../tasks/tasks-source.js';
 import { readSpecAcs, deriveAcStatus } from '../../tasks/verify-runner.js';
+import { acsLeftToClose } from '../../tasks/accepted-skip.js';
 import {
   CLOSE_PENDING_MAX_AGE_MS,
   closeChain,
@@ -129,11 +130,12 @@ function computeRemaining(
       // The ledger fold is the one counter (same source as `specweave task
       // list`, verify.json and the closure gate), for tasks in spec.md or a
       // legacy tasks.md. done and skipped are terminal; the rest is work left.
-      // ACs are met when their tasks are done, as `verify` derives them.
+      // ACs are met when their tasks are done, as `verify` derives them; a
+      // skipped-accepted AC (accepted skips only) is not work left either.
       const board = hasTasksFile(dir) ? loadTaskBoard(dir) : undefined;
       if (board) pendingTasks += Math.max(0, board.counts.total - board.counts.done - board.counts.skipped);
       const acs = board ? deriveAcStatus(readSpecAcs(dir), board) : readSpecAcs(dir);
-      pendingAcs += acs.filter((a) => !a.done).length;
+      pendingAcs += acsLeftToClose(acs, board ?? null).length;
     } catch { /* unparseable increment — skip */ }
   }
   return { pendingTasks, pendingAcs, unresolvedIds };

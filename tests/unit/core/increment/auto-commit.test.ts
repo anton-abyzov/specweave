@@ -562,7 +562,8 @@ describe('subject', () => {
     const s = autoCommitSubject('1058-x', 'release', many);
     expect(s.length).toBeLessThan(72);
     expect(s).toMatch(/^1058: release T-01, .* and \d+ more$/);
-    for (const subject of ['1058: claim T-02', '1058: create increment', '1058: handoff', s]) {
+    expect(autoCommitSubject('1058-x', 'accept-skip', ['AC-03'])).toBe('1058: accept-skip AC-03');
+    for (const subject of ['1058: claim T-02', '1058: create increment', '1058: handoff', '1058: accept-skip AC-03', s]) {
       expect(isAutoCommitSubject(subject)).toBe(true);
     }
     expect(isAutoCommitSubject('1058: add the auto-commit helper')).toBe(false);

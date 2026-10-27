@@ -60,8 +60,8 @@ export function readAutoCommitConfig(projectRoot: string): AutoCommitConfig {
 export interface AutoCommitRequest {
   /** Increment folder name; its number starts the subject. */
   incrementId: string;
-  /** claim, done, skip, block, release, create or handoff. */
-  action: 'claim' | 'done' | 'skip' | 'block' | 'release' | 'create' | 'handoff';
+  /** claim, done, skip, block, release, create, handoff or accept-skip. */
+  action: 'claim' | 'done' | 'skip' | 'block' | 'release' | 'create' | 'handoff' | 'accept-skip';
   /** Task ids the action recorded. */
   tasks?: string[];
   /** `--no-commit` passes false. */
@@ -95,7 +95,7 @@ export interface AutoCommitResult {
  * `git log -E --grep` and JavaScript read the same way.
  */
 export const AUTO_COMMIT_SUBJECT_ERE =
-  '^[0-9]{3,}[A-Za-z]?: (((claim|done|skip|block|release) T-[A-Za-z0-9_.-]+(, T-[A-Za-z0-9_.-]+)*( and [0-9]+ more)?)|create increment|handoff)$';
+  '^[0-9]{3,}[A-Za-z]?: (((claim|done|skip|block|release) T-[A-Za-z0-9_.-]+(, T-[A-Za-z0-9_.-]+)*( and [0-9]+ more)?)|accept-skip AC-[A-Za-z0-9_.-]+|create increment|handoff)$';
 const ACTION_SUBJECT = new RegExp(AUTO_COMMIT_SUBJECT_ERE);
 
 /** Is this a subject {@link autoCommitIncrement} writes? */
@@ -103,7 +103,7 @@ export function isAutoCommitSubject(subject: string): boolean {
   return ACTION_SUBJECT.test(subject.trim());
 }
 
-/** `1058: done T-02`, `1058: release T-01, T-03`, `1058: create increment`, `1058: handoff`. */
+/** `1058: done T-02`, `1058: release T-01, T-03`, `1058: accept-skip AC-03`, `1058: create increment`, `1058: handoff`. */
 export function autoCommitSubject(incrementId: string, action: AutoCommitRequest['action'], tasks: string[] = []): string {
   const num = incrementId.match(/^\d{3,}[A-Za-z]?(?=-|$)/)?.[0] ?? incrementId.replace(/[^\w.-]/g, '').slice(0, 20);
   const head = `${num}: ${action === 'create' ? 'create increment' : action}`;
