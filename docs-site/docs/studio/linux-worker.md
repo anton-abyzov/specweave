@@ -6,7 +6,7 @@ description: "Add a Linux machine on x64 or arm64, such as a Hetzner, DigitalOce
 
 # Linux worker
 
-A Linux machine you control can run workers for the coordinators on your Mac: a small VPS, a cloud VM or a box at home. It runs the same SpecWithCode server as a Mac worker; only the install differs. You rent the machine and sign its provider CLIs in with your own accounts. SpecWithCode does not start sessions on anyone else's cloud.
+A Linux machine you control can run workers for the coordinators on your main computer: a small VPS, a cloud VM or a box at home. It runs the same SpecWithCode server as a Mac worker; only the install differs. You rent the machine and sign its provider CLIs in with your own accounts. SpecWithCode does not start sessions on anyone else's cloud.
 
 Every release ships `studio-<version>-linux-x64-….tar.gz` and `studio-<version>-linux-arm64-….tar.gz` with a `SHA256SUMS` file ([latest release assets](https://github.com/anton-abyzov/specwithcode/releases/latest)).
 
@@ -14,7 +14,7 @@ Every release ships `studio-<version>-linux-x64-….tar.gz` and `studio-<version
 
 - Linux on x64 or arm64 with glibc and a systemd user session: Debian 12, Ubuntu 22.04 or later, or Fedora 40 or later. AWS Graviton, Hetzner CAX and Azure Dpsv5 machines are arm64.
 - Node.js 22.20 or a later 22.x release.
-- Tailscale, signed in to the same tailnet as your Mac, with MagicDNS. The fleet accepts only private `*.ts.net` HTTPS addresses.
+- Tailscale, signed in to the same tailnet as your main computer, with MagicDNS. The fleet accepts only private `*.ts.net` HTTPS addresses.
 - The provider CLIs you want to run there (`claude`, `codex` and others), signed in on that machine. On a rented server, prefer an API key over a subscription sign-in.
 
 Tailscale connects outward, so the machine needs no open inbound port. Leave the provider's firewall closed to everything but SSH, or close SSH too and use Tailscale SSH. Windows hosts cannot run workers.
@@ -28,7 +28,7 @@ sudo tailscale up --operator="$(id -un)"
 
 On a machine where Tailscale is already up, run `sudo tailscale set --operator="$(id -un)"` instead. Making your user the operator lets SpecWithCode set up Tailscale Serve without root.
 
-Sign in with the Tailscale account your Mac uses, then turn off key expiry for this machine in the Tailscale admin console. HTTPS certificates must be on for the tailnet: in the admin console, open **DNS** and turn on **HTTPS Certificates**.
+Sign in with the Tailscale account your main computer uses, then turn off key expiry for this machine in the Tailscale admin console. HTTPS certificates must be on for the tailnet: in the admin console, open **DNS** and turn on **HTTPS Certificates**.
 
 ## Install the server
 
@@ -78,7 +78,7 @@ The service runs the pinned copy under `~/.specwithcode/runtime/versions/<versio
 - Update it from the Mac.
 - Unpack the new release as above and run its `node bin.mjs service install` again, which pins the new version and rewrites the unit.
 
-## Pair it with your Mac
+## Pair it with your main computer
 
 ```bash
 specwithcode fleet invite --label "Hetzner VPS"
