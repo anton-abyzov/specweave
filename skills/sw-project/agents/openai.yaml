@@ -1,0 +1,3 @@
+interface:
+  display_name: "SpecWeave Project"
+  short_description: "Keep a project's goal and briefs portable across tools"

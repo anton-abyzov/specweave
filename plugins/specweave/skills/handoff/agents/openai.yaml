@@ -1,0 +1,3 @@
+interface:
+  display_name: "SpecWeave Handoff"
+  short_description: "Hand work to another tool, account or machine"

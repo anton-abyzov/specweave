@@ -39,7 +39,7 @@ Describe the outcome, not the implementation. The agent creates the increment an
 
 Before writing it, the agent asks you only the decisions that are yours (at most five by default), each with a recommended answer, and records them under `## Decisions` ([Decide step](/docs/guides/decide-step)). Read the spec before any code is written. This is the cheapest moment to catch a misunderstanding. Change the criteria until they say exactly what done means.
 
-If an open increment already owns the files this change touches, add criteria and tasks to that increment instead of opening another one. When the shape of the work is unclear, say "grill me": the optional `grill-me` skill interviews you in rounds until every decision is settled (`specweave skills enable grill-me` installs it; see [grill me and glossary](/docs/guides/grill-and-glossary)).
+If an open increment already owns the files this change touches, add criteria and tasks to that increment instead of opening another one. When the shape of the work is unclear, say "grill me": the core `grill-me` skill interviews you in rounds until every decision is settled (see [grill me and glossary](/docs/guides/grill-and-glossary)).
 
 Small, self-contained fixes need no increment. Just ask your agent.
 

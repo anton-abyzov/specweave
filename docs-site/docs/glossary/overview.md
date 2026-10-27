@@ -49,7 +49,7 @@ The words SpecWeave uses, as they apply to 3.0. Terms with their own page link t
 
 | Term | Meaning |
 |---|---|
-| Skill | A `SKILL.md` file an AI tool loads on demand. SpecWeave's six core skills are increment, do, auto, done, review and handoff; grill-me, glossary, sync, project and jev are optional (`specweave skills`). See [skills reference](/docs/reference/skills). |
+| Skill | A `SKILL.md` file an AI tool loads on demand. SpecWeave's seven core skills are increment, grill-me, do, auto, done, review and handoff; glossary, sync, project and jev are optional (`specweave skills`). See [skills reference](/docs/reference/skills). |
 | Cross-model review | `specweave review`: a reviewer from another model family than the one that wrote the code reviews the increment's diff. |
 | Auto mode | Unattended execution of an increment's tasks: `/sw:auto`, "run until done", or `specweave auto`. See [autonomous execution](/docs/guides/autonomous-execution). |
 | Sync | Pushing increments to GitHub Issues, Jira or Azure DevOps. Only runs on `specweave sync push`. See [GitHub sync](/docs/guides/github-sync). |

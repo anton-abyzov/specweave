@@ -1,7 +1,8 @@
 ---
 description: Close a SpecWeave increment - every task done or skipped, specweave verify green, a fresh-context review, then specweave complete. Use for "close it", "we are done", "finish up".
 argument-hint: "[increment-id] [--reason \"...\"]"
-version: 3.1.0
+metadata:
+  version: "3.1.0"
 ---
 
 # sw-done: close an increment

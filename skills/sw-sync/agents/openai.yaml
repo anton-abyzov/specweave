@@ -1,0 +1,3 @@
+interface:
+  display_name: "SpecWeave Sync"
+  short_description: "Sync increments with GitHub, Jira or Azure DevOps"

@@ -1,7 +1,8 @@
 ---
 description: Keep a project's goal, decisions, work items, artifacts and briefs portable across AI tools and accounts. Use for project coordination, "project brief", "what is this project about".
 argument-hint: "[show|init|set|brief|work-add|artifact-add|routine-add]"
-version: 3.0.0
+metadata:
+  version: "3.0.0"
 ---
 <!-- Generated from skills/sw-project/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 

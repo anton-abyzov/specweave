@@ -1,7 +1,8 @@
 ---
 description: Plan work as a SpecWeave increment - one spec.md with Problem, Scope, numbered ACs, Approach and Tasks - before writing code. Use for "plan a feature", "new increment", "let's build X".
 argument-hint: "\"<title>\" [--supersedes NNNN]"
-version: 3.1.0
+metadata:
+  version: "3.1.0"
 ---
 
 # sw-increment: plan the unit of work
@@ -18,8 +19,7 @@ and one PR.
   ACs and tasks to its spec.md instead of opening another.
 - Read the code the change touches before writing Approach. If `GLOSSARY.md` exists,
   write the spec in its terms.
-- Unsure what to build at all, or the user says "grill me": run sw-grill-me first
-  (`specweave skills enable grill-me` installs it).
+- Unsure what to build at all, or the user says "grill me": run sw-grill-me first.
 
 ## Decide
 

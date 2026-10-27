@@ -10,6 +10,12 @@
       "deprecated": false
     },
     {
+      "name": "sw:grill-me",
+      "path": "skills/grill-me/SKILL.md",
+      "description": "Interview the user in rounds until every decision in a plan is settled; records Decisions in spec.md.",
+      "deprecated": false
+    },
+    {
       "name": "sw:do",
       "path": "skills/do/SKILL.md",
       "description": "Work the increment task by task through the ledger, alone, unattended or in parallel lanes: task next, claim, implement, commit, task done with evidence. Replaces team.",
@@ -39,13 +45,7 @@
       "description": "\"Hand off\" in one tool, \"pick up\" in any other tool, account or machine: specweave handoff and specweave pickup.",
       "deprecated": false
     },
-    {
-      "name": "sw:grill-me",
-      "path": "skills-optional/grill-me/SKILL.md",
-      "description": "Interview the user in rounds until every decision in a plan is settled; records Decisions in spec.md.",
-      "deprecated": false,
-      "optional": true
-    },
+
     {
       "name": "sw:glossary",
       "path": "skills-optional/glossary/SKILL.md",
@@ -78,7 +78,6 @@
   "optionalSkills": {
     "note": "Shipped in plugins/specweave/skills-optional/, not loaded by the plugin. A project turns one on with: specweave skills enable <name>",
     "names": [
-      "grill-me",
       "glossary",
       "sync",
       "project",

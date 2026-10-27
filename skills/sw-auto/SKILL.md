@@ -2,7 +2,8 @@
 description: Run a SpecWeave increment unattended until every task is done, then verify and close - the Unattended section of sw-do. Use for "auto mode", "run until done".
 argument-hint: "[increment-ids...] [--dry-run|--reset]"
 disable-model-invocation: true
-version: 3.1.0
+metadata:
+  version: "3.1.0"
 ---
 
 # sw-auto: run until done

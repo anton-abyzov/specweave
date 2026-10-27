@@ -1,7 +1,8 @@
 ---
-description: Work a SpecWeave increment task by task - claim, implement inside its Files, test, commit, done with evidence - alone, unattended or in lanes, then close. Use for "implement", "continue", "auto".
+description: Work a SpecWeave increment task by task - claim, implement inside its Files, test, commit, done with evidence - alone, unattended or in lanes, then close. Use for "implement", "next task".
 argument-hint: "[increment-id] [--auto] [--lanes]"
-version: 3.1.0
+metadata:
+  version: "3.1.0"
 ---
 <!-- Generated from skills/sw-do/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 

@@ -36,7 +36,7 @@ Most commands that take an increment id accept the short number (`0042`) and fal
 | `specweave update` | Update the CLI, instruction files, config and plugins in one step. This is the upgrade path from 2.x. | `--check` (dry run), `--no-self`, `--no-plugins`, `-f, --force` |
 | `specweave update-instructions` | Rewrite `AGENTS.md` and `CLAUDE.md` with a merge that keeps your own sections. | `--dry-run`, `-v, --verbose` |
 | `specweave refresh-plugins` | Reinstall the SpecWeave skills for the configured tool. | `--force`, `--plugin <name>`, `-q, --quiet` |
-| `specweave skills [list\|enable\|disable] [names...]` | List the project's skills (six core, five optional) and why each optional one is on or off, or turn optional ones on or off: `specweave skills enable grill-me glossary`. Writes `skills.enabled` or `skills.disabled` and reinstalls the project copies. Core skills cannot be disabled. | `--json` |
+| `specweave skills [list\|enable\|disable] [names...]` | List the project's skills (seven core, four optional) and why each optional one is on or off, or turn optional ones on or off: `specweave skills enable glossary sync`. Writes `skills.enabled` or `skills.disabled` and reinstalls the project copies. Core skills cannot be disabled; naming one in `enable`, such as `grill-me`, only prints that it is core. | `--json` |
 | `specweave uninstall` | Remove SpecWeave from the project. | `--keep-data` (archive `.specweave/`), `--dry-run`, `--global`, `-f, --force` |
 
 ## Increments

@@ -71,7 +71,7 @@ test_command "increment skill exists" "test -f $PROJECT_ROOT/plugins/specweave/s
 test_command "review skill exists" "test -f $PROJECT_ROOT/plugins/specweave/skills/review/SKILL.md"
 test_command "do skill exists" "test -f $PROJECT_ROOT/plugins/specweave/skills/do/SKILL.md"
 test_command "skills-catalog.json exists" "test -f $PROJECT_ROOT/plugins/specweave/skills-catalog.json"
-test_command "optional grill-me skill exists" "test -f $PROJECT_ROOT/plugins/specweave/skills-optional/grill-me/SKILL.md"
+test_command "core grill-me skill exists" "test -f $PROJECT_ROOT/plugins/specweave/skills/grill-me/SKILL.md"
 test_command "hooks.json exists" "test -f $PROJECT_ROOT/plugins/specweave/hooks/hooks.json"
 echo ""
 

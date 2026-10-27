@@ -1,6 +1,6 @@
 # SpecWeave plugin (`sw`)
 
-The Claude Code surface for SpecWeave: **6 core skills, 5 optional skills, 2 default hooks,
+The Claude Code surface for SpecWeave: **7 core skills, 4 optional skills, 2 default hooks,
 1 closer agent**.
 The skills are generated from `skills/sw-<name>/` at the repository root (the one source
 every tool shares); edit them there, never here.
@@ -9,11 +9,12 @@ procedure needs model judgement. There is no `commands/` namespace in 2.0.
 
 ## Skills
 
-Core, loaded by the plugin:
+Core, loaded by the plugin. Run one as `/sw:<name>` in Claude Code or `$sw:<name>` in Codex:
 
 | Skill | What it does |
 |---|---|
 | `sw:increment` | Settle the user's decisions, then plan one `spec.md` (Problem, Scope, ACs, Approach, Decisions, Tasks) |
+| `sw:grill-me` | Interview the user in rounds until every decision is settled; `sw:increment` runs it for every new increment when `planning.deepInterview` is `deep` |
 | `sw:do` | Work the increment task by task through the ledger, alone, unattended or in parallel lanes |
 | `sw:auto` | User-invoked entry to sw:do's unattended mode, driven by the Stop hook |
 | `sw:done` | Close it: ledger check → `specweave verify` → review → `specweave complete` |
@@ -26,13 +27,15 @@ detects it:
 
 | Skill | What it does | Detected by |
 |---|---|---|
-| `sw:grill-me` | Interview the user in rounds until every decision is settled | `planning.deepInterview: deep` |
 | `sw:glossary` | GLOSSARY.md: each domain term across business, data, code and UI | `GLOSSARY.md` |
 | `sw:sync` | GitHub / Jira / ADO: push, pull, status, setup | a configured tracker |
 | `sw:project` | Shared goal, memory, work items and briefs across tools | `.specweave/project/hub.json` |
 | `sw:jev` | Delegate closed-set decisions to Jev (TypeSafe System One) | `jev.enabled` |
 
-`skills-catalog.json` is the list (generated from `skills/catalog.json`).
+`skills-catalog.json` is the list (generated from `skills/catalog.json`). Each skill folder
+also carries `agents/openai.yaml`, the Codex UI metadata (display name "SpecWeave Do" and so
+on); `auto` sets `policy.allow_implicit_invocation: false` there, the Codex twin of its
+`disable-model-invocation: true`.
 
 ## Hooks
 

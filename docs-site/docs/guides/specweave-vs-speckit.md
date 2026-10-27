@@ -32,7 +32,7 @@ This page describes Spec Kit as its public repository documents it. Check the re
 
 ## Where Spec Kit is strong
 
-- **A guided path from idea to plan.** The constitution, specify, clarify and plan steps push you to think about principles and unknowns before any code. SpecWeave's `spec.md` asks for the same things in fewer sections, and its Decide step and optional `grill-me` interview cover the early questions, but Spec Kit makes the stages more explicit.
+- **A guided path from idea to plan.** The constitution, specify, clarify and plan steps push you to think about principles and unknowns before any code. SpecWeave's `spec.md` asks for the same things in fewer sections, and its Decide step and `grill-me` interview cover the early questions, but Spec Kit makes the stages more explicit.
 - **Richer design artifacts.** Spec Kit plans can include research notes, data models and API contracts as separate files. SpecWeave keeps the design to an Approach section and one optional `plan.md`.
 - **Nothing to run after scaffolding.** Once the files exist, the agent works from them with no extra CLI in the loop.
 
