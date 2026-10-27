@@ -50,7 +50,11 @@ specweave ac accept-skip AC-03 0042 --check <check-id> --reason "<why it cannot 
 ```
 
 This records one `accept-skip` event in the increment's ledger, which is never rewritten,
-so an AC and check already accepted is refused. Ordinary unavailability never authorizes it; only
+so an AC and check already accepted is refused. On an AC that no task cites, one
+accepted skip closes the whole AC, so the command refuses until you confirm with
+`--uncovered` (first check no task cites the AC in another form); verify marks such an
+AC `uncovered`. Reason and authorization are capped at 1,000 and 2,000 characters:
+quote the key words and point to the message or thread. Ordinary unavailability never authorizes it; only
 the user's own words do. An accepted skip is never verification: it does not tick the
 AC or count toward met ACs, and other work on the AC stays as it was. `specweave ac
 list` and the `--json` of `task list`, `verify` and `pickup` show each AC's

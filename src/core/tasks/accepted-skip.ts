@@ -15,7 +15,10 @@
  *   open              anything else; its accepted skips are still listed
  *
  * The ledger has no per-check pass receipt, so "every remaining check is
- * waived" is read as "nothing that covers the AC is unresolved".
+ * waived" is read as "nothing that covers the AC is unresolved". An AC that
+ * no task cites has nothing to check that against, so a skipped-accepted one
+ * is marked `uncovered`: `ac accept-skip` refuses it without `--uncovered`,
+ * and verify names it (a task may cite the AC in a form the parser ignores).
  *
  * @module core/tasks/accepted-skip
  */
@@ -32,13 +35,21 @@ export type AcWaiver = Omit<AcceptedSkip, 'ac'>;
 export interface AcAcceptanceEntry extends AcEntry {
   acceptance: AcAcceptance;
   waivers: AcWaiver[];
+  /** Skipped-accepted with no task citing the AC: the waivers alone closed it. */
+  uncovered?: true;
 }
+
+/** How every surface labels a skipped-accepted AC. */
+export const ACCEPTED_SKIP_LABEL = 'Accepted skip (not verified)';
 
 const TERMINAL = new Set(['done', 'skipped']);
 
-/** Add `acceptance` and `waivers` to ACs already passed through deriveAcStatus. */
-export function deriveAcAcceptance(acs: AcEntry[], board: TaskBoard | null): AcAcceptanceEntry[] {
-  const skips = board?.fold.acceptedSkips ?? [];
+/**
+ * Add `acceptance` and `waivers` to ACs already passed through deriveAcStatus.
+ * `skips` defaults to the board's fold; pass the ledger's own list when there
+ * is no board (an increment without tasks).
+ */
+export function deriveAcAcceptance(acs: AcEntry[], board: TaskBoard | null, skips: AcceptedSkip[] = board?.fold.acceptedSkips ?? []): AcAcceptanceEntry[] {
   return acs.map((a) => {
     const waivers = skips
       .filter((s) => s.ac === a.id.toUpperCase())
@@ -47,7 +58,8 @@ export function deriveAcAcceptance(acs: AcEntry[], board: TaskBoard | null): AcA
     const acceptance: AcAcceptance = a.done
       ? waivers.length ? 'mixed' : 'met'
       : waivers.length && !unresolved ? 'skipped-accepted' : 'open';
-    return { ...a, acceptance, waivers };
+    const uncovered = acceptance === 'skipped-accepted' && !(a.tasks ?? []).length;
+    return { ...a, acceptance, waivers, ...(uncovered ? { uncovered: true as const } : {}) };
   });
 }
 
@@ -63,5 +75,5 @@ export function acsLeftToClose(acs: AcEntry[], board: TaskBoard | null): AcAccep
 
 /** JSON shape of an AC for `task list --json` and `pickup --json`. */
 export function acJson(a: AcAcceptanceEntry) {
-  return { id: a.id, text: a.text, done: a.done, via: a.via ?? 'none', acceptance: a.acceptance, tasks: a.tasks ?? [], waivers: a.waivers };
+  return { id: a.id, text: a.text, done: a.done, via: a.via ?? 'none', acceptance: a.acceptance, tasks: a.tasks ?? [], waivers: a.waivers, ...(a.uncovered ? { uncovered: true } : {}) };
 }

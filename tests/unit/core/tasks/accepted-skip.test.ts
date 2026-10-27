@@ -112,7 +112,8 @@ describe('AC acceptance in verify (1096 AC-03, AC-04)', () => {
     expect(byId['AC-01']).toMatchObject({ done: true, acceptance: 'met', waivers: [] });
     expect(byId['AC-02']).toMatchObject({ done: true, acceptance: 'mixed' });
     expect(byId['AC-02'].waivers).toEqual([{ ...WAIVER, check: 'decline-shown', by: 'claude@m4', at: '2026-10-27T11:00:00Z' }]);
-    expect(byId['AC-03']).toMatchObject({ done: false, via: 'none', acceptance: 'skipped-accepted' });
+    expect(byId['AC-03']).toMatchObject({ done: false, via: 'none', acceptance: 'skipped-accepted', uncovered: true });
+    expect(byId['AC-02']).not.toHaveProperty('uncovered');
     expect(byId['AC-04']).toMatchObject({ done: false, acceptance: 'open', tasks: [{ id: 'T-02', status: 'open' }] });
     expect(byId['AC-04'].waivers).toHaveLength(1);
     expect(byId['AC-05']).toMatchObject({ done: false, acceptance: 'open', waivers: [] });
@@ -125,6 +126,7 @@ describe('AC acceptance in verify (1096 AC-03, AC-04)', () => {
     expect(md).toContain('2/5 met · 1 skipped (accepted), not verified');
     expect(md).toContain('| AC-03 |   | skipped-accepted |');
     expect(md).toContain('### Accepted skips (not verified)');
+    expect(md).toContain('_AC-03 has no task citing it, so its accepted skips alone closed it. Check that no task cites AC-03 in a form the parser does not read._');
     expect(md).toContain(`- AC-03 check \`wonder-full-shown-when-entitled\` — ${WAIVER.reason}. Accepted by anton at 2026-10-27; authorization: ${WAIVER.authorization}`);
   });
 
@@ -190,6 +192,7 @@ describe('closure with skipped-accepted ACs (1096 AC-05)', () => {
     const gate = checkClosureGate(incDir, '0001-demo');
     expect(gate.ok).toBe(true);
     expect(gate.info).toContain('skipped (accepted), not verified: AC-02 — see reports/verify.md');
+    expect(gate.notices).toContain('AC-02 closed by accepted skips with no task citing them — check no task cites them in a form the parser does not read');
     expect(gate.notices.join('\n')).not.toMatch(/acceptance criteria not met/);
   });
 

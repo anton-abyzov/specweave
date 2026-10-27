@@ -14,6 +14,7 @@
 
 import * as path from 'path';
 import { closeChain } from '../increment/close-pending.js';
+import { ACCEPTED_SKIP_LABEL } from '../tasks/accepted-skip.js';
 
 /** Footer marker (ownership sentinel + format version handle). */
 export const DOC_FORMAT_MARKER = 'Doc format v2';
@@ -130,6 +131,8 @@ export interface HandoffIncrementInfo {
   counts: { total: number; done: number; skipped: number; claimed: number; blocked: number; stale: number; open: number };
   doneAcs: number;
   totalAcs: number;
+  /** ACs closed only by accepted skips (never counted in doneAcs). */
+  acceptedSkipAcs?: string[];
   /** The task `specweave task next` would hand out, if any. */
   nextTask?: HandoffTaskRow;
 }
@@ -231,7 +234,8 @@ export function renderHandoffDoc(input: HandoffDocInput): string {
   if (input.reason) L.push(`Why: ${input.reason}`);
   if (input.summary) L.push(input.summary);
   if (inc) {
-    L.push(`Increment ${inc.id} (${inc.status}) · tasks ${inc.counts.done}/${inc.counts.total} done · ACs ${inc.doneAcs}/${inc.totalAcs}`);
+    const accepted = inc.acceptedSkipAcs?.length ? ` · ${ACCEPTED_SKIP_LABEL}: ${inc.acceptedSkipAcs.join(', ')}` : '';
+    L.push(`Increment ${inc.id} (${inc.status}) · tasks ${inc.counts.done}/${inc.counts.total} done · ACs ${inc.doneAcs}/${inc.totalAcs}${accepted}`);
   } else {
     L.push('No active SpecWeave increment — git + notes handoff.');
   }

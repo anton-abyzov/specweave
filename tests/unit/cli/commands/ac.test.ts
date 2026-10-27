@@ -15,6 +15,8 @@ const REQUIRED = {
   reason: 'No Muse Wonder Full license; cannot install or test',
   acceptedBy: 'anton',
   authorization: "I don't have a license for it, so I'm okay to skip.",
+  // AC-03 in the fixture has no covering task (1098 AC-01).
+  uncovered: true,
 };
 
 beforeEach(() => {
@@ -48,10 +50,37 @@ describe('specweave ac accept-skip (1096 AC-01)', () => {
     expect(lines).toHaveLength(1);
     const ev = JSON.parse(lines[0]);
     expect(Object.keys(ev)).toEqual(['t', 'e', 'by', 'at', ...(ev.model ? ['model'] : []), 'check', 'reason', 'acceptedBy', 'acceptedAt', 'authorization']);
-    expect(ev).toMatchObject({ t: 'AC-03', e: 'accept-skip', by: 'claude@m4', ...REQUIRED, acceptedAt: '2026-10-27' });
+    const { uncovered: _u, ...fields } = REQUIRED;
+    expect(ev).toMatchObject({ t: 'AC-03', e: 'accept-skip', by: 'claude@m4', ...fields, acceptedAt: '2026-10-27' });
+    expect(ev).not.toHaveProperty('uncovered');
+    expect(errs.join('')).toContain('warning: AC-03 has no task citing it; this accepted skip closes the whole AC.');
     const json = JSON.parse(out.join(''));
     expect(json).toMatchObject({ increment: '0001-demo', accepted: 'AC-03', acceptance: 'skipped-accepted' });
-    expect(json.criterion.waivers[0]).toMatchObject({ ...REQUIRED, acceptedAt: '2026-10-27' });
+    expect(json.criterion.waivers[0]).toMatchObject({ ...fields, acceptedAt: '2026-10-27' });
+    expect(json.criterion.uncovered).toBe(true);
+  });
+
+  it('refuses an AC no task cites unless --uncovered confirms it (1098 AC-01)', async () => {
+    expect(await acCommand('accept-skip', 'AC-03', '0001', { ...REQUIRED, uncovered: false, cwd: root })).toBe(1);
+    expect(errs.join('')).toContain('AC-03 has no task citing it, so this accepted skip would close the whole AC, not just check wonder-full-shown-when-entitled');
+    expect(ledgerLines()).toHaveLength(0);
+
+    // A covered AC needs no confirmation and gets no warning.
+    errs.length = 0;
+    expect(await acCommand('accept-skip', 'AC-01', '0001', { ...REQUIRED, uncovered: false, check: 'needs-device', cwd: root })).toBe(0);
+    expect(errs.join('')).not.toContain('no task citing it');
+    expect(ledgerLines()).toHaveLength(1);
+  });
+
+  it.each([
+    ['check', 101],
+    ['reason', 1001],
+    ['authorization', 2001],
+    ['acceptedBy', 101],
+  ] as const)('refuses an over-long --%s and writes nothing (1098 AC-05)', async (field, length) => {
+    expect(await acCommand('accept-skip', 'AC-03', '0001', { ...REQUIRED, [field]: 'x'.repeat(length), cwd: root })).toBe(1);
+    expect(errs.join('')).toContain(`is ${length} characters; the limit is ${length - 1}`);
+    expect(ledgerLines()).toHaveLength(0);
   });
 
   it.each([
@@ -87,7 +116,8 @@ describe('JSON outputs the app reads (1096 AC-04)', () => {
     const byId = Object.fromEntries(list.criteria.map((c: { id: string }) => [c.id, c]));
     expect(byId['AC-01']).toMatchObject({ done: false, acceptance: 'open', waivers: [] });
     expect(byId['AC-03']).toMatchObject({ done: false, acceptance: 'skipped-accepted' });
-    expect(byId['AC-03'].waivers[0]).toMatchObject({ ...REQUIRED, acceptedAt: '2026-10-27T13:05:00Z' });
+    const { uncovered: _u, ...fields } = REQUIRED;
+    expect(byId['AC-03'].waivers[0]).toMatchObject({ ...fields, acceptedAt: '2026-10-27T13:05:00Z' });
 
     out.length = 0;
     expect(await acCommand('list', '0001', undefined, { cwd: root, json: true })).toBe(0);

@@ -4,6 +4,11 @@
 
 - Accepted skips: `specweave ac accept-skip AC-03 --check <id> --reason ... --accepted-by ... --authorization ...` records that a person accepted skipping one named check of an AC (no license, no installation). The append-only `accept-skip` ledger event keeps the reason, who accepted it, when and their authorization, and is never counted as verified. Each AC now has an `acceptance` (`met`, `mixed`, `skipped-accepted`, `open`) and `waivers` in `task list --json`, `verify --json`, `pickup --json` and `reports/verify.{md,json}` (`acs.skippedAccepted`, `acs.mixed`, `acceptedSkips`). A skipped-accepted AC lets `specweave complete` pass and is named in the verify report and closure output. `specweave ac list` shows them.
 
+### Changed
+
+- `specweave ac accept-skip` refuses an AC that no task cites unless `--uncovered` confirms it, because one accepted skip then closes the whole AC. Verify marks such ACs `uncovered` (verify.json, verify.md and a closure notice). `--check`, `--accepted-by`, `--reason` and `--authorization` are capped at 100, 100, 1,000 and 2,000 characters.
+- `pickup --json` reports accepted skips for increments without tasks, matching `ac list` and `verify`. `handoff --all`, the HTML handoff report and the handoff doc label skipped-accepted ACs "Accepted skip (not verified)".
+
 ## [3.1.14] - 2026-10-27
 
 ### Changed

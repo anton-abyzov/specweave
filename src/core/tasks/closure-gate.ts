@@ -63,6 +63,8 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
     // Accepted skips close an AC without verifying it: name every one.
     const accepted = (verify.acs.items ?? []).filter((a) => a.acceptance === 'skipped-accepted').map((a) => a.id);
     if (accepted.length) info.push(`skipped (accepted), not verified: ${accepted.join(', ')} — see reports/verify.md`);
+    const uncovered = (verify.acs.items ?? []).filter((a) => a.uncovered).map((a) => a.id);
+    if (uncovered.length) notices.push(`${uncovered.join(', ')} closed by accepted skips with no task citing them — check no task cites them in a form the parser does not read`);
     // An `ok` report that still has open ACs can only come from a spec with no
     // AC lines at all, or a hand-edited verify.json. Say so out loud.
     const unchecked = describeUncheckedAcs(verify.acs);

@@ -26,6 +26,7 @@ import { writeHandoffReport } from './handoff-report.js';
 import { loadTaskBoard, nextTask } from '../tasks/task-board.js';
 import { resolveIncrement, listActiveIncrementIds, readLeaseHours, IncrementResolutionError } from '../tasks/resolve-increment.js';
 import { parseSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
+import { deriveAcAcceptance } from '../tasks/accepted-skip.js';
 import { INTENT_BOARD_PATH, readIntentContext } from '../intent/portable-context.js';
 import { serializeHandoffPointer } from './handoff-pointer.js';
 import { gitCheckoutFor } from '../../utils/main-checkout.js';
@@ -271,6 +272,7 @@ function assembleIncrementInfo(incDir: string, incrementId: string, agent: strin
     counts: board.counts,
     doneAcs: acs.filter((a) => a.done).length,
     totalAcs: acs.length,
+    acceptedSkipAcs: deriveAcAcceptance(acs, board).filter((a) => a.acceptance === 'skipped-accepted').map((a) => a.id),
     nextTask: next ? row(next) : undefined,
   };
 }
