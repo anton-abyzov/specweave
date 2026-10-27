@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Added
+
+- Accepted skips: `specweave ac accept-skip AC-03 --check <id> --reason ... --accepted-by ... --authorization ...` records that a person accepted skipping one named check of an AC (no license, no installation). The append-only `accept-skip` ledger event keeps the reason, who accepted it, when and their authorization, and is never counted as verified. Each AC now has an `acceptance` (`met`, `mixed`, `skipped-accepted`, `open`) and `waivers` in `task list --json`, `verify --json`, `pickup --json` and `reports/verify.{md,json}` (`acs.skippedAccepted`, `acs.mixed`, `acceptedSkips`). A skipped-accepted AC lets `specweave complete` pass and is named in the verify report and closure output. `specweave ac list` shows them.
+
 ## [3.1.14] - 2026-10-27
 
 ### Changed

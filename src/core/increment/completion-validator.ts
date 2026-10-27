@@ -518,14 +518,17 @@ export class IncrementCompletionValidator {
     const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
     const { loadTaskBoard } = await import('../tasks/task-board.js');
     const { readSpecAcs, deriveAcStatus } = await import('../tasks/verify-runner.js');
+    const { acsLeftToClose, deriveAcAcceptance } = await import('../tasks/accepted-skip.js');
     const specAcs = readSpecAcs(incrementPath);
     const board = loadTaskBoard(incrementPath);
+    // A skipped-accepted AC (closed only by accepted skips) is not open.
     if (specAcs.length > 0 && board.tasks.some((t) => (t.acs ?? []).length > 0)) {
-      return deriveAcStatus(specAcs, board).filter((a) => !a.done).length;
+      return acsLeftToClose(deriveAcStatus(specAcs, board), board).length;
     }
 
+    const accepted = new Set(deriveAcAcceptance(specAcs, board).filter((a) => a.acceptance === 'skipped-accepted').map((a) => a.id));
     const content = await fs.readFile(path.join(incrementPath, 'spec.md'), 'utf-8');
-    return (content.match(/^- \[ \] \*\*AC-/gm) || []).length;
+    return [...content.matchAll(/^- \[ \] \*\*(AC-[A-Za-z0-9-]+)/gm)].filter((m) => !accepted.has(m[1])).length;
   }
 
   /**

@@ -177,7 +177,7 @@ export function buildPlanTimeline(root: string, now = new Date()): PlanTimelineP
         by: e.by,
         tool: toolOf(e.by),
         model: e.model ?? null,
-        note: (e.note ?? e.line ?? null)?.slice(0, 160) ?? null,
+        note: (e.note ?? e.line ?? (e.check ? `${e.check}: ${e.reason ?? ''}` : null))?.slice(0, 160) ?? null,
       });
     }
 

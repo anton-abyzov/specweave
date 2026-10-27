@@ -14,6 +14,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { runShell } from './run-shell.js';
 import { loadTaskBoard, renderBoardTable, type TaskBoard } from './task-board.js';
+import { acCloses, deriveAcAcceptance, type AcAcceptance, type AcAcceptanceEntry, type AcWaiver } from './accepted-skip.js';
+import type { AcceptedSkip } from './ledger.js';
 
 export interface VerifyCommandResult {
   cmd: string;
@@ -25,16 +27,23 @@ export interface VerifyCommandResult {
 export interface VerifyReport {
   /**
    * Ready to close: every verification command exited 0 AND every acceptance
-   * criterion in spec.md is ticked. Consulted by the closure gate.
+   * criterion in spec.md is met or skipped-accepted. Consulted by the closure gate.
    */
   ok: boolean;
   ranAt: string;
   increment: string;
   commands: Array<{ cmd: string; exit: number }>;
-  acs: { total: number; done: number; items?: VerifyAcItem[] };
+  /**
+   * `done` counts met ACs (mixed ones included, since their tasks met them);
+   * accepted skips never add to it. `skippedAccepted` counts ACs closed only
+   * by accepted skips, `mixed` the met ACs that also carry one.
+   */
+  acs: { total: number; done: number; skippedAccepted?: number; mixed?: number; items?: VerifyAcItem[] };
   tasks: { total: number; done: number; skipped: number; open: number };
   /** Skipped tasks with the mandatory reason from `specweave task skip`. */
   skipped: Array<{ id: string; by?: string; reason?: string }>;
+  /** Every accepted skip in the ledger, oldest first (`specweave ac accept-skip`). */
+  acceptedSkips?: AcceptedSkip[];
   /** Ledger lines that could not be parsed (BOM/CRLF are tolerated; this counts real junk). */
   ledgerMalformed: number;
   /** Why verify passed with no commands to run (`specweave verify --reason`). */
@@ -55,6 +64,10 @@ export interface VerifyAcItem {
   done: boolean;
   via: 'checkbox' | 'ledger' | 'none';
   tasks: Array<{ id: string; status: string }>;
+  /** met | mixed | skipped-accepted | open (core/tasks/accepted-skip.ts). */
+  acceptance: AcAcceptance;
+  /** Accepted skips recorded for this AC; never verification. */
+  waivers: AcWaiver[];
 }
 
 export interface AcEntry {
@@ -68,8 +81,8 @@ export interface AcEntry {
 }
 
 /** One-line human summary of open ACs, or undefined when nothing is open. */
-export function describeUncheckedAcs(acs: { total: number; done: number }): string | undefined {
-  const open = acs.total - acs.done;
+export function describeUncheckedAcs(acs: { total: number; done: number; skippedAccepted?: number }): string | undefined {
+  const open = acs.total - acs.done - (acs.skippedAccepted ?? 0);
   if (!Number.isFinite(open) || open <= 0) return undefined;
   return `${open} of ${acs.total} acceptance criteria not met (tick them in spec.md, or finish the tasks that cover them)`;
 }
@@ -167,7 +180,7 @@ export interface RunVerifyOptions {
 export interface RunVerifyResult {
   report: VerifyReport;
   results: VerifyCommandResult[];
-  acs: AcEntry[];
+  acs: AcAcceptanceEntry[];
   board: TaskBoard;
   source: string;
   mdPath: string;
@@ -185,18 +198,20 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
   }
 
   const board = loadTaskBoard(incrementDir, { leaseHours: opts.leaseHours });
-  const acs = deriveAcStatus(readSpecAcs(incrementDir), board);
+  const acs = deriveAcAcceptance(deriveAcStatus(readSpecAcs(incrementDir), board), board);
 
   // `ok` means "this increment is ready to close": the acceptance criteria in
   // spec.md ARE the definition of done. An AC is met when ticked by hand or
-  // when every task covering it is done in the ledger. Specs with no AC lines
+  // when every task covering it is done in the ledger. An AC closed only by
+  // accepted skips (skipped-accepted) also lets it close; it is listed by
+  // name in verify.md and verify.json and never counted as met. Specs with no AC lines
   // at all stay non-blocking (legacy increments); they are surfaced as a
   // notice by the closure gate instead.
   // An empty command list verifies nothing, so it fails unless a reason is
   // recorded (`specweave verify --reason "<why>"`).
   const reason = opts.reason?.trim() || undefined;
   const commandsOk = results.length > 0 ? results.every((r) => r.exit === 0) : reason !== undefined;
-  const acsOk = acs.length === 0 || acs.every((a) => a.done);
+  const acsOk = acs.length === 0 || acs.every(acCloses);
 
   const report: VerifyReport = {
     ok: commandsOk && acsOk,
@@ -206,12 +221,15 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
     acs: {
       total: acs.length,
       done: acs.filter((a) => a.done).length,
-      items: acs.map((a) => ({ id: a.id, done: a.done, via: a.via ?? 'none', tasks: a.tasks ?? [] })),
+      skippedAccepted: acs.filter((a) => a.acceptance === 'skipped-accepted').length,
+      mixed: acs.filter((a) => a.acceptance === 'mixed').length,
+      items: acs.map((a) => ({ id: a.id, done: a.done, via: a.via ?? 'none', tasks: a.tasks ?? [], acceptance: a.acceptance, waivers: a.waivers })),
     },
     tasks: { total: board.counts.total, done: board.counts.done, skipped: board.counts.skipped, open: board.counts.total - board.counts.done - board.counts.skipped },
     skipped: board.tasks
       .filter((t) => t.state.status === 'skipped')
       .map((t) => ({ id: t.id, by: t.state.by, reason: t.state.note })),
+    acceptedSkips: board.fold.acceptedSkips,
     ledgerMalformed: board.fold.malformed,
     ...(reason ? { reason } : {}),
   };
@@ -226,7 +244,7 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
   return { report, results, acs, board, source: detected.source, mdPath, jsonPath };
 }
 
-export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResult[], acs: AcEntry[], board: TaskBoard, source: string): string {
+export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResult[], acs: Array<AcEntry & { acceptance?: AcAcceptance }>, board: TaskBoard, source: string): string {
   const L: string[] = [];
   L.push(`# Verify — ${report.increment}`);
   L.push('');
@@ -248,12 +266,22 @@ export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResul
   }
   L.push('## Acceptance criteria');
   L.push('');
-  L.push(`${report.acs.done}/${report.acs.total} met`);
+  const accepted = report.acs.skippedAccepted ?? 0;
+  L.push(`${report.acs.done}/${report.acs.total} met${accepted ? ` · ${accepted} skipped (accepted), not verified` : ''}`);
   L.push('');
   if (acs.length) {
-    L.push('| AC | Met | Text |');
-    L.push('|---|---|---|');
-    for (const a of acs) L.push(`| ${a.id} | ${a.done ? (a.via === 'ledger' ? 'x (tasks)' : 'x') : ' '} | ${a.text.replace(/\|/g, '\\|')} |`);
+    L.push('| AC | Met | Acceptance | Text |');
+    L.push('|---|---|---|---|');
+    for (const a of acs) L.push(`| ${a.id} | ${a.done ? (a.via === 'ledger' ? 'x (tasks)' : 'x') : ' '} | ${a.acceptance ?? (a.done ? 'met' : 'open')} | ${a.text.replace(/\|/g, '\\|')} |`);
+    L.push('');
+  }
+  if (report.acceptedSkips?.length) {
+    L.push('### Accepted skips (not verified)');
+    L.push('');
+    const flat = (v: string) => v.replace(/\s+/g, ' ').trim();
+    for (const s of report.acceptedSkips) {
+      L.push(`- ${s.ac} check \`${flat(s.check)}\` — ${flat(s.reason)}. Accepted by ${flat(s.acceptedBy)} at ${s.acceptedAt}; authorization: ${flat(s.authorization)} (recorded by ${s.by} at ${s.at})`);
+    }
     L.push('');
   }
   L.push('## Tasks (ledger)');

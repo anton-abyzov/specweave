@@ -58,9 +58,11 @@ describe('verify.json per-AC items (0962 AC-01)', () => {
         { id: 'T-01', status: 'done' },
         { id: 'T-02', status: 'done' },
       ],
+      acceptance: 'met',
+      waivers: [],
     });
     expect(byId['AC-02']).toMatchObject({ done: true, via: 'checkbox', tasks: [] });
-    expect(byId['AC-03']).toEqual({ id: 'AC-03', done: false, via: 'none', tasks: [] });
+    expect(byId['AC-03']).toEqual({ id: 'AC-03', done: false, via: 'none', tasks: [], acceptance: 'open', waivers: [] });
     expect(byId['AC-04'].tasks.map((t: { id: string }) => t.id)).toEqual(['T-01', 'T-03']);
   });
 

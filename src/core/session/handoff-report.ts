@@ -49,7 +49,9 @@ export function buildHandoffReport(incDir: string, incrementId: string, now = ne
 
   const timeline = sorted.map((e) => {
     const kind = e.e === 'handoff' || e.e === 'pickup' ? ' class="hand"' : '';
-    const detail = e.evidence ? firstLines(e.evidence, 3) : e.note ?? '';
+    const detail = e.evidence ? firstLines(e.evidence, 3)
+      : e.e === 'accept-skip' ? `${e.check}: ${e.reason} (accepted by ${e.acceptedBy} ${e.acceptedAt}; not verified)`
+      : e.note ?? '';
     return `<tr${kind}><td class="t">${esc(fmt(e.at))}</td><td><span class="who ${toolClass(e.by)}">${esc(e.by)}</span></td>` +
       `<td>${esc(label(e))}</td><td>${e.t === '*' ? '' : esc(e.t)}</td><td class="d">${esc(detail)}</td></tr>`;
   }).join('\n');
@@ -140,6 +142,7 @@ function label(e: LedgerEvent): string {
     case 'handoff': return 'handed off';
     case 'pickup': return 'picked up';
     case 'wait': return 'waits on';
+    case 'accept-skip': return 'recorded an accepted skip';
   }
 }
 
