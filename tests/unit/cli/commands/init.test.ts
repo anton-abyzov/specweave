@@ -1263,6 +1263,17 @@ describe('init command', () => {
       expect(mockInstallProjectSkills).toHaveBeenCalledWith(expect.stringContaining('codex-project'));
     });
 
+    it('offers only optional skills to enable, never the core grill-me', async () => {
+      mockExistsSync.mockReturnValue(false);
+      mockDetectTool.mockResolvedValue('claude');
+
+      await initCommand('hint-project', { quick: true });
+
+      const output = consoleSpy.mock.calls.map((call) => call.join(' ')).join('\n');
+      expect(output).toContain('specweave skills enable glossary');
+      expect(output).not.toContain('enable grill-me');
+    });
+
     it('never enables the agent-teams env var, in the project or globally', async () => {
       mockExistsSync.mockReturnValue(false);
       mockDetectTool.mockResolvedValue('claude');

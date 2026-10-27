@@ -558,7 +558,7 @@ export async function initCommand(
       skillsInstalled = true;
       if (skills.written.length > 0) {
         console.log(chalk.green(`   ✓ ${skills.installed.length} skills installed as sw-* in ${PROJECT_SKILL_DIRS.join('/ and ')}/`));
-        console.log(chalk.gray('     Optional: grill-me (interview), glossary (shared language). Turn on with `specweave skills enable grill-me glossary`.'));
+        console.log(chalk.gray('     Optional: glossary (shared language). Turn on with `specweave skills enable glossary`.'));
       }
     } catch (err) {
       console.log(chalk.yellow(`   ⚠ Could not install skills: ${err instanceof Error ? err.message : String(err)}`));
