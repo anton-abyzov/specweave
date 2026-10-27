@@ -120,6 +120,7 @@ export default function CodeDownload() {
       <meta property="og:image:height" content="630" />
       <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own computers. macOS, Windows and Linux. Free, source available." />
       <meta name="twitter:image" content={OG_IMAGE} />
+      <meta name="twitter:image:alt" content="SpecWithCode: agents on your own computers. macOS, Windows and Linux." />
       <script type="application/ld+json">{JSON.stringify(DOWNLOAD_LD)}</script>
     </Head>
     <main className={clsx('wv-root', styles.page)}>
@@ -155,7 +156,7 @@ export default function CodeDownload() {
       <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="windows-linux-title">
         <div className={styles.sectionHead}>
           <h2 id="windows-linux-title">Windows and Linux</h2>
-          <p>SpecWithCode {desktop.version} for 64-bit Windows 10 and 11 and for x64 Linux. Threads, the project coordinator, providers and pairing work as on a Mac. <a className="wv-link" href={desktop.notesUrl}>Release notes</a> · <a className="wv-link" href={desktop.sumsUrl}>SHA256SUMS</a></p>
+          <p>SpecWithCode {desktop.version} for 64-bit Windows 10 and 11 and for x64 Linux. The published {desktop.version} installers passed installed checks on Windows and Linux using a test provider. This does not establish live-provider or native-feature parity with macOS. Windows and Linux desktop builds may trail Mac releases. <a className="wv-link" href={desktop.notesUrl}>Release notes</a> · <a className="wv-link" href={desktop.sumsUrl}>SHA256SUMS</a></p>
           <div className={styles.actions}>
             <a className="wv-btn wv-btn--primary" href={desktop.exe.url} data-track="download_click" data-placement="download-page-windows"><Download {...btnIcon} />Windows ({desktop.exe.size})</a>
             <a className="wv-btn wv-btn--secondary" href={desktop.appImage.url} data-track="download_click" data-placement="download-page-appimage"><Download {...btnIcon} />Linux AppImage ({desktop.appImage.size})</a>
