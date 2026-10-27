@@ -17,12 +17,19 @@ export const STUDIO_WINDOW = {
   caption: 'A Claude Code coordinator reports back while a Claude Code worker and a Codex worker run in the Threads pane. SpecWithCode 1.0.103, 27 October 2026.',
 };
 
-export default function StudioWindowShot({ eager = false, className, imgClassName }: { eager?: boolean; className?: string; imgClassName?: string }) {
+export default function StudioWindowShot({ eager = false, linked = false, className }: { eager?: boolean; linked?: boolean; className?: string }) {
   const w = STUDIO_WINDOW;
-  const load = eager ? { fetchPriority: 'high' as const } : { loading: 'lazy' as const, decoding: 'async' as const };
+  const lazy = { loading: 'lazy' as const, decoding: 'async' as const };
+  // Light is the default theme, so only it gets high priority; the hidden variant stays lazy.
+  const variants = [
+    { cls: s.light, src: w.light, load: eager ? { fetchPriority: 'high' as const } : lazy },
+    { cls: s.dark, src: w.dark, load: lazy },
+  ];
   return <span className={clsx(s.shot, className)}>
-    <img className={clsx(s.light, imgClassName)} src={w.light} width={w.width} height={w.height} alt={w.alt} {...load} />
-    <img className={clsx(s.dark, imgClassName)} src={w.dark} width={w.width} height={w.height} alt={w.alt} {...load} />
+    {variants.map(({ cls, src, load }) => {
+      const img = <img className={linked ? undefined : cls} src={src} width={w.width} height={w.height} alt={w.alt} {...load} />;
+      return linked ? <a key={src} className={cls} href={src} aria-label="Open the full-size screenshot">{img}</a> : <React.Fragment key={src}>{img}</React.Fragment>;
+    })}
   </span>;
 }
 
