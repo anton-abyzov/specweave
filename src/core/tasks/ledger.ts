@@ -21,6 +21,16 @@
  *            what). A `wait` whose note is empty, `none`, `cleared` or
  *            `resolved` clears the earlier ones. `handoff --all` lists them.
  *
+ * `accept-skip` is keyed by an AC id (`t: "AC-03"`) and one named check of
+ * that AC. It records that a person accepted skipping the check (no license,
+ * no installation) and never changes task state or counts as verified:
+ *
+ *   {"t":"AC-03","e":"accept-skip","by":"claude@mbp","at":"…","check":"wonder-full-shown-when-entitled",
+ *    "reason":"…","acceptedBy":"anton","acceptedAt":"…","authorization":"…"}
+ *
+ * `specweave ac accept-skip` writes it; core/tasks/accepted-skip.ts derives
+ * each AC's `acceptance` from it.
+ *
  * Writes are single-line O_APPEND appends (same rationale as
  * core/sync/event-queue.ts): atomic for short lines on every major OS, so two
  * agents in one working tree never tear each other's lines. Across worktrees or
@@ -38,7 +48,9 @@ import { recordIncrementWork } from './work-session.js';
 
 export type TaskEventType = 'claim' | 'done' | 'release' | 'block' | 'skip';
 export type IncrementEventType = 'note' | 'session' | 'handoff' | 'pickup' | 'wait';
-export type LedgerEventType = TaskEventType | IncrementEventType;
+/** An AC-level event: a person accepted skipping one named check of an AC. */
+export type AcEventType = 'accept-skip';
+export type LedgerEventType = TaskEventType | IncrementEventType | AcEventType;
 
 /** Task id used by increment-level events (notes, sessions, handoffs). */
 export const INCREMENT_EVENT_TASK = '*';
@@ -62,7 +74,34 @@ export interface LedgerEvent {
   link?: string;
   /** Model the writing agent ran on, when its environment names one (see {@link detectModel}). */
   model?: string;
+  /** `accept-skip`: the named check of the AC that is skipped. */
+  check?: string;
+  /** `accept-skip`: why the check cannot be run (no license, no installation, …). */
+  reason?: string;
+  /** `accept-skip`: the person who accepted the skip. */
+  acceptedBy?: string;
+  /** `accept-skip`: when that person accepted it (ISO-8601). */
+  acceptedAt?: string;
+  /** `accept-skip`: their authorization, quoted, or a message/thread reference. */
+  authorization?: string;
 }
+
+/** One accepted skip as the fold keeps it: the AC, its named check and who accepted it. */
+export interface AcceptedSkip {
+  ac: string;
+  check: string;
+  reason: string;
+  acceptedBy: string;
+  acceptedAt: string;
+  authorization: string;
+  /** Agent that recorded it. */
+  by: string;
+  /** When it was recorded. */
+  at: string;
+}
+
+/** Fields an `accept-skip` must carry, in ledger key order. */
+export const ACCEPT_SKIP_FIELDS = ['check', 'reason', 'acceptedBy', 'acceptedAt', 'authorization'] as const;
 
 /** Longest card line kept in the ledger; longer text is truncated with `…`. */
 export const MAX_CARD_LINE = 100;
@@ -101,12 +140,17 @@ export interface LedgerFold {
    * they first show up in the sorted ledger; see core/tasks/cards.ts.
    */
   cards: Map<string, { line?: string; link?: string }>;
+  /**
+   * Accepted skips, oldest first: the first complete `accept-skip` per
+   * (AC, check). They never change `tasks`; see core/tasks/accepted-skip.ts.
+   */
+  acceptedSkips: AcceptedSkip[];
 }
 
 export const LEDGER_FILE = 'ledger.jsonl';
 export const DEFAULT_LEASE_HOURS = 2;
 
-const VALID_EVENTS: ReadonlySet<string> = new Set(['claim', 'done', 'release', 'block', 'skip', 'note', 'session', 'handoff', 'pickup', 'wait']);
+const VALID_EVENTS: ReadonlySet<string> = new Set(['claim', 'done', 'release', 'block', 'skip', 'note', 'session', 'handoff', 'pickup', 'wait', 'accept-skip']);
 const INCREMENT_EVENTS: ReadonlySet<string> = new Set(['note', 'session', 'handoff', 'pickup', 'wait']);
 
 /** Resolve the ledger path for an increment directory. */
@@ -184,6 +228,12 @@ export function formatLedgerLine(event: LedgerEvent): string {
   }
   if (event.link?.trim()) ordered.link = event.link.trim();
   if (event.model?.trim()) ordered.model = event.model.trim();
+  if (event.e === 'accept-skip') {
+    for (const k of ACCEPT_SKIP_FIELDS) {
+      const v = event[k]?.trim();
+      if (v) ordered[k] = v;
+    }
+  }
   return JSON.stringify(ordered) + '\n';
 }
 
@@ -234,6 +284,7 @@ export function parseLedger(content: string): { events: LedgerEvent[]; malformed
           ...(typeof obj.line === 'string' && obj.line.trim() ? { line: clampCardLine(obj.line).line } : {}),
           ...(typeof obj.link === 'string' && obj.link.trim() ? { link: obj.link.trim() } : {}),
           ...(typeof obj.model === 'string' && obj.model.trim() ? { model: obj.model.trim() } : {}),
+          ...(obj.e === 'accept-skip' ? acceptSkipFields(obj) : {}),
         });
       } else {
         malformed++;
@@ -243,6 +294,25 @@ export function parseLedger(content: string): { events: LedgerEvent[]; malformed
     }
   }
   return { events, malformed };
+}
+
+/** The `accept-skip` identity fields of a parsed line that are non-empty strings. */
+function acceptSkipFields(obj: Partial<LedgerEvent>): Partial<LedgerEvent> {
+  const out: Partial<LedgerEvent> = {};
+  for (const k of ACCEPT_SKIP_FIELDS) {
+    const v = obj[k];
+    if (typeof v === 'string' && v.trim()) out[k] = v.trim();
+  }
+  return out;
+}
+
+/** Why an `accept-skip` cannot be kept, or undefined when it is complete. */
+export function acceptSkipProblem(ev: LedgerEvent): string | undefined {
+  if (ev.t === INCREMENT_EVENT_TASK || !/^AC-/i.test(ev.t)) return 'accept-skip needs an AC id';
+  const missing = ACCEPT_SKIP_FIELDS.filter((k) => !ev[k]?.trim());
+  if (missing.length) return `accept-skip without ${missing.join(', ')}`;
+  if (Number.isNaN(Date.parse(ev.acceptedAt!))) return 'accept-skip with an unreadable acceptedAt';
+  return undefined;
 }
 
 export interface FoldOptions {
@@ -266,6 +336,9 @@ export interface FoldOptions {
  * - `block` on open or by the owner → blocked(by). Non-owner → ignored.
  * - `skip` requires a note (reason) and is terminal (`skipped`); accepted on
  *   open, by the owner, or when the current claim is stale.
+ * - `accept-skip` never touches task state. The first complete one per
+ *   (AC, check) is kept in `acceptedSkips`; later duplicates and incomplete
+ *   ones are ignored with a reason.
  * - Final pass: claimed older than the lease → `stale`.
  */
 export function foldLedger(events: LedgerEvent[], opts: FoldOptions = {}): LedgerFold {
@@ -286,6 +359,7 @@ export function foldLedger(events: LedgerEvent[], opts: FoldOptions = {}): Ledge
   const tasks = new Map<string, TaskLedgerState>();
   const ignored: LedgerFold['ignored'] = [];
   const cards: LedgerFold['cards'] = new Map();
+  const acceptedSkips: AcceptedSkip[] = [];
   const recordCard = (ev: LedgerEvent) => {
     if (ev.t === INCREMENT_EVENT_TASK) return;
     const card = cards.get(ev.t) ?? {};
@@ -302,6 +376,20 @@ export function foldLedger(events: LedgerEvent[], opts: FoldOptions = {}): Ledge
     // A note on a card id (`C-01`) still declares the card and carries its line.
     if (INCREMENT_EVENTS.has(ev.e)) {
       if (ev.e === 'note') recordCard(ev);
+      continue;
+    }
+    if (ev.e === 'accept-skip') {
+      const problem = acceptSkipProblem(ev);
+      if (problem) { ignored.push({ event: ev, reason: problem }); continue; }
+      const ac = ev.t.toUpperCase();
+      if (acceptedSkips.some((s) => s.ac === ac && s.check === ev.check)) {
+        ignored.push({ event: ev, reason: `${ac} check ${ev.check} already accepted` });
+        continue;
+      }
+      acceptedSkips.push({
+        ac, check: ev.check!, reason: ev.reason!, acceptedBy: ev.acceptedBy!,
+        acceptedAt: ev.acceptedAt!, authorization: ev.authorization!, by: ev.by, at: ev.at,
+      });
       continue;
     }
     const ignoredBefore = ignored.length;
@@ -353,7 +441,7 @@ export function foldLedger(events: LedgerEvent[], opts: FoldOptions = {}): Ledge
     }
   }
 
-  return { tasks, malformed: 0, ignored, cards };
+  return { tasks, malformed: 0, ignored, cards, acceptedSkips };
 }
 
 /** Read + fold a ledger file in one call. */
