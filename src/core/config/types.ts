@@ -590,7 +590,7 @@ export interface LimitsConfig {
  * 'critical' — at most 5 questions, each with a recommended answer (the
  *              default, also when unset).
  * 'deep'     — "grill me": sw-grill-me's rounds, no cap, until the decision
- *              tree is settled. Also installs the sw-grill-me skill.
+ *              tree is settled. sw-grill-me is a core skill, always installed.
  *
  * Skill-side only: no hook blocks a write.
  */
