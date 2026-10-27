@@ -52,7 +52,7 @@ The trade-off is simple. Cloud project agents keep running when every one of you
 
 ## Machines and networking
 
-SpecWithCode runs as a small service on each machine, at `localhost:8319`. You use it from the desktop app for Apple silicon Macs (macOS 13 or later) or from a browser. Windows and Intel Macs are not built yet.
+SpecWithCode runs as a small service on each machine, at `localhost:8319`. You use it from a desktop app for macOS 13 or later on Apple silicon, Windows 10 and 11 (x64), or Linux (x64), or from a paired browser. Intel Mac desktop builds are not published. See [downloads and platform-specific installation steps](/code/download/).
 
 - **One machine** needs nothing else.
 - **More machines for workers.** Install Tailscale on each machine, run `fleet invite` on the new one and paste the line it prints under **Settings > Connections > Add a machine** on your main machine. Coordinators can then start workers there. See [Add a machine](/docs/studio/add-a-machine).

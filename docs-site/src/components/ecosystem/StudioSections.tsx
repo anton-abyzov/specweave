@@ -110,11 +110,11 @@ export function StudioFaq() {
     </article>
     <article>
       <h3>Is it a cloud service?</h3>
-      <p>No. SpecWithCode is a local app on each machine: a desktop app for Apple silicon Macs on macOS 13 or later, also usable from a browser. A Linux machine (x64 or arm64) can join as a worker; Windows and Intel Macs are not built yet. Telemetry and the hosted relay are off by default. By default the desktop app checks GitHub every hour and installs updates for itself and the service; you can turn that off in Settings. Model calls still go to the providers you choose.</p>
+      <p>No. SpecWithCode is a local app on each machine: a desktop app for Apple silicon Macs on macOS 13 or later, also usable from a browser. A Linux machine (x64 or arm64) can join as a worker; Windows 10 and 11 (x64) and Linux (x64) desktop installers are also available. Intel Mac desktop builds are not published. Telemetry and the hosted relay are off by default. By default the desktop app checks GitHub every hour and installs updates for itself and the service; you can turn that off in Settings. Model calls still go to the providers you choose.</p>
     </article>
     <article>
       <h3>Can I use it today?</h3>
-      <p>Yes. SpecWithCode is built for teams of 2–10 people and is free, with no markup on your subscriptions, no token resale and no seat fee to run agents on your own machines. What is free today stays free; teams pay only for hosting and support (<a href="/pricing">pricing</a>). It is in early access: <a href={release.dmgUrl}>Download version {release.version} for Apple silicon Macs</a> ({release.size}), or see <a href={release.releasesUrl}>all releases on GitHub</a>. The SpecWeave CLI it builds on is open source and available with <code>npm install -g specweave</code>.</p>
+      <p>Yes. SpecWithCode is built for teams of 2–10 people and is free, with no markup on your subscriptions, no token resale and no seat fee to run agents on your own machines. What is free today stays free; teams pay only for hosting and support (<a href="/pricing">pricing</a>). It is in early access: <a href="/code/download/">Download for macOS, Windows or Linux</a>, or see <a href={release.releasesUrl}>all releases on GitHub</a>. The SpecWeave CLI it builds on is open source and available with <code>npm install -g specweave</code>.</p>
     </article>
   </div>;
 }

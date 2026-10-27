@@ -10,7 +10,7 @@ import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
 Share durable facts across your project. Keep each worker's conversation and provider cache with the provider that owns it.
 
 :::info Early access
-These features have been in every SpecWithCode build since 0.2.0. SpecWithCode is built for teams of 2–10 people, free ([what stays free](/pricing)) and in early access ([download for Apple silicon Macs](/code/)); each machine that runs work needs the current version installed. See [SpecWithCode projects](./projects.md) for availability.
+These features have been in every SpecWithCode build since 0.2.0. SpecWithCode is built for teams of 2–10 people, free ([what stays free](/pricing)) and in early access ([download for macOS, Windows or Linux](/code/)); each machine that runs work needs the current version installed. See [SpecWithCode projects](./projects.md) for availability.
 :::
 
 | Kind of context | What belongs there |

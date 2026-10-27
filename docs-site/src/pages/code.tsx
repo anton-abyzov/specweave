@@ -36,7 +36,7 @@ const LIMITS: {name: string; detail: React.ReactNode}[] = [
   {name: 'Credits before the fallback, if you want them', detail: <>Redeem a banked reset, spend Codex credits or use Claude API credits first. Each is off until you turn it on, and SpecWithCode never buys credits for you.</>},
   {name: 'The thread keeps its place', detail: <>Continuing hands the thread over with its context, in the same worktree. Tick Auto-continue when the limit resets, continue on another machine of the project, or undo a failover you did not want.</>},
   {name: 'Limits per account and machine', detail: <>Usage &gt; Limits names each account and the machine it is signed in on, with the share left in every session and weekly window.</>},
-  {name: 'A status page with history', detail: <>The health of the app, your machines and each provider, with each day’s worst status kept on your Mac for 90 days.</>},
+  {name: 'A status page with history', detail: <>The health of the app, your machines and each provider, with each day’s worst status kept on your computer for 90 days.</>},
 ];
 
 const MACHINE_STEPS: {title: string; body: React.ReactNode}[] = [
@@ -94,9 +94,9 @@ const FAQ_TEXT: {q: string; a: string}[] = [
 
 const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/`;
-const TITLE = 'SpecWithCode (Spec with Code): Claude Code & Codex workspace';
-const DESCRIPTION = 'SpecWithCode (Spec with Code) is a free AI coding agent workspace. Run Claude Code, Codex and Cursor on your own machines with your existing accounts.';
-const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg`;
+const TITLE = 'SpecWithCode (Spec with Code): agents on your own computers';
+const DESCRIPTION = 'SpecWithCode (Spec with Code): run Claude Code, Codex and Cursor on your own computers. Free workspace for macOS, Windows and Linux.';
+const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 /** The SpecWithCode explainer on the AI Power YouTube channel. */
 const EXPLAINER_URL = 'https://www.youtube.com/watch?v=eCLJSZ8wo9w';
 const tour = getTutorial('specwithcode-tour');
@@ -215,7 +215,7 @@ export default function Code() {
       <meta property="og:image" content={OG_IMAGE} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own Macs. Free, source available." />
+      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own computers. macOS, Windows and Linux. Free, source available." />
       <meta name="twitter:image" content={OG_IMAGE} />
       <script type="application/ld+json">{JSON.stringify(SPECWITHCODE_LD)}</script>
     </Head>
@@ -227,14 +227,14 @@ export default function Code() {
             <span className={styles.productName}>SpecWithCode</span>
             <span className={styles.productNote}>Free, source available</span>
           </p>
-          <h1>SpecWithCode: run Claude Code, Codex and Cursor agents on your own machines</h1>
-          <p className={styles.lead}>SpecWithCode (pronounced “Spec with Code”) is a free AI coding agent workspace on your own machines.</p>
+          <h1>SpecWithCode: run Claude Code, Codex and Cursor agents on your own computers</h1>
+          <p className={styles.lead}>SpecWithCode (pronounced “Spec with Code”) is a free AI coding agent workspace on your own computers.</p>
           <p className={styles.lead}>One coordinator per project starts worker threads in {providerSummary(6)}, each on its own branch or worktree.</p>
           <div className={styles.actions}>
-            <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for Mac</a>
+            <Link className="wv-btn wv-btn--primary wv-btn--lg" to="/code/download/" data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for macOS, Windows or Linux</Link>
             <a className="wv-btn wv-btn--secondary wv-btn--lg" href="#workflow">See how it works</a>
           </div>
-          <p className={styles.requirements}>Version {release.version}, {release.size}. Apple silicon, macOS 13 or later, early access. Signed with Developer ID and notarized by Apple. Linux machines can join as workers. <Link className="wv-link" to="/docs/reference/changelog#specwithcode-releases">What is new in {release.version}</Link> · <Link className="wv-link" to="/code/download/">Download SpecWithCode for Mac, Windows or Linux</Link></p>
+          <p className={styles.requirements}>Early access for macOS 13 or later on Apple silicon, Windows 10 and 11 (x64), and Linux (x64). Mac releases are signed and notarized; Windows and Linux installers are unsigned. <Link className="wv-link" to="/code/download/">Downloads, versions and installation steps</Link></p>
           <div className={clsx('wv-note', styles.qualification)}>
             <Info {...icon} />
             <p><strong>Cloud models still receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>
@@ -278,7 +278,7 @@ export default function Code() {
       <section className={clsx(styles.shell, styles.section)} id="machines" aria-labelledby="machines-title">
         <div className={styles.sectionHead}>
           <h2 id="machines-title">Add the machines you trust</h2>
-          <p>Start on one Mac. When you want more capacity, add another Mac or a Linux machine to your private Tailscale network and let coordinators start workers there. Each machine reaches the others by its own Tailscale name, whatever network it is on.</p>
+          <p>Start on one computer. When you want more capacity, add a supported Mac or Linux worker to your private Tailscale network and let coordinators start workers there. Each machine reaches the others by its own Tailscale name, whatever network it is on.</p>
         </div>
 
         <ol className={clsx('wv-thread', 'wv-thread--across', styles.route)} aria-label="Add a machine in four steps">
@@ -325,8 +325,8 @@ export default function Code() {
 
       <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="reach-title">
         <div className={styles.sectionHead}>
-          <h2 id="reach-title">Let agents use your Mac and your browser</h2>
-          <p>Some work happens outside a terminal. Give agents the desktop and the browser when a task needs them, on the machines where you allow it.</p>
+          <h2 id="reach-title">Let agents use your browser and, on macOS, your desktop</h2>
+          <p>Some work happens outside a terminal. Give agents browser access when a task needs it. Native desktop control is macOS only and requires permission on that Mac.</p>
         </div>
         <Evidence items={REACH} />
       </section>

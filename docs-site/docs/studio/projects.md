@@ -10,7 +10,7 @@ import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
 A project groups work around an outcome, shared memory and tools. Code projects can combine a working folder with several repository URLs; Personal projects start without choosing a folder or creating a Git repository. Its coordinator keeps the conversation together; worker threads carry out individual assignments. Choose a provider and model for each thread, including the coordinator. A project can contain both Claude Code and Codex workers.
 
 :::info Early access
-Projects have been in every SpecWithCode build since 0.2.0. SpecWithCode is built for teams of 2–10 people, free ([what stays free](/pricing)) and in early access; [download it for Apple silicon Macs](/code/) or from [GitHub releases](https://github.com/anton-abyzov/specwithcode/releases). Publishing a release does not install it on your devices: check the running version on each host. The SpecWeave CLI installation guide installs the CLI only; see [SpecWithCode architecture and access](../overview/studio-architecture.mdx) for connecting several machines.
+Projects have been in every SpecWithCode build since 0.2.0. SpecWithCode is built for teams of 2–10 people, free ([what stays free](/pricing)) and in early access; [download it for macOS, Windows or Linux](/code/) or from [GitHub releases](https://github.com/anton-abyzov/specwithcode/releases). Publishing a release does not install it on your devices: check the running version on each host. The SpecWeave CLI installation guide installs the CLI only; see [SpecWithCode architecture and access](../overview/studio-architecture.mdx) for connecting several machines.
 :::
 
 ## Set up your project

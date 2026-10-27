@@ -16,7 +16,7 @@ const ROWS: {label: string; cells: Cell[]}[] = [
     <>The vendor’s agent in the vendor’s environment <Src href="https://code.claude.com/docs/en/claude-code-on-the-web" /></>,
   ]},
   {label: 'Where your code runs', cells: [
-    'Your Macs and Linux machines',
+    'Your own computers',
     <>Your machine <Src href="https://opencode.ai/docs/server/" /></>,
     <>A vendor-hosted container or VM that clones your repo <Src href="https://learn.chatgpt.com/docs/environments/cloud-environment" /></>,
   ]},
