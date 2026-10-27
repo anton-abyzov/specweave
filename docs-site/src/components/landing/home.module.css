@@ -347,7 +347,7 @@
   white-space: nowrap;
 }
 
-/* Phones: show the coordinator's report and the Threads pane at a legible scale. */
+/* Phones: drop the project sidebar so the coordinator and the Threads pane read larger. */
 @media (max-width: 600px) {
   .crop .cropFrame {
     overflow: hidden;
@@ -355,10 +355,10 @@
   }
 
   .crop .cropFrame img {
-    width: 166%;
+    width: 120%;
     max-width: none;
     height: auto;
-    margin-left: -66%;
+    margin-left: -20%;
   }
 }
 
