@@ -175,8 +175,9 @@
     },
     {
      "do": "expect",
-     "text": "Ask the coordinator",
-     "timeout": 30000
+     "text": "Excited to get started on greet-app",
+     "timeout": 30000,
+     "note": "a new project opens on its coordinator with a welcome and suggested first threads"
     },
     {
      "do": "clickIfPresent",

@@ -18,7 +18,7 @@ const shotlist = JSON.parse(readFileSync(shotlistFile, "utf8"));
 mkdirSync(`${outDir}/stills`, { recursive: true });
 mkdirSync(`${outDir}/video`, { recursive: true });
 
-const ACCENT = "#bd481f";
+const ACCENT = "#6d4fb5"; // Weave iris
 const overlay = `
 (() => {
   const install = () => {
@@ -27,7 +27,7 @@ const overlay = `
     ring.id = "__rec_ring";
     Object.assign(ring.style, { position: "fixed", left: "-100px", top: "-100px", width: "32px", height: "32px",
       marginLeft: "-16px", marginTop: "-16px", borderRadius: "50%", border: "2px solid ${ACCENT}",
-      background: "rgba(189,72,31,0.15)", pointerEvents: "none", zIndex: 2147483647,
+      background: "rgba(109,79,181,0.15)", pointerEvents: "none", zIndex: 2147483647,
       transition: "transform 250ms ease-out", boxSizing: "border-box" });
     document.documentElement.appendChild(ring);
     addEventListener("mousemove", (e) => { ring.style.left = e.clientX + "px"; ring.style.top = e.clientY + "px"; }, true);
@@ -73,7 +73,8 @@ async function moveTo(x, y) {
 
 function locate(step) {
   let loc;
-  if (step.role) {
+  if (step.selector) loc = page.locator(step.selector);
+  else if (step.role) {
     const name = step.nameRegex ? new RegExp(step.nameRegex) : step.name;
     loc = page.getByRole(step.role, name === undefined ? {} : { name, exact: !!step.exact });
   } else if (step.textRegex) loc = page.getByText(new RegExp(step.textRegex));
@@ -117,14 +118,14 @@ async function waitTurn(shot, i) {
 async function runStep(shot, i, step) {
   switch (step.do) {
     case "expect":
-      await page.getByText(step.text, { exact: false }).first().waitFor({ state: "visible", timeout: 20000 });
+      await page.getByText(step.text, { exact: false }).first().waitFor({ state: "visible", timeout: step.timeout ?? 20000 });
       cue(shot, i, `expect ${step.text}`);
       break;
     case "pause":
       await page.waitForTimeout(step.ms);
       break;
     case "click":
-      cue(shot, i, `click ${step.name ?? step.nameRegex ?? step.textRegex ?? step.text}`);
+      cue(shot, i, `click ${step.name ?? step.nameRegex ?? step.textRegex ?? step.text ?? step.selector}`);
       // offCameraBeforeClick: run the script after the pointer is on the target, right before the click.
       await pointAndClick(locate(step), step.offCameraBeforeClick ? () => offCamera(shot, i, step.offCameraBeforeClick) : undefined);
       await page.waitForTimeout(500);
@@ -132,8 +133,8 @@ async function runStep(shot, i, step) {
     case "clickIfPresent": {
       const loc = locate(step);
       if ((await loc.count()) && (await loc.isVisible())) {
-        cue(shot, i, `click ${step.name ?? step.nameRegex ?? step.textRegex}`);
-        await pointAndClick(loc);
+        cue(shot, i, `click ${step.name ?? step.nameRegex ?? step.textRegex ?? step.selector}`);
+        if (step.quiet) await loc.click(); else await pointAndClick(loc);
         await page.waitForTimeout(500);
       } else cue(shot, i, `skip ${step.name ?? step.nameRegex ?? step.textRegex}`);
       break;
@@ -171,6 +172,22 @@ async function runStep(shot, i, step) {
       } else cue(shot, i, `already ${step.option}`);
       break;
     }
+    case "select": {
+      const loc = page.locator(step.selector).first();
+      const box = await loc.boundingBox();
+      await moveTo(box.x + box.width / 2, box.y + box.height / 2);
+      await outline(box);
+      await page.waitForTimeout(350);
+      cue(shot, i, `select ${step.option}`);
+      await loc.selectOption({ label: step.option });
+      await page.waitForTimeout(500);
+      break;
+    }
+    case "waitFor":
+      cue(shot, i, "wait-start");
+      await locate(step).waitFor({ state: "visible", timeout: step.timeout ?? 600000 });
+      cue(shot, i, "wait-end");
+      break;
     case "offCamera":
       offCamera(shot, i, step.script);
       break;
