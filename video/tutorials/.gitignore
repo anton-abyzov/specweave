@@ -1,3 +1,4 @@
 
 # Local HyperFrames validation/render receipts live in the private evidence folder.
 **/.hyperframes/
+**/.thumbnails/
