@@ -1,6 +1,6 @@
 ---
-title: "Auto-handoff near the usage limit: suggest or enforce, for Claude Code, Codex and Grok Build"
-description: "What SpecWeave does near a Claude Code or Codex usage limit: a heads-up at 95% by default or a handoff in enforce mode, the 30-minute reset rule, which hook fires in each tool, what gets pushed, and how \"pick up\" continues the work in the next tool."
+title: "Auto-handoff at the Claude Code usage limit"
+description: "SpecWeave auto-handoff warns at 95% of a Claude Code or Codex usage window and hands off by itself when a turn hits the limit, so another tool can pick up."
 ---
 
 # Auto-handoff rules

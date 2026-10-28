@@ -1,6 +1,6 @@
 ---
-title: "Spec-driven development tools: SpecWeave, OpenSpec, Spec Kit, BMAD and Kiro"
-description: "OpenSpec, GitHub Spec Kit, the BMAD Method, Kiro and SpecWeave compared: files, workflow, proof of done, and what happens when you switch AI coding tools mid-task."
+title: "Spec-driven development tools compared"
+description: "Spec-driven development tools compared: OpenSpec, GitHub Spec Kit, the BMAD Method, Kiro and SpecWeave, by files, workflow, proof of done and tool switching."
 slug: /compare/spec-driven-development-tools
 keywords: [openspec alternative, spec kit alternative, bmad method, kiro specs, spec-driven development tools, openspec vs spec kit]
 ---
