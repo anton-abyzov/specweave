@@ -1,5 +1,34 @@
 # Tutorial pipeline
 
+## Current narration rule (1109, October 27, 2026)
+
+For the five first-task tutorials, use only ElevenLabs **Anton Abyzov best voice**,
+`0Ki1af67ybTaTu4TNmO8`, model `eleven_v4`, speed `1.0`. No substitute voice or
+fallback is permitted. Keep natural speech timing and adjust the visuals.
+
+The five `scripts/vo.mjs` entrypoints now call `shared/narration.mjs`. Before
+synthesis it checks the live voice identity. Before reusing audio it requires a
+matching per-line receipt with the approved voice/model, exact input hash,
+output hash, successful status and request id. Legacy raw files without receipts
+are refused; use a new output directory, preserving the original recordings.
+It never silently regenerates a cached line or retries an uncertain paid request.
+
+Run the offline checks without a key or paid call:
+
+```sh
+node --test video/tutorials/shared/narration.test.mjs
+node video/tutorials/claude-code/scripts/vo.mjs video/tutorials/claude-code/scripts/vo-lines.json /path/to/new-output --check
+```
+
+Every new generated line has `<id>.receipt.json`. A `<id>.pending.json` without
+valid audio and receipt means the request outcome needs reconciliation before
+another submission. It is not permission to delete the marker and retry.
+
+The historical pipeline below describes the October 11 production. Existing
+configuration names the approved voice, but its raw audio has no request receipts,
+so that configuration cannot prove which voice synthesized a cached file. Do not
+describe the cache defect as proof of a particular wrong voice.
+
 How episode 1 (`claude-code/`) was made, as steps to repeat for the other five. SERIES.md holds the series rules; this file records what the pipeline actually is on SpecWithCode 0.2.6 and where it differs from SERIES.md.
 
 The scripts are in `claude-code/scripts/`. They take the episode folder or demo folder as an argument, so later episodes can call them from there or copy them.
@@ -40,7 +69,7 @@ The scripts are in `claude-code/scripts/`. They take the episode folder or demo 
 7. **VO:**
    - `scripts/vo-lines.json` holds each line in two forms: `text` (the captions) and `spoken` (the TTS input).
    - Run `XI_API_KEY=… node scripts/vo.mjs scripts/vo-lines.json <demo>/vo`, with the key loaded inside the same command.
-   - Each line is generated once. Delete a raw file to redo that line only. Episode 1's eight lines are about 900 characters per pass.
+   - Historical behavior generated a line only when its raw file was absent. That cache had no voice/script provenance. The current guarded entrypoints refuse it; preserve the original and generate into a fresh directory after preflight. Episode 1's eight lines were about 900 characters per pass.
    - Output is 48 kHz mono 24-bit WAV, trimmed to 0.15 s head and 0.3 s tail. Copy the WAVs into `media/`.
 8. **Word timings:**
    - Run `mlx_whisper <wav> --model mlx-community/whisper-large-v3-turbo --word-timestamps True --output-format json` per line.
