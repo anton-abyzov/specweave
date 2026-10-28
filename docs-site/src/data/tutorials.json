@@ -1477,414 +1477,6 @@
         "projects-and-threads",
         "specwithcode-tour"
       ]
-    },
-    {
-      "slug": "specwithcode-claude-code",
-      "product": "specwithcode",
-      "title": "Run your first task with Claude Code",
-      "seoTitle": "SpecWithCode with Claude Code: plan, build, review",
-      "summary": "Set up SpecWithCode with Claude Code, run one real task through a project, and review the result.",
-      "seoDescription": "Claude Code is on by default in SpecWithCode: confirm Ready to code in setup, then plan, build and review one task with SpecWeave skills.",
-      "outcome": "You end with Claude Code having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
-      "prerequisites": [
-        "SpecWeave installed with `npm i -g specweave`",
-        "SpecWithCode installed on a Mac",
-        "Claude Code signed in"
-      ],
-      "testedOn": "SpecWithCode 0.2.6",
-      "agent": "claude-code",
-      "agentsShown": [],
-      "video": {
-        "src": "/video/tutorials/claude-code.mp4",
-        "poster": "/video/tutorials/claude-code.jpg",
-        "captionsVtt": "/video/tutorials/claude-code.en.vtt",
-        "audio": "narrated",
-        "durationSeconds": 66.7,
-        "uploadDate": "2026-10-11",
-        "publishedAt": "2026-10-11T15:01:16Z",
-        "chapters": [
-          {
-            "start": 0,
-            "title": "Intro"
-          },
-          {
-            "start": 4,
-            "title": "Set up the repo"
-          },
-          {
-            "start": 10.5,
-            "title": "Connect Claude Code"
-          },
-          {
-            "start": 22,
-            "title": "Add the project"
-          },
-          {
-            "start": 33,
-            "title": "Plan"
-          },
-          {
-            "start": 44,
-            "title": "Build"
-          },
-          {
-            "start": 54.7,
-            "title": "Review"
-          },
-          {
-            "start": 62.7,
-            "title": "Next"
-          }
-        ],
-        "captionsBurnedIn": true
-      },
-      "steps": [
-        "In your repository, run `specweave init`. It adds AGENTS.md and the SpecWeave skills.",
-        "Open SpecWithCode. In setup, keep this computer and choose Continue. The Claude card should say Ready to code; if it does not, run `claude auth login` in a terminal first.",
-        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
-        "Pick Claude Code in the model picker. The recording sets Full access for the demo only.",
-        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
-        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
-        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
-      ],
-      "transcript": "captions",
-      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
-      "action": {
-        "label": "Download SpecWithCode for Mac",
-        "to": "/code"
-      },
-      "guide": null,
-      "related": [
-        "specwithcode-codex",
-        "projects-and-threads"
-      ]
-    },
-    {
-      "slug": "specwithcode-codex",
-      "product": "specwithcode",
-      "title": "Run your first task with Codex",
-      "seoTitle": "SpecWithCode with Codex: plan, build and review one task",
-      "summary": "Set up SpecWithCode with Codex, run one real task through a project, and review the result.",
-      "seoDescription": "Connect Codex in SpecWithCode setup with ChatGPT or your Codex CLI login, then plan, build and review one task with SpecWeave skills.",
-      "outcome": "You end with Codex having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
-      "prerequisites": [
-        "SpecWeave installed with `npm i -g specweave`",
-        "SpecWithCode installed on a Mac",
-        "Codex signed in"
-      ],
-      "testedOn": "SpecWithCode 0.2.6",
-      "agent": "codex",
-      "agentsShown": [],
-      "video": {
-        "src": "/video/tutorials/codex.mp4",
-        "poster": "/video/tutorials/codex.jpg",
-        "captionsVtt": "/video/tutorials/codex.en.vtt",
-        "audio": "narrated",
-        "durationSeconds": 72.7,
-        "uploadDate": "2026-10-11",
-        "publishedAt": "2026-10-11T15:01:16Z",
-        "chapters": [
-          {
-            "start": 0,
-            "title": "Intro"
-          },
-          {
-            "start": 4,
-            "title": "Set up the repo"
-          },
-          {
-            "start": 10.5,
-            "title": "Connect Codex"
-          },
-          {
-            "start": 28,
-            "title": "Add the project"
-          },
-          {
-            "start": 39,
-            "title": "Plan"
-          },
-          {
-            "start": 50,
-            "title": "Build"
-          },
-          {
-            "start": 60.7,
-            "title": "Review"
-          },
-          {
-            "start": 68.7,
-            "title": "Next"
-          }
-        ],
-        "captionsBurnedIn": true
-      },
-      "steps": [
-        "In your repository, run `specweave init`. It adds AGENTS.md and the SpecWeave skills.",
-        "Open SpecWithCode. In setup, keep this computer and choose Continue. On the Codex card, choose Continue with ChatGPT, or run `codex login` and then Use existing CLI. The card says Ready to code.",
-        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
-        "Pick Codex in the model picker. The recording sets Full access for the demo only.",
-        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
-        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
-        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
-      ],
-      "transcript": "captions",
-      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
-      "action": {
-        "label": "Download SpecWithCode for Mac",
-        "to": "/code"
-      },
-      "guide": null,
-      "related": [
-        "specwithcode-opencode",
-        "projects-and-threads"
-      ]
-    },
-    {
-      "slug": "specwithcode-opencode",
-      "product": "specwithcode",
-      "title": "Run your first task with OpenCode",
-      "seoTitle": "SpecWithCode with OpenCode: plan, build and review one task",
-      "summary": "Set up SpecWithCode with OpenCode, run one real task through a project, and review the result.",
-      "seoDescription": "Sign OpenCode in to a model provider, add it as a provider in SpecWithCode, then plan, build and review one task with SpecWeave skills.",
-      "outcome": "You end with OpenCode having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
-      "prerequisites": [
-        "SpecWeave installed with `npm i -g specweave`",
-        "SpecWithCode installed on a Mac",
-        "OpenCode signed in to a model provider"
-      ],
-      "testedOn": "SpecWithCode 0.2.6 with OpenCode 2.0.26",
-      "agent": "opencode",
-      "agentsShown": [],
-      "video": {
-        "src": "/video/tutorials/opencode.mp4",
-        "poster": "/video/tutorials/opencode.jpg",
-        "captionsVtt": "/video/tutorials/opencode.en.vtt",
-        "audio": "narrated",
-        "durationSeconds": 70.9,
-        "uploadDate": "2026-10-11",
-        "publishedAt": "2026-10-11T15:01:16Z",
-        "chapters": [
-          {
-            "start": 0,
-            "title": "Intro"
-          },
-          {
-            "start": 4,
-            "title": "Set up the repo"
-          },
-          {
-            "start": 10.5,
-            "title": "Connect OpenCode"
-          },
-          {
-            "start": 26.2,
-            "title": "Add the project"
-          },
-          {
-            "start": 37.2,
-            "title": "Plan"
-          },
-          {
-            "start": 48.2,
-            "title": "Build"
-          },
-          {
-            "start": 58.9,
-            "title": "Review"
-          },
-          {
-            "start": 66.9,
-            "title": "Next"
-          }
-        ],
-        "captionsBurnedIn": true
-      },
-      "steps": [
-        "In your repository, run `specweave init`. It adds AGENTS.md and the SpecWeave skills.",
-        "Run `opencode auth login` in a terminal to sign OpenCode in to a model provider.",
-        "Open SpecWithCode, then Settings, Providers. Choose Add provider, pick OpenCode, choose Next twice, then Add instance.",
-        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
-        "Pick OpenCode in the model picker. The recording sets Full access for the demo only.",
-        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
-        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
-        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
-      ],
-      "transcript": "captions",
-      "note": "Recorded on SpecWithCode 0.2.6 with OpenCode 2.0.26 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
-      "action": {
-        "label": "Download SpecWithCode for Mac",
-        "to": "/code"
-      },
-      "guide": null,
-      "related": [
-        "specwithcode-grok",
-        "projects-and-threads"
-      ]
-    },
-    {
-      "slug": "specwithcode-antigravity",
-      "product": "specwithcode",
-      "title": "Run your first task with Antigravity and Gemini",
-      "seoTitle": "SpecWithCode with Antigravity: plan, build, review",
-      "summary": "Set up SpecWithCode with Antigravity and Gemini, run one real task through a project, and review the result.",
-      "seoDescription": "Add Antigravity in SpecWithCode, install its own runtime, sign in with Google, then plan, build and review one task with SpecWeave skills.",
-      "outcome": "You end with Antigravity having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
-      "prerequisites": [
-        "SpecWeave installed with `npm i -g specweave`",
-        "SpecWithCode installed on a Mac",
-        "A Google account for Antigravity"
-      ],
-      "testedOn": "SpecWithCode 0.2.8 with Antigravity 1.3.0",
-      "agent": "antigravity",
-      "agentsShown": [],
-      "video": {
-        "src": "/video/tutorials/antigravity.mp4",
-        "poster": "/video/tutorials/antigravity.jpg",
-        "captionsVtt": "/video/tutorials/antigravity.en.vtt",
-        "audio": "narrated",
-        "durationSeconds": 74.7,
-        "uploadDate": "2026-10-11",
-        "publishedAt": "2026-10-12T02:34:23Z",
-        "chapters": [
-          {
-            "start": 0,
-            "title": "Intro"
-          },
-          {
-            "start": 4,
-            "title": "Set up the repo"
-          },
-          {
-            "start": 11.2,
-            "title": "Connect Antigravity"
-          },
-          {
-            "start": 25.4,
-            "title": "Add the project"
-          },
-          {
-            "start": 40.1,
-            "title": "Plan"
-          },
-          {
-            "start": 53.2,
-            "title": "Build"
-          },
-          {
-            "start": 62.7,
-            "title": "Review"
-          },
-          {
-            "start": 70.7,
-            "title": "Next"
-          }
-        ],
-        "captionsBurnedIn": true
-      },
-      "steps": [
-        "In your repository, run `specweave init` with the Antigravity adapter. It adds AGENTS.md and the SpecWeave skills.",
-        "Open SpecWithCode, then Settings, Providers. Choose Add provider and pick Antigravity; SpecWithCode installs its own Antigravity agent.",
-        "Choose Sign in and finish with your Google account in the browser.",
-        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
-        "Pick Antigravity in the model picker. The recording sets Full access for the demo only.",
-        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
-        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
-        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
-      ],
-      "transcript": "captions",
-      "note": "Recorded on SpecWithCode 0.2.8 with Antigravity 1.3.0 and Gemini 3.8 Flash (High) with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own Google account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
-      "action": {
-        "label": "Download SpecWithCode for Mac",
-        "to": "/code"
-      },
-      "guide": null,
-      "related": [
-        "specwithcode-claude-code",
-        "projects-and-threads"
-      ]
-    },
-    {
-      "slug": "specwithcode-grok",
-      "product": "specwithcode",
-      "title": "Run your first task with Grok",
-      "seoTitle": "SpecWithCode with Grok: plan, build and review one task",
-      "summary": "Set up SpecWithCode with Grok, run one real task through a project, and review the result.",
-      "seoDescription": "Run grok --trust so Grok loads project skills, add Grok as an existing-CLI provider in SpecWithCode, then plan, build and review one task.",
-      "outcome": "You end with Grok having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
-      "prerequisites": [
-        "SpecWeave installed with `npm i -g specweave`",
-        "SpecWithCode installed on a Mac",
-        "Grok signed in"
-      ],
-      "testedOn": "SpecWithCode 0.2.6",
-      "agent": "grok",
-      "agentsShown": [],
-      "video": {
-        "src": "/video/tutorials/grok.mp4",
-        "poster": "/video/tutorials/grok.jpg",
-        "captionsVtt": "/video/tutorials/grok.en.vtt",
-        "audio": "narrated",
-        "durationSeconds": 83.6,
-        "uploadDate": "2026-10-11",
-        "publishedAt": "2026-10-11T15:01:16Z",
-        "chapters": [
-          {
-            "start": 0,
-            "title": "Intro"
-          },
-          {
-            "start": 4,
-            "title": "Set up the repo"
-          },
-          {
-            "start": 22.6,
-            "title": "Connect Grok"
-          },
-          {
-            "start": 36.3,
-            "title": "Add the project"
-          },
-          {
-            "start": 48.3,
-            "title": "Plan"
-          },
-          {
-            "start": 61.3,
-            "title": "Build"
-          },
-          {
-            "start": 71.6,
-            "title": "Review"
-          },
-          {
-            "start": 79.6,
-            "title": "Next"
-          }
-        ],
-        "captionsBurnedIn": true
-      },
-      "steps": [
-        "In your repository, run `specweave init` with the generic adapter. It adds AGENTS.md and the SpecWeave skills.",
-        "In the repository, run `grok --trust` once, because Grok skips project skills in folders it does not trust. If you are signed out, run `grok login` first.",
-        "Open SpecWithCode, then Settings, Providers. Grok is off by default: choose Add provider, pick Grok and existing CLI, choose Next twice, then Add instance.",
-        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
-        "Pick Grok in the model picker. The recording sets Full access for the demo only.",
-        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
-        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
-        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
-      ],
-      "transcript": "captions",
-      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
-      "action": {
-        "label": "Download SpecWithCode for Mac",
-        "to": "/code"
-      },
-      "guide": null,
-      "related": [
-        "specwithcode-antigravity",
-        "projects-and-threads"
-      ]
     }
   ],
   "planned": [
@@ -1945,6 +1537,96 @@
       "targetSeconds": 80
     },
     {
+      "slug": "specwithcode-claude-code",
+      "product": "specwithcode",
+      "title": "Run your first task with Claude Code",
+      "outcome": "You end with Claude Code having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "beats": [
+        "Intro",
+        "Set up the repo",
+        "Connect Claude Code",
+        "Add the project",
+        "Plan",
+        "Build",
+        "Review",
+        "Next"
+      ],
+      "targetSeconds": 67,
+      "agent": "claude-code"
+    },
+    {
+      "slug": "specwithcode-codex",
+      "product": "specwithcode",
+      "title": "Run your first task with Codex",
+      "outcome": "You end with Codex having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "beats": [
+        "Intro",
+        "Set up the repo",
+        "Connect Codex",
+        "Add the project",
+        "Plan",
+        "Build",
+        "Review",
+        "Next"
+      ],
+      "targetSeconds": 73,
+      "agent": "codex"
+    },
+    {
+      "slug": "specwithcode-opencode",
+      "product": "specwithcode",
+      "title": "Run your first task with OpenCode",
+      "outcome": "You end with OpenCode having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "beats": [
+        "Intro",
+        "Set up the repo",
+        "Connect OpenCode",
+        "Add the project",
+        "Plan",
+        "Build",
+        "Review",
+        "Next"
+      ],
+      "targetSeconds": 71,
+      "agent": "opencode"
+    },
+    {
+      "slug": "specwithcode-grok",
+      "product": "specwithcode",
+      "title": "Run your first task with Grok",
+      "outcome": "You end with Grok having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "beats": [
+        "Intro",
+        "Set up the repo",
+        "Connect Grok",
+        "Add the project",
+        "Plan",
+        "Build",
+        "Review",
+        "Next"
+      ],
+      "targetSeconds": 84,
+      "agent": "grok"
+    },
+    {
+      "slug": "specwithcode-antigravity",
+      "product": "specwithcode",
+      "title": "Run your first task with Antigravity and Gemini",
+      "outcome": "You end with Antigravity having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "beats": [
+        "Intro",
+        "Set up the repo",
+        "Connect Antigravity",
+        "Add the project",
+        "Plan",
+        "Build",
+        "Review",
+        "Next"
+      ],
+      "targetSeconds": 75,
+      "agent": "antigravity"
+    },
+    {
       "slug": "specwithcode-cursor",
       "product": "specwithcode",
       "title": "Run your first task with Cursor",
@@ -1991,20 +1673,6 @@
         "agents-use-a-browser",
         "specwithcode-browser",
         "agents-use-your-mac-and-chrome"
-      ]
-    },
-    {
-      "id": "your-agent-in-specwithcode",
-      "product": "specwithcode",
-      "title": "Your agent in SpecWithCode",
-      "summary": "One short tutorial per coding agent. Each connects the agent to SpecWithCode, plans one small change with a SpecWeave skill, builds it and reviews the result.",
-      "steps": [
-        "specwithcode-claude-code",
-        "specwithcode-codex",
-        "specwithcode-cursor",
-        "specwithcode-opencode",
-        "specwithcode-grok",
-        "specwithcode-antigravity"
       ]
     },
     {

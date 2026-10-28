@@ -53,7 +53,7 @@ const BUILT = [
 ];
 
 /** Guides shown on the home page, in order; any other published guide fills a gap. */
-const FEATURED_TUTORIALS = ['how-specwithcode-works', 'specwithcode-codex', 'specwithcode-tour'];
+const FEATURED_TUTORIALS = ['how-specwithcode-works', 'start-specwithcode', 'specwithcode-tour'];
 
 function featuredTutorials(): Tutorial[] {
   const published = TUTORIALS.filter((t) => t.status === 'published' && t.src);

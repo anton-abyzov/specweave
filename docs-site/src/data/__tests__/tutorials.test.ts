@@ -77,7 +77,7 @@ describe('tutorial catalogue v2', () => {
   });
 
   it('resolves learning paths into published steps and a count of planned ones', () => {
-    expect(PATHS.map(p => p.title)).toEqual(['Run work across agents', 'Run SpecWithCode', 'Your agent in SpecWithCode', 'Ship a skill']);
+    expect(PATHS.map(p => p.title)).toEqual(['Run work across agents', 'Run SpecWithCode', 'Ship a skill']);
     for (const path of PATHS) {
       const {published, planned} = resolvePath(path);
       expect(published.length + planned.length).toBe(path.steps.length);
@@ -87,12 +87,9 @@ describe('tutorial catalogue v2', () => {
     expect(pathsFor('find-and-install-a-skill')).toEqual([]);
   });
 
-  it('runs the per-agent series in order, with the planned Cursor episode counted', () => {
-    const series = PATHS.find(p => p.id === 'your-agent-in-specwithcode')!;
-    const {published, planned} = resolvePath(series);
-    expect(published.map(t => t.agent)).toEqual(['claude-code', 'codex', 'opencode', 'grok', 'antigravity']);
-    expect(planned.map(p => p.slug)).toEqual(['specwithcode-cursor']);
-    for (const t of published) expect(t.agentNotes?.length).toBeGreaterThan(0);
+  it('keeps the per-agent first-task episodes planned while they are re-recorded', () => {
+    const agents = PLANNED.filter(p => p.slug.startsWith('specwithcode-') && p.agent).map(p => p.agent);
+    expect(agents).toEqual(['claude-code', 'codex', 'opencode', 'grok', 'antigravity', 'cursor']);
   });
 
   it('links every published guide from another guide or a learning path', () => {
