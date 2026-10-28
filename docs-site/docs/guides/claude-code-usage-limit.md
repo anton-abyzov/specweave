@@ -1,6 +1,6 @@
 ---
 title: "Claude Code usage limit reached: what to do next"
-description: "How Claude Code's five-hour and weekly usage limits work, how to check what you have left, and how to keep working when you hit one: wait, buy more, or hand the task to Codex or another account without losing your place."
+description: "Hit the Claude Code usage limit? How the five-hour and weekly windows work, how to check what is left, and how to keep working in Codex or another account."
 slug: /guides/claude-code-usage-limit
 keywords: [claude code usage limit, claude code limit reached, claude code weekly limit, claude usage limit reached, claude code 5 hour limit, claude code rate limit, what to do when claude code runs out, claude code out of tokens]
 ---
@@ -110,5 +110,6 @@ Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) hav
 - [Auto-handoff rules](/docs/guides/auto-handoff/)
 - [Auto-compact at 400K](/docs/guides/claude-code-auto-compact/)
 - [Claude Code vs Codex: use both](/docs/guides/claude-code-vs-codex/)
+- [Spec-driven development tools compared](/docs/compare/spec-driven-development-tools/): OpenSpec, Spec Kit, BMAD, Kiro and SpecWeave
 - [Claude Code Projects and threads](/docs/guides/claude-code-projects/)
 - [SpecWithCode](/code/): run several coding agents on your own machines

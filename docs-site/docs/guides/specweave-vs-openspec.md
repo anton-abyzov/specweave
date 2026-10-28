@@ -1,6 +1,6 @@
 ---
-title: "SpecWeave vs OpenSpec: spec-driven development compared"
-description: "OpenSpec and SpecWeave compared side by side: files, commands, how each tracks progress and proves a task is done, and what happens when you switch from Claude Code to Codex in the middle of a change."
+title: "OpenSpec vs SpecWeave: spec-driven tools"
+description: "OpenSpec explained and compared with SpecWeave: proposals, specs and archives versus one spec file, task evidence and handoff from Claude Code to Codex."
 slug: /compare/specweave-vs-openspec
 keywords: [openspec, openspec vs specweave, openspec alternative, openspec claude code, openspec codex, opsx, spec-driven development, openspec review]
 ---
@@ -48,6 +48,17 @@ This page describes OpenSpec as [its repository](https://github.com/Fission-AI/O
 ## Using both
 
 They don't conflict. Keep OpenSpec's `openspec/specs/` as the description of the system, and when a change is big enough to span sessions, copy its proposal into an increment: requirements into Acceptance Criteria, `design.md` into Approach, and `tasks.md` into the Tasks section. Then claim, prove and hand off the tasks with SpecWeave, and archive the change in OpenSpec when it ships.
+
+## OpenSpec alternatives
+
+Each of these gives an AI coding agent a written spec. They differ in how much they plan up front and what they track while the work is built. The facts below come from the comparison pages linked on each line.
+
+- **GitHub Spec Kit**: a Python CLI (`specify`) plus slash commands, with a feature folder holding `spec.md`, `plan.md` and `tasks.md`. See [GitHub Spec Kit vs SpecWeave](/docs/compare/specweave-vs-github-spec-kit/).
+- **The BMAD Method**: agent personas and workflows that produce a brief, a PRD, an architecture document and one file per story. See [BMAD Method vs SpecWeave](/docs/compare/specweave-vs-bmad-method/).
+- **Kiro**: an IDE from AWS that writes `requirements.md`, `design.md` and `tasks.md` under `.kiro/specs/`, with the spec workflow built into the editor. See [Spec-driven development tools compared](/docs/compare/spec-driven-development-tools/#kiro).
+- **SpecWeave**: one `spec.md` per increment, an append-only ledger with test evidence, and handoff between tools and accounts, as described above.
+
+All five side by side: [Spec-driven development tools compared](/docs/compare/spec-driven-development-tools/). Every comparison page, including coding agents and desktop workspaces: [Compare](/docs/compare/).
 
 ## See also
 

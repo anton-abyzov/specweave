@@ -1,6 +1,6 @@
 ---
-title: "Skills, Plugins & Marketplaces Explained"
-description: "The definitive guide to Claude Code skills, plugins, and marketplaces — what they are, how they relate, and how SpecWeave uses them at scale"
+title: "Claude Code skills, plugins and marketplaces"
+description: "Claude Code skills, plugins and marketplaces explained: SKILL.md structure, plugin.json, marketplace.json, how to install each, and which also work in Codex."
 keywords: [skills, plugins, marketplace, SKILL.md, plugin.json, marketplace.json, claude code, fundamentals]
 ---
 
@@ -451,3 +451,6 @@ This loads "skill memories" — corrections you've made that persist across sess
 - [Claude Code Plugins Docs](https://code.claude.com/docs/en/plugins) — Creating and distributing plugins
 - [SpecWeave Skills](/docs/reference/skills) — The SpecWeave skill set
 - [verified-skill.com](https://verified-skill.com) — The trusted skill registry
+- [Claude Code skills on Verified Skill](https://verified-skill.com/claude-code-skills) — Browse Claude Code skills by category, with their security scans
+- [How Verified Skill scores trust](https://verified-skill.com/trust) — Trust tiers and blocked skills
+- [AGENTS.md vs CLAUDE.md vs skills](/docs/guides/agents-md-vs-claude-md/) — What belongs in an instruction file and what belongs in a skill

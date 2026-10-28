@@ -1,6 +1,6 @@
 ---
-title: "SpecWeave vs the BMAD Method: planning depth vs keeping your place"
-description: "The BMAD Method and SpecWeave compared: agent roles and planning documents versus one short spec, task evidence and handoff between Claude Code, Codex and other tools."
+title: "BMAD Method vs SpecWeave: planning compared"
+description: "The BMAD Method's agent roles and planning documents compared with SpecWeave's one short spec, task evidence and handoff between Claude Code and Codex."
 slug: /compare/specweave-vs-bmad-method
 keywords: [bmad method, bmad method vs specweave, bmad alternative, bmad method claude code, bmad method codex, bmad v6, spec-driven development, ai agile development]
 ---

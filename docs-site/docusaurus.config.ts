@@ -70,6 +70,7 @@ const config: Config = {
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'SoftwareApplication',
+        '@id': 'https://spec-weave.com/#cli',
         name: 'SpecWeave',
         description:
           'Open-source CLI that keeps AI coding work in git as a short spec, an append-only task ledger and a handoff, so Claude Code, Codex, Grok Build, Gemini CLI or another account can pick up where the last session stopped.',
@@ -346,7 +347,7 @@ const config: Config = {
         {to: '/product', label: 'CLI', position: 'left'},
         {type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Docs'},
         {to: '/tutorials', label: 'Tutorials', position: 'left'},
-        {href: 'https://verified-skill.com', label: 'Verified Skill', position: 'right'},
+        {href: 'https://verified-skill.com/claude-code-skills', label: 'Verified Skill', position: 'right'},
         {to: '/pricing', label: 'Pricing', position: 'right'},
         {
           href: 'https://github.com/anton-abyzov/specweave',

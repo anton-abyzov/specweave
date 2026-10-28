@@ -1,10 +1,10 @@
 ---
-title: "Skills"
-description: "SpecWeave adds two complementary layers to the AI agent skill ecosystem: Extensible Skills for customization and Verified Skills for trust"
+title: "Agent skills: extensible and verified"
+description: "Agent skills for Claude Code, Codex and Cursor: how SpecWeave makes skills extensible, and how Verified Skill scans them for security before you install."
 keywords: [skills, extensible-skills, verified-skills, v-skills, standards, AI agent skills]
 ---
 
-# Skills
+# Agent skills
 
 Skills extend what AI coding agents can do -- structured markdown files that define how an agent behaves in specific domains. Unlike opaque tool integrations, skills are readable, auditable, and customizable.
 
@@ -94,3 +94,6 @@ A skill can be both **verified** (passed security certification) and **extensibl
 - **[vskill CLI Reference](/docs/skills/vskill-cli)** — Complete command reference for the skill package manager
 - **[SpecWeave Skills](/docs/reference/skills)** — The SpecWeave skill set
 - **[verified-skill.com](https://verified-skill.com)** — The trusted skill registry
+- **[Claude Code skills on Verified Skill](https://verified-skill.com/claude-code-skills)** — Browse Claude Code skills by category, with their security scans
+- **[How Verified Skill scores trust](https://verified-skill.com/trust)** — Trust tiers and blocked skills
+- **[AGENTS.md vs CLAUDE.md vs skills](/docs/guides/agents-md-vs-claude-md/)** — What belongs in an instruction file and what belongs in a skill

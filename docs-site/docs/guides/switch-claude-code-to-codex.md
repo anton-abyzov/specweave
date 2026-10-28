@@ -1,5 +1,5 @@
 ---
-title: "How to continue a Claude Code task in Codex when you hit the limit"
+title: "Switch from Claude Code to Codex mid-task"
 description: "Move a half-finished task from Claude Code to Codex and back: what carries over, the two commands that do it, and what to check before you switch."
 slug: /guides/switch-claude-code-to-codex
 keywords: [switch from claude code to codex, move from claude code to codex, continue claude code session in codex, claude code to codex handoff, codex to claude code, switch ai coding tools mid task, claude code out of usage switch to codex]
@@ -134,4 +134,7 @@ It needs only `git` and a shell. If `specweave` is installed it uses it; otherwi
 - [Auto-handoff rules](/docs/guides/auto-handoff/)
 - [Claude Code vs Codex: use both](/docs/guides/claude-code-vs-codex/)
 - [Claude Code usage limit reached: what to do next](/docs/guides/claude-code-usage-limit/)
+- [What goes in handoff.md](/docs/guides/handoff-md/): the file the next agent reads, with a template
+- [Switch from Claude Code to OpenCode](/docs/guides/switch-claude-code-to-opencode/) or [to Cursor](/docs/guides/switch-claude-code-to-cursor/)
+- [Spec-driven development tools compared](/docs/compare/spec-driven-development-tools/): OpenSpec, Spec Kit, BMAD, Kiro and SpecWeave
 - [SpecWithCode](/code/): run several coding agents on your own machines
