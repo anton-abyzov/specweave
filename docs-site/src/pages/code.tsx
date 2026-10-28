@@ -5,6 +5,7 @@ import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
 import {Check, ChevronDown, Cloud, Copy, Download, Info, Users} from 'lucide-react';
 import CoordinatorFlow from '../components/ecosystem/CoordinatorFlow';
+import HeroFlow from '../components/ecosystem/HeroFlow';
 import SubscriptionValue from '../components/ecosystem/SubscriptionValue';
 import WhySpecWithCode from '../components/ecosystem/WhySpecWithCode';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
@@ -239,13 +240,7 @@ export default function Code() {
         </div>
 
         <div className={styles.heroShot}>
-          <figure className="wv-window">
-            <div className="wv-window__bar"><span>One brief, two workers</span><span>Actual app capture · 1.0.76</span></div>
-            <a href="/img/studio/coordinator-delegation-20261024.png" aria-label="Open the full-size coordinator screenshot">
-              <img src="/img/studio/coordinator-delegation-20261024.png" width="1520" height="360" alt="Actual coordinator delegating opening copy to Claude Code and order arithmetic to Codex, with both workers marked Done" fetchPriority="high" />
-            </a>
-            <figcaption>Real app, fictional coffee orders. Recorded in SpecWithCode 1.0.76, October 24, 2026. <a className="wv-link" href="#real-run">Step through a real run</a></figcaption>
-          </figure>
+          <HeroFlow />
           <p className={styles.requirements}>Early access for macOS 13 or later on Apple silicon, Windows 10 and 11 (x64), and Linux (x64). Mac releases are signed and notarized; Windows and Linux installers are unsigned. <Link className="wv-link" to="/code/download/">Downloads, versions and installation steps</Link></p>
           <div className={clsx('wv-note', styles.qualification)}>
             <Info {...icon} />
