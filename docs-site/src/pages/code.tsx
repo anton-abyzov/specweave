@@ -98,7 +98,8 @@ const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-2026102
 /** The SpecWithCode explainer on the AI Power YouTube channel. */
 const EXPLAINER_URL = 'https://www.youtube.com/watch?v=eCLJSZ8wo9w';
 const tour = getTutorial('specwithcode-tour');
-// Server-rendered list of every SpecWithCode guide; the per-agent series gets its own heading.
+// Server-rendered list of every SpecWithCode guide; the per-agent series gets its own heading
+// once its path is published again (its episodes are being re-recorded).
 const agentPath = PATHS.find(p => p.id === 'your-agent-in-specwithcode');
 const AGENT_GUIDES = agentPath ? resolvePath(agentPath).published : [];
 const OTHER_GUIDES = byRecency(TUTORIALS.filter(t => t.product === 'specwithcode' && !AGENT_GUIDES.includes(t)));
