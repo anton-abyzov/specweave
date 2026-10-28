@@ -7,7 +7,7 @@ keywords: [handoff.md, claude code handoff, claude code handoff prompt, claude c
 
 # handoff.md: what goes in an AI agent handoff
 
-`handoff.md` is a short Markdown file that tells the next AI coding agent where the last one stopped. Codex, Cursor, OpenCode or a second Claude Code account can't read Claude Code's session, so anything not written down is lost when you switch. A good handoff is under a page: the reason you stopped, what is done, what you decided, which files have uncommitted edits, and the one next step.
+`handoff.md` is a short Markdown file that tells the next AI coding agent where the last one stopped. Codex, Cursor, OpenCode or a Claude Code session on another machine can't read this session, so anything not written down is lost when you switch. A good handoff is under a page: the reason you stopped, what is done, what you decided, which files have uncommitted edits, and the one next step.
 
 ## What handoff.md is
 
@@ -31,11 +31,11 @@ Keep secrets out of it. `specweave handoff` scrubs secrets from the free-text fi
 
 ## Template
 
-Copy this into `handoff.md` when you write one by hand:
+Copy this into `handoff.md` when you write one by hand. It is a simplified version of the generated file, which also ends with a `Doc format v2` marker:
 
 ```markdown
 # Handoff — 0042 Resumable checkout
-agent: claude@laptop · 2026-10-28T14:05Z · branch feat/restore @ 3f2a9c1 · tree: 3 uncommitted
+agent: claude@laptop · 2026-10-28T14:05Z · branch feat/restore @ 3f2a9c1 · tree: 3 uncommitted · redactions: 0
 active claims: none · released: T-02
 
 ## Where I left off
