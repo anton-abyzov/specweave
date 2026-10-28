@@ -11,7 +11,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ledgerPath, readLedger, type LedgerEvent } from '../tasks/ledger.js';
+import { foldLedger, ledgerPath, readLedger, type LedgerEvent } from '../tasks/ledger.js';
+import { ACCEPTED_SKIP_LABEL, deriveAcAcceptance } from '../tasks/accepted-skip.js';
 import { loadTaskBoard } from '../tasks/task-board.js';
 import { hasTasksFile } from '../tasks/tasks-source.js';
 import { readSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
@@ -31,7 +32,7 @@ export function buildHandoffReport(incDir: string, incrementId: string, now = ne
   const { events } = readLedger(ledgerPath(incDir));
   const sorted = [...events].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
   const board = hasTasksFile(incDir) ? safe(() => loadTaskBoard(incDir)) : undefined;
-  const acs = board ? deriveAcStatus(readSpecAcs(incDir), board) : readSpecAcs(incDir);
+  const acs = deriveAcAcceptance(board ? deriveAcStatus(readSpecAcs(incDir), board) : readSpecAcs(incDir), board ?? null, board?.fold.acceptedSkips ?? foldLedger(events).acceptedSkips);
   const title = readTitle(incDir) || incrementId;
   const status = safe(() => (JSON.parse(fs.readFileSync(path.join(incDir, 'metadata.json'), 'utf8')) as { status?: string }).status) ?? 'unknown';
 
@@ -61,7 +62,10 @@ export function buildHandoffReport(incDir: string, incrementId: string, now = ne
     `<td>${t.state.by ? `<span class="who ${toolClass(t.state.by)}">${esc(t.state.by)}</span>` : ''}</td></tr>`).join('\n');
 
   const acRows = acs.map((a) =>
-    `<li class="${a.done ? 'met' : ''}"><b>${esc(a.id)}</b> ${esc(a.text)}${a.done && a.via === 'ledger' ? ' <small>(met by its tasks)</small>' : ''}</li>`).join('\n');
+    `<li class="${a.done ? 'met' : a.acceptance === 'skipped-accepted' ? 'accepted' : ''}"><b>${esc(a.id)}</b> ${esc(a.text)}` +
+    `${a.done && a.via === 'ledger' ? ' <small>(met by its tasks)</small>' : ''}` +
+    `${a.acceptance === 'skipped-accepted' ? ` <small>(${esc(ACCEPTED_SKIP_LABEL)}: ${esc(a.waivers.map((w) => w.check).join(', '))})</small>` : ''}` +
+    `${a.acceptance === 'mixed' ? ` <small>(also ${esc(a.waivers.length === 1 ? 'one accepted skip' : `${a.waivers.length} accepted skips`)}, not verified)</small>` : ''}</li>`).join('\n');
 
   const html = `<!doctype html>
 <html lang="en">
@@ -83,7 +87,7 @@ td.t{white-space:nowrap;color:var(--mut)}td.d{white-space:pre-wrap;font-family:u
 .who{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:1px 6px;border-radius:6px;border:1px solid currentColor;white-space:nowrap}
 .claude{color:var(--claude)}.codex{color:var(--codex)}.grok{color:var(--grok)}.muse{color:var(--muse)}.gemini{color:var(--gemini)}.other{color:var(--other)}
 .st{font-size:12.5px;padding:1px 6px;border-radius:6px;background:var(--line)}.st.done{background:var(--acc);color:var(--bg)}
-ul.acs{padding-left:18px}ul.acs li.met{color:var(--acc)}ul.acs li.met::marker{content:"✓ "}footer{color:var(--mut);font-size:13px;margin-top:32px}
+ul.acs{padding-left:18px}ul.acs li.met{color:var(--acc)}ul.acs li.met::marker{content:"✓ "}ul.acs li.accepted{color:var(--mut)}ul.acs li.accepted::marker{content:"– "}footer{color:var(--mut);font-size:13px;margin-top:32px}
 </style>
 </head>
 <body>

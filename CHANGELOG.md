@@ -1,3 +1,10 @@
+## [Unreleased]
+
+### Changed
+
+- `specweave ac accept-skip` refuses an AC that no task cites unless `--uncovered` confirms it, because one accepted skip then closes the whole AC. Verify marks such ACs `uncovered` (verify.json, verify.md and a closure notice). `--check`, `--accepted-by`, `--reason` and `--authorization` are capped at 100, 100, 1,000 and 2,000 characters.
+- `pickup --json` reports accepted skips for increments without tasks, matching `ac list` and `verify`. `handoff --all`, the HTML handoff report and the handoff doc label skipped-accepted ACs "Accepted skip (not verified)".
+
 ## [3.1.15] - 2026-10-27
 
 ### Added

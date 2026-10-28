@@ -16,7 +16,7 @@ import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { getAgentId, ledgerPath, readIncrementEvents, readLedger, type LedgerEvent } from '../tasks/ledger.js';
+import { foldLedgerFile, getAgentId, ledgerPath, readIncrementEvents, readLedger, type LedgerEvent } from '../tasks/ledger.js';
 import { loadTaskBoard, nextTask, type TaskBoard } from '../tasks/task-board.js';
 import { hasTasksFile } from '../tasks/tasks-source.js';
 import { incrementsDir, listActiveIncrementIds, listStartableIncrementIds, readLeaseHours } from '../tasks/resolve-increment.js';
@@ -129,7 +129,10 @@ function describeFocus(projectRoot: string, dir: string, id: string, agent: stri
   const title = readTitle(dir);
   const status = readStatus(dir);
   const board = safeBoard(dir, leaseHours);
-  const acs = deriveAcAcceptance(board ? deriveAcStatus(readSpecAcs(dir), board) : readSpecAcs(dir), board);
+  // Without a task board the ledger still holds the accepted skips.
+  const acs = board
+    ? deriveAcAcceptance(deriveAcStatus(readSpecAcs(dir), board), board)
+    : deriveAcAcceptance(readSpecAcs(dir), null, foldLedgerFile(ledgerPath(dir)).acceptedSkips);
   const metAcs = acs.filter((a) => a.done).length;
   const acceptedAcs = acs.filter((a) => a.acceptance === 'skipped-accepted').length;
   const counts = board?.counts;

@@ -68,6 +68,8 @@ export interface VerifyAcItem {
   acceptance: AcAcceptance;
   /** Accepted skips recorded for this AC; never verification. */
   waivers: AcWaiver[];
+  /** Skipped-accepted although no task cites the AC; check nothing cites it in another form. */
+  uncovered?: boolean;
 }
 
 export interface AcEntry {
@@ -223,7 +225,7 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
       done: acs.filter((a) => a.done).length,
       skippedAccepted: acs.filter((a) => a.acceptance === 'skipped-accepted').length,
       mixed: acs.filter((a) => a.acceptance === 'mixed').length,
-      items: acs.map((a) => ({ id: a.id, done: a.done, via: a.via ?? 'none', tasks: a.tasks ?? [], acceptance: a.acceptance, waivers: a.waivers })),
+      items: acs.map((a) => ({ id: a.id, done: a.done, via: a.via ?? 'none', tasks: a.tasks ?? [], acceptance: a.acceptance, waivers: a.waivers, ...(a.uncovered ? { uncovered: true } : {}) })),
     },
     tasks: { total: board.counts.total, done: board.counts.done, skipped: board.counts.skipped, open: board.counts.total - board.counts.done - board.counts.skipped },
     skipped: board.tasks
@@ -244,7 +246,7 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
   return { report, results, acs, board, source: detected.source, mdPath, jsonPath };
 }
 
-export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResult[], acs: Array<AcEntry & { acceptance?: AcAcceptance }>, board: TaskBoard, source: string): string {
+export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResult[], acs: Array<AcEntry & { acceptance?: AcAcceptance; uncovered?: true }>, board: TaskBoard, source: string): string {
   const L: string[] = [];
   L.push(`# Verify — ${report.increment}`);
   L.push('');
@@ -283,6 +285,10 @@ export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResul
       L.push(`- ${s.ac} check \`${flat(s.check)}\` — ${flat(s.reason)}. Accepted by ${flat(s.acceptedBy)} at ${s.acceptedAt}; authorization: ${flat(s.authorization)} (recorded by ${s.by} at ${s.at})`);
     }
     L.push('');
+    for (const a of acs.filter((x) => x.uncovered)) {
+      L.push(`_${a.id} has no task citing it, so its accepted skips alone closed it. Check that no task cites ${a.id} in a form the parser does not read._`);
+    }
+    if (acs.some((x) => x.uncovered)) L.push('');
   }
   L.push('## Tasks (ledger)');
   L.push('');

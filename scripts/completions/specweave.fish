@@ -132,6 +132,7 @@ complete -c specweave -n "__fish_seen_subcommand_from ac" -l reason -d "With acc
 complete -c specweave -n "__fish_seen_subcommand_from ac" -l accepted-by -d "With accept-skip: the person who accepted the skip (required)"
 complete -c specweave -n "__fish_seen_subcommand_from ac" -l authorization -d "With accept-skip: their words, quoted, or a message/thread reference (required)"
 complete -c specweave -n "__fish_seen_subcommand_from ac" -l accepted-at -d "With accept-skip: when they accepted it, ISO-8601 (default: now)"
+complete -c specweave -n "__fish_seen_subcommand_from ac" -l uncovered -d "With accept-skip: confirm skipping on an AC no task cites (it closes the whole AC)"
 complete -c specweave -n "__fish_seen_subcommand_from ac" -l no-commit -d "Skip the git.autoCommitIncrement commit of the increment files"
 complete -c specweave -n "__fish_seen_subcommand_from ac" -l json -d "Machine-readable output"
 complete -c specweave -n "__fish_seen_subcommand_from ac" -l workspace -d "Select the planning workspace explicitly"

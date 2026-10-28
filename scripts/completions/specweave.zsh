@@ -162,6 +162,7 @@ _specweave() {
                         '--accepted-by[With accept-skip\: the person who accepted the skip (required)]' \
                         '--authorization[With accept-skip\: their words, quoted, or a message/thread reference (required)]' \
                         '--accepted-at[With accept-skip\: when they accepted it, ISO-8601 (default\: now)]' \
+                        '--uncovered[With accept-skip\: confirm skipping on an AC no task cites (it closes the whole AC)]' \
                         '--no-commit[Skip the git.autoCommitIncrement commit of the increment files]' \
                         '--json[Machine-readable output]' \
                         '--workspace[Select the planning workspace explicitly]' \
