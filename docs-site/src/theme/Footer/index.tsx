@@ -20,11 +20,24 @@ const COLUMNS = [
     title: 'Switch tools',
     links: [
       {label: 'Handoff and pickup', to: '/docs/guides/cross-tool-handoff'},
+      {label: 'What goes in handoff.md', to: '/docs/guides/handoff-md/'},
       {label: 'Claude Code to Codex', to: '/docs/guides/switch-claude-code-to-codex/'},
       {label: 'Usage limit reached', to: '/docs/guides/claude-code-usage-limit/'},
       {label: 'Claude Code Projects', to: '/docs/guides/claude-code-projects'},
       {label: 'Codex, Grok and others', to: '/docs/integrations/generic-ai-tools'},
       {label: 'Integrations', to: '/integrations'},
+    ],
+  },
+  {
+    title: 'Compare',
+    links: [
+      {label: 'SpecWeave vs OpenSpec', to: '/docs/compare/specweave-vs-openspec/'},
+      {label: 'SpecWeave vs Spec Kit', to: '/docs/compare/specweave-vs-github-spec-kit/'},
+      {label: 'SpecWeave vs BMAD', to: '/docs/compare/specweave-vs-bmad-method/'},
+      {label: 'All spec-driven tools', to: '/docs/compare/spec-driven-development-tools/'},
+      {label: 'Claude Code vs Codex', to: '/docs/guides/claude-code-vs-codex/'},
+      {label: 'AGENTS.md vs CLAUDE.md', to: '/docs/guides/agents-md-vs-claude-md/'},
+      {label: 'All comparisons', to: '/docs/compare/'},
     ],
   },
   {
@@ -44,7 +57,7 @@ const COLUMNS = [
       {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave'},
       {label: 'npm', href: 'https://www.npmjs.com/package/specweave'},
       {label: 'Pricing', to: '/pricing'},
-      {label: 'Verified Skill', href: 'https://verified-skill.com'},
+      {label: 'Verified Skill', href: 'https://verified-skill.com/claude-code-skills'},
       {label: 'Blog', to: '/blog'},
       {label: 'Privacy', to: '/privacy'},
       {label: 'Support', to: '/support'},

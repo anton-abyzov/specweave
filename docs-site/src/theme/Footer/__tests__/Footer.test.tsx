@@ -10,10 +10,11 @@ vi.mock('@docusaurus/Link', () => ({
 import Footer from '../index';
 
 describe('Footer', () => {
-  it('renders 4 column headings: Start, Switch tools, Reference, Project', () => {
+  it('renders 5 column headings: Start, Switch tools, Compare, Reference, Project', () => {
     render(<Footer />);
     expect(screen.getByText('Start')).toBeInTheDocument();
     expect(screen.getByText('Switch tools')).toBeInTheDocument();
+    expect(screen.getByText('Compare')).toBeInTheDocument();
     expect(screen.getByText('Reference')).toBeInTheDocument();
     expect(screen.getByText('Project')).toBeInTheDocument();
   });
@@ -48,6 +49,9 @@ describe('Footer', () => {
     expect(screen.getByText('SpecWithCode')).toHaveAttribute('href', '/code/');
     expect(screen.getByText('Download SpecWithCode')).toHaveAttribute('href', '/code/download/');
     expect(screen.getByText('Privacy')).toHaveAttribute('href', '/privacy');
+    expect(screen.getByText('SpecWeave vs OpenSpec')).toHaveAttribute('href', '/docs/compare/specweave-vs-openspec/');
+    expect(screen.getByText('All spec-driven tools')).toHaveAttribute('href', '/docs/compare/spec-driven-development-tools/');
+    expect(screen.getByText('What goes in handoff.md')).toHaveAttribute('href', '/docs/guides/handoff-md/');
     expect(screen.getByText('Support')).toHaveAttribute('href', '/support');
   });
 });

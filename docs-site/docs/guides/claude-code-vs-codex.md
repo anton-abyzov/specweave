@@ -1,8 +1,8 @@
 ---
-title: "Claude Code vs Codex: use both, and switch when you hit a limit"
-description: "How Claude Code and Codex differ in instruction files, skills, sessions and usage limits, and how to continue a half-finished task in the other one without re-explaining it."
+title: "Claude Code vs Codex: differences, limits, both"
+description: "Claude Code vs Codex: how instruction files, skills, sessions and usage limits differ, and how to move a half-finished task between them without re-explaining."
 slug: /guides/claude-code-vs-codex
-keywords: [claude code vs codex, claude code usage limit, switch from claude code to codex, claude code limit reached, codex usage limit, claude code handoff]
+keywords: [claude code vs codex, codex vs claude code]
 ---
 
 # Claude Code vs Codex: use both, and switch when you hit a limit

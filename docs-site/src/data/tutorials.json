@@ -254,7 +254,7 @@
     {
       "slug": "handoff-claude-to-codex",
       "product": "cli",
-      "title": "Hand off from Claude Code to Codex at a usage limit",
+      "title": "Claude Code handoff to Codex at a usage limit",
       "seoTitle": "Hand off from Claude Code to Codex at a usage limit",
       "summary": "A real SpecWeave 3.1.0 run in a sample repo: the usage guard warns at 95% of the 5-hour limit, specweave handoff writes handoff.md and releases the claim, and specweave pickup gives Codex the next task with its acceptance criteria. Codex proves the task with task done --run.",
       "seoDescription": "A real SpecWeave 3.1.0 run: the usage guard warns at 95%, specweave handoff writes handoff.md, and specweave pickup gives Codex the next task.",

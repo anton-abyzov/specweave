@@ -1,7 +1,7 @@
 ---
-title: "SpecWeave vs GitHub Spec Kit"
+title: "GitHub Spec Kit vs SpecWeave: which to use"
 slug: /compare/specweave-vs-github-spec-kit
-description: "GitHub Spec Kit and SpecWeave 3.0 compared: where they overlap, how they differ after the spec, and what happens when you switch from Claude Code to Codex."
+description: "GitHub Spec Kit and SpecWeave compared: slash commands and plan files versus one spec, a task ledger and a handoff when Claude Code hits its usage limit."
 keywords: [github spec kit, spec kit, spec kit vs specweave, spec kit alternative, speckit, specify cli, spec kit claude code, spec kit codex, spec-driven development]
 sidebar_position: 5
 ---
