@@ -3,7 +3,7 @@
   Only --wv-* tokens from src/css/weave.css; both themes come from the tokens.
   Type: h1 48 (44 on phones), h2 32, h3 21, lead 21, body 17, ui 15, caption 13.
   Radius by role: 4 chips, 6 buttons, 10 notes and panels, 14 screenshot frames.
-  Static: the site's one scroll sequence is on the home page (HomeHandoff).
+  Scroll motion progressively enhances complete, readable resting states.
 */
 
 /* ---------- Page ---------- */
@@ -142,6 +142,62 @@
   gap: var(--wv-space-12);
   align-items: start;
   padding-top: var(--wv-space-16);
+}
+
+/* Outcome first, followed by readable evidence at its native aspect ratio. */
+.hero {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  text-align: center;
+  padding-top: 64px;
+}
+.heroCopy { max-width: 980px; margin-inline: auto; }
+.hero .product, .hero .actions { justify-content: center; }
+.hero h1 { font-size: clamp(44px, 5.8vw, 76px); line-height: 1.04; letter-spacing: -.055em; }
+.hero h1 em { font-style: normal; color: var(--wv-iris-strong); }
+.heroBrand { display: block; font-size: 16px; line-height: 24px; letter-spacing: 0; margin-bottom: 20px; }
+.hero .lead { max-width: 680px; margin: 24px auto; }
+.hero .requirements { max-width: 790px; margin-inline: auto; }
+.hero .qualification { max-width: 790px; margin: 16px auto 0; text-align: left; }
+.providers { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px 28px; padding: 0; margin: 28px auto; list-style: none; }
+.providers li { display: flex; gap: 9px; align-items: center; font-size: 14px; }
+.providers img { width: 32px; height: 32px; padding: 4px; border-radius: 6px; background: #f5f3ed; }
+.providers img[src*="openai"], .providers img[src*="cursor"] { background: #25251f; }
+.heroShot { width: 100%; max-width: 1120px; margin-inline: auto; text-align: left; }
+.heroShot figure { box-shadow: 0 24px 60px #24241e14; }
+.heroShot img { display: block; width: 100%; height: auto; }
+.workflow { padding-top: 88px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px 64px; align-items: start; }
+.workflowHead { position: sticky; top: 100px; }
+.workflowHead h2 { margin-top: 12px; }
+.workflowRail { list-style: none; margin: 0; padding: 0; }
+.workflowRail li { border-top: 1px solid var(--wv-line); padding: 30px 0 40px; }
+.workflowRail li > span { color: var(--wv-iris-strong); font: 500 14px var(--wv-font-mono); }
+.workflowRail h3 { margin: 12px 0; }
+.workflowRail p { max-width: 460px; color: var(--wv-muted); }
+.workflow > .fine { grid-column: 2; }
+.disclosure { border-block: 1px solid var(--wv-line); padding-block: 20px; }
+.disclosure summary { cursor: pointer; font-weight: 600; }
+.disclosure[open] summary { margin-bottom: 20px; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
+    .heroCopy, .heroShot, .workflowRail li { animation: evidence-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 85%; }
+    .heroCopy { --rise: 12px; }
+    .heroShot { --rise: 36px; }
+    .workflowRail li { --rise: 24px; }
+  }
+}
+@keyframes evidence-rise { from { transform: translate3d(0, var(--rise, 20px), 0); } to { transform: translate3d(0, 0, 0); } }
+@media (max-width: 760px) {
+  .workflow { display: block; padding-top: 56px; }
+  .workflowHead { position: static; margin-bottom: 24px; }
+  .workflowRail { display: flex; overflow-x: auto; scroll-snap-type: x proximity; gap: 24px; padding-bottom: 12px; }
+  .workflowRail li { flex: 0 0 88%; scroll-snap-align: start; }
+  .hero .qualification { font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce), print {
+  .heroCopy, .heroShot, .workflowRail li { animation: none; transform: none; }
+  .workflowHead { position: static; }
 }
 
 .heroCopy {
