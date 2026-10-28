@@ -25,10 +25,13 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 
 ## Switching tools and accounts
 
-- [Handoff and pickup](https://spec-weave.com/docs/guides/cross-tool-handoff/): continue a task in another tool when a usage limit hits, including auto-handoff at 90 percent
+- [Handoff and pickup](https://spec-weave.com/docs/guides/cross-tool-handoff/): continue a task in another tool when a usage limit hits, including auto-handoff at 95 percent
 - [Claude Code Projects and threads](https://spec-weave.com/docs/guides/claude-code-projects/): one thread is one increment
 - [Codex, Grok Build, Cursor and Gemini CLI](https://spec-weave.com/docs/integrations/generic-ai-tools/): what each tool reads
-- [Auto-handoff rules](https://spec-weave.com/docs/guides/auto-handoff/): when SpecWeave hands off by itself at 90 percent of a Claude Code or Codex usage window, and the local checkpoints it saves between turns
+- [Auto-handoff rules](https://spec-weave.com/docs/guides/auto-handoff/): the heads-up at 95 percent of a Claude Code or Codex usage window, the handoff it writes by itself when a turn hits the limit, and the local checkpoints it saves between turns
+- [What goes in handoff.md](https://spec-weave.com/docs/guides/handoff-md/): the fields of an AI agent handoff, a template, and how to generate it
+- [Switch from Claude Code to OpenCode mid-task](https://spec-weave.com/docs/guides/switch-claude-code-to-opencode/): what OpenCode reads (AGENTS.md, skills) and the two commands
+- [Switch from Claude Code to Cursor mid-task](https://spec-weave.com/docs/guides/switch-claude-code-to-cursor/): Cursor's AGENTS.md, rules and skill folders, and the two commands
 - [Switch from Claude Code to Codex without losing your place](https://spec-weave.com/docs/guides/switch-claude-code-to-codex/): the two commands, what carries over, and switching back
 - [Claude Code usage limit reached: what to do next](https://spec-weave.com/docs/guides/claude-code-usage-limit/): how the five-hour and weekly limits work and every way to keep going
 - [Claude Code vs Codex](https://spec-weave.com/docs/guides/claude-code-vs-codex/): differences that matter day to day, and switching when a limit hits
@@ -44,10 +47,13 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 - [Commands](https://spec-weave.com/docs/reference/commands/)
 - [Configuration](https://spec-weave.com/docs/reference/configuration/)
 - [FAQ](https://spec-weave.com/docs/faq/)
+- [Compare AI coding tools and spec frameworks](https://spec-weave.com/docs/compare/): every comparison page
 - [SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro](https://spec-weave.com/docs/compare/spec-driven-development-tools/)
 - [SpecWeave vs GitHub Spec Kit](https://spec-weave.com/docs/compare/specweave-vs-github-spec-kit/)
 - [SpecWeave vs OpenSpec](https://spec-weave.com/docs/compare/specweave-vs-openspec/)
 - [SpecWeave vs the BMAD Method](https://spec-weave.com/docs/compare/specweave-vs-bmad-method/)
+- [Spec as code vs spec-driven and intent-first development](https://spec-weave.com/docs/compare/spec-as-code/)
+- [SpecWithCode vs OpenCode, T3 Code and cloud agents](https://spec-weave.com/docs/compare/specwithcode-vs-opencode-t3-code/)
 
 ## Skills
 

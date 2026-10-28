@@ -1,9 +1,9 @@
 ---
-title: "Handoff and pickup: continue a task in any AI coding tool"
-description: "Out of Claude Code or Codex usage halfway through a task? Hand off in one command and pick up in Codex, Grok Build, Gemini CLI or another account with the spec, tasks and uncommitted edits intact."
+title: "Claude Code handoff: continue in any agent"
+description: "Claude Code handoff in one command: write handoff.md, push your edits and pick up the same task in Codex, Cursor, OpenCode, Gemini CLI or another account."
 ---
 
-# Cross-Tool Handoff and Pickup
+# Claude Code handoff: continue in Codex or any agent
 
 > **Out of tokens, or want a second opinion from another model? Hand off in one command, pick up in the next tool in one read.**
 
@@ -184,6 +184,10 @@ Codex then claimed T-02, finished it with `specweave task done T-02 --run "npm t
 - [SpecWeave 3.0](./specweave-3.md): everything that changed in this release.
 - [Claude Code Projects and threads](./claude-code-projects.md): one thread, one increment, and the memory folder.
 - [Autonomous Execution](./autonomous-execution.md): how handoff fits unattended work.
+- [What goes in handoff.md](/docs/guides/handoff-md/): the fields, a template, and handoff.md vs AGENTS.md.
+- [Switch from Claude Code to OpenCode](/docs/guides/switch-claude-code-to-opencode/) and [to Cursor](/docs/guides/switch-claude-code-to-cursor/): what each tool reads.
+- [Compare AI coding tools and spec frameworks](/docs/compare/): every comparison page.
+- [SpecWithCode](/code/): run Claude Code, Codex and other agents side by side on your own machines.
 
 <!-- SEO long-tail keywords (one phrase per line for exact-match indexing):
 switch from Claude Code to Codex mid-task
