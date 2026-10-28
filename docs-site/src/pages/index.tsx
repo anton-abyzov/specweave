@@ -250,7 +250,8 @@ export default function Home() {
         <dl className={h.facts}>
           <div><dt>SpecWithCode app</dt><dd>Free</dd></div>
           <div><dt>SpecWeave CLI</dt><dd>Free, MIT licensed</dd></div>
-          <div><dt>Seat fee / usage cap</dt><dd>None</dd></div>
+          <div><dt>Seat fee</dt><dd>None</dd></div>
+          <div><dt>Connect machines</dt><dd>3 free, 10 for the first 1,000 founders</dd></div>
           <div><dt>Markup on your AI subscriptions</dt><dd>None</dd></div>
         </dl>
       </section>

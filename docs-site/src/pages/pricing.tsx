@@ -20,7 +20,7 @@ const WAITLIST_URL = 'https://verified-skill.com/pricing';
 const WHY = [
   {title: 'Another agent finishes the task', body: 'Limit hit? When Claude Code nears its usage limit, the spec and progress hand off to Codex or the next tool you use.'},
   {title: 'No markup on your AI plans', body: 'Agents run on the Claude, Codex, Gemini or Cursor plans you already pay for. We never resell tokens.'},
-  {title: 'No per-seat or per-run fees', body: 'Add your whole team of 2–10. Nothing counts agents, seats, machines or hours.'},
+  {title: 'No per-seat or per-run fees', body: 'Add your whole team of 2–10. Nothing counts agents, seats or hours. Machines you pair yourself are unlimited.'},
 ];
 
 type Plan = {
@@ -87,6 +87,7 @@ const PILOT_STEPS = [
 
 const FAQ = [
   {q: 'Will it stay free?', a: <>Yes. The app, the CLI and running agents on your machines stay free. Paid plans only add hosting, team controls and support.</>},
+  {q: 'How many machines can I connect?', a: <>As many as you pair yourself over your own network. Connect, the hosted relay for your phone and remote machines, includes 3 machines. The first 1,000 Connect accounts are founders and get 10 machines free for a year.</>},
   {q: 'What do teams pay for?', a: <>Hosted private skills, setup for your team of 2–10, support with response times, and controls like audit export or SSO.</>},
   {q: 'Where does our code go?', a: <>Nowhere new. Specs and handoffs are files in your repo, and agents run on your machines with your subscriptions.</>},
   {q: 'How does auto-handoff work?', a: <><code>specweave auto-handoff on</code> hands off at 90 percent of a usage window, or a threshold you pick. The next tool runs <code>specweave pickup</code>. <Link to="/docs/guides/auto-handoff">Details</Link>.</>},
