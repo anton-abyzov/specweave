@@ -1,0 +1,324 @@
+/*
+  Home hero: text on the left, a layered stage of real captures on the right.
+  Resting state = final state: everything is in place without JS, with reduced motion and in print.
+  Motion (only inside @supports + prefers-reduced-motion: no-preference):
+    - on load, the floating crops rise in, staggered (inner .card only);
+    - on scroll (first ~90vh of the page), the planes move at different rates (outer .float/.mid/.back);
+    - pointer tilt on the stage (decoration only, set by usePointerGlow).
+  Transform and opacity only. Glows are color-mix of --wv-iris.
+*/
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--wv-space-12);
+  max-width: var(--wv-page-max);
+  margin: 0 auto;
+  padding: var(--wv-space-12) var(--wv-space-8) var(--wv-space-12);
+}
+
+.text {
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  max-width: 100%;
+  padding: var(--wv-space-1) var(--wv-space-3) var(--wv-space-1) var(--wv-space-1);
+  border: 1px solid var(--wv-line);
+  border-radius: 999px;
+  background: var(--wv-panel);
+  font: 500 13px/18px var(--wv-font-sans);
+  color: var(--wv-ink);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.pill:hover {
+  border-color: var(--wv-iris);
+  transform: translateY(-1px);
+}
+
+.pill svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--wv-iris);
+}
+
+.pill :global(.wv-chip) {
+  border-radius: 999px;
+}
+
+.hero h1 {
+  margin-top: var(--wv-space-6);
+  max-width: 14ch;
+  font-size: clamp(44px, 5.4vw, 72px);
+  line-height: 1.02;
+}
+
+.hero .lead {
+  max-width: 50ch;
+  margin-top: var(--wv-space-6);
+  font-size: 20px;
+  line-height: 30px;
+  color: var(--wv-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--wv-space-3);
+  margin-top: var(--wv-space-8);
+}
+
+.hero .requirements {
+  margin-top: var(--wv-space-3);
+  margin-bottom: var(--wv-space-6);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wv-muted);
+}
+
+/* Inline links: ink text on an iris thread (.page a would strip a plain .wv-link's underline). */
+.hero a.inline {
+  color: var(--wv-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--wv-iris);
+  text-decoration-thickness: var(--wv-thread-width);
+  text-underline-offset: 0.22em;
+}
+
+.hero a.inline:hover {
+  color: var(--wv-iris-strong);
+  text-decoration-color: var(--wv-iris-strong);
+}
+
+/* ---------- The stage ---------- */
+.figure {
+  min-width: 0;
+  margin: 0;
+}
+
+.stage {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  position: relative;
+  padding: var(--wv-space-8) var(--wv-space-6) var(--wv-space-12);
+  perspective: 1600px;
+}
+
+/* Plane 1 (back): light field and a fine dot grid. */
+.back {
+  position: absolute;
+  inset: -12% -20% -8% -10%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(closest-side at 62% 40%, color-mix(in srgb, var(--wv-iris) 28%, transparent), transparent 70%),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--wv-iris) 30%, transparent) 1px, transparent 1.5px) 0 0 / 22px 22px;
+  -webkit-mask-image: radial-gradient(closest-side at 55% 45%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(closest-side at 55% 45%, #000 40%, transparent 100%);
+}
+
+/* Plane 2 (mid): the window. */
+.mid {
+  position: relative;
+  z-index: 1;
+  transform-style: preserve-3d;
+}
+
+.window {
+  transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition: transform 240ms ease-out;
+  box-shadow: var(--wv-shadow-window), 0 40px 80px -40px color-mix(in srgb, var(--wv-iris) 45%, transparent);
+}
+
+/* Plane 3 (front): floating crops. */
+.float {
+  position: absolute;
+  z-index: 2;
+}
+
+.card {
+  position: relative;
+  border-radius: var(--wv-radius-md);
+  box-shadow: var(--wv-shadow-overlay), 0 18px 40px -20px color-mix(in srgb, var(--wv-iris) 55%, transparent);
+}
+
+.tag {
+  display: block;
+  padding: 3px var(--wv-space-3);
+  border-top: 1px solid var(--wv-line);
+  font: 500 11px/16px var(--wv-font-sans);
+  letter-spacing: 0.02em;
+  color: var(--wv-muted);
+  background: var(--wv-panel);
+}
+
+.fTests {
+  top: 6px;
+  left: 0;
+  width: 34%;
+}
+
+.fTests .card {
+  border-color: color-mix(in srgb, var(--wv-pass) 40%, var(--wv-line));
+}
+
+.fThreads {
+  top: 22%;
+  right: -2%;
+  width: 46%;
+}
+
+.fDispatch {
+  bottom: 6%;
+  left: -2%;
+  width: 50%;
+}
+
+.fUsage {
+  bottom: -2%;
+  right: 4%;
+  width: 40%;
+}
+
+.caption {
+  margin-top: var(--wv-space-4);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wv-muted);
+}
+
+.caption a {
+  white-space: nowrap;
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: center;
+    gap: var(--wv-space-8);
+    padding-top: var(--wv-space-16);
+  }
+
+  .figure {
+    margin-right: calc(var(--wv-space-8) * -1);
+  }
+}
+
+/* Phones and small tablets: the window plus two crops, no overhang past the gutter. */
+@media (max-width: 760px) {
+  .hero {
+    padding: var(--wv-space-8) var(--wv-space-4) var(--wv-space-8);
+    gap: var(--wv-space-6);
+  }
+
+  .hero .lead {
+    font-size: 18px;
+    line-height: 28px;
+  }
+
+  .stage {
+    padding: var(--wv-space-6) 0 var(--wv-space-12);
+  }
+
+  .back {
+    inset: -8% 0 -4% 0;
+  }
+
+  .fDispatch,
+  .fTests {
+    display: none;
+  }
+
+  .fThreads {
+    top: auto;
+    bottom: 18%;
+    right: 0;
+    width: 64%;
+  }
+
+  .fUsage {
+    right: auto;
+    left: 0;
+    bottom: 0;
+    width: 62%;
+  }
+}
+
+/* ---------- Motion ---------- */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .back,
+    .mid,
+    .float {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 0 90vh;
+    }
+
+    .back { animation-name: drift-back; }
+    .mid { animation-name: drift-mid; }
+    .fTests { animation-name: drift-near; }
+    .fThreads { animation-name: drift-far; }
+    .fDispatch { animation-name: drift-nearest; }
+    .fUsage { animation-name: drift-far; }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    animation: rise 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .fTests .card { animation-delay: 380ms; }
+  .fThreads .card { animation-delay: 160ms; }
+  .fDispatch .card { animation-delay: 280ms; }
+  .fUsage .card { animation-delay: 480ms; }
+
+  .window {
+    animation: settle 1100ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translate3d(0, 28px, 0) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes settle {
+  from { opacity: 0; transform: translate3d(0, 20px, 0) rotateX(8deg) scale(0.97); }
+  to { opacity: 1; }
+}
+
+@keyframes drift-back {
+  to { transform: translate3d(0, 120px, 0) scale(1.12); opacity: 0.4; }
+}
+
+@keyframes drift-mid {
+  to { transform: translate3d(0, -36px, 0) scale(1.03); }
+}
+
+@keyframes drift-far {
+  to { transform: translate3d(0, -110px, 0); }
+}
+
+@keyframes drift-near {
+  to { transform: translate3d(0, -170px, 0); }
+}
+
+@keyframes drift-nearest {
+  to { transform: translate3d(0, -230px, 0); }
+}
+
+@media print {
+  .back { display: none; }
+  .float { position: static; width: auto; margin-top: var(--wv-space-4); }
+}

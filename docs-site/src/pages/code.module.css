@@ -166,37 +166,19 @@
 /* White marks need a plate that stays dark in both themes (Weave light ink). */
 .providers img[src*="openai"], .providers img[src*="cursor"] { background: #241523; }
 .heroShot { width: 100%; max-width: 1120px; margin-inline: auto; text-align: left; }
-.workflow { padding-top: 88px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px 64px; align-items: start; }
-.workflowHead { position: sticky; top: 100px; }
-.workflowHead h2 { margin-top: 12px; }
-.workflowRail { list-style: none; margin: 0; padding: 0; }
-.workflowRail li { border-top: 1px solid var(--wv-line); padding: 30px 0 40px; }
-.workflowRail li > span { color: var(--wv-iris-strong); font: 500 14px var(--wv-font-mono); }
-.workflowRail h3 { margin: 12px 0; }
-.workflowRail p { max-width: 460px; color: var(--wv-muted); }
-.workflow > .fine { grid-column: 2; }
-.disclosure { border-block: 1px solid var(--wv-line); padding-block: 20px; }
-.disclosure summary { cursor: pointer; font-weight: 600; }
-.disclosure[open] summary { margin-bottom: 20px; }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
-    .heroCopy, .heroShot, .workflowRail li { animation: evidence-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 85%; }
+    .heroCopy, .heroShot { animation: evidence-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 85%; }
     .heroCopy { --rise: 12px; }
     .heroShot { --rise: 36px; }
-    .workflowRail li { --rise: 24px; }
   }
 }
 @keyframes evidence-rise { from { transform: translate3d(0, var(--rise, 20px), 0); } to { transform: translate3d(0, 0, 0); } }
 @media (max-width: 760px) {
-  .workflow { display: block; padding-top: 56px; }
-  .workflowHead { position: static; margin-bottom: 24px; }
-  .workflowRail { display: flex; overflow-x: auto; scroll-snap-type: x proximity; gap: 24px; padding-bottom: 12px; }
-  .workflowRail li { flex: 0 0 88%; scroll-snap-align: start; }
   .hero .qualification { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce), print {
-  .heroCopy, .heroShot, .workflowRail li { animation: none; transform: none; }
-  .workflowHead { position: static; }
+  .heroCopy, .heroShot { animation: none; transform: none; }
 }
 
 .heroCopy {
@@ -278,76 +260,11 @@
   white-space: nowrap;
 }
 
-/* ---------- What you control: one hairline row ---------- */
-.controls {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--wv-space-8);
-  margin-top: var(--wv-space-16);
-  margin-bottom: 0;
-  list-style: none;
-}
-
-.controls > li {
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
-  gap: var(--wv-space-3);
-  padding-block: var(--wv-space-6);
-  border-top: 1px solid var(--wv-line);
-  border-bottom: 1px solid var(--wv-line);
-}
-
-.controls svg {
-  margin-top: 4px;
-  color: var(--wv-muted);
-}
-
-.controls strong,
-.controls span {
-  display: block;
-}
-
-.controls strong {
-  font-size: 15px;
-  line-height: 22px;
-  font-weight: 600;
-}
-
-.controls span {
-  margin-top: var(--wv-space-1);
-  font-size: 15px;
-  line-height: 22px;
-  color: var(--wv-muted);
-}
-
 /* ---------- Heading beside a hairline list ---------- */
 .guidesTitle {
   margin-top: var(--wv-space-8);
   font: 600 21px/28px var(--wv-font-sans);
   color: var(--wv-ink);
-}
-
-.guides {
-  max-width: var(--wv-measure);
-  margin: var(--wv-space-4) 0 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--wv-line);
-}
-
-.guides li {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--wv-space-1) var(--wv-space-4);
-  margin: 0;
-  padding: var(--wv-space-3) 0;
-  border-bottom: 1px solid var(--wv-line);
-}
-
-.guides span {
-  font-variant-numeric: tabular-nums;
-  color: var(--wv-muted);
 }
 
 .split {
@@ -553,16 +470,6 @@
     line-height: 48px;
   }
 
-  .controls {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-    margin-top: var(--wv-space-12);
-  }
-
-  .controls > li + li {
-    border-top: 0;
-  }
-
   .actions :global(.wv-btn) {
     flex: 1 1 auto;
     white-space: normal;
@@ -584,3 +491,422 @@
 .hero .lead { font-size: 19px; line-height: 1.5; margin-block: 18px; }
 .hero .providers { margin-block: 20px; }
 .heroShot .requirements { margin-top: 24px; text-align: center; }
+
+/* =====================================================================
+   /code landing (code.tsx only; /code/download keeps the rules above).
+   Denser rhythm: 64px between sections, two-column bands with no empty
+   columns, pinned and railed sequences in their own components.
+   ===================================================================== */
+.landing .section {
+  padding-top: var(--wv-space-16);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+.landing .sectionHead {
+  margin-bottom: var(--wv-space-8);
+}
+
+/* ---------- Hero ---------- */
+.top {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--wv-space-8) var(--wv-space-12);
+  align-items: center;
+  padding-top: var(--wv-space-12);
+}
+
+.topCopy {
+  min-width: 0;
+}
+
+.top h1 {
+  font-size: clamp(40px, 4.6vw, 62px);
+  line-height: 1.03;
+  letter-spacing: -0.045em;
+}
+
+.top h1 em {
+  font-style: normal;
+  color: var(--wv-iris-strong);
+}
+
+.top .lead {
+  max-width: 34em;
+  margin-top: var(--wv-space-4);
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+.top .actions {
+  margin-top: var(--wv-space-6);
+}
+
+.top .providers {
+  justify-content: flex-start;
+  gap: var(--wv-space-3) var(--wv-space-6);
+  margin: var(--wv-space-6) 0 0;
+}
+
+.topMedia {
+  min-width: 0;
+}
+
+.topFine {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--wv-space-4) var(--wv-space-12);
+  align-items: center;
+  padding-top: var(--wv-space-4);
+  border-top: 1px solid var(--wv-line);
+}
+
+.topFine .requirements {
+  max-width: none;
+  margin: 0;
+}
+
+.topFine .qualification {
+  max-width: none;
+  margin: 0;
+}
+
+.flowBand {
+  padding-top: var(--wv-space-12);
+}
+
+/* ---------- Threads: cards beside a real crop of the Threads panel ---------- */
+.threads {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  gap: var(--wv-space-12);
+  align-items: start;
+}
+
+.threadsMain {
+  min-width: 0;
+}
+
+.threadsShot {
+  position: sticky;
+  top: calc(var(--ifm-navbar-height) + var(--wv-space-6));
+}
+
+/* ---------- Limits ---------- */
+.limitsHead {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  gap: var(--wv-space-12);
+  align-items: center;
+  margin-bottom: var(--wv-space-8);
+}
+
+.limitsHead .sectionHead {
+  margin-bottom: 0;
+}
+
+.railTitle {
+  margin: 0 0 var(--wv-space-4);
+  font: 600 13px/18px var(--wv-font-mono) !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase;
+  color: var(--wv-muted) !important;
+}
+
+/* ---------- Machines ---------- */
+.machinesHead {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: var(--wv-space-12);
+  align-items: center;
+  margin-bottom: var(--wv-space-12);
+}
+
+.machinesHead .sectionHead {
+  margin-bottom: 0;
+}
+
+.stepNo {
+  margin-right: var(--wv-space-2);
+  font: 600 13px/24px var(--wv-font-mono);
+  color: var(--wv-iris-strong);
+}
+
+.landing .machineGrid {
+  margin-top: var(--wv-space-12);
+}
+
+.landing .recommend {
+  margin-top: var(--wv-space-6);
+}
+
+.landing .boundary {
+  margin-top: var(--wv-space-8);
+}
+
+/* ---------- Finish ---------- */
+.finishBand {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+  gap: var(--wv-space-12);
+  align-items: start;
+}
+
+.finishBand .sectionHead {
+  margin-bottom: 0;
+}
+
+.finishDiagram {
+  margin-top: var(--wv-space-6);
+}
+
+.landing .finish {
+  max-width: none;
+  padding-top: var(--wv-space-2);
+}
+
+.landing .finish > li {
+  padding-bottom: var(--wv-space-4);
+}
+
+/* ---------- Reach ---------- */
+.reachGrid {
+  display: grid;
+  gap: var(--wv-space-4);
+}
+
+.chrome {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  gap: var(--wv-space-6) var(--wv-space-8);
+  align-items: center;
+  padding: var(--wv-space-6);
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 45%, var(--wv-line));
+  border-radius: var(--wv-radius-lg);
+  background:
+    radial-gradient(90% 70% at 0% 0%, color-mix(in srgb, var(--wv-iris) 14%, transparent), transparent 70%),
+    var(--wv-panel);
+  box-shadow: var(--wv-shadow-window);
+}
+
+.chromeCopy {
+  display: grid;
+  gap: var(--wv-space-3);
+  justify-items: start;
+}
+
+.chromeCopy h3 {
+  font-size: 24px;
+  line-height: 30px;
+}
+
+.chromeCopy p {
+  color: var(--wv-muted);
+}
+
+.chromeCopy p a {
+  color: var(--wv-ink);
+  text-decoration-color: var(--wv-iris);
+}
+
+.chromeWho {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+/* ---------- Specs band ---------- */
+.specs {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--wv-space-6);
+  align-items: start;
+  padding: var(--wv-space-8);
+  border: 1px solid var(--wv-line);
+  border-left: 3px solid var(--wv-iris);
+  border-radius: var(--wv-radius-lg);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--wv-iris) 8%, var(--wv-panel)), var(--wv-panel) 60%);
+}
+
+.specs h2 {
+  font-size: 26px !important;
+  line-height: 32px !important;
+}
+
+.specs p {
+  max-width: var(--wv-measure);
+  margin-top: var(--wv-space-3);
+  color: var(--wv-muted);
+}
+
+.specsFiles {
+  align-self: center;
+  max-width: 220px;
+}
+
+.specsIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-iris);
+  color: var(--wv-on-iris);
+}
+
+/* ---------- Final call to action ---------- */
+.landing .final {
+  padding-top: var(--wv-space-16);
+}
+
+.finalPanel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: var(--wv-space-16) var(--wv-space-8);
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 40%, var(--wv-line));
+  border-radius: var(--wv-radius-lg);
+  background: var(--wv-panel);
+  text-align: center;
+}
+
+.finalPanel > h2,
+.finalPanel > p {
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.finalPanel > h2 {
+  font-size: clamp(30px, 3.4vw, 42px) !important;
+  line-height: 1.1 !important;
+}
+
+.finalPanel > p {
+  margin-top: var(--wv-space-3);
+  color: var(--wv-muted);
+}
+
+.finalPanel .actions {
+  justify-content: center;
+  gap: var(--wv-space-4) var(--wv-space-6);
+  margin-top: var(--wv-space-6);
+}
+
+.finalGlow {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 100%;
+  width: 900px;
+  height: 900px;
+  margin: -450px 0 0 -450px;
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side, color-mix(in srgb, var(--wv-iris) 26%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.finalGlow::before,
+.finalGlow::after {
+  content: "";
+  position: absolute;
+  inset: 22%;
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 30%, transparent);
+  border-radius: 50%;
+}
+
+.finalGlow::after {
+  inset: 34%;
+}
+
+/* ---------- Scroll-linked: drawn machine route, glowing final ---------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .route::before {
+      animation: route-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 50%;
+    }
+
+    .finalGlow {
+      animation: glow-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 60%;
+    }
+  }
+}
+
+@keyframes route-draw { from { transform: scale(0); } }
+@keyframes glow-rise { from { transform: translate3d(0, 120px, 0) scale(0.7); opacity: 0.2; } }
+
+@media (max-width: 996px) {
+  .top,
+  .topFine,
+  .threads,
+  .limitsHead,
+  .machinesHead,
+  .finishBand,
+  .reachGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--wv-space-8);
+  }
+
+  .threadsShot {
+    position: static;
+    max-width: 420px;
+  }
+
+  .chrome {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .top {
+    padding-top: var(--wv-space-6);
+  }
+
+  .top h1 {
+    font-size: 40px;
+    line-height: 44px;
+  }
+
+  .top .lead {
+    font-size: 17px;
+  }
+
+  .landing .section {
+    padding-top: var(--wv-space-12);
+  }
+
+  .specs {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--wv-space-4);
+  }
+
+  .specs {
+    padding: var(--wv-space-6);
+    gap: var(--wv-space-4);
+  }
+
+  .finalPanel {
+    padding: var(--wv-space-12) var(--wv-space-4);
+  }
+
+  .chrome {
+    padding: var(--wv-space-4);
+  }
+}
+
+@media print {
+  .landing .section {
+    content-visibility: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce), print {
+  .route::before,
+  .finalGlow {
+    animation: none !important;
+  }
+}

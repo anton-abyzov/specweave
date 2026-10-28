@@ -1,0 +1,441 @@
+/*
+  /integrations on Weave. Shared page kit: continuity.module.css; motion kit:
+  components/sections/Motion. Only --wv-* tokens.
+*/
+.page {
+  --ig-gutter: var(--wv-space-8);
+}
+
+.hero,
+.section {
+  max-width: var(--wv-page-max);
+  margin: 0 auto;
+  padding: var(--wv-space-12) var(--ig-gutter);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--wv-space-12);
+}
+
+.page .hero h1 {
+  font-size: 56px;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+}
+
+.lead {
+  max-width: 54ch;
+  margin-top: var(--wv-space-6) !important;
+  font-size: 19px;
+  line-height: 30px;
+  color: var(--wv-muted);
+}
+
+.heroStrip {
+  margin-top: var(--wv-space-8);
+}
+
+/* ---------- Diagram: six agents around one repository ---------- */
+.diagram {
+  margin: 0;
+  min-width: 0;
+}
+
+.ring {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--wv-iris) 16%, transparent), transparent 75%);
+}
+
+.ring::before {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  border: 1px dashed color-mix(in srgb, var(--wv-iris) 35%, var(--wv-line));
+  border-radius: 50%;
+}
+
+.spoke {
+  --a: calc(var(--i) * 360deg / var(--n) - 90deg);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 38%;
+  height: 0;
+  transform: rotate(var(--a));
+  transform-origin: 0 0;
+}
+
+.spokeLine {
+  position: absolute;
+  left: 72px;
+  right: 22px;
+  top: -1px;
+  height: 2px;
+  background: var(--wv-line);
+}
+
+.spokeLine i {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--wv-iris), color-mix(in srgb, var(--wv-iris) 30%, transparent));
+}
+
+.spokeAgent {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: grid;
+  justify-items: center;
+  gap: var(--wv-space-1);
+  width: 96px;
+  margin-right: -48px;
+  transform: translateY(-17px) rotate(calc(-1 * var(--a)));
+  transform-origin: 50% 17px;
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--wv-ink);
+}
+
+.repo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  gap: 2px;
+  width: 150px;
+  padding: var(--wv-space-3) var(--wv-space-4);
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 50%, var(--wv-line));
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-panel);
+  box-shadow: var(--wv-shadow-window);
+  transform: translate(-50%, -50%);
+}
+
+.repoTitle {
+  font: 600 13px/18px var(--wv-font-mono);
+  color: var(--wv-iris-strong);
+}
+
+.repo code {
+  padding: 0 0 0 var(--wv-space-3);
+  border: 0;
+  background: none;
+  font: 12px/18px var(--wv-font-mono);
+  color: var(--wv-ink);
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.diagram figcaption {
+  justify-content: center;
+  margin-top: var(--wv-space-3);
+  text-align: center;
+}
+
+/* ---------- Section heads ---------- */
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: var(--wv-space-12);
+  align-items: start;
+  margin-bottom: var(--wv-space-6);
+  padding-top: var(--wv-space-8);
+  border-top: 1px solid var(--wv-line);
+}
+
+.head p {
+  max-width: 64ch;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--wv-muted);
+}
+
+.page code {
+  padding: 1px var(--wv-space-1);
+  border: 0;
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-sunken);
+  font-family: var(--wv-font-mono);
+  font-size: 0.85em;
+  color: var(--wv-ink);
+  overflow-wrap: anywhere;
+}
+
+.page .link {
+  color: var(--wv-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--wv-iris);
+  text-decoration-thickness: var(--wv-thread-width);
+  text-underline-offset: 0.22em;
+}
+
+.page .link:hover {
+  color: var(--wv-iris-strong);
+  text-decoration: underline;
+}
+
+/* ---------- Cards ---------- */
+.agents,
+.trackers {
+  display: grid;
+  gap: var(--wv-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.agents {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.trackers {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.marks {
+  display: flex;
+  gap: var(--wv-space-1);
+  margin-bottom: var(--wv-space-4);
+}
+
+.page .agents h3,
+.page .trackers h3,
+.page .owns h3,
+.page .also h3 {
+  font-size: 17px;
+  line-height: 24px;
+}
+
+.facts {
+  display: grid;
+  gap: var(--wv-space-3);
+  margin: var(--wv-space-4) 0 0;
+}
+
+.facts dt,
+.factLabel {
+  display: block;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--wv-muted);
+}
+
+.facts dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--wv-ink);
+}
+
+.trackers > li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--wv-space-3);
+}
+
+.trackers p {
+  flex: 1;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--wv-ink);
+}
+
+.code {
+  margin: var(--wv-space-4) 0 0 !important;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.code code,
+pre.code {
+  background: var(--wv-sunken);
+}
+
+.owns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--wv-space-3);
+}
+
+.owns p {
+  margin-top: var(--wv-space-2) !important;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--wv-muted);
+}
+
+.owns h3 {
+  margin-top: var(--wv-space-3) !important;
+}
+
+.ownsSpec {
+  border-color: color-mix(in srgb, var(--wv-iris) 50%, var(--wv-line)) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--wv-iris) 9%, transparent), transparent 70%),
+    var(--wv-panel) !important;
+}
+
+.faq {
+  margin-top: var(--wv-space-6);
+}
+
+.faq details {
+  margin: 0;
+  padding: var(--wv-space-4) 0;
+  border: 0;
+  border-top: 1px solid var(--wv-line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.faq summary {
+  position: relative;
+  list-style: none;
+  padding-right: var(--wv-space-8);
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--wv-ink);
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--wv-muted);
+  border-bottom: 1.5px solid var(--wv-muted);
+  transform: rotate(45deg);
+}
+
+.faq details[open] summary::after {
+  top: 10px;
+  transform: rotate(-135deg);
+}
+
+.faq details p {
+  max-width: var(--wv-measure);
+  margin-top: var(--wv-space-3) !important;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--wv-muted);
+}
+
+.alsoTitle {
+  margin-bottom: var(--wv-space-6) !important;
+  padding-top: var(--wv-space-8);
+  border-top: 1px solid var(--wv-line);
+}
+
+.also {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--wv-space-3);
+  padding-bottom: var(--wv-space-12);
+}
+
+.page .alsoCard {
+  display: block;
+  color: inherit;
+}
+
+.page .alsoCard:hover h3 {
+  color: var(--wv-iris-strong);
+}
+
+.alsoCard p {
+  margin-top: var(--wv-space-2) !important;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--wv-muted);
+}
+
+@media (max-width: 1100px) {
+  .agents {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--wv-space-6);
+  }
+
+  .trackers,
+  .also {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    --ig-gutter: var(--wv-space-4);
+  }
+
+  .hero,
+  .section {
+    padding-block: var(--wv-space-8);
+  }
+
+  .page .hero h1 {
+    font-size: 40px;
+  }
+
+  .lead {
+    font-size: 18px;
+    line-height: 28px;
+  }
+
+  .agents,
+  .owns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Keep each command on one line with its comment; the block scrolls, the page does not. */
+  .code {
+    max-width: 100%;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+    font-size: 12px;
+  }
+
+  .spokeLine {
+    left: 60px;
+  }
+
+  .spokeAgent {
+    width: 72px;
+    margin-right: -36px;
+    font-size: 11px;
+  }
+
+  .repo {
+    width: 120px;
+    padding: var(--wv-space-2) var(--wv-space-3);
+  }
+}

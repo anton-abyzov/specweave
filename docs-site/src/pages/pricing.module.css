@@ -1,9 +1,13 @@
-/* /pricing on Weave. Shared page kit: continuity.module.css. Only --wv-* tokens. */
+/*
+  /pricing on Weave. Shared page kit: continuity.module.css; motion kit:
+  components/sections/Motion. Only --wv-* tokens; glows are color-mix of iris.
+*/
 .page {
   --pr-gutter: var(--wv-space-8);
 }
 
 .hero,
+.band,
 .why,
 .plans,
 .pilot,
@@ -13,15 +17,40 @@
   padding-inline: var(--pr-gutter);
 }
 
+/* ---------- Hero: copy left, a three-plane stage right ---------- */
 .hero {
-  padding-block: var(--wv-space-16) var(--wv-space-12);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: var(--wv-space-12);
+  padding-block: var(--wv-space-12) var(--wv-space-8);
+}
+
+.heroText {
+  min-width: 0;
+}
+
+.page .hero h1 {
+  font-size: 60px;
+  line-height: 1.02;
+}
+
+.kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--wv-space-3);
+  margin-bottom: var(--wv-space-4) !important;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--wv-muted);
 }
 
 .sub {
-  max-width: 60ch;
+  max-width: 54ch;
   margin-top: var(--wv-space-6) !important;
-  font-size: 21px;
-  line-height: 32px;
+  font-size: 19px;
+  line-height: 30px;
   color: var(--wv-muted);
 }
 
@@ -33,47 +62,256 @@
   margin-top: var(--wv-space-8);
 }
 
-/* Why it is free: hairline list, the fact on the left. */
+.runsOn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--wv-space-3);
+  margin-top: var(--wv-space-8) !important;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--wv-muted);
+}
+
+.marks {
+  display: inline-flex;
+  gap: var(--wv-space-2);
+}
+
+.stage {
+  position: relative;
+  min-width: 0;
+  padding: var(--wv-space-6) 0 var(--wv-space-8);
+}
+
+.glow {
+  position: absolute;
+  inset: -10% -12% -6% 0;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--wv-iris) 26%, transparent), transparent);
+  pointer-events: none;
+}
+
+.stage > :not(.glow) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Zoomed onto the threads panel so its rows stay readable; the cut chat column fades out on the left. */
+.heroCapture > div {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 26%);
+  mask-image: linear-gradient(to right, transparent 0, #000 26%);
+}
+
+.float {
+  position: absolute !important;
+  z-index: 2 !important;
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  padding: var(--wv-space-2) var(--wv-space-3);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-panel);
+  box-shadow: var(--wv-shadow-overlay);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wv-muted);
+}
+
+.floatPrice {
+  left: -24px;
+  bottom: 22%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding: var(--wv-space-3) var(--wv-space-4);
+}
+
+.floatPrice b {
+  font-size: 32px;
+  line-height: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--wv-iris-strong);
+}
+
+.floatHandoff {
+  right: -12px;
+  top: 4px;
+  color: var(--wv-ink);
+  font-weight: 500;
+}
+
+.floatArrow {
+  color: var(--wv-iris);
+}
+
+.band {
+  padding-block: var(--wv-space-4) var(--wv-space-12);
+}
+
+/* ---------- Why it is free: three cards, each with a small diagram ---------- */
 .why {
-  padding-bottom: var(--wv-space-16);
+  padding-bottom: var(--wv-space-12);
 }
 
 .whyList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--wv-space-4);
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--wv-line);
 }
 
-.whyList > li {
-  display: grid;
-  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
-  gap: var(--wv-space-8);
-  align-items: baseline;
-  padding: var(--wv-space-4) 0;
-  border-bottom: 1px solid var(--wv-line);
+.whyCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-2);
 }
 
 .page .whyList h3 {
-  margin: 0;
+  margin: var(--wv-space-2) 0 0;
   font-size: 17px;
   line-height: 24px;
 }
 
 .whyList p {
-  max-width: var(--wv-measure);
   margin: 0 !important;
   font-size: 15px;
   line-height: 22px;
   color: var(--wv-muted);
 }
 
-/* Plans: three columns split by hairlines, not three cards. */
+.artNote {
+  margin-top: var(--wv-space-3) !important;
+}
+
+.art {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  min-height: 112px;
+  padding: var(--wv-space-4);
+  border-radius: var(--wv-radius-md);
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--wv-iris) 10%, transparent), transparent 60%),
+    var(--wv-sunken);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wv-muted);
+}
+
+.artAgent {
+  display: grid;
+  justify-items: center;
+  gap: var(--wv-space-1);
+  flex: none;
+  color: var(--wv-ink);
+  font-weight: 500;
+}
+
+.meter {
+  display: block;
+  width: 64px;
+  height: 4px;
+  overflow: clip;
+  border-radius: 2px;
+  background: var(--wv-line);
+}
+
+.meter i {
+  display: block;
+  width: 95%;
+  height: 100%;
+  background: var(--wv-warn);
+}
+
+.artChip {
+  font-size: 11px !important;
+}
+
+.artArrow {
+  position: relative;
+  flex: 1;
+  min-width: 16px;
+  height: 2px;
+  background: var(--wv-line);
+}
+
+.artArrow i {
+  position: absolute;
+  inset: 0;
+  background: var(--wv-iris);
+}
+
+.artArrow::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid var(--wv-iris);
+  border-right: 2px solid var(--wv-iris);
+  transform: rotate(45deg);
+}
+
+.artBox {
+  flex: none;
+  padding: var(--wv-space-2) var(--wv-space-3);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-sm);
+  background: var(--wv-panel);
+  color: var(--wv-ink);
+  font-weight: 500;
+}
+
+.artCut {
+  color: var(--wv-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--wv-fail);
+  border-style: dashed;
+  opacity: 0.8;
+}
+
+.artIris {
+  border-color: var(--wv-iris);
+  background: var(--wv-iris-tint);
+  color: var(--wv-iris-strong);
+}
+
+.team {
+  display: grid;
+  grid-template-columns: repeat(5, 18px);
+  gap: var(--wv-space-2);
+  padding: var(--wv-space-2);
+  border: 1.5px dashed color-mix(in srgb, var(--wv-iris) 55%, var(--wv-line));
+  border-radius: var(--wv-radius-md);
+}
+
+.team span {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--wv-iris) calc(30% + var(--i) * 6%), var(--wv-panel));
+}
+
+.teamLabel {
+  flex: 1;
+  min-width: 0;
+  color: var(--wv-ink);
+  font-weight: 500;
+}
+
+/* ---------- Plans: three cards ---------- */
 .plans {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--wv-space-8);
-  padding-bottom: var(--wv-space-24);
+  gap: var(--wv-space-4);
+  padding-bottom: var(--wv-space-16);
   scroll-margin-top: 80px;
 }
 
@@ -81,19 +319,26 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 0;
-  padding-top: var(--wv-space-6);
-  border-top: 1px solid var(--wv-line);
 }
 
 .featured {
-  border-top: 2px solid var(--wv-ink);
+  border-color: color-mix(in srgb, var(--wv-iris) 60%, var(--wv-line));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--wv-iris) 9%, transparent), transparent 45%),
+    var(--wv-panel);
+  box-shadow: 0 24px 48px -32px color-mix(in srgb, var(--wv-iris) 70%, transparent);
+}
+
+.planHead {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-3);
 }
 
 .page .name {
   margin-top: 0;
-  font-size: 21px;
-  line-height: 28px;
+  font-size: 19px;
+  line-height: 26px;
   font-weight: 600;
 }
 
@@ -102,7 +347,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--wv-space-1) var(--wv-space-3);
-  margin-top: var(--wv-space-4) !important;
+  margin-top: var(--wv-space-6) !important;
 }
 
 .price b {
@@ -113,9 +358,13 @@
   color: var(--wv-ink);
 }
 
-.price span {
-  font-size: 15px;
-  line-height: 22px;
+.featured .price b {
+  color: var(--wv-iris-strong);
+}
+
+.price > span {
+  font-size: 14px;
+  line-height: 20px;
   color: var(--wv-muted);
 }
 
@@ -129,7 +378,7 @@
 .features {
   flex: 1;
   width: 100%;
-  margin: var(--wv-space-6) 0 var(--wv-space-8);
+  margin: var(--wv-space-6) 0 var(--wv-space-6);
   padding: 0;
   list-style: none;
 }
@@ -151,8 +400,8 @@
   top: 15px;
   width: 10px;
   height: 5px;
-  border-left: var(--wv-thread-width) solid var(--wv-muted);
-  border-bottom: var(--wv-thread-width) solid var(--wv-muted);
+  border-left: 2px solid var(--wv-iris);
+  border-bottom: 2px solid var(--wv-iris);
   transform: rotate(-45deg);
 }
 
@@ -160,20 +409,13 @@
   align-self: stretch;
 }
 
-/* Pilot: a heading, a call to action and a real ten-day sequence on one thread. */
+/* ---------- Pilot: one panel, a drawn ten-day timeline ---------- */
 .pilot {
-  position: relative;
-  padding-block: var(--wv-space-16) var(--wv-space-24);
+  padding-block: 0 var(--wv-space-16);
 }
 
-/* Hairline on the content column, inside the gutter. */
-.pilot::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: var(--pr-gutter);
-  right: var(--pr-gutter);
-  border-top: 1px solid var(--wv-line);
+.pilot > * {
+  max-width: none;
 }
 
 .pilotHead {
@@ -182,7 +424,13 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--wv-space-6) var(--wv-space-12);
-  margin-bottom: var(--wv-space-12);
+  padding: var(--wv-space-8) var(--wv-space-8) var(--wv-space-6);
+  border: 1px solid var(--wv-line);
+  border-bottom: 0;
+  border-radius: var(--wv-radius-lg) var(--wv-radius-lg) 0 0;
+  background:
+    radial-gradient(80% 140% at 100% 0%, color-mix(in srgb, var(--wv-iris) 14%, transparent), transparent 60%),
+    var(--wv-panel);
 }
 
 .pilotHead > div {
@@ -192,6 +440,49 @@
 .pilotHead p {
   margin-top: var(--wv-space-3) !important;
   color: var(--wv-muted);
+}
+
+.page .pilotPrice {
+  display: flex;
+  align-items: baseline;
+  gap: var(--wv-space-3);
+  margin: 0 0 var(--wv-space-2) !important;
+  font-size: 15px;
+}
+
+.pilotPrice > span:first-child {
+  font-size: 56px;
+  line-height: 60px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--wv-iris-strong);
+}
+
+.timeline {
+  position: relative;
+  padding: var(--wv-space-6) var(--wv-space-8) var(--wv-space-8);
+  border: 1px solid var(--wv-line);
+  border-top: 1px dashed var(--wv-line);
+  border-radius: 0 0 var(--wv-radius-lg) var(--wv-radius-lg);
+  background: var(--wv-panel);
+}
+
+/* The iris line that draws across the four stops (sits over the thread's own line). */
+.timelineTrack {
+  position: absolute;
+  left: calc(var(--wv-space-8) + 7px);
+  right: calc(var(--wv-space-8) + 7px);
+  top: calc(var(--wv-space-6) + 11px);
+  height: 2px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.timelineTrack i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--wv-iris);
 }
 
 .page .steps p {
@@ -293,9 +584,17 @@
 }
 
 @media (max-width: 1000px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .whyList,
   .plans {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--wv-space-12);
+  }
+
+  .whyList {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
 }
 
@@ -305,25 +604,40 @@
   }
 
   .hero {
-    padding-block: var(--wv-space-12) var(--wv-space-8);
+    padding-block: var(--wv-space-8) var(--wv-space-6);
+    gap: var(--wv-space-8);
+  }
+
+  .page .hero h1 {
+    font-size: 42px;
   }
 
   .sub {
-    font-size: 19px;
-    line-height: 30px;
+    font-size: 18px;
+    line-height: 28px;
   }
 
-  .whyList > li {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--wv-space-2);
+  .glow {
+    inset: 0;
   }
 
-  .plans {
-    padding-bottom: var(--wv-space-16);
+  /* Clear of the capture label below the frame. */
+  .floatPrice {
+    left: 8px;
+    bottom: 36%;
   }
 
-  .pilot {
-    padding-block: var(--wv-space-12) var(--wv-space-16);
+  .floatHandoff {
+    right: 8px;
+  }
+
+  .pilotHead,
+  .timeline {
+    padding-inline: var(--wv-space-4);
+  }
+
+  .timelineTrack {
+    display: none;
   }
 
   .faqGrid {
@@ -333,4 +647,8 @@
 
 .page .steps .wv-thread__title {
   color: var(--wv-ink);
+}
+
+.final {
+  padding-block: var(--wv-space-16) !important;
 }

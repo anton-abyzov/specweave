@@ -1,4 +1,4 @@
-/* /jev on Weave. Shared page kit: continuity.module.css. Only --wv-* tokens. */
+/* /jev on Weave. Shared page kit: continuity.module.css; motion kit: components/sections/Motion. Only --wv-* tokens. */
 .page {
   --jv-gutter: var(--wv-space-8);
 }
@@ -18,8 +18,8 @@
 .start {
   max-width: var(--wv-page-max);
   margin: 0 auto;
-  padding: var(--wv-space-24) var(--jv-gutter);
-  scroll-margin-top: 80px;
+  padding: var(--wv-space-16) var(--jv-gutter);
+  scroll-margin-top: 128px;
 }
 
 /* Hero: text plus a token-built route diagram. Sized to content. */
@@ -28,8 +28,9 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--wv-space-12);
   align-items: start;
-  padding-top: var(--wv-space-16);
-  padding-bottom: var(--wv-space-16);
+  align-items: center;
+  padding-top: var(--wv-space-12);
+  padding-bottom: var(--wv-space-12);
 }
 
 .page .hero h1 {
@@ -71,6 +72,13 @@
 .routeFlow {
   margin: 0;
   min-width: 0;
+  padding: var(--wv-space-6);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  background:
+    radial-gradient(90% 60% at 100% 0%, color-mix(in srgb, var(--wv-iris) 12%, transparent), transparent 70%),
+    var(--wv-panel);
+  box-shadow: var(--wv-shadow-window);
 }
 
 .page .routeFlow p {
@@ -124,19 +132,30 @@
 
 /* Jump links */
 .jumpLinks {
+  position: sticky;
+  top: 72px;
+  z-index: 5;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--wv-space-1) var(--wv-space-6);
-  max-width: var(--wv-page-max);
+  justify-content: center;
+  gap: var(--wv-space-1);
+  width: fit-content;
+  max-width: calc(100% - 2 * var(--jv-gutter));
   margin: 0 auto;
-  padding: var(--wv-space-3) var(--jv-gutter);
-  border-block: 1px solid var(--wv-line);
+  padding: var(--wv-space-1);
+  border: 1px solid var(--wv-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--wv-panel) 96%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--wv-shadow-overlay);
 }
 
 .page .jumpLinks a {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 36px;
+  padding: 0 var(--wv-space-4);
+  border-radius: 999px;
   font-size: 15px;
   line-height: 22px;
   color: var(--wv-muted);
@@ -144,7 +163,8 @@
 }
 
 .page .jumpLinks a:hover {
-  color: var(--wv-ink);
+  color: var(--wv-iris-strong);
+  background: var(--wv-iris-tint);
 }
 
 .heading {
@@ -296,7 +316,7 @@
 .metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0 var(--wv-space-6);
+  gap: var(--wv-space-3);
   margin-top: var(--wv-space-8);
 }
 
@@ -304,20 +324,19 @@
   display: flex;
   flex-direction: column;
   gap: var(--wv-space-1);
-  padding-top: var(--wv-space-4);
-  border-top: 1px solid var(--wv-line);
+  padding: var(--wv-space-4) var(--wv-space-6) !important;
 }
 
 .metrics strong {
-  font-size: 32px;
-  line-height: 38px;
+  font-size: 36px;
+  line-height: 42px;
   font-weight: 650;
   letter-spacing: -0.018em;
   color: var(--wv-ink);
   overflow-wrap: anywhere;
 }
 
-.metrics span {
+.metrics > div > span {
   font-size: 15px;
   line-height: 22px;
   color: var(--wv-muted);
@@ -433,12 +452,12 @@
 .boundaries {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--wv-space-8);
+  gap: var(--wv-space-4);
 }
 
-.boundaries article {
-  padding-top: var(--wv-space-4);
-  border-top: 1px solid var(--wv-line);
+.page .boundaries h3 + ul,
+.boundaries article > span {
+  margin-bottom: var(--wv-space-3);
 }
 
 .page .boundaries h3 {
@@ -484,12 +503,20 @@
 
 /* Start: left aligned, closed by space, no colored band. */
 .start {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: var(--wv-space-6) var(--wv-space-12);
+  align-items: end;
   border-top: 1px solid var(--wv-line);
 }
 
-.start > p {
+.start > div > p {
   max-width: 60ch;
   margin-top: var(--wv-space-4) !important;
+}
+
+.startSide > .actions {
+  margin-top: 0;
 }
 
 .setup {
@@ -501,6 +528,7 @@
 @media (max-width: 1000px) {
   .hero,
   .heading,
+  .start,
   .evidenceCopy {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--wv-space-8);
@@ -567,4 +595,140 @@
 .page .routeFlow .wv-thread__title,
 .page .start .wv-thread__title {
   color: var(--wv-ink);
+}
+
+/* Comparison: the off run reads muted, the on run carries the iris edge. */
+.comparisonColumns .off {
+  background: var(--wv-sunken);
+}
+
+.comparisonColumns .on {
+  border-color: color-mix(in srgb, var(--wv-iris) 55%, var(--wv-line));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--wv-iris) 9%, transparent), transparent 70%),
+    var(--wv-panel);
+}
+
+/* FAQ and archive: chevron disclosures. */
+.archive summary,
+.faq summary {
+  position: relative;
+  list-style: none;
+  padding-right: var(--wv-space-8);
+}
+
+.archive summary::-webkit-details-marker,
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.archive summary::after,
+.faq summary::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--wv-muted);
+  border-bottom: 1.5px solid var(--wv-muted);
+  transform: rotate(45deg);
+}
+
+.archive[open] summary::after,
+.faq details[open] summary::after {
+  top: 10px;
+  transform: rotate(-135deg);
+}
+
+/* Replay bars: real figures, drawn as bars. */
+.bars {
+  display: grid;
+  gap: var(--wv-space-4);
+  margin: var(--wv-space-4) 0 var(--wv-space-6);
+  padding: var(--wv-space-4);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-panel);
+}
+
+.page .barLabel {
+  margin: 0 0 var(--wv-space-1);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--wv-ink);
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: var(--wv-space-3);
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--wv-muted);
+}
+
+.barRow b {
+  font-family: var(--wv-font-mono);
+  font-weight: 500;
+  color: var(--wv-ink);
+  text-align: right;
+}
+
+.barTrack {
+  display: block;
+  height: 10px;
+  overflow: clip;
+  border-radius: 5px;
+  background: var(--wv-sunken);
+}
+
+.barTrack i {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+}
+
+.barBase {
+  background: var(--wv-control);
+}
+
+.barHybrid {
+  background: var(--wv-iris);
+}
+
+.bars figcaption {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--wv-muted);
+}
+
+@media (max-width: 760px) {
+  /* One scrollable row, so the sticky bar never covers two lines of content. */
+  .jumpLinks {
+    top: 64px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .jumpLinks::-webkit-scrollbar {
+    display: none;
+  }
+
+  .page .jumpLinks a {
+    flex: none;
+    min-height: 32px;
+    padding: 0 var(--wv-space-3);
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .routeFlow {
+    padding: var(--wv-space-4);
+  }
 }

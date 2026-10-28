@@ -1,9 +1,10 @@
 /* /tutorials hub. Weave tokens and components only (src/css/weave.css), so light and dark
-   come from the tokens. Guides are a hairline list, not a grid of cards.
-   Motion: the learning paths draw their thread line and light each step as it scrolls in,
-   with CSS scroll-driven animation only. The resting state is the final state. */
+   come from the tokens. Motion kit: components/sections/Motion.
+   Learning paths are horizontal rails of real guide posters; all guides are compact poster cards.
+   Scroll-driven motion only adds to a complete resting state. */
 .page {
-  padding: var(--wv-space-16) var(--wv-space-8) var(--wv-space-24);
+  padding: var(--wv-space-12) var(--wv-space-8) var(--wv-space-16);
+  overflow: clip;
 }
 
 .page h1,
@@ -21,12 +22,104 @@
 
 .hero {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: var(--wv-space-12);
+}
+
+.heroText {
+  display: grid;
   gap: var(--wv-space-4);
+  min-width: 0;
+}
+
+.heroStats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--wv-space-2) var(--wv-space-6);
+  margin-top: var(--wv-space-2) !important;
+  font: 400 15px/22px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.heroStats b {
+  margin-right: var(--wv-space-1);
+  font: 650 32px/36px var(--wv-font-sans);
+  letter-spacing: -0.02em;
+  color: var(--wv-iris-strong);
+}
+
+/* Three real posters stacked as depth planes. */
+.stack {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 5 / 4;
+}
+
+.stackGlow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--wv-iris) 22%, transparent), transparent);
+}
+
+.stackCard {
+  position: absolute;
+  display: flex;
+  flex-direction: column-reverse;
+  width: 72%;
+  overflow: clip;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  background: var(--wv-panel);
+  box-shadow: var(--wv-shadow-window);
+}
+
+.stackCard img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.stackCard span {
+  display: block;
+  padding: var(--wv-space-2) var(--wv-space-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--wv-line);
+  font: 500 13px/18px var(--wv-font-sans);
+  color: var(--wv-ink);
+}
+
+/* A diagonal cascade: titles sit on top like window bars, so the poster in front never covers one. */
+.stack0 {
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 66%;
+}
+
+.stack1 {
+  left: 17%;
+  top: 15%;
+  z-index: 2;
+  width: 58%;
+}
+
+.stack2 {
+  left: 0;
+  top: 0;
+  z-index: 1;
+  width: 52%;
 }
 
 .hero h1 {
   max-width: 16ch;
-  font: 600 72px/76px var(--wv-font-sans);
+  font: 600 64px/68px var(--wv-font-sans);
   letter-spacing: -0.035em;
   text-wrap: balance;
   color: var(--wv-ink);
@@ -41,7 +134,9 @@
 .section {
   display: grid;
   gap: var(--wv-space-6);
-  margin-top: var(--wv-space-24);
+  margin-top: var(--wv-space-16);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
 }
 
 .sectionHead {
@@ -61,23 +156,35 @@
   color: var(--wv-muted);
 }
 
-/* Learning paths: three threads side by side on wide screens. */
+/* Learning paths: one row per path, a heading block beside a horizontal rail of posters. */
 .paths {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--wv-space-12);
+  gap: var(--wv-space-4);
   margin: 0;
-  padding: var(--wv-space-6) 0 0;
+  padding: 0;
   list-style: none;
-  border-top: 1px solid var(--wv-line);
 }
 
 .path {
-  display: flex;
-  flex-direction: column;
-  gap: var(--wv-space-3);
+  display: grid;
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+  gap: var(--wv-space-6);
   min-width: 0;
   margin: 0;
+  padding: var(--wv-space-6);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  background:
+    radial-gradient(60% 120% at 0% 0%, color-mix(in srgb, var(--wv-iris) 8%, transparent), transparent 70%),
+    var(--wv-panel);
+  scroll-margin-top: 96px;
+}
+
+.pathHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-2);
+  min-width: 0;
 }
 
 .pathTitle {
@@ -86,8 +193,8 @@
 }
 
 .pathProduct {
-  font: 400 13px/18px var(--wv-font-sans);
-  color: var(--wv-muted);
+  font: 500 13px/18px var(--wv-font-mono);
+  color: var(--wv-iris-strong);
 }
 
 .pathSummary {
@@ -95,19 +202,110 @@
   color: var(--wv-muted);
 }
 
-.pathThread {
-  margin-top: var(--wv-space-3);
-  gap: var(--wv-space-4);
-}
-
-.pathThread > li {
-  margin: 0;
-}
-
 .pathMore {
-  margin-top: var(--wv-space-2);
-  font: 400 15px/22px var(--wv-font-sans);
+  margin-top: auto !important;
+  padding-top: var(--wv-space-2);
+  font: 400 13px/18px var(--wv-font-sans);
   color: var(--wv-muted);
+}
+
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 220px;
+  gap: var(--wv-space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 var(--wv-space-3);
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--wv-line) transparent;
+  mask-image: linear-gradient(90deg, black calc(100% - 48px), transparent);
+}
+
+.railItem {
+  margin: 0;
+  scroll-snap-align: start;
+}
+
+.railLink {
+  display: grid;
+  gap: var(--wv-space-2);
+  color: var(--wv-ink);
+  text-decoration: none;
+}
+
+.railLink:hover {
+  text-decoration: none;
+}
+
+.railLink:focus-visible {
+  outline: 2px solid var(--wv-iris);
+  outline-offset: 2px;
+  border-radius: var(--wv-radius-md);
+}
+
+.poster,
+.rowPoster {
+  position: relative;
+  display: block;
+  overflow: clip;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-sunken);
+  aspect-ratio: 16 / 9;
+}
+
+.poster img,
+.rowPoster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.railLink:hover .poster img,
+.row:hover .rowPoster img {
+  transform: scale(1.04);
+}
+
+.railLink:hover .railTitle {
+  color: var(--wv-iris-strong);
+}
+
+.stepBadge {
+  position: absolute;
+  left: var(--wv-space-2);
+  top: var(--wv-space-2);
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--wv-iris);
+  color: var(--wv-on-iris);
+  font: 600 12px/1 var(--wv-font-mono);
+}
+
+.lengthBadge {
+  position: absolute;
+  right: var(--wv-space-2);
+  bottom: var(--wv-space-2);
+  padding: 1px var(--wv-space-2);
+  border-radius: var(--wv-radius-xs);
+  background: color-mix(in srgb, var(--wv-panel) 92%, transparent);
+  color: var(--wv-ink);
+  font: 500 12px/18px var(--wv-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.railTitle {
+  font: 600 14px/20px var(--wv-font-sans);
+  transition: color 120ms ease;
 }
 
 /* All guides */
@@ -208,53 +406,84 @@
 }
 
 .rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--wv-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--wv-line);
 }
 
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--wv-space-6);
-  align-items: baseline;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: var(--wv-space-4);
+  align-items: start;
   margin: 0;
-  padding: var(--wv-space-6) 0;
-  border-bottom: 1px solid var(--wv-line);
+  padding: var(--wv-space-3) !important;
 }
 
-/* Length sits on the title's baseline, right-aligned, like a table of contents. Posters stay on the
-   guide pages; the hub is a text list so mixed poster styles never sit side by side. */
-.length {
-  font: 500 15px/22px var(--wv-font-mono);
-  font-variant-numeric: tabular-nums;
-  color: var(--wv-muted);
+/* The whole card is the link target; the title link carries the name. */
+.rowLink {
+  color: var(--wv-ink);
+  text-decoration: none;
+}
+
+.rowLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.rowLink:hover {
+  color: var(--wv-iris-strong);
+  text-decoration: none;
+}
+
+.rowLink:focus-visible {
+  outline: none;
+}
+
+.row:focus-within {
+  outline: 2px solid var(--wv-iris);
+  outline-offset: 2px;
 }
 
 .rowText {
   display: grid;
-  gap: var(--wv-space-2);
+  gap: var(--wv-space-1);
   min-width: 0;
 }
 
 .rowTitle {
-  font: 600 21px/28px var(--wv-font-sans);
+  font: 600 16px/22px var(--wv-font-sans);
   color: var(--wv-ink);
 }
 
 .rowOutcome {
-  max-width: var(--wv-measure);
-  font: 400 17px/26px var(--wv-font-sans);
-  color: var(--wv-ink);
+  font: 400 14px/20px var(--wv-font-sans);
+  color: var(--wv-muted);
 }
 
 .rowMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--wv-space-1) var(--wv-space-4);
-  font: 400 13px/18px var(--wv-font-sans);
+  gap: var(--wv-space-1);
+  margin-top: var(--wv-space-1) !important;
+  font: 400 12px/16px var(--wv-font-sans);
   color: var(--wv-muted);
+}
+
+.rowMeta span {
+  padding: 1px var(--wv-space-2);
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-sunken);
+}
+
+.rowMeta .metaCurrent {
+  background: var(--wv-iris-tint);
+  color: var(--wv-iris-strong);
 }
 
 .empty {
@@ -283,13 +512,44 @@
 }
 
 .standards {
-  max-width: var(--wv-measure);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--wv-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.standards > li {
+  display: grid;
+  align-content: start;
+  gap: var(--wv-space-2);
+}
+
+.standards :global(.wv-evidence__name) {
+  margin-top: var(--wv-space-2);
+  font: 600 17px/24px var(--wv-font-sans);
+  color: var(--wv-ink);
+}
+
+.standards :global(.wv-evidence__detail) {
+  font: 400 14px/21px var(--wv-font-sans);
+  color: var(--wv-muted);
 }
 
 @media (max-width: 996px) {
-  .paths {
+  .hero,
+  .path {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--wv-space-12);
+  }
+
+  .stack {
+    max-width: 520px;
+  }
+
+  .rows,
+  .standards {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -299,7 +559,7 @@
   }
 
   .hero h1 {
-    font-size: 44px;
+    font-size: 42px;
     line-height: 48px;
   }
 
@@ -318,17 +578,26 @@
   }
 
   .row {
-    gap: var(--wv-space-4);
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: var(--wv-space-3);
+  }
+
+  .path {
+    padding: var(--wv-space-4);
+  }
+
+  .rail {
+    grid-auto-columns: 72%;
   }
 
   .rowTitle {
-    font-size: 17px;
-    line-height: 24px;
+    font-size: 15px;
+    line-height: 21px;
   }
 
   .rowOutcome {
-    font-size: 15px;
-    line-height: 22px;
+    font-size: 13px;
+    line-height: 19px;
   }
 
   .search {

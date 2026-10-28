@@ -3,17 +3,40 @@
   hairline comparison table with every competitor cell sourced. Only --wv-* tokens.
 */
 .why {
-  padding-top: var(--wv-space-24);
+  padding-top: var(--wv-space-16);
   scroll-margin-top: calc(var(--ifm-navbar-height) + var(--wv-space-4));
 }
 
 .head {
-  max-width: var(--wv-measure);
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--wv-space-4) var(--wv-space-12);
+  align-items: start;
+}
+
+.head > h2 {
+  grid-column: 1 / -1;
 }
 
 .head > p {
-  margin-top: var(--wv-space-4);
   color: var(--wv-muted);
+}
+
+/* The spec note sits beside the audience line as a small iris panel. */
+.head > p + p {
+  padding: var(--wv-space-4) var(--wv-space-6);
+  border: 1px solid var(--wv-line);
+  border-left: 3px solid var(--wv-iris);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-panel);
+  font-size: 15px;
+  line-height: 24px;
+}
+
+@media (max-width: 996px) {
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .reasons {
