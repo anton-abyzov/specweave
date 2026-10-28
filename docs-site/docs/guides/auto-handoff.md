@@ -1,6 +1,6 @@
 ---
 title: "Auto-handoff at the Claude Code usage limit"
-description: "SpecWeave auto-handoff warns at 95% of a Claude Code or Codex usage window and hands off by itself when a turn hits the limit, so another tool can pick up."
+description: "SpecWeave auto-handoff warns at 95% of a Claude Code or Codex usage window; in Claude Code it hands off by itself when a turn hits the limit."
 ---
 
 # Auto-handoff rules

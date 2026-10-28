@@ -7,7 +7,7 @@ keywords: [spec-driven development tools, openspec alternative, github spec kit 
 
 # Compare AI coding tools and spec frameworks
 
-Every comparison on this site in one place. Each page describes the other product from its own docs or repository, with the date it was checked, and says plainly where the other tool is the better fit. SpecWeave and SpecWithCode are our products, so read the pages with that in mind.
+Every comparison on this site in one place. Most pages describe the other product from its own docs or repository and say when that was checked. SpecWeave and SpecWithCode are our products, so read the pages with that in mind.
 
 ## Spec-driven frameworks
 

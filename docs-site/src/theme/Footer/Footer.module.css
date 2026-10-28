@@ -20,6 +20,12 @@
   margin-bottom: var(--wv-space-12);
 }
 
+@media (max-width: 1024px) {
+  .columns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .columnTitle {
   font-size: 15px;
   line-height: 22px;
