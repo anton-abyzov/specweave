@@ -58,7 +58,7 @@ _specweave_completions() {
             return 0
             ;;
         ac)
-            COMPREPLY=( $(compgen -W "--check --reason --accepted-by --authorization --accepted-at --no-commit --json --workspace --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--check --reason --accepted-by --authorization --accepted-at --uncovered --no-commit --json --workspace --help" -- "${cur}") )
             return 0
             ;;
         card)

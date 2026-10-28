@@ -20,12 +20,12 @@ import { parseIncrementId } from '../../utils/increment-id-validator.js';
 import { isWorkspaceRoot } from '../workspace/context.js';
 import * as os from 'os';
 import * as path from 'path';
-import { getAgentId, ledgerPath, readLedger, readIncrementEvents } from '../tasks/ledger.js';
+import { foldLedgerFile, getAgentId, ledgerPath, readLedger, readIncrementEvents } from '../tasks/ledger.js';
 import { loadTaskBoard } from '../tasks/task-board.js';
 import { hasTasksFile } from '../tasks/tasks-source.js';
 import { incrementsDir, listActiveIncrementIds, readLeaseHours } from '../tasks/resolve-increment.js';
 import { readSpecAcs, deriveAcStatus } from '../tasks/verify-runner.js';
-import { acsLeftToClose } from '../tasks/accepted-skip.js';
+import { ACCEPTED_SKIP_LABEL, deriveAcAcceptance } from '../tasks/accepted-skip.js';
 import type { TaskBoard } from '../tasks/task-board.js';
 import { scrubSecrets } from './handoff-secret-scrub.js';
 import { extractKeepBlocks } from './handoff-doc-format.js';
@@ -57,6 +57,8 @@ export interface IndexRow {
   tasksDone: number;
   tasksTotal: number;
   openAcs: string[];
+  /** ACs closed only by accepted skips: neither open nor verified (absent in indexes written before 1098). */
+  acceptedSkipAcs?: string[];
   totalAcs: number;
   lastActivityAt?: string;
   /** What the increment waits on (a person, a decision), from `wait` events and handoff.md. */
@@ -282,6 +284,7 @@ export async function buildHandoffIndex(root: string, opts: HandoffIndexOptions 
       .map((f) => path.join(dir, f))
       .filter((p) => fs.existsSync(p))
       .map((p) => path.relative(root, p).split(path.sep).join('/'));
+    const acceptance = deriveAcAcceptance(acs, board, board?.fold.acceptedSkips ?? foldLedgerFile(ledgerPath(dir)).acceptedSkips);
     const base = {
       id,
       // "0728 — Academy programs" reads as "0728 0728 — …" next to the id; drop the repeat.
@@ -289,8 +292,9 @@ export async function buildHandoffIndex(root: string, opts: HandoffIndexOptions 
       status: readStatus(dir),
       tasksDone,
       tasksTotal,
-      // A skipped-accepted AC (closed only by accepted skips) is not open.
-      openAcs: acsLeftToClose(acs, board).map((a) => a.id),
+      // A skipped-accepted AC (closed only by accepted skips) is not open; it is listed on its own.
+      openAcs: acceptance.filter((a) => !a.done && a.acceptance !== 'skipped-accepted').map((a) => a.id),
+      acceptedSkipAcs: acceptance.filter((a) => a.acceptance === 'skipped-accepted').map((a) => a.id),
       totalAcs: acs.length,
       lastActivityAt: lastActivity(dir),
       waits: readWaits(dir).map(scrub),
@@ -332,6 +336,11 @@ function acList(row: IndexRow, max = 6): string {
   return row.openAcs.length > max ? `${shown} +${row.openAcs.length - max}` : shown;
 }
 
+/** `Accepted skip (not verified): AC-03`, or '' when the row has none. */
+function acceptedNote(row: IndexRow): string {
+  return row.acceptedSkipAcs?.length ? `${ACCEPTED_SKIP_LABEL}: ${row.acceptedSkipAcs.join(', ')}` : '';
+}
+
 /** Rows without waits first, then waiting rows; newest activity first inside each group. */
 export function sortRows(rows: IndexRow[]): { actionable: IndexRow[]; waiting: IndexRow[] } {
   const byActivity = (a: IndexRow, b: IndexRow) => (Date.parse(b.lastActivityAt ?? '') || 0) - (Date.parse(a.lastActivityAt ?? '') || 0);
@@ -366,7 +375,7 @@ export function renderHandoffIndex(index: HandoffIndex, keep: string[] = []): st
     L.push(`| Increment | Tasks | Open ACs | Last activity |${withWaits ? ' Waits on |' : ''} Local-only repos | Resume prompt |`);
     L.push(`|---|---|---|---|${withWaits ? '---|' : ''}---|---|`);
     for (const r of rows) {
-      L.push(`| ${cell(label(r))} | ${r.tasksDone}/${r.tasksTotal} | ${cell(acList(r))} | ${ageAt(r.lastActivityAt, nowMs)} |` +
+      L.push(`| ${cell(label(r))} | ${r.tasksDone}/${r.tasksTotal} | ${cell(acList(r) + (acceptedNote(r) ? `; ${acceptedNote(r)}` : ''))} | ${ageAt(r.lastActivityAt, nowMs)} |` +
         `${withWaits ? ` ${cell(r.waits.join('; '))} |` : ''} ${cell(r.repos.join(', ') || '-')} | ${cell(r.resumePrompt)} |`);
     }
   };
@@ -466,7 +475,7 @@ export function renderPickupAll(root: string, latest: LatestIndex, now: Date = n
   const L: string[] = [];
   L.push(`Handoff index ${idx.date}, written ${ageMs(Date.parse(idx.generatedAt))} by ${idx.agent}${idx.reason ? ` (${idx.reason})` : ''}${latest.mdPath ? ` · ${rel(latest.mdPath)}` : ''}`);
   const line = (r: IndexRow) => {
-    L.push(`  ${label(r)} · tasks ${r.tasksDone}/${r.tasksTotal} · open ACs ${acList(r)} · ${ageAt(r.lastActivityAt, nowMs)}`);
+    L.push(`  ${label(r)} · tasks ${r.tasksDone}/${r.tasksTotal} · open ACs ${acList(r)}${acceptedNote(r) ? ` · ${acceptedNote(r)}` : ''} · ${ageAt(r.lastActivityAt, nowMs)}`);
     if (r.waits.length) L.push(`    Waits on: ${r.waits.join('; ')}`);
     if (r.repos.length) L.push(`    Local-only repos: ${r.repos.join(', ')}`);
     L.push(`    Resume: ${r.resumePrompt}`);
