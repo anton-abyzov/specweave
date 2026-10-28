@@ -123,6 +123,12 @@ export default function Home() {
           <p>SpecWeave keeps the plan and the evidence in your repository. SpecWithCode runs agents against that record on your machines. Verified Skill gives those agents skills you can check first.</p>
         </div>
         <FamilyCards cliVersion={CLI_VERSION} cliDate={CLI_DATE} />
+        <nav className={h.guides} aria-label="Guides">
+          <span>Guides</span>
+          <Link className="wv-link" to="/docs/guides/claude-code-usage-limit/">Claude Code usage limit</Link>
+          <Link className="wv-link" to="/docs/guides/switch-claude-code-to-codex/">Switch Claude Code to Codex</Link>
+          <Link className="wv-link" to="/docs/guides/cross-tool-handoff/">Claude Code handoff</Link>
+        </nav>
       </section>
 
       {/* 3. The handoff, layer by layer (the main scroll sequence) */}

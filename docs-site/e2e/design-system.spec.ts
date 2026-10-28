@@ -55,8 +55,19 @@ test.describe('/code hero', () => {
   test('never scrolls sideways on a phone', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/code/');
-    const overflow = await page.evaluate(() =>
-      [...document.querySelectorAll('main *')].some(el => el.getBoundingClientRect().right > window.innerWidth + 1 && getComputedStyle(el).position !== 'fixed'));
+    // Rails that scroll inside their own clipped container (capture strip, chapter list) are fine;
+    // anything that pokes past the screen without a scrolling or clipping ancestor is not.
+    const overflow = await page.evaluate(() => {
+      const clipped = (el: Element) => {
+        for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+          if (getComputedStyle(a).overflowX !== 'visible') return true;
+        }
+        return false;
+      };
+      const loose = [...document.querySelectorAll('main *')].filter(el =>
+        el.getBoundingClientRect().right > window.innerWidth + 1 && getComputedStyle(el).position !== 'fixed' && !clipped(el));
+      return document.documentElement.scrollWidth > window.innerWidth || loose.length > 0;
+    });
     expect(overflow).toBe(false);
   });
 });
