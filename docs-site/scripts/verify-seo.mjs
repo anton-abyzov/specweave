@@ -35,6 +35,11 @@ for (const line of readFileSync(`${build}robots.txt`, 'utf8').split('\n')) {
   }
 }
 
+// Guides written for a search query. Add a guide here once its title and description fit.
+const searchGuides = new Set([
+  'agents-md-vs-claude-md', 'auto-handoff', 'claude-code-usage-limit', 'claude-code-vs-codex', 'cross-tool-handoff',
+  'handoff-md', 'switch-claude-code-to-codex', 'switch-claude-code-to-cursor', 'switch-claude-code-to-opencode',
+].map(slug => `/docs/guides/${slug}/`));
 const titles = new Map();
 const indexablePaths = new Set();
 let internalLinks = 0;
@@ -56,6 +61,11 @@ for (const url of urls) {
   assert.equal(descriptions.length, 1, `Expected one description: ${url}`);
   assert(descriptions[0].content.trim(), `Empty description: ${url}`);
   assert.equal(doc.querySelectorAll('h1').length, 1, `Expected one page heading: ${url}`);
+  if (pathname.startsWith('/docs/compare/') || searchGuides.has(pathname)) {
+    // Search results cut longer snippets, so keep comparison pages and the search-facing guides inside the visible length.
+    assert(descriptions[0].content.length <= 160, `Description over 160 characters (${descriptions[0].content.length}): ${url}`);
+    assert(doc.title.length <= 60, `Title over 60 characters (${doc.title.length}): ${url}`);
+  }
   for (const script of doc.querySelectorAll('script[type="application/ld+json"]')) JSON.parse(script.textContent);
   for (const link of doc.querySelectorAll('a[href]')) {
     const target = new URL(link.getAttribute('href'), url);
@@ -110,6 +120,7 @@ for (const faq of schemaNodes(product).filter(node => node['@type'] === 'FAQPage
     assert(product.querySelector('main').textContent.includes(question.acceptedAnswer.text), `FAQ answer differs from page: ${question.name}`);
   }
 }
+for (const path of searchGuides) assert(indexablePaths.has(path), `Search guide missing from sitemap: ${path}`);
 const comparisonPath = '/docs/compare/spec-as-code/';
 assert(indexablePaths.has(comparisonPath), 'Missing terminology guide in sitemap');
 const comparison = pageFor(comparisonPath);
@@ -118,6 +129,14 @@ assert.equal(article?.url, `${origin}${comparisonPath}`);
 assert.equal(article?.headline, comparison.querySelector('h1').textContent);
 assert(comparison.querySelector('main').textContent.includes('AC-04'), 'Guide must include a concrete acceptance example');
 assert(product.querySelector(`a[href="${comparisonPath}"]`), 'Product must link to terminology guide');
+for (const path of ['/docs/compare/', '/docs/compare/specweave-vs-openspec/', '/docs/guides/handoff-md/']) {
+  const page = pageFor(path);
+  const articles = schemaNodes(page).filter(node => node['@type'] === 'TechArticle');
+  assert.equal(articles.length, 1, `Expected one TechArticle: ${path}`);
+  assert.equal(articles[0].url, `${origin}${path}`, `TechArticle URL differs from the page: ${path}`);
+  assert.equal(`${articles[0].headline} | SpecWeave`, page.title, `TechArticle headline differs from the title: ${path}`);
+}
+assert.equal(schemaNodes(comparison).filter(node => node['@type'] === 'TechArticle').length, 1, 'Duplicate TechArticle on the terminology guide');
 console.log('Brand SEO verified: visible alias, product identity, social cards, matching FAQ and indexable TechArticle.');
 for (const path of ['/', '/code/', '/code/download/']) {
   assert(!pageFor(path).querySelector('link[href*="fonts.googleapis.com"]'), `External font stylesheet blocks rendering: ${path}`);
