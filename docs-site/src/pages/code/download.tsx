@@ -21,7 +21,7 @@ const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/download/`;
 const TITLE = 'Download SpecWithCode for Mac, Windows and Linux (free)';
 const DESCRIPTION = 'Download SpecWithCode (Spec with Code), the free AI coding agent workspace, for Apple silicon Macs, Windows 10 and 11, and Linux.';
-const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg`;
+const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 const SHA_URL = `${release.repoUrl}/releases/download/v${release.version}/SHA256SUMS`;
 const CHROME_URL = 'https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb';
 
@@ -118,8 +118,9 @@ export default function CodeDownload() {
       <meta property="og:image" content={OG_IMAGE} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own Macs. Free, source available." />
+      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own computers. macOS, Windows and Linux. Free, source available." />
       <meta name="twitter:image" content={OG_IMAGE} />
+      <meta name="twitter:image:alt" content="SpecWithCode: agents on your own computers. macOS, Windows and Linux." />
       <script type="application/ld+json">{JSON.stringify(DOWNLOAD_LD)}</script>
     </Head>
     <main className={clsx('wv-root', styles.page)}>
@@ -155,7 +156,7 @@ export default function CodeDownload() {
       <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="windows-linux-title">
         <div className={styles.sectionHead}>
           <h2 id="windows-linux-title">Windows and Linux</h2>
-          <p>SpecWithCode {desktop.version} for 64-bit Windows 10 and 11 and for x64 Linux. Threads, the project coordinator, providers and pairing work as on a Mac. <a className="wv-link" href={desktop.notesUrl}>Release notes</a> · <a className="wv-link" href={desktop.sumsUrl}>SHA256SUMS</a></p>
+          <p>SpecWithCode {desktop.version} for 64-bit Windows 10 and 11 and for x64 Linux. The published {desktop.version} installers passed installed checks on Windows and Linux using a test provider. This does not establish live-provider or native-feature parity with macOS. Windows and Linux desktop builds may trail Mac releases. <a className="wv-link" href={desktop.notesUrl}>Release notes</a> · <a className="wv-link" href={desktop.sumsUrl}>SHA256SUMS</a></p>
           <div className={styles.actions}>
             <a className="wv-btn wv-btn--primary" href={desktop.exe.url} data-track="download_click" data-placement="download-page-windows"><Download {...btnIcon} />Windows ({desktop.exe.size})</a>
             <a className="wv-btn wv-btn--secondary" href={desktop.appImage.url} data-track="download_click" data-placement="download-page-appimage"><Download {...btnIcon} />Linux AppImage ({desktop.appImage.size})</a>
@@ -207,10 +208,11 @@ export default function CodeDownload() {
       </section>
 
       <section className={clsx(styles.shell, styles.final)} aria-labelledby="download-final-title">
-        <h2 id="download-final-title">Get SpecWithCode for Mac</h2>
-        <p>Free, source available, no account. Version {release.version} for Apple silicon Macs on macOS 13 or later.</p>
+        <h2 id="download-final-title">Get SpecWithCode for your computer</h2>
+        <p>Free, source available, no account. Choose macOS on Apple silicon, Windows 10 and 11 (x64), or Linux (x64).</p>
         <div className={styles.actions}>
-          <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="download-page-footer"><Download {...btnIcon} />Download SpecWithCode</a>
+          <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="download-page-footer"><Download {...btnIcon} />Download for Mac</a>
+          <a className="wv-btn wv-btn--secondary" href="#windows-linux-title">Windows and Linux downloads</a>
           <a className={clsx('wv-link', styles.finalLink)} href={release.repoUrl}>View source on GitHub</a>
         </div>
       </section>

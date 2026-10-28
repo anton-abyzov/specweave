@@ -4,13 +4,11 @@ import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
 import {Check, ChevronDown, Cloud, Copy, Download, Info, Users} from 'lucide-react';
-import FleetSequence from '../components/ecosystem/FleetSequence';
 import CoordinatorFlow from '../components/ecosystem/CoordinatorFlow';
 import SubscriptionValue from '../components/ecosystem/SubscriptionValue';
 import WhySpecWithCode from '../components/ecosystem/WhySpecWithCode';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import {SPECWITHCODE_RELEASE as release} from '../data/specwithcodeRelease';
-import {providerSummary} from '../data/tools';
 import {PATHS, TUTORIALS, buildVideoObject, byRecency, formatDuration, getTutorial, guidePath, resolvePath, type Tutorial} from '../data/tutorials';
 import styles from './code.module.css';
 
@@ -36,7 +34,7 @@ const LIMITS: {name: string; detail: React.ReactNode}[] = [
   {name: 'Credits before the fallback, if you want them', detail: <>Redeem a banked reset, spend Codex credits or use Claude API credits first. Each is off until you turn it on, and SpecWithCode never buys credits for you.</>},
   {name: 'The thread keeps its place', detail: <>Continuing hands the thread over with its context, in the same worktree. Tick Auto-continue when the limit resets, continue on another machine of the project, or undo a failover you did not want.</>},
   {name: 'Limits per account and machine', detail: <>Usage &gt; Limits names each account and the machine it is signed in on, with the share left in every session and weekly window.</>},
-  {name: 'A status page with history', detail: <>The health of the app, your machines and each provider, with each day’s worst status kept on your Mac for 90 days.</>},
+  {name: 'A status page with history', detail: <>The health of the app, your machines and each provider, with each day’s worst status kept on your computer for 90 days.</>},
 ];
 
 const MACHINE_STEPS: {title: string; body: React.ReactNode}[] = [
@@ -94,9 +92,9 @@ const FAQ_TEXT: {q: string; a: string}[] = [
 
 const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/`;
-const TITLE = 'SpecWithCode (Spec with Code): Claude Code & Codex workspace';
-const DESCRIPTION = 'SpecWithCode (Spec with Code) is a free AI coding agent workspace. Run Claude Code, Codex and Cursor on your own machines with your existing accounts.';
-const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg`;
+const TITLE = 'SpecWithCode (Spec with Code): agents on your own computers';
+const DESCRIPTION = 'SpecWithCode (Spec with Code): run Claude Code, Codex and Cursor on your own computers. Free workspace for macOS, Windows and Linux.';
+const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 /** The SpecWithCode explainer on the AI Power YouTube channel. */
 const EXPLAINER_URL = 'https://www.youtube.com/watch?v=eCLJSZ8wo9w';
 const tour = getTutorial('specwithcode-tour');
@@ -215,8 +213,9 @@ export default function Code() {
       <meta property="og:image" content={OG_IMAGE} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own Macs. Free, source available." />
+      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own computers. macOS, Windows and Linux. Free, source available." />
       <meta name="twitter:image" content={OG_IMAGE} />
+      <meta name="twitter:image:alt" content="SpecWithCode: agents on your own computers. macOS, Windows and Linux." />
       <script type="application/ld+json">{JSON.stringify(SPECWITHCODE_LD)}</script>
     </Head>
     <main className={clsx('wv-root', styles.page)}>
@@ -227,39 +226,50 @@ export default function Code() {
             <span className={styles.productName}>SpecWithCode</span>
             <span className={styles.productNote}>Free, source available</span>
           </p>
-          <h1>SpecWithCode: run Claude Code, Codex and Cursor agents on your own machines</h1>
-          <p className={styles.lead}>SpecWithCode (pronounced “Spec with Code”) is a free AI coding agent workspace on your own machines.</p>
-          <p className={styles.lead}>One coordinator per project starts worker threads in {providerSummary(6)}, each on its own branch or worktree.</p>
+          <h1><span className={styles.heroBrand}>SpecWithCode</span>Give the goal.<br /><em>Keep the whole picture.</em></h1>
+          <p className={styles.lead}>One workspace for your coding agents on your own computers. A coordinator keeps the brief, workers do the work, and you review the result.</p>
+          <ul className={styles.providers} aria-label="Some supported coding agents">
+            {[['claude', 'Claude Code'], ['openai', 'Codex'], ['cursor', 'Cursor'], ['opencode', 'OpenCode']].map(([file, name]) => <li key={name}><img src={`/img/studio/providers/${file}.svg`} alt="" width="28" height="28" /><span>{name}</span></li>)}
+            <li><a href="#tutorials">More agents</a></li>
+          </ul>
           <div className={styles.actions}>
-            <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for Mac</a>
+            <Link className="wv-btn wv-btn--primary wv-btn--lg" to="/code/download/" data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for macOS, Windows or Linux</Link>
             <a className="wv-btn wv-btn--secondary wv-btn--lg" href="#workflow">See how it works</a>
-          </div>
-          <p className={styles.requirements}>Version {release.version}, {release.size}. Apple silicon, macOS 13 or later, early access. Signed with Developer ID and notarized by Apple. Linux machines can join as workers. <Link className="wv-link" to="/docs/reference/changelog#specwithcode-releases">What is new in {release.version}</Link> · <Link className="wv-link" to="/code/download/">Download SpecWithCode for Mac, Windows or Linux</Link></p>
-          <div className={clsx('wv-note', styles.qualification)}>
-            <Info {...icon} />
-            <p><strong>Cloud models still receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>
           </div>
         </div>
 
         <div className={styles.heroShot}>
           <figure className="wv-window">
-            <div className="wv-window__bar"><span>Worker thread</span><span>Codex, GPT-6.1-Sol</span></div>
-            <a href="/img/studio/code-hero-worker-20261015.webp" aria-label="Open the full-size worker thread screenshot">
-              <img src="/img/studio/code-hero-worker-20261015.webp" width="920" height="1130" alt="Actual SpecWithCode Codex worker thread reporting its outcome: created tip.py, python3 tip.py 50 18 exited 0 with Tip $9.00 and Total $59.00, no blockers, and 2 changed files" fetchPriority="high" />
+            <div className="wv-window__bar"><span>One brief, two workers</span><span>Actual app capture · 1.0.76</span></div>
+            <a href="/img/studio/coordinator-delegation-20261024.png" aria-label="Open the full-size coordinator screenshot">
+              <img src="/img/studio/coordinator-delegation-20261024.png" width="1520" height="360" alt="Actual coordinator delegating opening copy to Claude Code and order arithmetic to Codex, with both workers marked Done" fetchPriority="high" />
             </a>
-            <figcaption>A Codex worker reports its outcome, the command it ran with its output, and the files it changed. App capture, SpecWithCode 1.0.21, 15 October 2026. <a className="wv-link" href="#real-run">Step through the whole run</a></figcaption>
+            <figcaption>Real app, fictional coffee orders. Recorded in SpecWithCode 1.0.76, October 24, 2026. <a className="wv-link" href="#real-run">Step through a real run</a></figcaption>
           </figure>
+          <p className={styles.requirements}>Early access for macOS 13 or later on Apple silicon, Windows 10 and 11 (x64), and Linux (x64). Mac releases are signed and notarized; Windows and Linux installers are unsigned. <Link className="wv-link" to="/code/download/">Downloads, versions and installation steps</Link></p>
+          <div className={clsx('wv-note', styles.qualification)}>
+            <Info {...icon} />
+            <p><strong>Cloud models still receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>
+          </div>
         </div>
       </header>
 
-      <div className={styles.shell}><FleetSequence /></div>
+      <section id="workflow" className={clsx(styles.shell, styles.workflow)} aria-label="From your goal to a reviewed result">
+        <div className={styles.workflowHead}><p className={styles.productNote}>One brief. Work you can follow.</p><h2>Keep the decisions.<br />See the work.</h2></div>
+        <ol className={styles.workflowRail}>
+          <li><span>01</span><h3>Give the goal</h3><p>Tell the coordinator what done means. Your brief and decisions stay together.</p></li>
+          <li><span>02</span><h3>Follow the workers</h3><p>Open threads beside the conversation to see commands, changed files and results.</p></li>
+          <li><span>03</span><h3>Review the evidence</h3><p>Check the output and diff, then decide how the change lands.</p></li>
+        </ol>
+        <p className={styles.fine}>An explanation of the flow, not a product screenshot.</p>
+      </section>
 
       <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="threads-title">
         <div className={styles.sectionHead}>
           <h2 id="threads-title">Stay in charge of every thread</h2>
           <p>The main window holds only the coordinator. Worker threads open in the right panel, and every mention of a thread is a link with its live status.</p>
         </div>
-        <Evidence items={THREADS} />
+        <details className={styles.disclosure}><summary>Thread controls and evidence</summary><Evidence items={THREADS} /></details>
       </section>
 
       <div className={styles.shell}><CoordinatorFlow /></div>
@@ -270,7 +280,7 @@ export default function Code() {
           <p>Every account’s session and weekly limits sit on one screen. When a thread stops on a limit, the rule you set for the project decides what happens next.</p>
           <p className={styles.fine}>Watch <Link className="wv-link" to="/tutorials/provider-runs-out/">Keep working when a provider runs out</Link>, or read <Link className="wv-link" to="/docs/guides/claude-code-usage-limit/">what to do when Claude Code hits its usage limit</Link>.</p>
         </div>
-        <Evidence items={LIMITS} />
+        <details className={styles.disclosure}><summary>Policies, credits and availability</summary><Evidence items={LIMITS} /></details>
       </section>
 
       <div className={styles.shell}><SubscriptionValue /></div>
@@ -278,7 +288,7 @@ export default function Code() {
       <section className={clsx(styles.shell, styles.section)} id="machines" aria-labelledby="machines-title">
         <div className={styles.sectionHead}>
           <h2 id="machines-title">Add the machines you trust</h2>
-          <p>Start on one Mac. When you want more capacity, add another Mac or a Linux machine to your private Tailscale network and let coordinators start workers there. Each machine reaches the others by its own Tailscale name, whatever network it is on.</p>
+          <p>Start on one computer. When you want more capacity, add a supported Mac or Linux worker to your private Tailscale network and let coordinators start workers there. Each machine reaches the others by its own Tailscale name, whatever network it is on.</p>
         </div>
 
         <ol className={clsx('wv-thread', 'wv-thread--across', styles.route)} aria-label="Add a machine in four steps">
@@ -325,8 +335,8 @@ export default function Code() {
 
       <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="reach-title">
         <div className={styles.sectionHead}>
-          <h2 id="reach-title">Let agents use your Mac and your browser</h2>
-          <p>Some work happens outside a terminal. Give agents the desktop and the browser when a task needs them, on the machines where you allow it.</p>
+          <h2 id="reach-title">Let agents use your browser and, on macOS, your desktop</h2>
+          <p>Some work happens outside a terminal. Give agents browser access when a task needs it. Native desktop control is macOS only and requires permission on that Mac.</p>
         </div>
         <Evidence items={REACH} />
       </section>

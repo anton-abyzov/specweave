@@ -61,7 +61,7 @@
 .heroShot {
   min-width: 0;
   width: 100%;
-  max-width: 560px;
+  max-width: 640px;
   align-self: center;
   justify-self: start;
 }
@@ -347,8 +347,12 @@
   display: none;
 }
 
-/* Phones: show the readable part of the capture (the reply and the two worker rows) at
-   a legible scale, and offer the whole image. */
+/* The hero capture is the whole app window, so it is always shrunk: keep its link. */
+.home .heroFullSize {
+  white-space: nowrap;
+}
+
+/* Phones: drop the project sidebar so the coordinator and the Threads pane read larger. */
 @media (max-width: 600px) {
   .crop .cropFrame {
     overflow: hidden;
@@ -356,10 +360,10 @@
   }
 
   .crop .cropFrame img {
-    width: 160%;
+    width: 120%;
     max-width: none;
     height: auto;
-    margin-top: -24%;
+    margin-left: -20%;
   }
 
   .home .fullSize {

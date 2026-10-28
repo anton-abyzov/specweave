@@ -7,7 +7,7 @@ keywords: [opencode alternative, t3 code alternative, codex cloud alternative, c
 
 # SpecWithCode vs OpenCode, T3 Code and cloud agents
 
-SpecWithCode is a free Mac app with source available for inspection that runs Claude Code, Codex, Cursor and other coding agents on your own machines, signed in with the plans you already pay for. A coordinator splits work across worker threads, and the app tracks each subscription's limits where the provider reports them.
+SpecWithCode is a free desktop app for macOS, Windows and Linux with source available for inspection that runs Claude Code, Codex, Cursor and other coding agents on your own machines, signed in with the plans you already pay for. A coordinator splits work across worker threads, and the app tracks each subscription's limits where the provider reports them.
 
 The facts about other products below come from their own sites, docs and GitHub repositories, checked on 16 October 2026. They change quickly, so follow the links for the current state. SpecWithCode is our product, so read this page with that in mind.
 
@@ -16,10 +16,10 @@ The facts about other products below come from their own sites, docs and GitHub 
 | | SpecWithCode | OpenCode | T3 Code | Cloud agents |
 |---|---|---|---|---|
 | **What runs the agent** | Each vendor's own agent: the Claude Code, Codex, Grok, OpenCode, Muse Code, Antigravity and Pi CLIs, Cursor through its official SDK ([Cursor SDK](https://cursor.com/docs/api/sdk/typescript)), plus GitHub Copilot CLI and Gemini CLI through the ACP registry | Its own agent loop with build and plan agents, across 75+ model providers ([providers](https://opencode.ai/docs/providers/), [README](https://github.com/anomalyco/opencode)) | Vendor CLIs: Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity ([README](https://github.com/pingdotgg/t3code)) | The vendor's agent in the vendor's environment |
-| **Where your code runs** | Your Macs | Your machine | Your machine | A vendor-hosted container or VM that clones your repo (sources below) |
+| **Where your code runs** | Your own computers | Your machine | Your machine | A vendor-hosted container or VM that clones your repo (sources below) |
 | **Claude Pro or Max plan** | Through Claude Code's own sign-in on each machine | Its docs say Anthropic prohibits this and the plugin has not been bundled since v1.3.0 ([providers](https://opencode.ai/docs/providers/)) | Through Claude Code: "Works with your subscriptions" ([README](https://github.com/pingdotgg/t3code)) | Billed through each vendor's own plan |
-| **Other machines** | Pair Macs over your network, SSH or Tailscale; move a project or continue a thread on another machine | `opencode serve` and `opencode web` listen on 127.0.0.1 by default and can bind a network address ([server](https://opencode.ai/docs/server/), [web](https://opencode.ai/docs/web/)) | Network, Tailscale, SSH or the T3 Connect relay ([remote access](https://github.com/pingdotgg/t3code/blob/main/docs/user/remote-access.md)) | Runs in the vendor's cloud |
-| **Apps** | macOS on Apple silicon (Electron), signed and notarized | Terminal, desktop for macOS, Windows and Linux, IDE extension ([download](https://opencode.ai/download)) | Desktop (Electron) for macOS, Windows and Linux, web, iOS, Android and a CLI ([README](https://github.com/pingdotgg/t3code)) | Web, IDE and GitHub |
+| **Other machines** | Pair supported machines over your network, SSH or Tailscale; move a project or continue a thread on another machine | `opencode serve` and `opencode web` listen on 127.0.0.1 by default and can bind a network address ([server](https://opencode.ai/docs/server/), [web](https://opencode.ai/docs/web/)) | Network, Tailscale, SSH or the T3 Connect relay ([remote access](https://github.com/pingdotgg/t3code/blob/main/docs/user/remote-access.md)) | Runs in the vendor's cloud |
+| **Apps** | macOS on Apple silicon, Windows 10/11 (x64), Linux (x64); Mac signed/notarized, Windows/Linux unsigned | Terminal, desktop for macOS, Windows and Linux, IDE extension ([download](https://opencode.ai/download)) | Desktop (Electron) for macOS, Windows and Linux, web, iOS, Android and a CLI ([README](https://github.com/pingdotgg/t3code)) | Web, IDE and GitHub |
 | **Price and license** | Free; source available, no new project-wide license grant | Open source (MIT) ([license](https://github.com/anomalyco/opencode/blob/dev/LICENSE)) | Open source (MIT) ([license](https://github.com/pingdotgg/t3code/blob/main/LICENSE)) | Included in or billed by each vendor's plan |
 
 Cloud agents here means:
@@ -66,6 +66,6 @@ when work should keep running with your laptop closed and your repository alread
 
 ## Pick SpecWithCode
 
-when your team of 2–10 people wants one coordinator to split work across several agents on your own Macs, watch every subscription's limits in one place, let agents use your Chrome through the SpecWithCode Browser extension, and keep your code off anyone else's servers.
+when your team of 2–10 people wants one coordinator to split work across several agents on your own computers, watch every subscription's limits in one place, let agents use your Chrome through the SpecWithCode Browser extension, and keep your code off anyone else's servers.
 
 [Download SpecWithCode](/code/) or compare it with [BridgeMind](/docs/compare/specwithcode-vs-bridgemind).

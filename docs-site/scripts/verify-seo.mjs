@@ -84,7 +84,7 @@ for (const path of ['/code/', '/code/download/']) {
   assert(doc.querySelector('meta[name="description"]').content.includes('Spec with Code'), `Missing brand alias in description: ${path}`);
   assert(doc.querySelector('meta[name="description"]').content.length <= 160, `Long product description: ${path}`);
   for (const selector of ['meta[property="og:image"]', 'meta[name="twitter:image"]']) {
-    assert.equal(doc.querySelector(selector)?.content, `${origin}/img/studio/og-specwithcode.jpg`, `Wrong product share image: ${path}`);
+    assert.equal(doc.querySelector(selector)?.content, `${origin}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`, `Wrong product share image: ${path}`);
   }
   const nodes = schemaNodes(doc);
   assert(nodes.some(node => node['@type'] === 'WebSite' && node['@id'] === `${origin}/#website`), `Unresolved site entity: ${path}`);
@@ -95,6 +95,13 @@ for (const path of ['/code/', '/code/download/']) {
   assert.equal(webPage?.isPartOf?.['@id'], `${origin}/#website`, `Page must belong to root WebSite: ${path}`);
 }
 const product = pageFor('/code/');
+assert(product.title.includes('own computers'), 'Product title must be platform-neutral');
+assert(!/own Macs|on your Mac\b/.test(product.querySelector('meta[property="og:image:alt"]')?.content ?? ''), 'Mac-only share image alt');
+for (const os of ['macOS', 'Windows', 'Linux']) {
+  assert(product.querySelector('meta[name="description"]').content.includes(os), `Missing platform in product description: ${os}`);
+  assert(schemaNodes(product).find(node => node['@type'] === 'SoftwareApplication')?.operatingSystem.includes(os), `Missing structured platform: ${os}`);
+}
+
 assert(product.title.includes('Spec with Code'), 'Product title must explain the spaced brand');
 assert.equal(schemaNodes(product).find(node => node['@type'] === 'WebPage')?.mainEntity?.['@id'], `${origin}/code/#app`);
 for (const faq of schemaNodes(product).filter(node => node['@type'] === 'FAQPage')) {

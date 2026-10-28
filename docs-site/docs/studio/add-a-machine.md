@@ -1,7 +1,7 @@
 ---
 title: "Add a machine to SpecWithCode: Tailscale, fleet invite and one subscription per machine"
 sidebar_label: Add a machine
-description: "Let coordinators on your main Mac start workers on a second Mac, a Linux box or a VPS. Install Tailscale on both, make an invitation line with fleet invite on the new machine, paste it under Settings > Connections, and allow workers. Why we recommend one machine per AI-provider subscription."
+description: "Let coordinators on your main computer start workers on a second Mac, a Linux box or a VPS. Install Tailscale on both, make an invitation line with fleet invite on the new machine, paste it under Settings > Connections, and allow workers. Why we recommend one machine per AI-provider subscription."
 ---
 
 import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
