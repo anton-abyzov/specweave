@@ -375,7 +375,7 @@ export default function Code() {
           <span className={styles.specsIcon}><FileCheck2 size={22} strokeWidth={1.5} aria-hidden="true" /></span>
           <div>
             <h2 id="specs-title">Keep the spec with the code</h2>
-            <p>The optional SpecWeave CLI keeps acceptance criteria, task evidence and handoffs in your repository. SpecWithCode runs the agents against that record. <Link className="wv-link" to="/docs/compare/spec-as-code/">Compare spec as code, spec-driven and intent-first development</Link>, or <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">compare the planning tools</Link>.</p>
+            <p>The optional SpecWeave CLI keeps acceptance criteria, task evidence and handoffs in your repository. SpecWithCode runs the agents against that record. <Link className="wv-link" to="/docs/compare/spec-as-code/">Compare spec as code, spec-driven and intent-first development</Link>, or <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">compare the planning tools</Link>. See also <Link className="wv-link" to="/docs/compare/specwithcode-vs-opencode-t3-code/">SpecWithCode vs OpenCode and T3 Code</Link> and <Link className="wv-link" to="/docs/compare/specwithcode-vs-bridgemind/">SpecWithCode vs BridgeMind</Link>.</p>
           </div>
           <div className={styles.specsFiles}><Tokens items={['spec.md', 'ledger.jsonl', 'reports/']} mono /></div>
         </div>

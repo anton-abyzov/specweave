@@ -128,6 +128,7 @@ export default function Home() {
           <Link className="wv-link" to="/docs/guides/claude-code-usage-limit/">Claude Code usage limit</Link>
           <Link className="wv-link" to="/docs/guides/switch-claude-code-to-codex/">Switch Claude Code to Codex</Link>
           <Link className="wv-link" to="/docs/guides/cross-tool-handoff/">Claude Code handoff</Link>
+          <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">Spec-driven tools compared</Link>
         </nav>
       </section>
 
