@@ -1,0 +1,349 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 4,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "Track 2 has 6 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/codex/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"intro\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#intro",
+        "dataAttributes": {},
+        "sourceFile": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/codex/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"intro\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"term\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#term",
+        "dataAttributes": {},
+        "sourceFile": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/codex/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"term\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"outro\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#outro",
+        "dataAttributes": {},
+        "sourceFile": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/codex/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"outro\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 76.9,
+    "samples": [
+      4.272,
+      12.817,
+      21.361,
+      29.906,
+      38.45,
+      46.994,
+      55.539,
+      64.083,
+      72.628
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      4.272,
+      21.361,
+      38.45,
+      55.539,
+      72.628
+    ],
+    "checked": 21,
+    "passed": 21
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 4,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "first_frame_empty",
+        "severity": "warning",
+        "message": "Frame 0 shows only the background, and the first frame is the thumbnail on social players: have the title or key image already on screen at 0 s instead of entering from nothing; see references/review.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 14 text elements stay under it for 0.5 s or more, the smallest \"specweave init . --quick\" at 20 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "specweave init . --quick",
+        "selector": "#chipi-02-init > code:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 429.77,
+          "y": 60.19,
+          "width": 291.45,
+          "height": 27
+        },
+        "time": 6.291,
+        "times": [
+          0.128,
+          0.385,
+          6.291,
+          6.291,
+          17.46,
+          30.169,
+          30.169,
+          38.771,
+          41.467,
+          43.264,
+          46.859,
+          49.94,
+          61.238,
+          68.94
+        ],
+        "fontPx": 20.24,
+        "floorPx": 28,
+        "seconds": 10.912,
+        "elements": [
+          {
+            "selector": "#chipi-02-init > code:nth-of-type(1)",
+            "text": "specweave init . --quick",
+            "fontPx": 20.24,
+            "time": 6.291,
+            "seconds": 10.912
+          },
+          {
+            "selector": "#chipi-04-project > code:nth-of-type(1)",
+            "text": "~/greet-app",
+            "fontPx": 20.24,
+            "time": 30.169,
+            "seconds": 8.345
+          },
+          {
+            "selector": "#chipi-02-init",
+            "text": "In your repo:",
+            "fontPx": 22,
+            "time": 6.291,
+            "seconds": 10.912
+          },
+          {
+            "selector": "#chipi-03-connect-b",
+            "text": "Main machine Continue Codex: Use existing CLI Ready",
+            "fontPx": 22,
+            "time": 17.46,
+            "seconds": 12.452
+          },
+          {
+            "selector": "#chipi-04-project",
+            "text": "+ Local folder",
+            "fontPx": 22,
+            "time": 30.169,
+            "seconds": 8.345
+          },
+          {
+            "selector": "#chipi-05-task",
+            "text": "Full access describe the change Enter",
+            "fontPx": 22,
+            "time": 38.771,
+            "seconds": 7.831
+          },
+          {
+            "selector": "#sped-7",
+            "text": "Sped up 2×",
+            "fontPx": 22,
+            "time": 41.467,
+            "seconds": 1.797
+          },
+          {
+            "selector": "#sped-8",
+            "text": "Sped up 6×",
+            "fontPx": 22,
+            "time": 43.264,
+            "seconds": 2.824
+          },
+          {
+            "selector": "#chipi-06-work",
+            "text": "Increment 0001 acceptance criteria task test",
+            "fontPx": 22,
+            "time": 46.859,
+            "seconds": 14.121
+          },
+          {
+            "selector": "#sped-11",
+            "text": "Sped up 6×",
+            "fontPx": 22,
+            "time": 49.94,
+            "seconds": 9.885
+          },
+          {
+            "selector": "#chipi-07-review",
+            "text": "Summary · verify.md · review.md · Open diff",
+            "fontPx": 22,
+            "time": 61.238,
+            "seconds": 7.574
+          },
+          {
+            "selector": "#intro > div:nth-of-type(1) > div:nth-of-type(1)",
+            "text": "SPECWITHCODE TUTORIAL · CODEX",
+            "fontPx": 24,
+            "time": 0.128,
+            "seconds": 3.851
+          },
+          {
+            "selector": "div.footer.rise",
+            "text": "spec-weave.com",
+            "fontPx": 24,
+            "time": 0.385,
+            "seconds": 3.594
+          },
+          {
+            "selector": "div.card-inner.outro > div:nth-of-type(1)",
+            "text": "SPECWITHCODE TUTORIAL 02",
+            "fontPx": 24,
+            "time": 68.94,
+            "seconds": 7.96
+          }
+        ]
+      },
+      {
+        "code": "dead_stretch",
+        "severity": "warning",
+        "message": "Nothing on screen changes for 5.78 s (9.12–14.89 s): start the next move within 3 s, or put data-hold on the element whose stillness is deliberate; see references/motion.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 9.115,
+        "seconds": 5.777,
+        "floorSeconds": 3,
+        "until": 14.892
+      },
+      {
+        "code": "dead_stretch",
+        "severity": "warning",
+        "message": "Nothing on screen changes for 3.08 s (69.97–73.05 s): start the next move within 3 s, or put data-hold on the element whose stillness is deliberate; see references/motion.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 69.967,
+        "seconds": 3.082,
+        "floorSeconds": 3,
+        "until": 73.049
+      }
+    ],
+    "enabled": true,
+    "step": 0.1280000000000001,
+    "samples": 599
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}
