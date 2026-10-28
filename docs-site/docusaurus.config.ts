@@ -350,7 +350,6 @@ const config: Config = {
         {type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Docs'},
         {to: '/tutorials', label: 'Tutorials', position: 'left'},
         {href: 'https://verified-skill.com/claude-code-skills', label: 'Verified Skill', position: 'right'},
-        {to: '/pricing', label: 'Pricing', position: 'right'},
         {
           href: 'https://github.com/anton-abyzov/specweave',
           position: 'right',
