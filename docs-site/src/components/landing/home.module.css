@@ -641,3 +641,7 @@
   0% { opacity: 0; transform: translate3d(-12px, 0, 0); }
   100% { opacity: 1; transform: none; }
 }
+
+/* One row of guide links under the family cards. */
+.guides { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--wv-space-2) var(--wv-space-6); margin-top: var(--wv-space-8); font-size: 15px; }
+.guides > span { color: var(--wv-muted); font: 500 13px/20px var(--wv-font-mono); text-transform: uppercase; letter-spacing: 0.06em; }
