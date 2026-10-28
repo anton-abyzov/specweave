@@ -1,0 +1,417 @@
+{
+  "text": " Give it one bounded task. Add a named greeting, keep the no argument greeting working, and add tests for both. Ask it to describe the change before editing. Antigravity has its own native plan command. Do not assume the app's separate plan mode is available.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 1.7,
+      "text": " Give it one bounded task.",
+      "tokens": [
+        50365,
+        5303,
+        309,
+        472,
+        37498,
+        5633,
+        13,
+        50452
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1715156498240001,
+      "compression_ratio": 1.4827586206896552,
+      "no_speech_prob": 1.8040234020175183e-12,
+      "words": [
+        {
+          "word": " Give",
+          "start": 0.0,
+          "end": 0.22,
+          "probability": 0.927734375
+        },
+        {
+          "word": " it",
+          "start": 0.22,
+          "end": 0.36,
+          "probability": 0.998046875
+        },
+        {
+          "word": " one",
+          "start": 0.36,
+          "end": 0.74,
+          "probability": 0.98388671875
+        },
+        {
+          "word": " bounded",
+          "start": 0.74,
+          "end": 1.18,
+          "probability": 0.97705078125
+        },
+        {
+          "word": " task.",
+          "start": 1.18,
+          "end": 1.7,
+          "probability": 0.9912109375
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 2.0,
+      "end": 7.5,
+      "text": " Add a named greeting, keep the no argument greeting working, and add tests for both.",
+      "tokens": [
+        50481,
+        5349,
+        257,
+        4926,
+        28174,
+        11,
+        1066,
+        264,
+        572,
+        6770,
+        28174,
+        1364,
+        11,
+        293,
+        909,
+        6921,
+        337,
+        1293,
+        13,
+        50741
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1715156498240001,
+      "compression_ratio": 1.4827586206896552,
+      "no_speech_prob": 1.8040234020175183e-12,
+      "words": [
+        {
+          "word": " Add",
+          "start": 2.0,
+          "end": 2.5,
+          "probability": 0.99365234375
+        },
+        {
+          "word": " a",
+          "start": 2.5,
+          "end": 2.62,
+          "probability": 0.9912109375
+        },
+        {
+          "word": " named",
+          "start": 2.62,
+          "end": 2.84,
+          "probability": 0.99169921875
+        },
+        {
+          "word": " greeting,",
+          "start": 2.84,
+          "end": 3.24,
+          "probability": 0.99072265625
+        },
+        {
+          "word": " keep",
+          "start": 3.52,
+          "end": 3.9,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " the",
+          "start": 3.9,
+          "end": 4.08,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " no",
+          "start": 4.08,
+          "end": 4.38,
+          "probability": 0.8388671875
+        },
+        {
+          "word": " argument",
+          "start": 4.38,
+          "end": 4.82,
+          "probability": 0.7724609375
+        },
+        {
+          "word": " greeting",
+          "start": 4.82,
+          "end": 5.18,
+          "probability": 0.998046875
+        },
+        {
+          "word": " working,",
+          "start": 5.18,
+          "end": 5.64,
+          "probability": 0.998046875
+        },
+        {
+          "word": " and",
+          "start": 5.94,
+          "end": 6.18,
+          "probability": 0.998046875
+        },
+        {
+          "word": " add",
+          "start": 6.18,
+          "end": 6.48,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " tests",
+          "start": 6.48,
+          "end": 6.94,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " for",
+          "start": 6.94,
+          "end": 7.16,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " both.",
+          "start": 7.16,
+          "end": 7.5,
+          "probability": 0.99951171875
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 7.8,
+      "end": 10.5,
+      "text": " Ask it to describe the change before editing.",
+      "tokens": [
+        50769,
+        12320,
+        309,
+        281,
+        6786,
+        264,
+        1319,
+        949,
+        10000,
+        13,
+        50891
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1715156498240001,
+      "compression_ratio": 1.4827586206896552,
+      "no_speech_prob": 1.8040234020175183e-12,
+      "words": [
+        {
+          "word": " Ask",
+          "start": 7.8,
+          "end": 8.38,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " it",
+          "start": 8.38,
+          "end": 8.52,
+          "probability": 0.998046875
+        },
+        {
+          "word": " to",
+          "start": 8.52,
+          "end": 8.66,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " describe",
+          "start": 8.66,
+          "end": 9.08,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " the",
+          "start": 9.08,
+          "end": 9.3,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " change",
+          "start": 9.3,
+          "end": 9.58,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " before",
+          "start": 9.58,
+          "end": 9.98,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " editing.",
+          "start": 9.98,
+          "end": 10.5,
+          "probability": 0.9990234375
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "seek": 0,
+      "start": 11.16,
+      "end": 13.9,
+      "text": " Antigravity has its own native plan command.",
+      "tokens": [
+        50927,
+        5130,
+        328,
+        13404,
+        507,
+        575,
+        1080,
+        1065,
+        8470,
+        1393,
+        5622,
+        13,
+        51059
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1715156498240001,
+      "compression_ratio": 1.4827586206896552,
+      "no_speech_prob": 1.8040234020175183e-12,
+      "words": [
+        {
+          "word": " Antigravity",
+          "start": 11.16,
+          "end": 11.82,
+          "probability": 0.9423828125
+        },
+        {
+          "word": " has",
+          "start": 11.82,
+          "end": 12.06,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " its",
+          "start": 12.06,
+          "end": 12.22,
+          "probability": 0.99169921875
+        },
+        {
+          "word": " own",
+          "start": 12.22,
+          "end": 12.56,
+          "probability": 0.9951171875
+        },
+        {
+          "word": " native",
+          "start": 12.56,
+          "end": 12.96,
+          "probability": 0.9794921875
+        },
+        {
+          "word": " plan",
+          "start": 12.96,
+          "end": 13.38,
+          "probability": 0.8251953125
+        },
+        {
+          "word": " command.",
+          "start": 13.38,
+          "end": 13.9,
+          "probability": 0.9951171875
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "seek": 0,
+      "start": 14.06,
+      "end": 17.28,
+      "text": " Do not assume the app's separate plan mode is available.",
+      "tokens": [
+        51079,
+        1144,
+        406,
+        6552,
+        264,
+        724,
+        311,
+        4994,
+        1393,
+        4391,
+        307,
+        2435,
+        13,
+        51233
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1715156498240001,
+      "compression_ratio": 1.4827586206896552,
+      "no_speech_prob": 1.8040234020175183e-12,
+      "words": [
+        {
+          "word": " Do",
+          "start": 14.06,
+          "end": 14.4,
+          "probability": 0.998046875
+        },
+        {
+          "word": " not",
+          "start": 14.4,
+          "end": 14.7,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " assume",
+          "start": 14.7,
+          "end": 15.16,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " the",
+          "start": 15.16,
+          "end": 15.36,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " app's",
+          "start": 15.36,
+          "end": 15.78,
+          "probability": 0.97265625
+        },
+        {
+          "word": " separate",
+          "start": 15.78,
+          "end": 16.1,
+          "probability": 0.98974609375
+        },
+        {
+          "word": " plan",
+          "start": 16.1,
+          "end": 16.44,
+          "probability": 0.9892578125
+        },
+        {
+          "word": " mode",
+          "start": 16.44,
+          "end": 16.72,
+          "probability": 0.998046875
+        },
+        {
+          "word": " is",
+          "start": 16.72,
+          "end": 16.92,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " available.",
+          "start": 16.92,
+          "end": 17.28,
+          "probability": 0.99951171875
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

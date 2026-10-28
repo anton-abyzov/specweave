@@ -1,33 +1,25 @@
 WEBVTT
 
-chapter-1
-00:00:00.000 --> 00:00:04.000
-Intro
+00:00:00.000 --> 00:00:08.500
+Start small
 
-chapter-2
-00:00:04.000 --> 00:00:22.600
-Set up the repo
+00:00:08.500 --> 00:00:23.800
+Connect the agent
 
-chapter-3
-00:00:22.600 --> 00:00:36.300
-Connect Grok
+00:00:23.800 --> 00:00:32.867
+Open the project
 
-chapter-4
-00:00:36.300 --> 00:00:48.300
-Add the project
+00:00:32.867 --> 00:00:41.367
+Choose deliberately
 
-chapter-5
-00:00:48.300 --> 00:01:01.300
-Plan
+00:00:41.367 --> 00:00:52.833
+Write one bounded task
 
-chapter-6
-00:01:01.300 --> 00:01:11.600
-Build
+00:00:52.833 --> 00:01:01.400
+Review before execution
 
-chapter-7
-00:01:11.600 --> 00:01:19.600
-Review
+00:01:01.400 --> 00:01:12.767
+Read the evidence
 
-chapter-8
-00:01:19.600 --> 00:01:23.600
-Next
+00:01:12.767 --> 00:01:24.700
+Keep the result reviewable

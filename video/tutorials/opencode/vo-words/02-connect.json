@@ -1,0 +1,307 @@
+{
+  "text": " Install and authenticate open code on the machine running the project. Then enable it in Settings, Providers. Refresh provider status after changing a login. Select a model your configured provider actually offers.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 3.82,
+      "text": " Install and authenticate open code on the machine running the project.",
+      "tokens": [
+        50365,
+        31982,
+        293,
+        9214,
+        8700,
+        1269,
+        3089,
+        322,
+        264,
+        3479,
+        2614,
+        264,
+        1716,
+        13,
+        50565
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2169099807739258,
+      "compression_ratio": 1.4266666666666667,
+      "no_speech_prob": 1.035976751433132e-12,
+      "words": [
+        {
+          "word": " Install",
+          "start": 0.0,
+          "end": 0.52,
+          "probability": 0.9609375
+        },
+        {
+          "word": " and",
+          "start": 0.52,
+          "end": 0.76,
+          "probability": 0.96826171875
+        },
+        {
+          "word": " authenticate",
+          "start": 0.76,
+          "end": 1.42,
+          "probability": 0.9892578125
+        },
+        {
+          "word": " open",
+          "start": 1.42,
+          "end": 1.76,
+          "probability": 0.732421875
+        },
+        {
+          "word": " code",
+          "start": 1.76,
+          "end": 2.12,
+          "probability": 0.9365234375
+        },
+        {
+          "word": " on",
+          "start": 2.12,
+          "end": 2.34,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " the",
+          "start": 2.34,
+          "end": 2.42,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " machine",
+          "start": 2.42,
+          "end": 2.8,
+          "probability": 0.99560546875
+        },
+        {
+          "word": " running",
+          "start": 2.8,
+          "end": 3.14,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " the",
+          "start": 3.14,
+          "end": 3.32,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " project.",
+          "start": 3.32,
+          "end": 3.82,
+          "probability": 0.998046875
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 4.08,
+      "end": 6.98,
+      "text": " Then enable it in Settings, Providers.",
+      "tokens": [
+        50575,
+        1396,
+        9528,
+        309,
+        294,
+        27286,
+        11,
+        1705,
+        6833,
+        433,
+        13,
+        50725
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2169099807739258,
+      "compression_ratio": 1.4266666666666667,
+      "no_speech_prob": 1.035976751433132e-12,
+      "words": [
+        {
+          "word": " Then",
+          "start": 4.08,
+          "end": 4.52,
+          "probability": 0.9921875
+        },
+        {
+          "word": " enable",
+          "start": 4.52,
+          "end": 5.14,
+          "probability": 0.609375
+        },
+        {
+          "word": " it",
+          "start": 5.14,
+          "end": 5.36,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " in",
+          "start": 5.36,
+          "end": 5.56,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " Settings,",
+          "start": 5.56,
+          "end": 6.02,
+          "probability": 0.69873046875
+        },
+        {
+          "word": " Providers.",
+          "start": 6.26,
+          "end": 6.98,
+          "probability": 0.97216796875
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 7.24,
+      "end": 10.2,
+      "text": " Refresh provider status after changing a login.",
+      "tokens": [
+        50740,
+        16957,
+        3644,
+        12398,
+        6558,
+        934,
+        4473,
+        257,
+        24276,
+        13,
+        50885
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2169099807739258,
+      "compression_ratio": 1.4266666666666667,
+      "no_speech_prob": 1.035976751433132e-12,
+      "words": [
+        {
+          "word": " Refresh",
+          "start": 7.24,
+          "end": 7.96,
+          "probability": 0.998046875
+        },
+        {
+          "word": " provider",
+          "start": 7.96,
+          "end": 8.36,
+          "probability": 0.904296875
+        },
+        {
+          "word": " status",
+          "start": 8.36,
+          "end": 8.78,
+          "probability": 0.994140625
+        },
+        {
+          "word": " after",
+          "start": 8.78,
+          "end": 9.28,
+          "probability": 0.98974609375
+        },
+        {
+          "word": " changing",
+          "start": 9.28,
+          "end": 9.68,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " a",
+          "start": 9.68,
+          "end": 9.9,
+          "probability": 0.994140625
+        },
+        {
+          "word": " login.",
+          "start": 9.9,
+          "end": 10.2,
+          "probability": 0.9443359375
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "seek": 0,
+      "start": 10.48,
+      "end": 13.68,
+      "text": " Select a model your configured provider actually offers.",
+      "tokens": [
+        50900,
+        13638,
+        257,
+        2316,
+        428,
+        30538,
+        12398,
+        767,
+        7736,
+        13,
+        51065
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2169099807739258,
+      "compression_ratio": 1.4266666666666667,
+      "no_speech_prob": 1.035976751433132e-12,
+      "words": [
+        {
+          "word": " Select",
+          "start": 10.48,
+          "end": 11.06,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " a",
+          "start": 11.06,
+          "end": 11.24,
+          "probability": 0.85595703125
+        },
+        {
+          "word": " model",
+          "start": 11.24,
+          "end": 11.54,
+          "probability": 0.99560546875
+        },
+        {
+          "word": " your",
+          "start": 11.54,
+          "end": 11.74,
+          "probability": 0.98095703125
+        },
+        {
+          "word": " configured",
+          "start": 11.74,
+          "end": 12.22,
+          "probability": 0.89501953125
+        },
+        {
+          "word": " provider",
+          "start": 12.22,
+          "end": 12.7,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " actually",
+          "start": 12.7,
+          "end": 13.24,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " offers.",
+          "start": 13.24,
+          "end": 13.68,
+          "probability": 0.99951171875
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

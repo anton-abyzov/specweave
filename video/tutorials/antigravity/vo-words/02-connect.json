@@ -1,0 +1,326 @@
+{
+  "text": " In Settings, Providers, enable antigravity on the project's machine, install its runtime, and complete its separate sign-in. Wait for account access and the model list. Choose a Gemini model that account actually offers.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 4.66,
+      "text": " In Settings, Providers, enable antigravity on the project's machine,",
+      "tokens": [
+        50365,
+        682,
+        27286,
+        11,
+        1705,
+        6833,
+        433,
+        11,
+        9528,
+        44417,
+        13404,
+        507,
+        322,
+        264,
+        1716,
+        311,
+        3479,
+        11,
+        50605
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.24949192582515248,
+      "compression_ratio": 1.3836477987421383,
+      "no_speech_prob": 1.3774710538871915e-12,
+      "words": [
+        {
+          "word": " In",
+          "start": 0.0,
+          "end": 0.2,
+          "probability": 0.966796875
+        },
+        {
+          "word": " Settings,",
+          "start": 0.2,
+          "end": 0.64,
+          "probability": 0.6357421875
+        },
+        {
+          "word": " Providers,",
+          "start": 0.94,
+          "end": 1.68,
+          "probability": 0.91455078125
+        },
+        {
+          "word": " enable",
+          "start": 1.84,
+          "end": 2.5,
+          "probability": 0.95654296875
+        },
+        {
+          "word": " antigravity",
+          "start": 2.5,
+          "end": 3.44,
+          "probability": 0.80712890625
+        },
+        {
+          "word": " on",
+          "start": 3.44,
+          "end": 3.64,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " the",
+          "start": 3.64,
+          "end": 3.76,
+          "probability": 0.998046875
+        },
+        {
+          "word": " project's",
+          "start": 3.76,
+          "end": 4.26,
+          "probability": 0.9619140625
+        },
+        {
+          "word": " machine,",
+          "start": 4.26,
+          "end": 4.66,
+          "probability": 0.99609375
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 5.06,
+      "end": 8.18,
+      "text": " install its runtime, and complete its separate sign-in.",
+      "tokens": [
+        50620,
+        3625,
+        1080,
+        34474,
+        11,
+        293,
+        3566,
+        1080,
+        4994,
+        1465,
+        12,
+        259,
+        13,
+        50780
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.24949192582515248,
+      "compression_ratio": 1.3836477987421383,
+      "no_speech_prob": 1.3774710538871915e-12,
+      "words": [
+        {
+          "word": " install",
+          "start": 5.06,
+          "end": 5.48,
+          "probability": 0.97607421875
+        },
+        {
+          "word": " its",
+          "start": 5.48,
+          "end": 5.7,
+          "probability": 0.95703125
+        },
+        {
+          "word": " runtime,",
+          "start": 5.7,
+          "end": 6.02,
+          "probability": 0.95361328125
+        },
+        {
+          "word": " and",
+          "start": 6.44,
+          "end": 6.5,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " complete",
+          "start": 6.5,
+          "end": 7.02,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " its",
+          "start": 7.02,
+          "end": 7.3,
+          "probability": 0.984375
+        },
+        {
+          "word": " separate",
+          "start": 7.3,
+          "end": 7.66,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " sign",
+          "start": 7.66,
+          "end": 8.04,
+          "probability": 0.97412109375
+        },
+        {
+          "word": "-in.",
+          "start": 8.04,
+          "end": 8.18,
+          "probability": 0.87353515625
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 8.38,
+      "end": 11.02,
+      "text": " Wait for account access and the model list.",
+      "tokens": [
+        50805,
+        3802,
+        337,
+        2696,
+        2105,
+        293,
+        264,
+        2316,
+        1329,
+        13,
+        50925
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.24949192582515248,
+      "compression_ratio": 1.3836477987421383,
+      "no_speech_prob": 1.3774710538871915e-12,
+      "words": [
+        {
+          "word": " Wait",
+          "start": 8.38,
+          "end": 9.0,
+          "probability": 0.99267578125
+        },
+        {
+          "word": " for",
+          "start": 9.0,
+          "end": 9.18,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " account",
+          "start": 9.18,
+          "end": 9.48,
+          "probability": 0.89599609375
+        },
+        {
+          "word": " access",
+          "start": 9.48,
+          "end": 9.96,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " and",
+          "start": 9.96,
+          "end": 10.26,
+          "probability": 0.98779296875
+        },
+        {
+          "word": " the",
+          "start": 10.26,
+          "end": 10.38,
+          "probability": 0.998046875
+        },
+        {
+          "word": " model",
+          "start": 10.38,
+          "end": 10.64,
+          "probability": 0.9013671875
+        },
+        {
+          "word": " list.",
+          "start": 10.64,
+          "end": 11.02,
+          "probability": 0.98681640625
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "seek": 0,
+      "start": 11.18,
+      "end": 14.28,
+      "text": " Choose a Gemini model that account actually offers.",
+      "tokens": [
+        50940,
+        21661,
+        257,
+        22894,
+        3812,
+        2316,
+        300,
+        2696,
+        767,
+        7736,
+        13,
+        51090
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.24949192582515248,
+      "compression_ratio": 1.3836477987421383,
+      "no_speech_prob": 1.3774710538871915e-12,
+      "words": [
+        {
+          "word": " Choose",
+          "start": 11.18,
+          "end": 11.72,
+          "probability": 0.998046875
+        },
+        {
+          "word": " a",
+          "start": 11.72,
+          "end": 11.86,
+          "probability": 0.998046875
+        },
+        {
+          "word": " Gemini",
+          "start": 11.86,
+          "end": 12.28,
+          "probability": 0.9814453125
+        },
+        {
+          "word": " model",
+          "start": 12.28,
+          "end": 12.62,
+          "probability": 0.97802734375
+        },
+        {
+          "word": " that",
+          "start": 12.62,
+          "end": 12.84,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " account",
+          "start": 12.84,
+          "end": 13.14,
+          "probability": 0.88232421875
+        },
+        {
+          "word": " actually",
+          "start": 13.14,
+          "end": 13.76,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " offers.",
+          "start": 13.76,
+          "end": 14.28,
+          "probability": 1.0
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

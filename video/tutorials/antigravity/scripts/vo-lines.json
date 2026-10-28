@@ -6,48 +6,48 @@
     "similarity_boost": 0.75,
     "style": 0,
     "use_speaker_boost": true,
-    "speed": 1.0
+    "speed": 1
   },
   "lines": [
     {
       "id": "01-intro",
-      "text": "Antigravity in SpecWithCode: plan, build, review.",
-      "spoken": "Antigravity in Spec With Code: plan, build, review."
+      "text": "One small change with Antigravity and Gemini.",
+      "spoken": "Run one small change with Antigravity and Gemini in Spec With Code. This walkthrough prepares the task; it does not submit a provider run."
     },
     {
-      "id": "02-init",
-      "text": "In your repo, run specweave init with the Antigravity adapter. It adds AGENTS.md and eleven SpecWeave skills.",
-      "spoken": "In your repo, run spec weave init with the Antigravity adapter. It adds agents dot M D and eleven spec weave skills."
+      "id": "02-connect",
+      "text": "In Settings, Providers, enable Antigravity on the project\u2019s machine, install its runtime and complete its separate sign-in. Wait for account access and the model list. Choose a Gemini model that account actually offers.",
+      "spoken": "In Settings, Providers, enable Antigravity on the project\u2019s machine, install its runtime and complete its separate sign-in. Wait for account access and the model list. Choose a Gemini model that account actually offers."
     },
     {
-      "id": "03-connect",
-      "text": "Open SpecWithCode, then Settings, Providers. Click Add provider and pick Antigravity. SpecWithCode installs its own Antigravity agent. Click Sign in and finish with your Google account in the browser. This one is already signed in.",
-      "spoken": "Open Spec With Code, then Settings, Providers. Click Add provider and pick Antigravity. Spec With Code installs its own Antigravity agent. Click Sign in and finish with your Google account in the browser. This one is already signed in."
+      "id": "03-project",
+      "text": "Open an example repository as a project. Keep the execution machine visible.",
+      "spoken": "Open an example repository as a project. The main conversation is the project coordinator. Check which machine is doing the work."
     },
     {
-      "id": "04-project-chat",
-      "text": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Gemini 3.8 Flash under Antigravity, and set Full access for this demo.",
-      "spoken": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Gemini three point eight Flash under Antigravity, and set Full access for this demo."
+      "id": "04-model",
+      "text": "Select your provider, available model and approval mode.",
+      "spoken": "Select Antigravity, then an available Gemini model and the approval mode you intend to use. This tutorial does not require full access."
     },
     {
-      "id": "05-plan",
-      "text": "Type a dollar sign, pick sw-increment, and describe the change. Antigravity writes spec.md: acceptance criteria and a task with its files and test.",
-      "spoken": "Type a dollar sign, pick S W increment, and describe the change. Antigravity writes spec dot M D: acceptance criteria, and a task with its files and test."
+      "id": "05-task",
+      "text": "Add greet(name), keep greet() working, and run the tests.",
+      "spoken": "Give it one bounded task: add a named greeting, keep the no argument greeting working, and add tests for both. Ask it to describe the change before editing. Antigravity has its own native plan command; do not assume the app\u2019s separate Plan mode is available."
     },
     {
-      "id": "06-build",
-      "text": "Then send sw-do. Antigravity claims the task, changes the code, and runs the test. The task is marked done only when the test passes.",
-      "spoken": "Then send S W do. Antigravity claims the task, changes the code, and runs the test. The task is marked done only when the test passes."
+      "id": "06-run",
+      "text": "Review the plan. Approve only the intended commands.",
+      "spoken": "Read the proposed change, then ask it to implement. Review any command approval rather than accepting it automatically."
     },
     {
       "id": "07-review",
-      "text": "Click Open diff to review the code, the test, and the ledger line that records who finished the task.",
-      "spoken": "Click Open diff to review the code, the test, and the ledger line that records who finished the task."
+      "text": "Read the diff and test output. Keep failures visible.",
+      "spoken": "Inspect the changed files and the actual test output. If a check failed or was not run, keep that in the result. A confident reply is not test evidence."
     },
     {
-      "id": "08-outro",
-      "text": "Next, sw-done verifies and closes the increment.",
-      "spoken": "Next, S W done verifies and closes the increment."
+      "id": "08-close",
+      "text": "One task. Reviewed result.",
+      "spoken": "Finish with the change, its diff, and actual test evidence. Use Spec Weave increments when you need a durable plan and task record. They are optional for this first task."
     }
   ]
 }

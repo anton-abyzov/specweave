@@ -1,0 +1,27 @@
+{
+  "startedAt": "2026-10-28T03:31:39.049Z",
+  "completedAt": "2026-10-28T03:31:41.505Z",
+  "voiceId": "0Ki1af67ybTaTu4TNmO8",
+  "voiceName": "Anton Abyzov best voice",
+  "modelId": "eleven_v4",
+  "characters": 127,
+  "inputSha256": "035d7fdc0affcb05524c18d8d38e01afadfa18073c6c89f71152afb7c174c5c7",
+  "outputSha256": "fbca66daf6f05c021acef197afbd1f19859133b92609648317758e4bd200c73b",
+  "httpStatus": 200,
+  "requestId": "dqBgkBDCqL6HTI7PFeEt",
+  "characterCost": "51",
+  "voicePreflight": {
+    "voice_id": "0Ki1af67ybTaTu4TNmO8",
+    "name": "Anton Abyzov best voice",
+    "category": "cloned",
+    "checkedAt": "2026-10-28T03:31:39.049Z"
+  },
+  "derivedOutputSha256": "37fc83677ee808346bdd1d2cc4680f0df9f6c70d85655cb0c38452cb906adc16",
+  "derivation": {
+    "filter": "silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.15,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.3,areverse",
+    "sampleRate": 48000,
+    "channels": 1,
+    "codec": "pcm_s24le",
+    "speed": 1
+  }
+}

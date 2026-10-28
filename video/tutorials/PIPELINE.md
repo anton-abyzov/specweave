@@ -2,6 +2,10 @@
 
 ## Current narration rule (1109, October 27, 2026)
 
+The replacement production entrypoint and current-flow boundary are documented in
+[shared/REFRESH-1109.md](shared/REFRESH-1109.md). Do not use the historical builder
+or old edit timing to rebuild the replacements.
+
 For the five first-task tutorials, use only ElevenLabs **Anton Abyzov best voice**,
 `0Ki1af67ybTaTu4TNmO8`, model `eleven_v4`, speed `1.0`. No substitute voice or
 fallback is permitted. Keep natural speech timing and adjust the visuals.

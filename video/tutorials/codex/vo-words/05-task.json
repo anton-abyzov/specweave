@@ -1,0 +1,260 @@
+{
+  "text": " Give it one bounded task. Add a named greeting, keep the no argument greeting working, and add tests for Goathe. Ask it to describe the change before editing.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 1.76,
+      "text": " Give it one bounded task.",
+      "tokens": [
+        50365,
+        5303,
+        309,
+        472,
+        37498,
+        5633,
+        13,
+        50455
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2668627103169759,
+      "compression_ratio": 1.3504273504273505,
+      "no_speech_prob": 2.5733681678630216e-12,
+      "words": [
+        {
+          "word": " Give",
+          "start": 0.0,
+          "end": 0.24,
+          "probability": 0.880859375
+        },
+        {
+          "word": " it",
+          "start": 0.24,
+          "end": 0.36,
+          "probability": 0.998046875
+        },
+        {
+          "word": " one",
+          "start": 0.36,
+          "end": 0.76,
+          "probability": 0.9814453125
+        },
+        {
+          "word": " bounded",
+          "start": 0.76,
+          "end": 1.2,
+          "probability": 0.9443359375
+        },
+        {
+          "word": " task.",
+          "start": 1.2,
+          "end": 1.76,
+          "probability": 0.99169921875
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 2.04,
+      "end": 7.54,
+      "text": " Add a named greeting, keep the no argument greeting working, and add tests for Goathe.",
+      "tokens": [
+        50482,
+        5349,
+        257,
+        4926,
+        28174,
+        11,
+        1066,
+        264,
+        572,
+        6770,
+        28174,
+        1364,
+        11,
+        293,
+        909,
+        6921,
+        337,
+        1037,
+        267,
+        675,
+        13,
+        50741
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2668627103169759,
+      "compression_ratio": 1.3504273504273505,
+      "no_speech_prob": 2.5733681678630216e-12,
+      "words": [
+        {
+          "word": " Add",
+          "start": 2.04,
+          "end": 2.52,
+          "probability": 0.9921875
+        },
+        {
+          "word": " a",
+          "start": 2.52,
+          "end": 2.66,
+          "probability": 0.9873046875
+        },
+        {
+          "word": " named",
+          "start": 2.66,
+          "end": 2.86,
+          "probability": 0.9892578125
+        },
+        {
+          "word": " greeting,",
+          "start": 2.86,
+          "end": 3.24,
+          "probability": 0.990234375
+        },
+        {
+          "word": " keep",
+          "start": 3.52,
+          "end": 3.9,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " the",
+          "start": 3.9,
+          "end": 4.1,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " no",
+          "start": 4.1,
+          "end": 4.34,
+          "probability": 0.89013671875
+        },
+        {
+          "word": " argument",
+          "start": 4.34,
+          "end": 4.74,
+          "probability": 0.71728515625
+        },
+        {
+          "word": " greeting",
+          "start": 4.74,
+          "end": 5.1,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " working,",
+          "start": 5.1,
+          "end": 5.56,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " and",
+          "start": 5.84,
+          "end": 6.16,
+          "probability": 0.998046875
+        },
+        {
+          "word": " add",
+          "start": 6.16,
+          "end": 6.48,
+          "probability": 0.99365234375
+        },
+        {
+          "word": " tests",
+          "start": 6.48,
+          "end": 6.92,
+          "probability": 0.98974609375
+        },
+        {
+          "word": " for",
+          "start": 6.92,
+          "end": 7.16,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " Goathe.",
+          "start": 7.16,
+          "end": 7.54,
+          "probability": 0.6259765625
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 7.72,
+      "end": 10.36,
+      "text": " Ask it to describe the change before editing.",
+      "tokens": [
+        50760,
+        12320,
+        309,
+        281,
+        6786,
+        264,
+        1319,
+        949,
+        10000,
+        13,
+        50886
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2668627103169759,
+      "compression_ratio": 1.3504273504273505,
+      "no_speech_prob": 2.5733681678630216e-12,
+      "words": [
+        {
+          "word": " Ask",
+          "start": 7.72,
+          "end": 8.34,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " it",
+          "start": 8.34,
+          "end": 8.48,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " to",
+          "start": 8.48,
+          "end": 8.6,
+          "probability": 0.998046875
+        },
+        {
+          "word": " describe",
+          "start": 8.6,
+          "end": 9.02,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " the",
+          "start": 9.02,
+          "end": 9.24,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " change",
+          "start": 9.24,
+          "end": 9.5,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " before",
+          "start": 9.5,
+          "end": 9.9,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " editing.",
+          "start": 9.9,
+          "end": 10.36,
+          "probability": 0.99853515625
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

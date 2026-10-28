@@ -1,1 +1,233 @@
-{"segments": [{"words": [{"word": " Antigravity", "start": 0.0, "end": 0.6, "probability": 0.9296875}, {"word": " inspect", "start": 0.6, "end": 0.92, "probability": 0.521484375}, {"word": " with", "start": 0.92, "end": 1.12, "probability": 0.98974609375}, {"word": " code", "start": 1.12, "end": 1.42, "probability": 0.97802734375}, {"word": " plan,", "start": 1.42, "end": 1.9, "probability": 0.32568359375}, {"word": " build,", "start": 2.06, "end": 2.36, "probability": 0.994140625}, {"word": " review.", "start": 2.58, "end": 2.8, "probability": 0.99560546875}]}]}
+{
+  "text": " Run one small change with Antigravity and Gemini in spec with code. This walkthrough prepares the task. It does not submit a provider run.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 4.34,
+      "text": " Run one small change with Antigravity and Gemini in spec with code.",
+      "tokens": [
+        50365,
+        8950,
+        472,
+        1359,
+        1319,
+        365,
+        5130,
+        328,
+        13404,
+        507,
+        293,
+        22894,
+        3812,
+        294,
+        1608,
+        365,
+        3089,
+        13,
+        50583
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.24874560038248697,
+      "compression_ratio": 1.2105263157894737,
+      "no_speech_prob": 6.483685658677241e-13,
+      "words": [
+        {
+          "word": " Run",
+          "start": 0.0,
+          "end": 0.3,
+          "probability": 0.8974609375
+        },
+        {
+          "word": " one",
+          "start": 0.3,
+          "end": 0.64,
+          "probability": 0.98681640625
+        },
+        {
+          "word": " small",
+          "start": 0.64,
+          "end": 1.0,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " change",
+          "start": 1.0,
+          "end": 1.4,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " with",
+          "start": 1.4,
+          "end": 1.72,
+          "probability": 0.9951171875
+        },
+        {
+          "word": " Antigravity",
+          "start": 1.72,
+          "end": 2.48,
+          "probability": 0.81103515625
+        },
+        {
+          "word": " and",
+          "start": 2.48,
+          "end": 2.7,
+          "probability": 0.98779296875
+        },
+        {
+          "word": " Gemini",
+          "start": 2.7,
+          "end": 3.24,
+          "probability": 0.978515625
+        },
+        {
+          "word": " in",
+          "start": 3.24,
+          "end": 3.52,
+          "probability": 0.744140625
+        },
+        {
+          "word": " spec",
+          "start": 3.52,
+          "end": 3.76,
+          "probability": 0.47998046875
+        },
+        {
+          "word": " with",
+          "start": 3.76,
+          "end": 3.98,
+          "probability": 0.80029296875
+        },
+        {
+          "word": " code.",
+          "start": 3.98,
+          "end": 4.34,
+          "probability": 0.958984375
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 4.52,
+      "end": 6.66,
+      "text": " This walkthrough prepares the task.",
+      "tokens": [
+        50604,
+        639,
+        1792,
+        11529,
+        39418,
+        264,
+        5633,
+        13,
+        50699
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.24874560038248697,
+      "compression_ratio": 1.2105263157894737,
+      "no_speech_prob": 6.483685658677241e-13,
+      "words": [
+        {
+          "word": " This",
+          "start": 4.52,
+          "end": 5.04,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " walkthrough",
+          "start": 5.04,
+          "end": 5.48,
+          "probability": 0.94580078125
+        },
+        {
+          "word": " prepares",
+          "start": 5.48,
+          "end": 6.06,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " the",
+          "start": 6.06,
+          "end": 6.28,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " task.",
+          "start": 6.28,
+          "end": 6.66,
+          "probability": 0.99853515625
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 6.84,
+      "end": 8.68,
+      "text": " It does not submit a provider run.",
+      "tokens": [
+        50712,
+        467,
+        775,
+        406,
+        10315,
+        257,
+        12398,
+        1190,
+        13,
+        50801
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.24874560038248697,
+      "compression_ratio": 1.2105263157894737,
+      "no_speech_prob": 6.483685658677241e-13,
+      "words": [
+        {
+          "word": " It",
+          "start": 6.84,
+          "end": 7.1,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " does",
+          "start": 7.1,
+          "end": 7.26,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " not",
+          "start": 7.26,
+          "end": 7.58,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " submit",
+          "start": 7.58,
+          "end": 7.9,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " a",
+          "start": 7.9,
+          "end": 8.04,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " provider",
+          "start": 8.04,
+          "end": 8.38,
+          "probability": 0.77978515625
+        },
+        {
+          "word": " run.",
+          "start": 8.38,
+          "end": 8.68,
+          "probability": 0.99267578125
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

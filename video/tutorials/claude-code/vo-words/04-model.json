@@ -1,0 +1,192 @@
+{
+  "text": " Select Claude Code, an available model, and the approval mode you intend to use. This tutorial does not require full access.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 4.92,
+      "text": " Select Claude Code, an available model, and the approval mode you intend to use.",
+      "tokens": [
+        50365,
+        13638,
+        12947,
+        2303,
+        15549,
+        11,
+        364,
+        2435,
+        2316,
+        11,
+        293,
+        264,
+        13317,
+        4391,
+        291,
+        19759,
+        281,
+        764,
+        13,
+        50637
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.24824802337154264,
+      "compression_ratio": 1.2156862745098038,
+      "no_speech_prob": 5.949466722228458e-13,
+      "words": [
+        {
+          "word": " Select",
+          "start": 0.0,
+          "end": 0.44,
+          "probability": 0.89501953125
+        },
+        {
+          "word": " Claude",
+          "start": 0.44,
+          "end": 0.9,
+          "probability": 0.77734375
+        },
+        {
+          "word": " Code,",
+          "start": 0.9,
+          "end": 1.2,
+          "probability": 0.6611328125
+        },
+        {
+          "word": " an",
+          "start": 1.36,
+          "end": 1.66,
+          "probability": 0.98583984375
+        },
+        {
+          "word": " available",
+          "start": 1.66,
+          "end": 2.0,
+          "probability": 0.9873046875
+        },
+        {
+          "word": " model,",
+          "start": 2.0,
+          "end": 2.42,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " and",
+          "start": 2.58,
+          "end": 2.94,
+          "probability": 0.998046875
+        },
+        {
+          "word": " the",
+          "start": 2.94,
+          "end": 3.12,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " approval",
+          "start": 3.12,
+          "end": 3.54,
+          "probability": 0.85546875
+        },
+        {
+          "word": " mode",
+          "start": 3.54,
+          "end": 3.86,
+          "probability": 0.9951171875
+        },
+        {
+          "word": " you",
+          "start": 3.86,
+          "end": 4.02,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " intend",
+          "start": 4.02,
+          "end": 4.28,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " to",
+          "start": 4.28,
+          "end": 4.52,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " use.",
+          "start": 4.52,
+          "end": 4.92,
+          "probability": 0.99951171875
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 5.08,
+      "end": 8.0,
+      "text": " This tutorial does not require full access.",
+      "tokens": [
+        50637,
+        639,
+        7073,
+        775,
+        406,
+        3651,
+        1577,
+        2105,
+        13,
+        50785
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.24824802337154264,
+      "compression_ratio": 1.2156862745098038,
+      "no_speech_prob": 5.949466722228458e-13,
+      "words": [
+        {
+          "word": " This",
+          "start": 5.08,
+          "end": 5.66,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " tutorial",
+          "start": 5.66,
+          "end": 6.06,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " does",
+          "start": 6.06,
+          "end": 6.4,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " not",
+          "start": 6.4,
+          "end": 6.7,
+          "probability": 0.99365234375
+        },
+        {
+          "word": " require",
+          "start": 6.7,
+          "end": 7.16,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " full",
+          "start": 7.16,
+          "end": 7.6,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " access.",
+          "start": 7.6,
+          "end": 8.0,
+          "probability": 0.998046875
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

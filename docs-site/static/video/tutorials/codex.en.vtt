@@ -1,73 +1,70 @@
 WEBVTT
 
-1
-00:00:00.200 --> 00:00:03.333
-Codex in SpecWithCode: plan, build, review.
+00:00:00.150 --> 00:00:04.230
+Run one small change with codecs in spec with code. This
 
-2
-00:00:04.200 --> 00:00:06.133
-In your repo, run specweave init.
+00:00:04.230 --> 00:00:07.890
+walkthrough prepares the task. It does not submit a provider
 
-3
-00:00:06.133 --> 00:00:09.933
-It adds AGENTS.md and eleven SpecWeave skills.
+00:00:07.890 --> 00:00:08.170
+run.
 
-4
-00:00:10.700 --> 00:00:15.967
-Open SpecWithCode. In setup, keep this computer and click Continue.
+00:00:08.883 --> 00:00:13.383
+In Settings, Providers, connect with ChatGPT or use an
 
-5
-00:00:15.967 --> 00:00:20.333
-On the Codex card, click Continue with ChatGPT,
+00:00:13.383 --> 00:00:16.683
+existing Codex CLI login on the machine that runs the
 
-6
-00:00:20.333 --> 00:00:24.267
-or run codex login, then Use existing CLI.
+00:00:16.683 --> 00:00:20.103
+project. Wait until the account and available models are
 
-7
-00:00:24.267 --> 00:00:26.733
-The card says Ready to code.
+00:00:20.103 --> 00:00:20.483
+confirmed.
 
-8
-00:00:28.200 --> 00:00:32.367
-Add the repo: the plus next to Projects, Local folder, then its path.
+00:00:21.383 --> 00:00:24.763
+Open an example repository as a project. The main
 
-9
-00:00:32.367 --> 00:00:33.467
-A new chat opens.
+00:00:24.763 --> 00:00:28.703
+conversation is the project coordinator. Check which machine
 
-10
-00:00:33.467 --> 00:00:37.367
-Pick Codex in the model picker, and set Full access for this demo.
+00:00:28.703 --> 00:00:29.543
+is doing the work.
 
-11
-00:00:39.200 --> 00:00:43.233
-Type a dollar sign, pick sw-increment, and describe the change.
+00:00:30.350 --> 00:00:34.170
+Select Codex, an available model, and the approval mode you
 
-12
-00:00:43.233 --> 00:00:49.233
-Codex writes spec.md: acceptance criteria and a task with its files and test.
+00:00:34.170 --> 00:00:38.210
+intend to use. This tutorial does not require full access.
 
-13
-00:00:50.200 --> 00:00:52.167
-Then send sw-do.
+00:00:39.083 --> 00:00:43.423
+Give it one bounded task. Add a named greeting, keep the no
 
-14
-00:00:52.167 --> 00:00:55.733
-Codex claims the task, changes the code, and runs the test.
+00:00:43.423 --> 00:00:47.563
+argument greeting working, and add tests for Goathe. Ask it
 
-15
-00:00:55.733 --> 00:00:59.200
-The task is marked done only when the test passes.
+00:00:47.563 --> 00:00:49.443
+to describe the change before editing.
 
-16
-00:01:00.900 --> 00:01:03.467
-Click Open diff to review the code, the test,
+00:00:50.317 --> 00:00:54.617
+Read the proposed change, then ask it to implement. Review
 
-17
-00:01:03.467 --> 00:01:06.933
-and the ledger line that records who finished the task.
+00:00:54.617 --> 00:00:57.677
+any command approval rather than accepting it automatically.
 
-18
-00:01:08.900 --> 00:01:11.867
-Next, sw-done verifies and closes the increment.
+00:00:58.817 --> 00:01:02.837
+Inspect the changed files and the actual test output. If a
+
+00:01:02.837 --> 00:01:06.717
+check failed or was not run, keep that in the result. A
+
+00:01:06.717 --> 00:01:09.017
+confident reply is not test evidence.
+
+00:01:09.950 --> 00:01:13.930
+Finish with the change, its diff, and actual test evidence.
+
+00:01:14.350 --> 00:01:17.990
+Use SpecWeave increments when you need a durable plan and
+
+00:01:17.990 --> 00:01:21.050
+task record. They are optional for this first task.

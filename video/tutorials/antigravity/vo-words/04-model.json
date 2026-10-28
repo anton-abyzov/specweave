@@ -1,0 +1,201 @@
+{
+  "text": " Select Antigravity, then an available Gemini model and the approval mode you intend to use. This tutorial does not require full access.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 6.02,
+      "text": " Select Antigravity, then an available Gemini model and the approval mode you intend to use.",
+      "tokens": [
+        50365,
+        13638,
+        5130,
+        328,
+        13404,
+        507,
+        11,
+        550,
+        364,
+        2435,
+        22894,
+        3812,
+        2316,
+        293,
+        264,
+        13317,
+        4391,
+        291,
+        19759,
+        281,
+        764,
+        13,
+        50689
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.27543870140524473,
+      "compression_ratio": 1.1946902654867257,
+      "no_speech_prob": 4.42021311046481e-13,
+      "words": [
+        {
+          "word": " Select",
+          "start": 0.0,
+          "end": 0.48,
+          "probability": 0.90185546875
+        },
+        {
+          "word": " Antigravity,",
+          "start": 0.48,
+          "end": 1.44,
+          "probability": 0.79931640625
+        },
+        {
+          "word": " then",
+          "start": 1.6,
+          "end": 2.08,
+          "probability": 0.9921875
+        },
+        {
+          "word": " an",
+          "start": 2.08,
+          "end": 2.36,
+          "probability": 0.9775390625
+        },
+        {
+          "word": " available",
+          "start": 2.36,
+          "end": 2.82,
+          "probability": 0.99609375
+        },
+        {
+          "word": " Gemini",
+          "start": 2.82,
+          "end": 3.32,
+          "probability": 0.9208984375
+        },
+        {
+          "word": " model",
+          "start": 3.32,
+          "end": 3.66,
+          "probability": 0.9599609375
+        },
+        {
+          "word": " and",
+          "start": 3.66,
+          "end": 4.06,
+          "probability": 0.7294921875
+        },
+        {
+          "word": " the",
+          "start": 4.06,
+          "end": 4.26,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " approval",
+          "start": 4.26,
+          "end": 4.66,
+          "probability": 0.67626953125
+        },
+        {
+          "word": " mode",
+          "start": 4.66,
+          "end": 4.98,
+          "probability": 0.99462890625
+        },
+        {
+          "word": " you",
+          "start": 4.98,
+          "end": 5.16,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " intend",
+          "start": 5.16,
+          "end": 5.42,
+          "probability": 0.99609375
+        },
+        {
+          "word": " to",
+          "start": 5.42,
+          "end": 5.64,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " use.",
+          "start": 5.64,
+          "end": 6.02,
+          "probability": 0.99951171875
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 6.2,
+      "end": 9.2,
+      "text": " This tutorial does not require full access.",
+      "tokens": [
+        50689,
+        639,
+        7073,
+        775,
+        406,
+        3651,
+        1577,
+        2105,
+        13,
+        50845
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.27543870140524473,
+      "compression_ratio": 1.1946902654867257,
+      "no_speech_prob": 4.42021311046481e-13,
+      "words": [
+        {
+          "word": " This",
+          "start": 6.2,
+          "end": 6.78,
+          "probability": 0.99609375
+        },
+        {
+          "word": " tutorial",
+          "start": 6.78,
+          "end": 7.16,
+          "probability": 0.99560546875
+        },
+        {
+          "word": " does",
+          "start": 7.16,
+          "end": 7.48,
+          "probability": 0.98974609375
+        },
+        {
+          "word": " not",
+          "start": 7.48,
+          "end": 7.84,
+          "probability": 0.9365234375
+        },
+        {
+          "word": " require",
+          "start": 7.84,
+          "end": 8.32,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " full",
+          "start": 8.32,
+          "end": 8.8,
+          "probability": 0.99462890625
+        },
+        {
+          "word": " access.",
+          "start": 8.8,
+          "end": 9.2,
+          "probability": 0.99560546875
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

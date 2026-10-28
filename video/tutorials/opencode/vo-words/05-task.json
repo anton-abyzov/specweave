@@ -1,0 +1,275 @@
+{
+  "text": " Give it one bounded task. Add a named greeting, keep the no argument greeting working, and add tests for both. Ask it to describe the change before editing.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 1.72,
+      "text": " Give it one bounded task.",
+      "tokens": [
+        50365,
+        5303,
+        309,
+        472,
+        37498,
+        5633,
+        13,
+        50479
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2558629626319522,
+      "compression_ratio": 1.3333333333333333,
+      "no_speech_prob": 1.7195051806029316e-12,
+      "words": [
+        {
+          "word": " Give",
+          "start": 0.0,
+          "end": 0.24,
+          "probability": 0.9150390625
+        },
+        {
+          "word": " it",
+          "start": 0.24,
+          "end": 0.36,
+          "probability": 0.998046875
+        },
+        {
+          "word": " one",
+          "start": 0.36,
+          "end": 0.76,
+          "probability": 0.982421875
+        },
+        {
+          "word": " bounded",
+          "start": 0.76,
+          "end": 1.18,
+          "probability": 0.97265625
+        },
+        {
+          "word": " task.",
+          "start": 1.18,
+          "end": 1.72,
+          "probability": 0.9921875
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 2.0,
+      "end": 5.58,
+      "text": " Add a named greeting, keep the no argument greeting working,",
+      "tokens": [
+        50479,
+        5349,
+        257,
+        4926,
+        28174,
+        11,
+        1066,
+        264,
+        572,
+        6770,
+        28174,
+        1364,
+        11,
+        50662
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2558629626319522,
+      "compression_ratio": 1.3333333333333333,
+      "no_speech_prob": 1.7195051806029316e-12,
+      "words": [
+        {
+          "word": " Add",
+          "start": 2.0,
+          "end": 2.5,
+          "probability": 0.99267578125
+        },
+        {
+          "word": " a",
+          "start": 2.5,
+          "end": 2.64,
+          "probability": 0.98779296875
+        },
+        {
+          "word": " named",
+          "start": 2.64,
+          "end": 2.86,
+          "probability": 0.982421875
+        },
+        {
+          "word": " greeting,",
+          "start": 2.86,
+          "end": 3.24,
+          "probability": 0.9892578125
+        },
+        {
+          "word": " keep",
+          "start": 3.5,
+          "end": 3.92,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " the",
+          "start": 3.92,
+          "end": 4.1,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " no",
+          "start": 4.1,
+          "end": 4.36,
+          "probability": 0.8662109375
+        },
+        {
+          "word": " argument",
+          "start": 4.36,
+          "end": 4.76,
+          "probability": 0.75732421875
+        },
+        {
+          "word": " greeting",
+          "start": 4.76,
+          "end": 5.12,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " working,",
+          "start": 5.12,
+          "end": 5.58,
+          "probability": 0.9970703125
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 5.88,
+      "end": 7.46,
+      "text": " and add tests for both.",
+      "tokens": [
+        50662,
+        293,
+        909,
+        6921,
+        337,
+        1293,
+        13,
+        50767
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2558629626319522,
+      "compression_ratio": 1.3333333333333333,
+      "no_speech_prob": 1.7195051806029316e-12,
+      "words": [
+        {
+          "word": " and",
+          "start": 5.88,
+          "end": 6.16,
+          "probability": 0.998046875
+        },
+        {
+          "word": " add",
+          "start": 6.16,
+          "end": 6.48,
+          "probability": 0.99609375
+        },
+        {
+          "word": " tests",
+          "start": 6.48,
+          "end": 6.9,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " for",
+          "start": 6.9,
+          "end": 7.12,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " both.",
+          "start": 7.12,
+          "end": 7.46,
+          "probability": 0.99951171875
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "seek": 0,
+      "start": 7.72,
+      "end": 10.48,
+      "text": " Ask it to describe the change before editing.",
+      "tokens": [
+        50767,
+        12320,
+        309,
+        281,
+        6786,
+        264,
+        1319,
+        949,
+        10000,
+        13,
+        50899
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2558629626319522,
+      "compression_ratio": 1.3333333333333333,
+      "no_speech_prob": 1.7195051806029316e-12,
+      "words": [
+        {
+          "word": " Ask",
+          "start": 7.72,
+          "end": 8.32,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " it",
+          "start": 8.32,
+          "end": 8.46,
+          "probability": 0.998046875
+        },
+        {
+          "word": " to",
+          "start": 8.46,
+          "end": 8.6,
+          "probability": 0.998046875
+        },
+        {
+          "word": " describe",
+          "start": 8.6,
+          "end": 9.04,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " the",
+          "start": 9.04,
+          "end": 9.24,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " change",
+          "start": 9.24,
+          "end": 9.54,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " before",
+          "start": 9.54,
+          "end": 9.98,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " editing.",
+          "start": 9.98,
+          "end": 10.48,
+          "probability": 0.9990234375
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

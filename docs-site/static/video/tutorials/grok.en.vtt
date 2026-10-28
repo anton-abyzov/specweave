@@ -1,81 +1,70 @@
 WEBVTT
 
-1
-00:00:00.200 --> 00:00:03.333
-Grok in SpecWithCode: plan, build, review.
+00:00:00.150 --> 00:00:04.050
+Run one small change with grok in spec with code. This
 
-2
-00:00:04.200 --> 00:00:07.533
-In your repo, run specweave init with the generic adapter.
+00:00:04.050 --> 00:00:07.570
+walkthrough prepares the task. It does not submit a provider
 
-3
-00:00:07.533 --> 00:00:11.033
-It adds AGENTS.md and eleven SpecWeave skills.
+00:00:07.570 --> 00:00:07.870
+run.
 
-4
-00:00:11.900 --> 00:00:15.400
-Grok skips project skills in folders it doesn't trust.
+00:00:08.650 --> 00:00:12.830
+In Settings, Providers, choose Native Grok for an existing
 
-5
-00:00:15.400 --> 00:00:19.100
-In the repo, run grok --trust once.
+00:00:12.830 --> 00:00:17.770
+CLI or Grok Build for a managed registry install. These are
 
-6
-00:00:19.100 --> 00:00:21.800
-Signed out? Run grok login first.
+00:00:17.770 --> 00:00:21.870
+distinct routes. Finish the selected agent's own sign -in and
 
-7
-00:00:22.800 --> 00:00:27.833
-Open SpecWithCode. In the account menu, pick Settings, then Providers.
+00:00:21.870 --> 00:00:23.130
+choose an available model.
 
-8
-00:00:27.833 --> 00:00:32.967
-Grok is off by default: click Add provider, pick Grok, existing CLI,
+00:00:23.950 --> 00:00:27.410
+Open an example repository as a project. The main
 
-9
-00:00:32.967 --> 00:00:35.533
-click Next twice, then Add instance.
+00:00:27.410 --> 00:00:31.390
+conversation is the project coordinator. Check which machine
 
-10
-00:00:36.500 --> 00:00:41.167
-Add the repo: the plus next to Projects, Local folder, then its path.
+00:00:31.390 --> 00:00:32.270
+is doing the work.
 
-11
-00:00:41.167 --> 00:00:42.867
-A new chat opens.
+00:00:33.017 --> 00:00:36.717
+Select Grok, an available model, and the approval mode you
 
-12
-00:00:42.867 --> 00:00:47.100
-Pick Grok in the model picker, and set Full access for this demo.
+00:00:36.717 --> 00:00:40.637
+intend to use. This tutorial does not require full access.
 
-13
-00:00:48.500 --> 00:00:53.333
-Type a dollar sign, pick sw-increment, and describe the change.
+00:00:41.517 --> 00:00:45.917
+Give it one bounded task. Add a named greeting, keep the no
 
-14
-00:00:53.333 --> 00:00:59.333
-Grok writes spec.md: acceptance criteria and a task with its files and test.
+00:00:45.917 --> 00:00:50.257
+argument greeting working, and add tests for both. Ask it to
 
-15
-00:01:01.500 --> 00:01:03.167
-Then send sw-do.
+00:00:50.257 --> 00:00:52.177
+describe the change before editing.
 
-16
-00:01:03.167 --> 00:01:06.633
-Grok claims the task, changes the code, and runs the test.
+00:00:52.983 --> 00:00:57.403
+Read the proposed change, then ask it to implement. Review
 
-17
-00:01:06.633 --> 00:01:09.967
-The task is marked done only when the test passes.
+00:00:57.403 --> 00:01:00.443
+any command approval rather than accepting it automatically.
 
-18
-00:01:11.800 --> 00:01:14.467
-Click Open diff to review the code, the test,
+00:01:01.550 --> 00:01:05.610
+Inspect the changed files and the actual test output. If a
 
-19
-00:01:14.467 --> 00:01:17.667
-and the ledger line that records who finished the task.
+00:01:05.610 --> 00:01:09.590
+check failed or was not run, keep that in the result. A
 
-20
-00:01:19.800 --> 00:01:23.067
-Next, sw-done verifies and closes the increment.
+00:01:09.590 --> 00:01:11.990
+confident reply is not test evidence.
+
+00:01:12.917 --> 00:01:16.877
+Finish with the change, its diff, and actual test evidence.
+
+00:01:17.317 --> 00:01:20.997
+Use SpecWeave increments when you need a durable plan and
+
+00:01:20.997 --> 00:01:24.097
+task record. They are optional for this first task.

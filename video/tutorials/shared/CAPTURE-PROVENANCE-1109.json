@@ -1,0 +1,46 @@
+{
+  "appVersion": "1.0.105",
+  "captureInstance": "Isolated local app instance; fresh data directory and disposable HOME; no live userdata database read or copied",
+  "actualUI": [
+    "Settings > Providers > Add provider with each target selected",
+    "greet-app project coordinator",
+    "unsubmitted task text in coordinator composer"
+  ],
+  "processing": "Faithful rectangular crops only; UI text/logos unchanged; full paths, localhost URL, host name and account details excluded",
+  "diagramDisclosure": "Workflow diagrams and review guidance do not portray completed provider runs",
+  "sources": [
+    {
+      "agent": "claude-code",
+      "file": "provider-current.png",
+      "sha256": "32c41696b813129ad9111884442f1a9c10bcb77d4defcb59ea613ed4886757c0"
+    },
+    {
+      "agent": "codex",
+      "file": "provider-current.png",
+      "sha256": "db54d8cad2567922bde47b3624248cc9fc6780a15da3ab270e33e6551a462629"
+    },
+    {
+      "agent": "opencode",
+      "file": "provider-current.png",
+      "sha256": "bfc69ee32267227b072a4f1e0d5e334b49a17031915f9b5e17723d3983f46dfd"
+    },
+    {
+      "agent": "grok",
+      "file": "provider-current.png",
+      "sha256": "0bf983dfcbf35e437af61854badaec12db4b8331a24072dc23a6ec347bcb52a4"
+    },
+    {
+      "agent": "antigravity",
+      "file": "provider-current.png",
+      "sha256": "ca627992d6e14e73137a0a7b99ba6417f5af8b4690e74a0400a9192da4545031"
+    },
+    {
+      "file": "project-current.png",
+      "sha256": "611b29197287eeb68c2462760552a3e7a2ac235a244a7ec0972645f407aad4ec"
+    },
+    {
+      "file": "task-current.png",
+      "sha256": "3587bfdbda1aa9b90ac35057751f19774474d3560c7df367a7208f910100c63c"
+    }
+  ]
+}

@@ -1,0 +1,302 @@
+{
+  "text": " In Settings, Providers, confirm Claude code on the machine that runs the project. Use your existing Claude code login. If it is not ready, complete its own sign-in before starting.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 3.2,
+      "text": " In Settings, Providers, confirm Claude code",
+      "tokens": [
+        50365,
+        682,
+        27286,
+        11,
+        1705,
+        6833,
+        433,
+        11,
+        9064,
+        12947,
+        2303,
+        3089,
+        50536
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1796115426456227,
+      "compression_ratio": 1.3333333333333333,
+      "no_speech_prob": 9.067407740447064e-13,
+      "words": [
+        {
+          "word": " In",
+          "start": 0.0,
+          "end": 0.22,
+          "probability": 0.98486328125
+        },
+        {
+          "word": " Settings,",
+          "start": 0.22,
+          "end": 0.6,
+          "probability": 0.76806640625
+        },
+        {
+          "word": " Providers,",
+          "start": 0.92,
+          "end": 1.68,
+          "probability": 0.951171875
+        },
+        {
+          "word": " confirm",
+          "start": 1.88,
+          "end": 2.56,
+          "probability": 0.98974609375
+        },
+        {
+          "word": " Claude",
+          "start": 2.56,
+          "end": 2.98,
+          "probability": 0.81640625
+        },
+        {
+          "word": " code",
+          "start": 2.98,
+          "end": 3.2,
+          "probability": 0.4248046875
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 3.2,
+      "end": 5.1,
+      "text": " on the machine that runs the project.",
+      "tokens": [
+        50536,
+        322,
+        264,
+        3479,
+        300,
+        6676,
+        264,
+        1716,
+        13,
+        50650
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1796115426456227,
+      "compression_ratio": 1.3333333333333333,
+      "no_speech_prob": 9.067407740447064e-13,
+      "words": [
+        {
+          "word": " on",
+          "start": 3.2,
+          "end": 3.52,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " the",
+          "start": 3.52,
+          "end": 3.62,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " machine",
+          "start": 3.62,
+          "end": 4.0,
+          "probability": 0.99609375
+        },
+        {
+          "word": " that",
+          "start": 4.0,
+          "end": 4.22,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " runs",
+          "start": 4.22,
+          "end": 4.52,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " the",
+          "start": 4.52,
+          "end": 4.68,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " project.",
+          "start": 4.68,
+          "end": 5.1,
+          "probability": 0.998046875
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 5.34,
+      "end": 7.68,
+      "text": " Use your existing Claude code login.",
+      "tokens": [
+        50650,
+        8278,
+        428,
+        6741,
+        12947,
+        2303,
+        3089,
+        24276,
+        13,
+        50776
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1796115426456227,
+      "compression_ratio": 1.3333333333333333,
+      "no_speech_prob": 9.067407740447064e-13,
+      "words": [
+        {
+          "word": " Use",
+          "start": 5.34,
+          "end": 5.94,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " your",
+          "start": 5.94,
+          "end": 6.1,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " existing",
+          "start": 6.1,
+          "end": 6.58,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " Claude",
+          "start": 6.58,
+          "end": 7.08,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " code",
+          "start": 7.08,
+          "end": 7.3,
+          "probability": 0.8857421875
+        },
+        {
+          "word": " login.",
+          "start": 7.3,
+          "end": 7.68,
+          "probability": 0.95458984375
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "seek": 0,
+      "start": 7.9,
+      "end": 11.42,
+      "text": " If it is not ready, complete its own sign-in before starting.",
+      "tokens": [
+        50776,
+        759,
+        309,
+        307,
+        406,
+        1919,
+        11,
+        3566,
+        1080,
+        1065,
+        1465,
+        12,
+        259,
+        949,
+        2891,
+        13,
+        50946
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1796115426456227,
+      "compression_ratio": 1.3333333333333333,
+      "no_speech_prob": 9.067407740447064e-13,
+      "words": [
+        {
+          "word": " If",
+          "start": 7.9,
+          "end": 8.34,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " it",
+          "start": 8.34,
+          "end": 8.42,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " is",
+          "start": 8.42,
+          "end": 8.52,
+          "probability": 0.998046875
+        },
+        {
+          "word": " not",
+          "start": 8.52,
+          "end": 8.7,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " ready,",
+          "start": 8.7,
+          "end": 9.0,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " complete",
+          "start": 9.18,
+          "end": 9.74,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " its",
+          "start": 9.74,
+          "end": 9.96,
+          "probability": 0.99560546875
+        },
+        {
+          "word": " own",
+          "start": 9.96,
+          "end": 10.22,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " sign",
+          "start": 10.22,
+          "end": 10.58,
+          "probability": 0.98193359375
+        },
+        {
+          "word": "-in",
+          "start": 10.58,
+          "end": 10.7,
+          "probability": 0.791015625
+        },
+        {
+          "word": " before",
+          "start": 10.7,
+          "end": 11.0,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " starting.",
+          "start": 11.0,
+          "end": 11.42,
+          "probability": 0.99951171875
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

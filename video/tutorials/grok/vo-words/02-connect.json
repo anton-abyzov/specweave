@@ -1,0 +1,307 @@
+{
+  "text": " In Settings, Providers, choose Native Grok for an existing CLI or Grok Build for a managed registry install. These are distinct routes. Finish the selected agent's own sign-in and choose an available model.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 8.3,
+      "text": " In Settings, Providers, choose Native Grok for an existing CLI or Grok Build for a managed registry install.",
+      "tokens": [
+        50365,
+        682,
+        27286,
+        11,
+        1705,
+        6833,
+        433,
+        11,
+        2826,
+        15093,
+        12981,
+        74,
+        337,
+        364,
+        6741,
+        12855,
+        40,
+        420,
+        12981,
+        74,
+        11875,
+        337,
+        257,
+        6453,
+        36468,
+        3625,
+        13,
+        50781
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.17374492141435732,
+      "compression_ratio": 1.3290322580645162,
+      "no_speech_prob": 1.4817382347140362e-12,
+      "words": [
+        {
+          "word": " In",
+          "start": 0.0,
+          "end": 0.18,
+          "probability": 0.97509765625
+        },
+        {
+          "word": " Settings,",
+          "start": 0.18,
+          "end": 0.6,
+          "probability": 0.6181640625
+        },
+        {
+          "word": " Providers,",
+          "start": 0.94,
+          "end": 1.66,
+          "probability": 0.91650390625
+        },
+        {
+          "word": " choose",
+          "start": 1.82,
+          "end": 2.38,
+          "probability": 0.994140625
+        },
+        {
+          "word": " Native",
+          "start": 2.38,
+          "end": 2.88,
+          "probability": 0.67333984375
+        },
+        {
+          "word": " Grok",
+          "start": 2.88,
+          "end": 3.38,
+          "probability": 0.76025390625
+        },
+        {
+          "word": " for",
+          "start": 3.38,
+          "end": 3.56,
+          "probability": 0.994140625
+        },
+        {
+          "word": " an",
+          "start": 3.56,
+          "end": 3.7,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " existing",
+          "start": 3.7,
+          "end": 4.18,
+          "probability": 0.98583984375
+        },
+        {
+          "word": " CLI",
+          "start": 4.18,
+          "end": 4.9,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " or",
+          "start": 4.9,
+          "end": 5.46,
+          "probability": 0.68994140625
+        },
+        {
+          "word": " Grok",
+          "start": 5.46,
+          "end": 6.16,
+          "probability": 0.9658203125
+        },
+        {
+          "word": " Build",
+          "start": 6.16,
+          "end": 6.5,
+          "probability": 0.62841796875
+        },
+        {
+          "word": " for",
+          "start": 6.5,
+          "end": 6.82,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " a",
+          "start": 6.82,
+          "end": 7.08,
+          "probability": 0.9794921875
+        },
+        {
+          "word": " managed",
+          "start": 7.08,
+          "end": 7.36,
+          "probability": 0.80712890625
+        },
+        {
+          "word": " registry",
+          "start": 7.36,
+          "end": 7.9,
+          "probability": 0.990234375
+        },
+        {
+          "word": " install.",
+          "start": 7.9,
+          "end": 8.3,
+          "probability": 0.9970703125
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 8.48,
+      "end": 10.1,
+      "text": " These are distinct routes.",
+      "tokens": [
+        50800,
+        1981,
+        366,
+        10644,
+        18242,
+        13,
+        50872
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.17374492141435732,
+      "compression_ratio": 1.3290322580645162,
+      "no_speech_prob": 1.4817382347140362e-12,
+      "words": [
+        {
+          "word": " These",
+          "start": 8.48,
+          "end": 8.96,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " are",
+          "start": 8.96,
+          "end": 9.12,
+          "probability": 1.0
+        },
+        {
+          "word": " distinct",
+          "start": 9.12,
+          "end": 9.68,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " routes.",
+          "start": 9.68,
+          "end": 10.1,
+          "probability": 0.9091796875
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 10.4,
+      "end": 14.48,
+      "text": " Finish the selected agent's own sign-in and choose an available model.",
+      "tokens": [
+        50902,
+        31583,
+        264,
+        8209,
+        9461,
+        311,
+        1065,
+        1465,
+        12,
+        259,
+        293,
+        2826,
+        364,
+        2435,
+        2316,
+        13,
+        51091
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.17374492141435732,
+      "compression_ratio": 1.3290322580645162,
+      "no_speech_prob": 1.4817382347140362e-12,
+      "words": [
+        {
+          "word": " Finish",
+          "start": 10.4,
+          "end": 10.96,
+          "probability": 0.99365234375
+        },
+        {
+          "word": " the",
+          "start": 10.96,
+          "end": 11.16,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " selected",
+          "start": 11.16,
+          "end": 11.56,
+          "probability": 0.98974609375
+        },
+        {
+          "word": " agent's",
+          "start": 11.56,
+          "end": 12.08,
+          "probability": 0.982421875
+        },
+        {
+          "word": " own",
+          "start": 12.08,
+          "end": 12.38,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " sign",
+          "start": 12.38,
+          "end": 12.76,
+          "probability": 0.978515625
+        },
+        {
+          "word": "-in",
+          "start": 12.76,
+          "end": 12.94,
+          "probability": 0.83349609375
+        },
+        {
+          "word": " and",
+          "start": 12.94,
+          "end": 13.22,
+          "probability": 0.94873046875
+        },
+        {
+          "word": " choose",
+          "start": 13.22,
+          "end": 13.54,
+          "probability": 0.998046875
+        },
+        {
+          "word": " an",
+          "start": 13.54,
+          "end": 13.72,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " available",
+          "start": 13.72,
+          "end": 14.08,
+          "probability": 0.98974609375
+        },
+        {
+          "word": " model.",
+          "start": 14.08,
+          "end": 14.48,
+          "probability": 0.99755859375
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

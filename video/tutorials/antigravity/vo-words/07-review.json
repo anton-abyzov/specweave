@@ -1,1 +1,264 @@
-{"segments": [{"words": [{"word": " Click", "start": 0.0, "end": 0.26, "probability": 0.91015625}, {"word": " open", "start": 0.26, "end": 0.62, "probability": 0.6298828125}, {"word": " DIFF", "start": 0.62, "end": 1.06, "probability": 0.6279296875}, {"word": " to", "start": 1.06, "end": 1.28, "probability": 0.9951171875}, {"word": " review", "start": 1.28, "end": 1.6, "probability": 0.99755859375}, {"word": " the", "start": 1.6, "end": 1.8, "probability": 0.99560546875}, {"word": " code,", "start": 1.8, "end": 2.18, "probability": 0.994140625}, {"word": " the", "start": 2.42, "end": 2.48, "probability": 0.978515625}, {"word": " test,", "start": 2.48, "end": 2.8, "probability": 0.99658203125}, {"word": " and", "start": 2.96, "end": 3.04, "probability": 0.9970703125}, {"word": " the", "start": 3.04, "end": 3.18, "probability": 0.9921875}, {"word": " ledger", "start": 3.18, "end": 3.48, "probability": 0.9931640625}, {"word": " line", "start": 3.48, "end": 3.78, "probability": 0.98876953125}, {"word": " that", "start": 3.78, "end": 4.16, "probability": 0.99462890625}, {"word": " records", "start": 4.16, "end": 4.66, "probability": 0.99755859375}, {"word": " who", "start": 4.66, "end": 4.9, "probability": 0.99609375}, {"word": " finished", "start": 4.9, "end": 5.36, "probability": 0.99755859375}, {"word": " the", "start": 5.36, "end": 5.56, "probability": 0.99853515625}, {"word": " task.", "start": 5.56, "end": 5.96, "probability": 0.99853515625}]}]}
+{
+  "text": " Inspect the changed files and the actual test output. If a check failed or was not run, keep that in the result. A confident reply is not test evidence.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 3.2,
+      "text": " Inspect the changed files and the actual test output.",
+      "tokens": [
+        50365,
+        29552,
+        264,
+        3105,
+        7098,
+        293,
+        264,
+        3539,
+        1500,
+        5598,
+        13,
+        50553
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1762084484100342,
+      "compression_ratio": 1.3217391304347825,
+      "no_speech_prob": 1.0480939033330472e-12,
+      "words": [
+        {
+          "word": " Inspect",
+          "start": 0.0,
+          "end": 0.46,
+          "probability": 0.9423828125
+        },
+        {
+          "word": " the",
+          "start": 0.46,
+          "end": 0.62,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " changed",
+          "start": 0.62,
+          "end": 1.0,
+          "probability": 0.9921875
+        },
+        {
+          "word": " files",
+          "start": 1.0,
+          "end": 1.48,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " and",
+          "start": 1.48,
+          "end": 1.84,
+          "probability": 0.97802734375
+        },
+        {
+          "word": " the",
+          "start": 1.84,
+          "end": 2.0,
+          "probability": 0.998046875
+        },
+        {
+          "word": " actual",
+          "start": 2.0,
+          "end": 2.44,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " test",
+          "start": 2.44,
+          "end": 2.8,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " output.",
+          "start": 2.8,
+          "end": 3.2,
+          "probability": 0.998046875
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 3.42,
+      "end": 7.32,
+      "text": " If a check failed or was not run, keep that in the result.",
+      "tokens": [
+        50553,
+        759,
+        257,
+        1520,
+        7612,
+        420,
+        390,
+        406,
+        1190,
+        11,
+        1066,
+        300,
+        294,
+        264,
+        1874,
+        13,
+        50759
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1762084484100342,
+      "compression_ratio": 1.3217391304347825,
+      "no_speech_prob": 1.0480939033330472e-12,
+      "words": [
+        {
+          "word": " If",
+          "start": 3.42,
+          "end": 3.88,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " a",
+          "start": 3.88,
+          "end": 3.98,
+          "probability": 0.85498046875
+        },
+        {
+          "word": " check",
+          "start": 3.98,
+          "end": 4.22,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " failed",
+          "start": 4.22,
+          "end": 4.7,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " or",
+          "start": 4.7,
+          "end": 4.96,
+          "probability": 0.95947265625
+        },
+        {
+          "word": " was",
+          "start": 4.96,
+          "end": 5.2,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " not",
+          "start": 5.2,
+          "end": 5.42,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " run,",
+          "start": 5.42,
+          "end": 5.76,
+          "probability": 0.998046875
+        },
+        {
+          "word": " keep",
+          "start": 6.0,
+          "end": 6.42,
+          "probability": 0.998046875
+        },
+        {
+          "word": " that",
+          "start": 6.42,
+          "end": 6.66,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " in",
+          "start": 6.66,
+          "end": 6.84,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " the",
+          "start": 6.84,
+          "end": 6.94,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " result.",
+          "start": 6.94,
+          "end": 7.32,
+          "probability": 0.99609375
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 7.56,
+      "end": 10.4,
+      "text": " A confident reply is not test evidence.",
+      "tokens": [
+        50759,
+        316,
+        6679,
+        16972,
+        307,
+        406,
+        1500,
+        4467,
+        13,
+        50899
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1762084484100342,
+      "compression_ratio": 1.3217391304347825,
+      "no_speech_prob": 1.0480939033330472e-12,
+      "words": [
+        {
+          "word": " A",
+          "start": 7.56,
+          "end": 7.98,
+          "probability": 0.998046875
+        },
+        {
+          "word": " confident",
+          "start": 7.98,
+          "end": 8.44,
+          "probability": 0.95947265625
+        },
+        {
+          "word": " reply",
+          "start": 8.44,
+          "end": 8.9,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " is",
+          "start": 8.9,
+          "end": 9.22,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " not",
+          "start": 9.22,
+          "end": 9.64,
+          "probability": 0.9755859375
+        },
+        {
+          "word": " test",
+          "start": 9.64,
+          "end": 10.08,
+          "probability": 0.99462890625
+        },
+        {
+          "word": " evidence.",
+          "start": 10.08,
+          "end": 10.4,
+          "probability": 0.99609375
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

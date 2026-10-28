@@ -1,0 +1,169 @@
+{
+  "text": " Read the proposed change, then ask it to implement. Review any command approval rather than accepting it automatically.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 3.4,
+      "text": " Read the proposed change, then ask it to implement.",
+      "tokens": [
+        50365,
+        17604,
+        264,
+        10348,
+        1319,
+        11,
+        550,
+        1029,
+        309,
+        281,
+        4445,
+        13,
+        50565
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.20531335243811974,
+      "compression_ratio": 1.202020202020202,
+      "no_speech_prob": 2.324805278841602e-12,
+      "words": [
+        {
+          "word": " Read",
+          "start": 0.0,
+          "end": 0.26,
+          "probability": 0.87646484375
+        },
+        {
+          "word": " the",
+          "start": 0.26,
+          "end": 0.4,
+          "probability": 0.998046875
+        },
+        {
+          "word": " proposed",
+          "start": 0.4,
+          "end": 0.84,
+          "probability": 0.98876953125
+        },
+        {
+          "word": " change,",
+          "start": 0.84,
+          "end": 1.38,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " then",
+          "start": 1.62,
+          "end": 2.1,
+          "probability": 0.99560546875
+        },
+        {
+          "word": " ask",
+          "start": 2.1,
+          "end": 2.66,
+          "probability": 0.9794921875
+        },
+        {
+          "word": " it",
+          "start": 2.66,
+          "end": 2.8,
+          "probability": 0.998046875
+        },
+        {
+          "word": " to",
+          "start": 2.8,
+          "end": 2.94,
+          "probability": 0.998046875
+        },
+        {
+          "word": " implement.",
+          "start": 2.94,
+          "end": 3.4,
+          "probability": 0.98486328125
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 3.62,
+      "end": 7.36,
+      "text": " Review any command approval rather than accepting it automatically.",
+      "tokens": [
+        50565,
+        19954,
+        604,
+        5622,
+        13317,
+        2831,
+        813,
+        17391,
+        309,
+        6772,
+        13,
+        50765
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.20531335243811974,
+      "compression_ratio": 1.202020202020202,
+      "no_speech_prob": 2.324805278841602e-12,
+      "words": [
+        {
+          "word": " Review",
+          "start": 3.62,
+          "end": 4.36,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " any",
+          "start": 4.36,
+          "end": 4.74,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " command",
+          "start": 4.74,
+          "end": 5.14,
+          "probability": 0.9853515625
+        },
+        {
+          "word": " approval",
+          "start": 5.14,
+          "end": 5.64,
+          "probability": 0.998046875
+        },
+        {
+          "word": " rather",
+          "start": 5.64,
+          "end": 6.16,
+          "probability": 0.876953125
+        },
+        {
+          "word": " than",
+          "start": 6.16,
+          "end": 6.42,
+          "probability": 0.994140625
+        },
+        {
+          "word": " accepting",
+          "start": 6.42,
+          "end": 6.86,
+          "probability": 0.99609375
+        },
+        {
+          "word": " it",
+          "start": 6.86,
+          "end": 7.08,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " automatically.",
+          "start": 7.08,
+          "end": 7.36,
+          "probability": 0.998046875
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

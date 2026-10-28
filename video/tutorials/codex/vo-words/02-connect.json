@@ -1,0 +1,254 @@
+{
+  "text": " In Settings, Providers, connect with ChatGPT or use an existing Codex CLI login on the machine that runs the project. Wait until the account and available models are confirmed.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 8.18,
+      "text": " In Settings, Providers, connect with ChatGPT or use an existing Codex CLI login on the machine that runs the project.",
+      "tokens": [
+        50365,
+        682,
+        27286,
+        11,
+        1705,
+        6833,
+        433,
+        11,
+        1745,
+        365,
+        27503,
+        38,
+        47,
+        51,
+        420,
+        764,
+        364,
+        6741,
+        15549,
+        87,
+        12855,
+        40,
+        24276,
+        322,
+        264,
+        3479,
+        300,
+        6676,
+        264,
+        1716,
+        13,
+        50778
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1714933607313368,
+      "compression_ratio": 1.2661870503597121,
+      "no_speech_prob": 1.09824660216723e-12,
+      "words": [
+        {
+          "word": " In",
+          "start": 0.0,
+          "end": 0.2,
+          "probability": 0.97216796875
+        },
+        {
+          "word": " Settings,",
+          "start": 0.2,
+          "end": 0.56,
+          "probability": 0.6669921875
+        },
+        {
+          "word": " Providers,",
+          "start": 0.88,
+          "end": 1.68,
+          "probability": 0.931640625
+        },
+        {
+          "word": " connect",
+          "start": 1.86,
+          "end": 2.44,
+          "probability": 0.98583984375
+        },
+        {
+          "word": " with",
+          "start": 2.44,
+          "end": 2.66,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " ChatGPT",
+          "start": 2.66,
+          "end": 3.58,
+          "probability": 0.94140625
+        },
+        {
+          "word": " or",
+          "start": 3.58,
+          "end": 4.04,
+          "probability": 0.92431640625
+        },
+        {
+          "word": " use",
+          "start": 4.04,
+          "end": 4.4,
+          "probability": 0.994140625
+        },
+        {
+          "word": " an",
+          "start": 4.4,
+          "end": 4.5,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " existing",
+          "start": 4.5,
+          "end": 5.02,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " Codex",
+          "start": 5.02,
+          "end": 5.58,
+          "probability": 0.87255859375
+        },
+        {
+          "word": " CLI",
+          "start": 5.58,
+          "end": 5.98,
+          "probability": 0.9150390625
+        },
+        {
+          "word": " login",
+          "start": 5.98,
+          "end": 6.34,
+          "probability": 0.94921875
+        },
+        {
+          "word": " on",
+          "start": 6.34,
+          "end": 6.66,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " the",
+          "start": 6.66,
+          "end": 6.76,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " machine",
+          "start": 6.76,
+          "end": 7.08,
+          "probability": 0.99365234375
+        },
+        {
+          "word": " that",
+          "start": 7.08,
+          "end": 7.3,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " runs",
+          "start": 7.3,
+          "end": 7.62,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " the",
+          "start": 7.62,
+          "end": 7.8,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " project.",
+          "start": 7.8,
+          "end": 8.18,
+          "probability": 0.9970703125
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 8.38,
+      "end": 11.6,
+      "text": " Wait until the account and available models are confirmed.",
+      "tokens": [
+        50808,
+        3802,
+        1826,
+        264,
+        2696,
+        293,
+        2435,
+        5245,
+        366,
+        11341,
+        13,
+        50950
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1714933607313368,
+      "compression_ratio": 1.2661870503597121,
+      "no_speech_prob": 1.09824660216723e-12,
+      "words": [
+        {
+          "word": " Wait",
+          "start": 8.38,
+          "end": 9.1,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " until",
+          "start": 9.1,
+          "end": 9.38,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " the",
+          "start": 9.38,
+          "end": 9.56,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " account",
+          "start": 9.56,
+          "end": 9.92,
+          "probability": 0.94970703125
+        },
+        {
+          "word": " and",
+          "start": 9.92,
+          "end": 10.18,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " available",
+          "start": 10.18,
+          "end": 10.56,
+          "probability": 0.99072265625
+        },
+        {
+          "word": " models",
+          "start": 10.56,
+          "end": 11.0,
+          "probability": 0.998046875
+        },
+        {
+          "word": " are",
+          "start": 11.0,
+          "end": 11.22,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " confirmed.",
+          "start": 11.22,
+          "end": 11.6,
+          "probability": 0.9990234375
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

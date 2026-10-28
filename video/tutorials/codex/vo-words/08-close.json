@@ -1,0 +1,268 @@
+{
+  "text": " Finish with the change, its diff, and actual test evidence. Use SpecWeave increments when you need a durable plan and task record. They are optional for this first task.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 3.98,
+      "text": " Finish with the change, its diff, and actual test evidence.",
+      "tokens": [
+        50365,
+        31583,
+        365,
+        264,
+        1319,
+        11,
+        1080,
+        7593,
+        11,
+        293,
+        3539,
+        1500,
+        4467,
+        13,
+        50601
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.238514553416859,
+      "compression_ratio": 1.2900763358778626,
+      "no_speech_prob": 9.141732509876377e-13,
+      "words": [
+        {
+          "word": " Finish",
+          "start": 0.0,
+          "end": 0.3,
+          "probability": 0.94189453125
+        },
+        {
+          "word": " with",
+          "start": 0.3,
+          "end": 0.54,
+          "probability": 0.998046875
+        },
+        {
+          "word": " the",
+          "start": 0.54,
+          "end": 0.66,
+          "probability": 0.9931640625
+        },
+        {
+          "word": " change,",
+          "start": 0.66,
+          "end": 1.2,
+          "probability": 0.98388671875
+        },
+        {
+          "word": " its",
+          "start": 1.42,
+          "end": 1.74,
+          "probability": 0.865234375
+        },
+        {
+          "word": " diff,",
+          "start": 1.74,
+          "end": 2.12,
+          "probability": 0.8740234375
+        },
+        {
+          "word": " and",
+          "start": 2.48,
+          "end": 2.66,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " actual",
+          "start": 2.66,
+          "end": 3.18,
+          "probability": 0.9775390625
+        },
+        {
+          "word": " test",
+          "start": 3.18,
+          "end": 3.6,
+          "probability": 0.9921875
+        },
+        {
+          "word": " evidence.",
+          "start": 3.6,
+          "end": 3.98,
+          "probability": 0.99462890625
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 4.4,
+      "end": 8.8,
+      "text": " Use SpecWeave increments when you need a durable plan and task record.",
+      "tokens": [
+        50601,
+        8278,
+        20484,
+        4360,
+        946,
+        1946,
+        1117,
+        562,
+        291,
+        643,
+        257,
+        22308,
+        1393,
+        293,
+        5633,
+        2136,
+        13,
+        50825
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.238514553416859,
+      "compression_ratio": 1.2900763358778626,
+      "no_speech_prob": 9.141732509876377e-13,
+      "words": [
+        {
+          "word": " Use",
+          "start": 4.4,
+          "end": 5.06,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " SpecWeave",
+          "start": 5.06,
+          "end": 5.74,
+          "probability": 0.64306640625
+        },
+        {
+          "word": " increments",
+          "start": 5.74,
+          "end": 6.28,
+          "probability": 0.9736328125
+        },
+        {
+          "word": " when",
+          "start": 6.28,
+          "end": 6.5,
+          "probability": 0.98974609375
+        },
+        {
+          "word": " you",
+          "start": 6.5,
+          "end": 6.62,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " need",
+          "start": 6.62,
+          "end": 6.78,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " a",
+          "start": 6.78,
+          "end": 6.9,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " durable",
+          "start": 6.9,
+          "end": 7.32,
+          "probability": 0.90625
+        },
+        {
+          "word": " plan",
+          "start": 7.32,
+          "end": 7.76,
+          "probability": 0.98779296875
+        },
+        {
+          "word": " and",
+          "start": 7.76,
+          "end": 8.04,
+          "probability": 0.99560546875
+        },
+        {
+          "word": " task",
+          "start": 8.04,
+          "end": 8.38,
+          "probability": 0.99462890625
+        },
+        {
+          "word": " record.",
+          "start": 8.38,
+          "end": 8.8,
+          "probability": 0.99755859375
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 8.98,
+      "end": 11.1,
+      "text": " They are optional for this first task.",
+      "tokens": [
+        50825,
+        814,
+        366,
+        17312,
+        337,
+        341,
+        700,
+        5633,
+        13,
+        50933
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.238514553416859,
+      "compression_ratio": 1.2900763358778626,
+      "no_speech_prob": 9.141732509876377e-13,
+      "words": [
+        {
+          "word": " They",
+          "start": 8.98,
+          "end": 9.4,
+          "probability": 0.99609375
+        },
+        {
+          "word": " are",
+          "start": 9.4,
+          "end": 9.52,
+          "probability": 0.9912109375
+        },
+        {
+          "word": " optional",
+          "start": 9.52,
+          "end": 10.0,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " for",
+          "start": 10.0,
+          "end": 10.26,
+          "probability": 0.998046875
+        },
+        {
+          "word": " this",
+          "start": 10.26,
+          "end": 10.42,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " first",
+          "start": 10.42,
+          "end": 10.72,
+          "probability": 0.9931640625
+        },
+        {
+          "word": " task.",
+          "start": 10.72,
+          "end": 11.1,
+          "probability": 0.9970703125
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

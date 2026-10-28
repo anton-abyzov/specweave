@@ -1,0 +1,207 @@
+{
+  "text": " Open an example repository as a project. The main conversation is the project coordinator. Check which machine is doing the work.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 2.44,
+      "text": " Open an example repository as a project.",
+      "tokens": [
+        50365,
+        7238,
+        364,
+        1365,
+        25841,
+        382,
+        257,
+        1716,
+        13,
+        50521
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1982860872822423,
+      "compression_ratio": 1.2285714285714286,
+      "no_speech_prob": 4.839881100060506e-12,
+      "words": [
+        {
+          "word": " Open",
+          "start": 0.0,
+          "end": 0.3,
+          "probability": 0.87060546875
+        },
+        {
+          "word": " an",
+          "start": 0.3,
+          "end": 0.46,
+          "probability": 0.99365234375
+        },
+        {
+          "word": " example",
+          "start": 0.46,
+          "end": 0.88,
+          "probability": 0.986328125
+        },
+        {
+          "word": " repository",
+          "start": 0.88,
+          "end": 1.54,
+          "probability": 0.994140625
+        },
+        {
+          "word": " as",
+          "start": 1.54,
+          "end": 1.92,
+          "probability": 0.99658203125
+        },
+        {
+          "word": " a",
+          "start": 1.92,
+          "end": 2.02,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " project.",
+          "start": 2.02,
+          "end": 2.44,
+          "probability": 0.990234375
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 2.76,
+      "end": 5.82,
+      "text": " The main conversation is the project coordinator.",
+      "tokens": [
+        50521,
+        440,
+        2135,
+        3761,
+        307,
+        264,
+        1716,
+        27394,
+        13,
+        50689
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1982860872822423,
+      "compression_ratio": 1.2285714285714286,
+      "no_speech_prob": 4.839881100060506e-12,
+      "words": [
+        {
+          "word": " The",
+          "start": 2.76,
+          "end": 3.24,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " main",
+          "start": 3.24,
+          "end": 3.5,
+          "probability": 0.99560546875
+        },
+        {
+          "word": " conversation",
+          "start": 3.5,
+          "end": 4.1,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " is",
+          "start": 4.1,
+          "end": 4.52,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " the",
+          "start": 4.52,
+          "end": 4.66,
+          "probability": 0.9970703125
+        },
+        {
+          "word": " project",
+          "start": 4.66,
+          "end": 5.12,
+          "probability": 0.869140625
+        },
+        {
+          "word": " coordinator.",
+          "start": 5.12,
+          "end": 5.82,
+          "probability": 0.99169921875
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 6.14,
+      "end": 8.4,
+      "text": " Check which machine is doing the work.",
+      "tokens": [
+        50689,
+        6881,
+        597,
+        3479,
+        307,
+        884,
+        264,
+        589,
+        13,
+        50793
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.1982860872822423,
+      "compression_ratio": 1.2285714285714286,
+      "no_speech_prob": 4.839881100060506e-12,
+      "words": [
+        {
+          "word": " Check",
+          "start": 6.14,
+          "end": 6.74,
+          "probability": 0.998046875
+        },
+        {
+          "word": " which",
+          "start": 6.74,
+          "end": 7.12,
+          "probability": 0.99462890625
+        },
+        {
+          "word": " machine",
+          "start": 7.12,
+          "end": 7.56,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " is",
+          "start": 7.56,
+          "end": 7.78,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " doing",
+          "start": 7.78,
+          "end": 7.96,
+          "probability": 0.99951171875
+        },
+        {
+          "word": " the",
+          "start": 7.96,
+          "end": 8.12,
+          "probability": 0.99755859375
+        },
+        {
+          "word": " work.",
+          "start": 8.12,
+          "end": 8.4,
+          "probability": 0.99951171875
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

@@ -103,6 +103,9 @@ export async function runNarration(argv = process.argv.slice(2)) {
     const raw = join(outDir, `${line.id}.raw.mp3`), wav = join(outDir, `${line.id}.wav`);
     const filter = 'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.15,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.3,areverse';
     execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', raw, '-af', filter, '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s24le', wav]);
+    const receiptFile=join(outDir, `${line.id}.receipt.json`);
+    const receipt=JSON.parse(readFileSync(receiptFile,'utf8'));
+    writeFileSync(receiptFile,JSON.stringify({...receipt,derivedOutputSha256:sha256(readFileSync(wav)),derivation:{filter,sampleRate:48000,channels:1,codec:'pcm_s24le',speed:1}},null,2));
     console.log(line.id, 'seconds', execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', wav]).toString().trim());
   }
 }

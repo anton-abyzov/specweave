@@ -1481,17 +1481,17 @@
     {
       "slug": "specwithcode-claude-code",
       "product": "specwithcode",
-      "title": "Run your first task with Claude Code",
-      "seoTitle": "SpecWithCode with Claude Code: plan, build, review",
-      "summary": "Set up SpecWithCode with Claude Code, run one real task through a project, and review the result.",
-      "seoDescription": "Claude Code is on by default in SpecWithCode: confirm Ready to code in setup, then plan, build and review one task with SpecWeave skills.",
-      "outcome": "You end with Claude Code having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "title": "Start your first task with Claude Code",
+      "seoTitle": "Claude Code: your first task in SpecWithCode",
+      "summary": "A current setup walkthrough: connect Claude Code, open a project, choose a model and approval mode, and prepare one bounded task. The example remains an unsubmitted draft.",
+      "seoDescription": "Connect Claude Code, prepare one bounded task and review real evidence in SpecWithCode. Current UI and verified Anton narration.",
+      "outcome": "Prepare a bounded first task and know how to review its diff and real test evidence. No completed provider run is portrayed.",
       "prerequisites": [
-        "SpecWeave installed with `npm i -g specweave`",
-        "SpecWithCode installed on a Mac",
-        "Claude Code signed in"
+        "SpecWithCode for macOS, Windows or Linux; this UI capture uses macOS",
+        "The selected agent installed and signed in on the execution computer",
+        "A small example repository you can edit"
       ],
-      "testedOn": "SpecWithCode 0.2.6",
+      "testedOn": "SpecWithCode 1.0.105",
       "agent": "claude-code",
       "agentsShown": [],
       "video": {
@@ -1499,56 +1499,56 @@
         "poster": "/video/tutorials/claude-code.jpg",
         "captionsVtt": "/video/tutorials/claude-code.en.vtt",
         "audio": "narrated",
-        "durationSeconds": 66.7,
-        "uploadDate": "2026-10-11",
-        "publishedAt": "2026-10-11T15:01:16Z",
+        "durationSeconds": 82.667,
+        "uploadDate": "2026-10-28",
+        "publishedAt": "2026-10-28T03:45:00Z",
         "chapters": [
           {
             "start": 0,
-            "title": "Intro"
+            "title": "Start small"
           },
           {
-            "start": 4,
-            "title": "Set up the repo"
+            "start": 8.9,
+            "title": "Connect the agent"
           },
           {
-            "start": 10.5,
-            "title": "Connect Claude Code"
+            "start": 21.167,
+            "title": "Open the project"
           },
           {
-            "start": 22,
-            "title": "Add the project"
+            "start": 30.3,
+            "title": "Choose deliberately"
           },
           {
-            "start": 33,
-            "title": "Plan"
+            "start": 39.2,
+            "title": "Write one bounded task"
           },
           {
-            "start": 44,
-            "title": "Build"
+            "start": 50.667,
+            "title": "Review before execution"
           },
           {
-            "start": 54.7,
-            "title": "Review"
+            "start": 59.167,
+            "title": "Read the evidence"
           },
           {
-            "start": 62.7,
-            "title": "Next"
+            "start": 70.8,
+            "title": "Keep the result reviewable"
           }
         ],
         "captionsBurnedIn": true
       },
       "steps": [
-        "In your repository, run `specweave init`. It adds AGENTS.md and the SpecWeave skills.",
-        "Open SpecWithCode. In setup, keep this computer and choose Continue. The Claude card should say Ready to code; if it does not, run `claude auth login` in a terminal first.",
-        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
-        "Pick Claude Code in the model picker. The recording sets Full access for the demo only.",
-        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
-        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
-        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
+        "In Settings, Providers, confirm Claude Code on the machine that runs the project. Use your existing Claude Code login. If it is not ready, complete its own sign-in before starting.",
+        "Open an example repository as a project. Keep the execution machine visible.",
+        "Select your provider, available model and approval mode.",
+        "Add greet(name), keep greet() working, and run the tests.",
+        "Review the plan. Approve only the intended commands.",
+        "Read the diff and test output. Keep failures visible.",
+        "One task. Reviewed result."
       ],
       "transcript": "captions",
-      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
+      "note": "Captured from SpecWithCode 1.0.105 in an isolated local instance. Actual UI crops and labeled workflow diagrams; the example task is not submitted. Narration uses Anton Abyzov best voice through ElevenLabs. Sign-in, available models and native features depend on the agent and platform.",
       "action": {
         "label": "Download SpecWithCode for Mac",
         "to": "/code"
@@ -1562,17 +1562,17 @@
     {
       "slug": "specwithcode-codex",
       "product": "specwithcode",
-      "title": "Run your first task with Codex",
-      "seoTitle": "SpecWithCode with Codex: plan, build and review one task",
-      "summary": "Set up SpecWithCode with Codex, run one real task through a project, and review the result.",
-      "seoDescription": "Connect Codex in SpecWithCode setup with ChatGPT or your Codex CLI login, then plan, build and review one task with SpecWeave skills.",
-      "outcome": "You end with Codex having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "title": "Start your first task with Codex",
+      "seoTitle": "Codex: your first task in SpecWithCode",
+      "summary": "A current setup walkthrough: connect Codex, open a project, choose a model and approval mode, and prepare one bounded task. The example remains an unsubmitted draft.",
+      "seoDescription": "Connect Codex, prepare one bounded task and review real evidence in SpecWithCode. Current UI and verified Anton narration.",
+      "outcome": "Prepare a bounded first task and know how to review its diff and real test evidence. No completed provider run is portrayed.",
       "prerequisites": [
-        "SpecWeave installed with `npm i -g specweave`",
-        "SpecWithCode installed on a Mac",
-        "Codex signed in"
+        "SpecWithCode for macOS, Windows or Linux; this UI capture uses macOS",
+        "The selected agent installed and signed in on the execution computer",
+        "A small example repository you can edit"
       ],
-      "testedOn": "SpecWithCode 0.2.6",
+      "testedOn": "SpecWithCode 1.0.105",
       "agent": "codex",
       "agentsShown": [],
       "video": {
@@ -1580,56 +1580,56 @@
         "poster": "/video/tutorials/codex.jpg",
         "captionsVtt": "/video/tutorials/codex.en.vtt",
         "audio": "narrated",
-        "durationSeconds": 72.7,
-        "uploadDate": "2026-10-11",
-        "publishedAt": "2026-10-11T15:01:16Z",
+        "durationSeconds": 81.667,
+        "uploadDate": "2026-10-28",
+        "publishedAt": "2026-10-28T03:45:00Z",
         "chapters": [
           {
             "start": 0,
-            "title": "Intro"
+            "title": "Start small"
           },
           {
-            "start": 4,
-            "title": "Set up the repo"
+            "start": 8.733,
+            "title": "Connect the agent"
           },
           {
-            "start": 10.5,
-            "title": "Connect Codex"
+            "start": 21.233,
+            "title": "Open the project"
           },
           {
-            "start": 28,
-            "title": "Add the project"
+            "start": 30.2,
+            "title": "Choose deliberately"
           },
           {
-            "start": 39,
-            "title": "Plan"
+            "start": 38.933,
+            "title": "Write one bounded task"
           },
           {
-            "start": 50,
-            "title": "Build"
+            "start": 50.167,
+            "title": "Review before execution"
           },
           {
-            "start": 60.7,
-            "title": "Review"
+            "start": 58.667,
+            "title": "Read the evidence"
           },
           {
-            "start": 68.7,
-            "title": "Next"
+            "start": 69.8,
+            "title": "Keep the result reviewable"
           }
         ],
         "captionsBurnedIn": true
       },
       "steps": [
-        "In your repository, run `specweave init`. It adds AGENTS.md and the SpecWeave skills.",
-        "Open SpecWithCode. In setup, keep this computer and choose Continue. On the Codex card, choose Continue with ChatGPT, or run `codex login` and then Use existing CLI. The card says Ready to code.",
-        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
-        "Pick Codex in the model picker. The recording sets Full access for the demo only.",
-        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
-        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
-        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
+        "In Settings, Providers, connect with ChatGPT or use an existing Codex CLI login on the machine that runs the project. Wait until the account and available models are confirmed.",
+        "Open an example repository as a project. Keep the execution machine visible.",
+        "Select your provider, available model and approval mode.",
+        "Add greet(name), keep greet() working, and run the tests.",
+        "Review the plan. Approve only the intended commands.",
+        "Read the diff and test output. Keep failures visible.",
+        "One task. Reviewed result."
       ],
       "transcript": "captions",
-      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
+      "note": "Captured from SpecWithCode 1.0.105 in an isolated local instance. Actual UI crops and labeled workflow diagrams; the example task is not submitted. Narration uses Anton Abyzov best voice through ElevenLabs. Sign-in, available models and native features depend on the agent and platform.",
       "action": {
         "label": "Download SpecWithCode for Mac",
         "to": "/code"
@@ -1643,17 +1643,17 @@
     {
       "slug": "specwithcode-opencode",
       "product": "specwithcode",
-      "title": "Run your first task with OpenCode",
-      "seoTitle": "SpecWithCode with OpenCode: plan, build and review one task",
-      "summary": "Set up SpecWithCode with OpenCode, run one real task through a project, and review the result.",
-      "seoDescription": "Sign OpenCode in to a model provider, add it as a provider in SpecWithCode, then plan, build and review one task with SpecWeave skills.",
-      "outcome": "You end with OpenCode having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "title": "Start your first task with OpenCode",
+      "seoTitle": "OpenCode: your first task in SpecWithCode",
+      "summary": "A current setup walkthrough: connect OpenCode, open a project, choose a model and approval mode, and prepare one bounded task. The example remains an unsubmitted draft.",
+      "seoDescription": "Connect OpenCode, prepare one bounded task and review real evidence in SpecWithCode. Current UI and verified Anton narration.",
+      "outcome": "Prepare a bounded first task and know how to review its diff and real test evidence. No completed provider run is portrayed.",
       "prerequisites": [
-        "SpecWeave installed with `npm i -g specweave`",
-        "SpecWithCode installed on a Mac",
-        "OpenCode signed in to a model provider"
+        "SpecWithCode for macOS, Windows or Linux; this UI capture uses macOS",
+        "The selected agent installed and signed in on the execution computer",
+        "A small example repository you can edit"
       ],
-      "testedOn": "SpecWithCode 0.2.6 with OpenCode 2.0.26",
+      "testedOn": "SpecWithCode 1.0.105",
       "agent": "opencode",
       "agentsShown": [],
       "video": {
@@ -1661,57 +1661,56 @@
         "poster": "/video/tutorials/opencode.jpg",
         "captionsVtt": "/video/tutorials/opencode.en.vtt",
         "audio": "narrated",
-        "durationSeconds": 70.9,
-        "uploadDate": "2026-10-11",
-        "publishedAt": "2026-10-11T15:01:16Z",
+        "durationSeconds": 84.367,
+        "uploadDate": "2026-10-28",
+        "publishedAt": "2026-10-28T03:45:00Z",
         "chapters": [
           {
             "start": 0,
-            "title": "Intro"
+            "title": "Start small"
           },
           {
-            "start": 4,
-            "title": "Set up the repo"
+            "start": 8.733,
+            "title": "Connect the agent"
           },
           {
-            "start": 10.5,
-            "title": "Connect OpenCode"
+            "start": 23.3,
+            "title": "Open the project"
           },
           {
-            "start": 26.2,
-            "title": "Add the project"
+            "start": 32.367,
+            "title": "Choose deliberately"
           },
           {
-            "start": 37.2,
-            "title": "Plan"
+            "start": 41.033,
+            "title": "Write one bounded task"
           },
           {
-            "start": 48.2,
-            "title": "Build"
+            "start": 52.4,
+            "title": "Review before execution"
           },
           {
-            "start": 58.9,
-            "title": "Review"
+            "start": 60.833,
+            "title": "Read the evidence"
           },
           {
-            "start": 66.9,
-            "title": "Next"
+            "start": 72.6,
+            "title": "Keep the result reviewable"
           }
         ],
         "captionsBurnedIn": true
       },
       "steps": [
-        "In your repository, run `specweave init`. It adds AGENTS.md and the SpecWeave skills.",
-        "Run `opencode auth login` in a terminal to sign OpenCode in to a model provider.",
-        "Open SpecWithCode, then Settings, Providers. Choose Add provider, pick OpenCode, choose Next twice, then Add instance.",
-        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
-        "Pick OpenCode in the model picker. The recording sets Full access for the demo only.",
-        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
-        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
-        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
+        "Install and authenticate OpenCode on the machine running the project, then enable it in Settings, Providers. Refresh provider status after changing a login. Select a model your configured provider actually offers.",
+        "Open an example repository as a project. Keep the execution machine visible.",
+        "Select your provider, available model and approval mode.",
+        "Add greet(name), keep greet() working, and run the tests.",
+        "Review the plan. Approve only the intended commands.",
+        "Read the diff and test output. Keep failures visible.",
+        "One task. Reviewed result."
       ],
       "transcript": "captions",
-      "note": "Recorded on SpecWithCode 0.2.6 with OpenCode 2.0.26 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
+      "note": "Captured from SpecWithCode 1.0.105 in an isolated local instance. Actual UI crops and labeled workflow diagrams; the example task is not submitted. Narration uses Anton Abyzov best voice through ElevenLabs. Sign-in, available models and native features depend on the agent and platform.",
       "action": {
         "label": "Download SpecWithCode for Mac",
         "to": "/code"
@@ -1725,17 +1724,17 @@
     {
       "slug": "specwithcode-antigravity",
       "product": "specwithcode",
-      "title": "Run your first task with Antigravity and Gemini",
-      "seoTitle": "SpecWithCode with Antigravity: plan, build, review",
-      "summary": "Set up SpecWithCode with Antigravity and Gemini, run one real task through a project, and review the result.",
-      "seoDescription": "Add Antigravity in SpecWithCode, install its own runtime, sign in with Google, then plan, build and review one task with SpecWeave skills.",
-      "outcome": "You end with Antigravity having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "title": "Start your first task with Antigravity + Gemini",
+      "seoTitle": "Antigravity + Gemini: your first task in SpecWithCode",
+      "summary": "A current setup walkthrough: connect Antigravity + Gemini, open a project, choose a model and approval mode, and prepare one bounded task. The example remains an unsubmitted draft.",
+      "seoDescription": "Connect Antigravity + Gemini, prepare one bounded task and review real evidence in SpecWithCode. Current UI and verified Anton narration.",
+      "outcome": "Prepare a bounded first task and know how to review its diff and real test evidence. No completed provider run is portrayed.",
       "prerequisites": [
-        "SpecWeave installed with `npm i -g specweave`",
-        "SpecWithCode installed on a Mac",
-        "A Google account for Antigravity"
+        "SpecWithCode for macOS, Windows or Linux; this UI capture uses macOS",
+        "The selected agent installed and signed in on the execution computer",
+        "A small example repository you can edit"
       ],
-      "testedOn": "SpecWithCode 0.2.8 with Antigravity 1.3.0",
+      "testedOn": "SpecWithCode 1.0.105",
       "agent": "antigravity",
       "agentsShown": [],
       "video": {
@@ -1743,57 +1742,56 @@
         "poster": "/video/tutorials/antigravity.jpg",
         "captionsVtt": "/video/tutorials/antigravity.en.vtt",
         "audio": "narrated",
-        "durationSeconds": 74.7,
-        "uploadDate": "2026-10-11",
-        "publishedAt": "2026-10-12T02:34:23Z",
+        "durationSeconds": 93.5,
+        "uploadDate": "2026-10-28",
+        "publishedAt": "2026-10-28T03:45:00Z",
         "chapters": [
           {
             "start": 0,
-            "title": "Intro"
+            "title": "Start small"
           },
           {
-            "start": 4,
-            "title": "Set up the repo"
+            "start": 9.467,
+            "title": "Connect the agent"
           },
           {
-            "start": 11.2,
-            "title": "Connect Antigravity"
+            "start": 24.6,
+            "title": "Open the project"
           },
           {
-            "start": 25.4,
-            "title": "Add the project"
+            "start": 33.733,
+            "title": "Choose deliberately"
           },
           {
-            "start": 40.1,
-            "title": "Plan"
+            "start": 43.833,
+            "title": "Write one bounded task"
           },
           {
-            "start": 53.2,
-            "title": "Build"
+            "start": 62,
+            "title": "Review before execution"
           },
           {
-            "start": 62.7,
-            "title": "Review"
+            "start": 70.167,
+            "title": "Read the evidence"
           },
           {
-            "start": 70.7,
-            "title": "Next"
+            "start": 81.467,
+            "title": "Keep the result reviewable"
           }
         ],
         "captionsBurnedIn": true
       },
       "steps": [
-        "In your repository, run `specweave init` with the Antigravity adapter. It adds AGENTS.md and the SpecWeave skills.",
-        "Open SpecWithCode, then Settings, Providers. Choose Add provider and pick Antigravity; SpecWithCode installs its own Antigravity agent.",
-        "Choose Sign in and finish with your Google account in the browser.",
-        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
-        "Pick Antigravity in the model picker. The recording sets Full access for the demo only.",
-        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
-        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
-        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
+        "In Settings, Providers, enable Antigravity on the project’s machine, install its runtime and complete its separate sign-in. Wait for account access and the model list. Choose a Gemini model that account actually offers.",
+        "Open an example repository as a project. Keep the execution machine visible.",
+        "Select your provider, available model and approval mode.",
+        "Add greet(name), keep greet() working, and run the tests.",
+        "Review the plan. Approve only the intended commands.",
+        "Read the diff and test output. Keep failures visible.",
+        "One task. Reviewed result."
       ],
       "transcript": "captions",
-      "note": "Recorded on SpecWithCode 0.2.8 with Antigravity 1.3.0 and Gemini 3.8 Flash (High) with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own Google account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
+      "note": "Captured from SpecWithCode 1.0.105 in an isolated local instance. Actual UI crops and labeled workflow diagrams; the example task is not submitted. Narration uses Anton Abyzov best voice through ElevenLabs. Sign-in, available models and native features depend on the agent and platform.",
       "action": {
         "label": "Download SpecWithCode for Mac",
         "to": "/code"
@@ -1807,17 +1805,17 @@
     {
       "slug": "specwithcode-grok",
       "product": "specwithcode",
-      "title": "Run your first task with Grok",
-      "seoTitle": "SpecWithCode with Grok: plan, build and review one task",
-      "summary": "Set up SpecWithCode with Grok, run one real task through a project, and review the result.",
-      "seoDescription": "Run grok --trust so Grok loads project skills, add Grok as an existing-CLI provider in SpecWithCode, then plan, build and review one task.",
-      "outcome": "You end with Grok having planned, built and tested one change in your repository, with the ledger line that records who finished it.",
+      "title": "Start your first task with Grok",
+      "seoTitle": "Grok: your first task in SpecWithCode",
+      "summary": "A current setup walkthrough: connect Grok, open a project, choose a model and approval mode, and prepare one bounded task. The example remains an unsubmitted draft.",
+      "seoDescription": "Connect Grok, prepare one bounded task and review real evidence in SpecWithCode. Current UI and verified Anton narration.",
+      "outcome": "Prepare a bounded first task and know how to review its diff and real test evidence. No completed provider run is portrayed.",
       "prerequisites": [
-        "SpecWeave installed with `npm i -g specweave`",
-        "SpecWithCode installed on a Mac",
-        "Grok signed in"
+        "SpecWithCode for macOS, Windows or Linux; this UI capture uses macOS",
+        "The selected agent installed and signed in on the execution computer",
+        "A small example repository you can edit"
       ],
-      "testedOn": "SpecWithCode 0.2.6",
+      "testedOn": "SpecWithCode 1.0.105",
       "agent": "grok",
       "agentsShown": [],
       "video": {
@@ -1825,57 +1823,56 @@
         "poster": "/video/tutorials/grok.jpg",
         "captionsVtt": "/video/tutorials/grok.en.vtt",
         "audio": "narrated",
-        "durationSeconds": 83.6,
-        "uploadDate": "2026-10-11",
-        "publishedAt": "2026-10-11T15:01:16Z",
+        "durationSeconds": 84.7,
+        "uploadDate": "2026-10-28",
+        "publishedAt": "2026-10-28T03:45:00Z",
         "chapters": [
           {
             "start": 0,
-            "title": "Intro"
+            "title": "Start small"
           },
           {
-            "start": 4,
-            "title": "Set up the repo"
+            "start": 8.5,
+            "title": "Connect the agent"
           },
           {
-            "start": 22.6,
-            "title": "Connect Grok"
+            "start": 23.8,
+            "title": "Open the project"
           },
           {
-            "start": 36.3,
-            "title": "Add the project"
+            "start": 32.867,
+            "title": "Choose deliberately"
           },
           {
-            "start": 48.3,
-            "title": "Plan"
+            "start": 41.367,
+            "title": "Write one bounded task"
           },
           {
-            "start": 61.3,
-            "title": "Build"
+            "start": 52.833,
+            "title": "Review before execution"
           },
           {
-            "start": 71.6,
-            "title": "Review"
+            "start": 61.4,
+            "title": "Read the evidence"
           },
           {
-            "start": 79.6,
-            "title": "Next"
+            "start": 72.767,
+            "title": "Keep the result reviewable"
           }
         ],
         "captionsBurnedIn": true
       },
       "steps": [
-        "In your repository, run `specweave init` with the generic adapter. It adds AGENTS.md and the SpecWeave skills.",
-        "In the repository, run `grok --trust` once, because Grok skips project skills in folders it does not trust. If you are signed out, run `grok login` first.",
-        "Open SpecWithCode, then Settings, Providers. Grok is off by default: choose Add provider, pick Grok and existing CLI, choose Next twice, then Add instance.",
-        "Add the repository: choose the plus next to Projects, then Local folder, then its path. A new chat opens.",
-        "Pick Grok in the model picker. The recording sets Full access for the demo only.",
-        "Type `$`, pick `sw-increment` and describe the change. The agent writes spec.md with acceptance criteria and a task with its files and test.",
-        "Send `sw-do`. The agent claims the task, changes the code and runs the test. The task is marked done only when the test passes.",
-        "Choose Open diff to review the code, the test and the ledger line. Then `sw-done` verifies and closes the increment."
+        "In Settings, Providers, choose native Grok for an existing CLI, or Grok Build for a managed registry install. These are distinct routes. Finish the selected agent’s own sign-in and choose an available model.",
+        "Open an example repository as a project. Keep the execution machine visible.",
+        "Select your provider, available model and approval mode.",
+        "Add greet(name), keep greet() working, and run the tests.",
+        "Review the plan. Approve only the intended commands.",
+        "Read the diff and test output. Keep failures visible.",
+        "One task. Reviewed result."
       ],
       "transcript": "captions",
-      "note": "Recorded on SpecWithCode 0.2.6 with a sample project in a disposable demo environment, 11 October 2026; the agent signed in with the author’s own account off camera, and some waits are sped up. AI narration in the author’s cloned voice; captions are burned in. The app has changed since this recording: SpecWithCode now opens projects on the coordinator, with workers in the right panel, so some labels differ.",
+      "note": "Captured from SpecWithCode 1.0.105 in an isolated local instance. Actual UI crops and labeled workflow diagrams; the example task is not submitted. Narration uses Anton Abyzov best voice through ElevenLabs. Sign-in, available models and native features depend on the agent and platform.",
       "action": {
         "label": "Download SpecWithCode for Mac",
         "to": "/code"

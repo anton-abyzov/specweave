@@ -1,1 +1,212 @@
-{"segments": [{"words": [{"word": " Cloud", "start": 0.0, "end": 0.3}, {"word": " Code", "start": 0.3, "end": 0.58}, {"word": " Inspect", "start": 0.58, "end": 1.0}, {"word": " with", "start": 1.0, "end": 1.32}, {"word": " Code", "start": 1.32, "end": 1.58}, {"word": " Plan", "start": 1.58, "end": 2.12}, {"word": " Build", "start": 2.12, "end": 2.52}, {"word": " Review", "start": 2.52, "end": 2.96}]}]}
+{
+  "text": " Run one small change with Claude code in SpecWithCode. This walkthrough prepares the task. It does not submit a provider run.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 3.48,
+      "text": " Run one small change with Claude code in SpecWithCode.",
+      "tokens": [
+        50365,
+        8950,
+        472,
+        1359,
+        1319,
+        365,
+        12947,
+        2303,
+        3089,
+        294,
+        20484,
+        20943,
+        34,
+        1429,
+        13,
+        50565
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.33140039443969727,
+      "compression_ratio": 1.1682242990654206,
+      "no_speech_prob": 9.249626889071272e-13,
+      "words": [
+        {
+          "word": " Run",
+          "start": 0.0,
+          "end": 0.28,
+          "probability": 0.8544921875
+        },
+        {
+          "word": " one",
+          "start": 0.28,
+          "end": 0.62,
+          "probability": 0.9853515625
+        },
+        {
+          "word": " small",
+          "start": 0.62,
+          "end": 1.02,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " change",
+          "start": 1.02,
+          "end": 1.44,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " with",
+          "start": 1.44,
+          "end": 1.7,
+          "probability": 0.99462890625
+        },
+        {
+          "word": " Claude",
+          "start": 1.7,
+          "end": 2.1,
+          "probability": 0.74462890625
+        },
+        {
+          "word": " code",
+          "start": 2.1,
+          "end": 2.44,
+          "probability": 0.54931640625
+        },
+        {
+          "word": " in",
+          "start": 2.44,
+          "end": 2.7,
+          "probability": 0.486328125
+        },
+        {
+          "word": " SpecWithCode.",
+          "start": 2.7,
+          "end": 3.48,
+          "probability": 0.654296875
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 3.58,
+      "end": 5.9,
+      "text": " This walkthrough prepares the task.",
+      "tokens": [
+        50565,
+        639,
+        1792,
+        11529,
+        39418,
+        264,
+        5633,
+        13,
+        50677
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.33140039443969727,
+      "compression_ratio": 1.1682242990654206,
+      "no_speech_prob": 9.249626889071272e-13,
+      "words": [
+        {
+          "word": " This",
+          "start": 3.58,
+          "end": 4.26,
+          "probability": 0.99462890625
+        },
+        {
+          "word": " walkthrough",
+          "start": 4.26,
+          "end": 4.7,
+          "probability": 0.951171875
+        },
+        {
+          "word": " prepares",
+          "start": 4.7,
+          "end": 5.28,
+          "probability": 0.99560546875
+        },
+        {
+          "word": " the",
+          "start": 5.28,
+          "end": 5.52,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " task.",
+          "start": 5.52,
+          "end": 5.9,
+          "probability": 0.998046875
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 6.06,
+      "end": 8.18,
+      "text": " It does not submit a provider run.",
+      "tokens": [
+        50677,
+        467,
+        775,
+        406,
+        10315,
+        257,
+        12398,
+        1190,
+        13,
+        50785
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.33140039443969727,
+      "compression_ratio": 1.1682242990654206,
+      "no_speech_prob": 9.249626889071272e-13,
+      "words": [
+        {
+          "word": " It",
+          "start": 6.06,
+          "end": 6.42,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " does",
+          "start": 6.42,
+          "end": 6.58,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " not",
+          "start": 6.58,
+          "end": 6.94,
+          "probability": 0.99609375
+        },
+        {
+          "word": " submit",
+          "start": 6.94,
+          "end": 7.34,
+          "probability": 0.99853515625
+        },
+        {
+          "word": " a",
+          "start": 7.34,
+          "end": 7.52,
+          "probability": 0.9990234375
+        },
+        {
+          "word": " provider",
+          "start": 7.52,
+          "end": 7.86,
+          "probability": 0.529296875
+        },
+        {
+          "word": " run.",
+          "start": 7.86,
+          "end": 8.18,
+          "probability": 0.98974609375
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}

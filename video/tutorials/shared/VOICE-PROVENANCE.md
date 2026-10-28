@@ -6,8 +6,11 @@ The approved identity is **Anton Abyzov best voice**, ElevenLabs voice id
 `0Ki1af67ybTaTu4TNmO8`, category `cloned`. The retained verified voice metadata is
 `/Users/antonabyzov/specwithcode-promo/look-what-i-built-20261020/evidence/verified-voice.json`.
 The user's sole-voice instruction agrees with that retained asset. No substitute
-voice is authorized. The current live catalog was not verified: the existing
-credential returned `ElevenLabs read-only preflight returned HTTP 401`.
+voice is authorized. The initial audit's read-only preflight returned HTTP 401.
+On October 28 the existing canonical key successfully read the voice catalog and
+the exact approved cloned identity. Subscription readback still returns HTTP 401
+specifically because the key lacks `user_read`; it is not evidence of an invalid
+key. No credential was rotated or substituted.
 
 All five October 11 configurations already name that id and `eleven_v4`. The
 five old generators had the same SHA-256:
@@ -34,8 +37,19 @@ outcome-unknown request. A credential failure cannot select another voice.
 Validation: `node --test video/tutorials/shared/narration.test.mjs` passes four
 tests without credentials or network calls. It exercises wrong voice/model/speed,
 receipt-less cache, edited script and changed audio bytes, plus the public CLI's
-offline check mode. No synthesis call or paid generation was made.
+offline check mode. No synthesis call or paid generation was made during that
+initial T-03 validation.
 
-T-04 still requires valid existing ElevenLabs authentication, current faithful UI
-evidence, new narration receipts and inspected/listened final media. This source
-audit alone is not acceptance of replacement tutorials.
+T-04 subsequently generated 40 beats once, totaling 5,972 spoken characters,
+with the approved identity, `eleven_v4` and speed 1.0. Every request has a receipt;
+derived WAV hashes also bind the trim-only PCM used by the renderer. Current
+1.0.105 UI crops come from a fresh isolated data directory, not a copied user
+database. The replacement films explicitly prepare an unsubmitted draft and label
+workflow diagrams; they do not portray completed provider runs.
+
+All five replacement media families have full-decode and caption/format checks.
+Local transcript comparison is at least 0.984 similar to each approved spoken
+beat. This is not a claim of auditory review: this host returns “audio content
+omitted because you do not support audio input.” Actual listening remains an
+explicit acceptance gate. The historical builder entrypoints are retired; current
+composition playback uses only new `assets/refresh/` audio.

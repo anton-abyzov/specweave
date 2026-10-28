@@ -1,77 +1,79 @@
 WEBVTT
 
-1
-00:00:00.200 --> 00:00:03.500
-Antigravity in SpecWithCode: plan, build, review.
+00:00:00.150 --> 00:00:03.910
+Run one small change with Antigravity and Gemini in spec
 
-2
-00:00:04.200 --> 00:00:07.667
-In your repo, run specweave init with the Antigravity adapter.
+00:00:03.910 --> 00:00:07.730
+with code. This walkthrough prepares the task. It does not
 
-3
-00:00:07.667 --> 00:00:10.900
-It adds AGENTS.md and eleven SpecWeave skills.
+00:00:07.730 --> 00:00:08.830
+submit a provider run.
 
-4
-00:00:11.400 --> 00:00:14.167
-Open SpecWithCode, then Settings, Providers.
+00:00:09.617 --> 00:00:13.877
+In Settings, Providers, enable antigravity on the project's
 
-5
-00:00:14.167 --> 00:00:17.633
-Click Add provider and pick Antigravity.
+00:00:13.877 --> 00:00:17.657
+machine, install its runtime, and complete its separate sign
 
-6
-00:00:17.633 --> 00:00:19.967
-SpecWithCode installs its own Antigravity agent.
+00:00:17.657 --> 00:00:21.477
+-in. Wait for account access and the model list. Choose a
 
-7
-00:00:19.967 --> 00:00:23.367
-Click Sign in and finish with your Google account in the browser.
+00:00:21.477 --> 00:00:23.897
+Gemini model that account actually offers.
 
-8
-00:00:23.367 --> 00:00:25.233
-This one is already signed in.
+00:00:24.750 --> 00:00:28.250
+Open an example repository as a project. The main
 
-9
-00:00:25.600 --> 00:00:30.833
-Add the repo: the plus next to Projects, Local folder, then its path.
+00:00:28.250 --> 00:00:32.310
+conversation is the project coordinator. Check which machine
 
-10
-00:00:30.833 --> 00:00:36.567
-A new chat opens. Pick Gemini 3.8 Flash under Antigravity,
+00:00:32.310 --> 00:00:33.150
+is doing the work.
 
-11
-00:00:36.567 --> 00:00:39.700
-and set Full access for this demo.
+00:00:33.883 --> 00:00:38.143
+Select Antigravity, then an available Gemini model and the
 
-12
-00:00:40.300 --> 00:00:45.100
-Type a dollar sign, pick sw-increment, and describe the change.
+00:00:38.143 --> 00:00:41.723
+approval mode you intend to use. This tutorial does not
 
-13
-00:00:45.100 --> 00:00:48.333
-Antigravity writes spec.md:
+00:00:41.723 --> 00:00:43.083
+require full access.
 
-14
-00:00:48.333 --> 00:00:52.767
-acceptance criteria, and a task with its files and test.
+00:00:43.983 --> 00:00:48.363
+Give it one bounded task. Add a named greeting, keep the no
 
-15
-00:00:53.400 --> 00:00:57.733
-Then send sw-do. Antigravity claims the task, changes the code,
+00:00:48.363 --> 00:00:52.643
+argument greeting working, and add tests for both. Ask it to
 
-16
-00:00:57.733 --> 00:01:01.833
-and runs the test. The task is marked done only when the test passes.
+00:00:52.643 --> 00:00:56.543
+describe the change before editing. Antigravity has its own
 
-17
-00:01:02.900 --> 00:01:05.867
-Click Open diff to review the code, the test,
+00:00:56.543 --> 00:01:00.423
+native plan command. Do not assume the app's separate plan
 
-18
-00:01:05.867 --> 00:01:09.367
-and the ledger line that records who finished the task.
+00:01:00.423 --> 00:01:01.263
+mode is available.
 
-19
-00:01:10.900 --> 00:01:14.467
-Next, sw-done verifies and closes the increment.
+00:01:02.150 --> 00:01:06.250
+Read the proposed change, then ask it to implement. Review
+
+00:01:06.250 --> 00:01:09.210
+any command approval rather than accepting it automatically.
+
+00:01:10.317 --> 00:01:14.297
+Inspect the changed files and the actual test output. If a
+
+00:01:14.297 --> 00:01:18.297
+check failed or was not run, keep that in the result. A
+
+00:01:18.297 --> 00:01:20.717
+confident reply is not test evidence.
+
+00:01:21.617 --> 00:01:25.597
+Finish with the change, its diff, and actual test evidence.
+
+00:01:26.037 --> 00:01:29.617
+Use specweave increments when you need a durable plan and
+
+00:01:29.617 --> 00:01:32.837
+task record. They are optional for this first task.
