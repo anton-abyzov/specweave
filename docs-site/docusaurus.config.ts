@@ -243,6 +243,8 @@ const config: Config = {
         // Pages removed or merged over time, pointed at the page that replaced them.
         redirects: [
           {from: ['/studio'], to: '/code'},
+          // Per-agent first-task videos taken down for re-recording, 28 October 2026.
+          {from: ['/tutorials/specwithcode-claude-code', '/tutorials/specwithcode-codex', '/tutorials/specwithcode-opencode', '/tutorials/specwithcode-grok', '/tutorials/specwithcode-antigravity'], to: '/tutorials'},
           {from: ['/download', '/code/downloads', '/specwithcode/download', '/studio/download'], to: '/code/download'},
           {from: ['/docs/guides/specweave-vs-speckit'], to: '/docs/compare/specweave-vs-github-spec-kit'},
           {from: ['/docs', '/docs/overview'], to: '/docs/overview/introduction'},

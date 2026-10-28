@@ -187,9 +187,9 @@ export function verifyCatalogue(siteRoot = defaultSiteRoot, {probe = true} = {})
     assert(inbound > 0, `${t.slug}: no other guide or learning path links to it`);
   }
   // The per-agent series repeats the same beats, so each episode carries what differs for its agent.
+  // The path is absent while its episodes are re-recorded; the planned entries keep each agent listed.
   const series = catalogue.paths.find(p => p.id === AGENT_SERIES);
-  assert(series, `learning path ${AGENT_SERIES} is missing`);
-  for (const slug of series.steps.filter(slug => published.has(slug))) {
+  for (const slug of (series?.steps ?? []).filter(slug => published.has(slug))) {
     assert(extras.guides[slug]?.agentNotes?.length, `${slug}: agent series guides need agentNotes in tutorial-extras.json`);
   }
   return {published: catalogue.tutorials.length, planned: catalogue.planned.length, paths: catalogue.paths.length, catalogue, extras};

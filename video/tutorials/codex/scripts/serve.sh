@@ -10,7 +10,7 @@ set -eu
 DEMO="$1"; TOOL="$2"; PORT="${3:-8331}"
 NODE="$(command -v node)"
 LAUNCHER="$(command -v specweave-studio)"
-BIN="$(grep -o '[^ ]*/releases/[^ ]*/bin.mjs' "$LAUNCHER" | head -1)"
+BIN="${STUDIO_BIN:-$(grep -o '[^ ]*/releases/[^ ]*/bin.mjs' "$LAUNCHER" | head -1)}"
 [ -f "$BIN" ] || { echo "cannot find the release bin.mjs in $LAUNCHER" >&2; exit 1; }
 # Episode 2: only node, npm-installed CLIs (specweave, codex) and the system dirs. ~/.local/bin and
 # Homebrew are left out so no other agent CLI (claude, cursor, grok) is found in the Codex episode.
