@@ -233,10 +233,10 @@
    ]
   },
   {
-   "id": "06-work",
+   "id": "06-work-b",
    "kind": "APP",
    "chapter": "Plan, build, test",
-   "vo": "The thread plans increment 0001: acceptance criteria and one task with its test. Then it changes the code and runs that test. A task is done only when its test passes.",
+   "vo": "The thread plans increment 1: acceptance criteria and one task with its test. Then it changes the code and runs that test. A task is done only when its test passes.",
    "stepChip": "Increment 0001 → acceptance criteria → task → test",
    "steps": [
     {
@@ -333,10 +333,10 @@
    ]
   },
   {
-   "id": "08-outro",
+   "id": "08-outro-b",
    "kind": "MG",
    "chapter": "Next",
-   "vo": "Increment 0001 is verified and closed. Next, run the same task with another agent.",
+   "vo": "Increment 1 is verified and closed. Next, run the same task with another agent.",
    "card": {
     "lines": [
      "Increment 0001: verified and closed",

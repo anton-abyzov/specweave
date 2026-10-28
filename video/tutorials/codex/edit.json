@@ -5,45 +5,221 @@
   "syncOffset": -0.047,
   "voOffset": 0.2,
   "beats": [
-    { "id": "01-intro", "dur": 6.0,
-      "captions": [ { "text": "Codex in SpecWithCode: one task, planned, built and reviewed." } ] },
-    { "id": "02-init", "dur": 11.1,
+    {
+      "id": "01-intro",
+      "dur": 6.0,
       "captions": [
-        { "text": "In your repo, run `specweave init`." },
-        { "text": "It adds `AGENTS.md` and seven SpecWeave skills, such as `sw-increment` and `sw-do`." } ] },
-    { "id": "03-connect-b", "dur": 12.8,
-      "segments": [ [4.4, 7.9, 1.0], [7.9, 9.4, 1.0], [10.2, 14.6, 1.0], [15.0, 18.4, 1.0] ],
+        {
+          "text": "Codex in SpecWithCode: one task, planned, built and reviewed."
+        }
+      ]
+    },
+    {
+      "id": "02-init",
+      "dur": 11.1,
       "captions": [
-        { "text": "Open SpecWithCode and set this Mac up as your main machine." },
-        { "text": "On the Codex card, click Use existing CLI to reuse your Codex sign-in." },
-        { "text": "The card says Ready." } ] },
-    { "id": "04-project", "dur": 8.6,
-      "segments": [ [21.4, 30.0, 1.0] ],
+        {
+          "text": "In your repo, run `specweave init`."
+        },
+        {
+          "text": "It adds `AGENTS.md` and seven SpecWeave skills, such as `sw-increment` and `sw-do`."
+        }
+      ]
+    },
+    {
+      "id": "03-connect-b",
+      "dur": 12.8,
+      "segments": [
+        [
+          4.4,
+          7.9,
+          1.0
+        ],
+        [
+          7.9,
+          9.4,
+          1.0
+        ],
+        [
+          10.2,
+          14.6,
+          1.0
+        ],
+        [
+          15.0,
+          18.4,
+          1.0
+        ]
+      ],
       "captions": [
-        { "text": "Add the repo: the plus next to Projects, Local folder, then its path." },
-        { "text": "The project opens on its coordinator." } ] },
-    { "id": "05-task", "dur": 8.0,
-      "segments": [ [30.3, 33.2, 1.0], [33.2, 36.8, 2.0], [36.8, 53.8, 6.0], [53.8, 55.5, 1.0] ],
-      "highlights": [ { "x": 488, "y": 330, "w": 740, "h": 74, "from": 7.2, "to": 8.0 } ],
+        {
+          "text": "Open SpecWithCode and set this Mac up as your main machine."
+        },
+        {
+          "text": "On the Codex card, click Use existing CLI to reuse your Codex sign-in."
+        },
+        {
+          "text": "The card says Ready."
+        }
+      ]
+    },
+    {
+      "id": "04-project",
+      "dur": 8.6,
+      "segments": [
+        [
+          21.4,
+          30.0,
+          1.0
+        ]
+      ],
       "captions": [
-        { "text": "Set Full access for this demo, describe the change, and send it.", "lift": 150 },
-        { "text": "The coordinator hands the work to a new thread.", "lift": 150 } ] },
-    { "id": "06-work", "dur": 14.4,
-      "segments": [ [55.6, 59.0, 1.0], [59.0, 118.0, 6.0], [118.0, 120.5, 1.0] ],
-      "highlights": [ { "x": 1480, "y": 83, "w": 420, "h": 24, "from": 13.2, "to": 14.4 } ],
+        {
+          "text": "Add the repo: the plus next to Projects, Local folder, then its path."
+        },
+        {
+          "text": "The project opens on its coordinator."
+        }
+      ]
+    },
+    {
+      "id": "05-task",
+      "dur": 8.0,
+      "segments": [
+        [
+          30.3,
+          33.2,
+          1.0
+        ],
+        [
+          33.2,
+          36.8,
+          2.0
+        ],
+        [
+          36.8,
+          53.8,
+          6.0
+        ],
+        [
+          53.8,
+          55.5,
+          1.0
+        ]
+      ],
+      "highlights": [
+        {
+          "x": 488,
+          "y": 330,
+          "w": 740,
+          "h": 74,
+          "from": 7.2,
+          "to": 8.0
+        }
+      ],
       "captions": [
-        { "text": "The thread plans increment 0001: acceptance criteria and one task with its test." },
-        { "text": "Then it changes the code and runs that test." },
-        { "text": "A task is done only when its test passes." } ] },
-    { "id": "07-review", "dur": 7.9,
-      "segments": [ [120.7, 124.5, 1.0], [124.8, 126.0, 1.0], [129.2, 132.1, 1.0] ],
-      "highlights": [ { "x": 1480, "y": 497, "w": 410, "h": 42, "from": 1.0, "to": 3.8 } ],
+        {
+          "text": "Set Full access for this demo, describe the change, and send it.",
+          "lift": 150
+        },
+        {
+          "text": "The coordinator hands the work to a new thread.",
+          "lift": 150
+        }
+      ]
+    },
+    {
+      "id": "06-work-b",
+      "dur": 13.0,
+      "segments": [
+        [
+          55.6,
+          59.0,
+          1.0
+        ],
+        [
+          59.0,
+          118.0,
+          6.5
+        ],
+        [
+          118.0,
+          120.5,
+          1.0
+        ]
+      ],
+      "highlights": [
+        {
+          "x": 1480,
+          "y": 83,
+          "w": 420,
+          "h": 24,
+          "from": 11.8,
+          "to": 13.0
+        }
+      ],
       "captions": [
-        { "text": "Open the thread to review it: the summary," },
-        { "text": "the verification and review reports, and every changed file in Open diff." } ] },
-    { "id": "08-outro", "dur": 8.1,
+        {
+          "text": "The thread plans increment 1: acceptance criteria and one task with its test."
+        },
+        {
+          "text": "Then it changes the code and runs that test."
+        },
+        {
+          "text": "A task is done only when its test passes."
+        }
+      ]
+    },
+    {
+      "id": "07-review",
+      "dur": 7.9,
+      "segments": [
+        [
+          120.7,
+          124.5,
+          1.0
+        ],
+        [
+          124.8,
+          126.0,
+          1.0
+        ],
+        [
+          129.2,
+          132.1,
+          1.0
+        ]
+      ],
+      "highlights": [
+        {
+          "x": 1480,
+          "y": 497,
+          "w": 410,
+          "h": 42,
+          "from": 1.0,
+          "to": 3.8
+        }
+      ],
       "captions": [
-        { "text": "Increment 0001 is verified and closed." },
-        { "text": "Next, run the same task with another agent." } ] }
+        {
+          "text": "Open the thread to review it: the summary,"
+        },
+        {
+          "text": "the verification and review reports, and every changed file in Open diff."
+        }
+      ]
+    },
+    {
+      "id": "08-outro-b",
+      "dur": 6.8,
+      "captions": [
+        {
+          "text": "Increment 1 is verified and closed."
+        },
+        {
+          "text": "Next, run the same task with another agent."
+        }
+      ]
+    }
   ]
 }
