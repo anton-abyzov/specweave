@@ -1,0 +1,225 @@
+/*
+  /code hero media on Weave tokens only. Three planes:
+  back (iris light and a hairline grid), mid (the app window), front (callouts).
+  Scroll parallax and pointer drift are progressive; the resting state is the final layout.
+*/
+
+.stage {
+  --px: 0;
+  --py: 0;
+  position: relative;
+  isolation: isolate;
+  padding: 28px 8px 36px;
+}
+
+/* ---------- Back plane ---------- */
+.back {
+  position: absolute;
+  inset: -12% -10% -8%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.orb {
+  position: absolute;
+  inset: 4% 6% 14% 10%;
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side, color-mix(in srgb, var(--wv-iris) 34%, transparent), transparent 72%),
+    radial-gradient(closest-side at 78% 70%, color-mix(in srgb, var(--wv-iris-strong) 22%, transparent), transparent 70%);
+  filter: blur(18px);
+  opacity: 0.85;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--wv-iris) 12%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--wv-iris) 12%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 60% 55% at 55% 45%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 60% 55% at 55% 45%, #000 30%, transparent 75%);
+}
+
+/* ---------- Mid plane: the window ---------- */
+.window {
+  position: relative;
+  box-shadow: var(--wv-shadow-window), 0 40px 80px -40px color-mix(in srgb, var(--wv-iris) 55%, transparent);
+}
+
+.window :global(.wv-window__bar) {
+  gap: var(--wv-space-3);
+}
+
+.window :global(.wv-window__bar) > span:nth-child(2) {
+  margin-right: auto;
+  color: var(--wv-ink);
+  font-weight: 500;
+}
+
+.dots {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--wv-line);
+}
+
+/* Show the readable part of the capture: the coordinator report (x 20-67%, y 10-70%). */
+.crop {
+  position: relative;
+  aspect-ratio: 940 / 760;
+  overflow: hidden;
+  background: var(--wv-sunken);
+}
+
+.crop img.shot,
+.crop .shot {
+  position: absolute;
+  top: -15.8%;
+  left: -42.55%;
+  width: 212.8%;
+  max-width: none;
+  height: auto;
+}
+
+.video {
+  position: relative;
+  background: var(--wv-sunken);
+}
+
+.video video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.videoControls {
+  position: absolute;
+  right: var(--wv-space-3);
+  bottom: var(--wv-space-3);
+  display: flex;
+  gap: var(--wv-space-2);
+}
+
+.videoControls button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  min-height: 36px;
+  min-width: 36px;
+  justify-content: center;
+  padding: 0 var(--wv-space-3);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-sm);
+  background: color-mix(in srgb, var(--wv-panel) 88%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--wv-ink);
+  font: 500 14px/20px var(--wv-font-sans);
+  cursor: pointer;
+}
+
+.videoControls button:hover {
+  border-color: var(--wv-iris);
+}
+
+/* ---------- Front plane: callouts quoting the capture ---------- */
+.front {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  translate: calc(var(--px) * -14px) calc(var(--py) * -10px);
+  transition: translate 300ms ease-out;
+}
+
+.callout {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  padding: 6px 12px;
+  border: 1px solid var(--wv-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--wv-panel) 92%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--wv-shadow-overlay);
+  color: var(--wv-ink);
+  font: 500 13px/18px var(--wv-font-sans);
+  white-space: nowrap;
+}
+
+.callout img {
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 5px;
+  background: var(--wv-sunken);
+}
+
+/* White marks need a plate that stays dark in both themes. */
+.callout img.plate {
+  background: #241523;
+}
+
+.c1 { top: 6px; right: -10px; }
+.c2 { top: 60%; left: -22px; }
+.c3 { bottom: 8px; right: 8%; }
+
+.live,
+.ok {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.live { background: var(--wv-iris); box-shadow: 0 0 0 4px color-mix(in srgb, var(--wv-iris) 22%, transparent); }
+.ok { background: var(--wv-pass); }
+
+/* ---------- Motion ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .live { animation: pulse 2.4s ease-in-out infinite; }
+  .callout { animation: float 7s ease-in-out infinite; }
+  .c2 { animation-delay: -2.3s; }
+  .c3 { animation-delay: -4.6s; }
+}
+
+@keyframes pulse {
+  50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--wv-iris) 6%, transparent); }
+}
+
+@keyframes float {
+  50% { transform: translate3d(0, -6px, 0); }
+}
+
+/* Scroll parallax: three planes, three rates, over the first screen of scroll. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 997px) {
+    .back { animation: plane-back linear both; animation-timeline: scroll(root); animation-range: 0 100vh; }
+    .window { animation: plane-mid linear both; animation-timeline: scroll(root); animation-range: 0 100vh; }
+    .front { animation: plane-front linear both; animation-timeline: scroll(root); animation-range: 0 100vh; }
+  }
+}
+
+@keyframes plane-back { to { transform: translate3d(0, 90px, 0) scale(1.06); } }
+@keyframes plane-mid { to { transform: translate3d(0, -24px, 0) scale(0.97); } }
+@keyframes plane-front { to { transform: translate3d(0, -84px, 0); opacity: 0.4; } }
+
+@media (max-width: 760px) {
+  .stage { padding: 20px 0 28px; }
+  .c1 { right: 0; top: 0; }
+  .c2 { left: 0; top: auto; bottom: 6px; }
+  .c3 { display: none; }
+  .callout { font-size: 12px; padding: 4px 10px; }
+}
+
+@media (prefers-reduced-motion: reduce), print {
+  .back, .window, .front, .callout { animation: none !important; transform: none !important; translate: none; }
+}

@@ -3,14 +3,18 @@ import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
-import {Check, ChevronDown, Cloud, Copy, Download, Info, Users} from 'lucide-react';
+import {Activity, ArrowRightLeft, ArrowUpRight, Check, ChevronDown, CirclePause, Cloud, Coins, Copy, Cpu, Download, FileCheck2, FileText, Gauge, Info, Laptop, ListChecks, MessagesSquare, Mic, MousePointerClick, Network, Route, Server, ShieldCheck, Users} from 'lucide-react';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import CoordinatorFlow from '../components/ecosystem/CoordinatorFlow';
 import HeroFlow from '../components/ecosystem/HeroFlow';
 import SubscriptionValue from '../components/ecosystem/SubscriptionValue';
 import WhySpecWithCode from '../components/ecosystem/WhySpecWithCode';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
+import HeroStage from '../components/code/HeroStage';
+import {BrowserDiagram, CHROME_STORE_URL, CardShot, Cards, ChromeAnnounce, FinishDiagram, GuideCards, MachinesDiagram, PolicyPicker, Tokens, WindowCrop, type CardItem} from '../components/code/Landing';
+import landing from '../components/code/Landing.module.css';
 import {SPECWITHCODE_RELEASE as release} from '../data/specwithcodeRelease';
-import {PATHS, TUTORIALS, buildVideoObject, byRecency, formatDuration, getTutorial, guidePath, resolvePath, type Tutorial} from '../data/tutorials';
+import {PATHS, TUTORIALS, buildVideoObject, byRecency, getTutorial, resolvePath} from '../data/tutorials';
 import styles from './code.module.css';
 
 /*
@@ -186,25 +190,37 @@ function InviteCommand() {
   </div>;
 }
 
-function GuideList({guides}: {guides: readonly Tutorial[]}) {
-  return <ul className={styles.guides}>
-    {guides.map(t => <li key={t.slug}>
-      <Link className="wv-link" to={guidePath(t.slug)}>{t.title}</Link>
-      <span>{formatDuration(t.durationSeconds)}</span>
-    </li>)}
-  </ul>;
-}
+/** Pair each list with an icon and, where one exists, a mini visual: real crops or tokens, never invented numbers. */
+const withIcons = (items: {name: string; detail: React.ReactNode}[], extras: Omit<CardItem, 'name' | 'detail'>[]): CardItem[] =>
+  items.map((item, i) => ({...item, ...extras[i]}));
 
-function Evidence({items}: {items: {name: string; detail: React.ReactNode}[]}) {
-  return <ul className={clsx('wv-evidence', styles.list)}>
-    {items.map(item => <li key={item.name}>
-      <span className="wv-evidence__name">{item.name}</span>
-      <span className="wv-evidence__detail">{item.detail}</span>
-    </li>)}
-  </ul>;
-}
+const THREAD_CARDS = withIcons(THREADS, [
+  {icon: MessagesSquare, visual: <Tokens items={['A', 'B', 'C']} active={1} />},
+  {icon: CirclePause, visual: <Tokens items={['/stop', '/continue', '/status']} mono />},
+  {icon: FileText, visual: <Tokens items={['reports/']} mono />},
+  {icon: ListChecks, visual: <Tokens items={['spec.md', 'ledger.jsonl']} mono />},
+]);
+
+const LIMIT_CARDS = withIcons(LIMITS, [
+  {icon: Route},
+  {icon: Coins},
+  {icon: ArrowRightLeft},
+  {icon: Gauge, visual: <CardShot src="/img/studio/provider-status-20261008.png" w={280} h={195} alt="Actual SpecWithCode provider list: Codex authenticated on a ChatGPT Pro subscription, Claude needs attention" caption="Real capture, 8 October 2026" />},
+  {icon: Activity},
+]);
+
+const CAPACITY_CARDS = withIcons(CAPACITY, [{icon: Cpu}, {icon: Server}, {icon: Network}, {icon: Laptop}]);
+
+const REACH_CARDS = withIcons(REACH.filter(r => r.name !== 'SpecWithCode Browser'), [
+  {icon: MousePointerClick},
+  {icon: ShieldCheck},
+  {icon: Mic},
+]);
+const CHROME = REACH.find(r => r.name === 'SpecWithCode Browser')!;
 
 export default function Code() {
+  const icon28 = useBaseUrl('/img/studio/specwithcode-icon.png');
+  const providerBase = useBaseUrl('/img/studio/providers/');
   return <Layout title={TITLE} description={DESCRIPTION}>
     <Head>
       <title>{TITLE}</title>
@@ -219,28 +235,30 @@ export default function Code() {
       <meta name="twitter:image:alt" content="SpecWithCode: agents on your own computers. macOS, Windows and Linux." />
       <script type="application/ld+json">{JSON.stringify(SPECWITHCODE_LD)}</script>
     </Head>
-    <main className={clsx('wv-root', styles.page)}>
-      <header className={clsx(styles.shell, styles.hero)}>
-        <div className={styles.heroCopy}>
+    <main className={clsx('wv-root', styles.page, styles.landing)}>
+      <header className={clsx(styles.shell, styles.top)}>
+        <div className={styles.topCopy}>
+          <ChromeAnnounce />
           <p className={styles.product}>
-            <img src="/img/studio/specwithcode-icon.png" alt="" width="28" height="28" />
+            <img src={icon28} alt="" width="28" height="28" />
             <span className={styles.productName}>SpecWithCode</span>
             <span className={styles.productNote}>Free, source available</span>
           </p>
-          <h1><span className={styles.heroBrand}>SpecWithCode</span>Give the goal.<br /><em>Keep the whole picture.</em></h1>
+          <h1><span className={styles.heroBrand}>SpecWithCode</span> Give the goal.<br /><em>Keep the whole picture.</em></h1>
           <p className={styles.lead}>One workspace for your coding agents on your own computers. A coordinator keeps the brief, workers do the work, and you review the result.</p>
-          <ul className={styles.providers} aria-label="Some supported coding agents">
-            {[['claude', 'Claude Code'], ['openai', 'Codex'], ['cursor', 'Cursor'], ['opencode', 'OpenCode']].map(([file, name]) => <li key={name}><img src={`/img/studio/providers/${file}.svg`} alt="" width="28" height="28" /><span>{name}</span></li>)}
-            <li><a href="#tutorials">More agents</a></li>
-          </ul>
           <div className={styles.actions}>
             <Link className="wv-btn wv-btn--primary wv-btn--lg" to="/code/download/" data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for macOS, Windows or Linux</Link>
             <a className="wv-btn wv-btn--secondary wv-btn--lg" href="#workflow">See how it works</a>
           </div>
+          <ul className={styles.providers} aria-label="Some supported coding agents">
+            {[['claude', 'Claude Code'], ['openai', 'Codex'], ['cursor', 'Cursor'], ['opencode', 'OpenCode']].map(([file, name]) => <li key={name}><img src={`${providerBase}${file}.svg`} alt="" width="28" height="28" /><span>{name}</span></li>)}
+            <li><a href="#tutorials">More agents</a></li>
+          </ul>
         </div>
-
-        <div className={styles.heroShot}>
-          <HeroFlow />
+        <div className={styles.topMedia}>
+          <HeroStage />
+        </div>
+        <div className={styles.topFine}>
           <p className={styles.requirements}>Early access for macOS 13 or later on Apple silicon, Windows 10 and 11 (x64), and Linux (x64). Mac releases are signed and notarized; Windows and Linux installers are unsigned. <Link className="wv-link" to="/code/download/">Downloads, versions and installation steps</Link></p>
           <div className={clsx('wv-note', styles.qualification)}>
             <Info {...icon} />
@@ -249,46 +267,50 @@ export default function Code() {
         </div>
       </header>
 
-      <section id="workflow" className={clsx(styles.shell, styles.workflow)} aria-label="From your goal to a reviewed result">
-        <div className={styles.workflowHead}><p className={styles.productNote}>One brief. Work you can follow.</p><h2>Keep the decisions.<br />See the work.</h2></div>
-        <ol className={styles.workflowRail}>
-          <li><span>01</span><h3>Give the goal</h3><p>Tell the coordinator what done means. Your brief and decisions stay together.</p></li>
-          <li><span>02</span><h3>Follow the workers</h3><p>Open threads beside the conversation to see commands, changed files and results.</p></li>
-          <li><span>03</span><h3>Review the evidence</h3><p>Check the output and diff, then decide how the change lands.</p></li>
-        </ol>
-        <p className={styles.fine}>An explanation of the flow, not a product screenshot.</p>
-      </section>
-
-      <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="threads-title">
-        <div className={styles.sectionHead}>
-          <h2 id="threads-title">Stay in charge of every thread</h2>
-          <p>The main window holds only the coordinator. Worker threads open in the right panel, and every mention of a thread is a link with its live status.</p>
-        </div>
-        <details className={styles.disclosure}><summary>Thread controls and evidence</summary><Evidence items={THREADS} /></details>
+      <section id="workflow" className={clsx(styles.shell, styles.flowBand)} aria-label="From your goal to a reviewed result">
+        <HeroFlow />
       </section>
 
       <div className={styles.shell}><CoordinatorFlow /></div>
 
-      <section className={clsx(styles.shell, styles.section, styles.split)} id="limits" aria-labelledby="limits-title">
-        <div className={styles.sectionHead}>
-          <h2 id="limits-title">Keep working when a provider runs out</h2>
-          <p>Every account’s session and weekly limits sit on one screen. When a thread stops on a limit, the rule you set for the project decides what happens next.</p>
-          <p className={styles.fine}>Watch <Link className="wv-link" to="/tutorials/provider-runs-out/">Keep working when a provider runs out</Link>, or read <Link className="wv-link" to="/docs/guides/claude-code-usage-limit/">what to do when Claude Code hits its usage limit</Link>.</p>
+      <section className={clsx(styles.shell, styles.section, styles.threads)} aria-labelledby="threads-title">
+        <div className={styles.threadsMain}>
+          <div className={clsx(styles.sectionHead, landing.reveal)}>
+            <h2 id="threads-title">Stay in charge of every thread</h2>
+            <p>The main window holds only the coordinator. Worker threads open in the right panel, and every mention of a thread is a link with its live status.</p>
+          </div>
+          <Cards items={THREAD_CARDS} columns={2} label="Thread controls and evidence" />
         </div>
-        <details className={styles.disclosure}><summary>Policies, credits and availability</summary><Evidence items={LIMITS} /></details>
+        <WindowCrop region="threads" className={styles.threadsShot} label="Threads panel" alt="Actual SpecWithCode Threads panel: nothing is waiting on you, two threads working on Claude Code and Codex, and idle threads listed with their provider and model" />
+      </section>
+
+      <section className={clsx(styles.shell, styles.section)} id="limits" aria-labelledby="limits-title">
+        <div className={styles.limitsHead}>
+          <div className={clsx(styles.sectionHead, landing.reveal)}>
+            <h2 id="limits-title">Keep working when a provider runs out</h2>
+            <p>Every account’s session and weekly limits sit on one screen. When a thread stops on a limit, the rule you set for the project decides what happens next.</p>
+            <p className={styles.fine}>Watch <Link className="wv-link" to="/tutorials/provider-runs-out/">Keep working when a provider runs out</Link>, or read <Link className="wv-link" to="/docs/guides/claude-code-usage-limit/">what to do when Claude Code hits its usage limit</Link>.</p>
+          </div>
+          <PolicyPicker />
+        </div>
+        <h3 className={styles.railTitle}>Policies, credits and availability</h3>
+        <Cards items={LIMIT_CARDS} rail label="Policies, credits and availability" />
       </section>
 
       <div className={styles.shell}><SubscriptionValue /></div>
 
       <section className={clsx(styles.shell, styles.section)} id="machines" aria-labelledby="machines-title">
-        <div className={styles.sectionHead}>
-          <h2 id="machines-title">Add the machines you trust</h2>
-          <p>Start on one computer. When you want more capacity, add a supported Mac or Linux worker to your private Tailscale network and let coordinators start workers there. Each machine reaches the others by its own Tailscale name, whatever network it is on.</p>
+        <div className={styles.machinesHead}>
+          <div className={clsx(styles.sectionHead, landing.reveal)}>
+            <h2 id="machines-title">Add the machines you trust</h2>
+            <p>Start on one computer. When you want more capacity, add a supported Mac or Linux worker to your private Tailscale network and let coordinators start workers there. Each machine reaches the others by its own Tailscale name, whatever network it is on.</p>
+          </div>
+          <MachinesDiagram />
         </div>
 
         <ol className={clsx('wv-thread', 'wv-thread--across', styles.route)} aria-label="Add a machine in four steps">
-          {MACHINE_STEPS.map(step => <li key={step.title}>
-            <p className="wv-thread__title">{step.title}</p>
+          {MACHINE_STEPS.map((step, i) => <li key={step.title} className={landing.reveal} style={{'--i': i} as React.CSSProperties}>
+            <p className="wv-thread__title"><span className={styles.stepNo}>{String(i + 1).padStart(2, '0')}</span>{step.title}</p>
             <p className="wv-thread__body">{step.body}</p>
           </li>)}
         </ol>
@@ -305,7 +327,7 @@ export default function Code() {
             </div>
           </div>
 
-          <Evidence items={CAPACITY} />
+          <Cards items={CAPACITY_CARDS} columns={2} label="Capacity and where work runs" />
         </div>
 
         <div className={clsx('wv-note', styles.boundary)}>
@@ -315,38 +337,54 @@ export default function Code() {
         <p className={styles.fine}>Work continues while the machine running it is awake. <Link className="wv-link" to="/docs/overview/studio">More about machines and pairing</Link></p>
       </section>
 
-      <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="finish-title">
-        <div className={styles.sectionHead}>
+      <section className={clsx(styles.shell, styles.section, styles.finishBand)} aria-labelledby="finish-title">
+        <div className={clsx(styles.sectionHead, landing.reveal)}>
           <h2 id="finish-title">From thread to merged pull request</h2>
           <p>A worker’s branch does not sit forgotten in a worktree. Decide how each finished thread lands, and keep the review next to the work.</p>
+          <div className={styles.finishDiagram}><FinishDiagram /></div>
         </div>
         <ol className={clsx('wv-thread', styles.finish)} aria-label="How a finished thread lands">
-          {FINISH.map(step => <li key={step.title}>
+          {FINISH.map((step, i) => <li key={step.title} className={landing.reveal} style={{'--i': i} as React.CSSProperties}>
             <p className="wv-thread__title">{step.title}</p>
             <p className="wv-thread__body">{step.body}</p>
           </li>)}
         </ol>
       </section>
 
-      <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="reach-title">
-        <div className={styles.sectionHead}>
+      <section className={clsx(styles.shell, styles.section)} id="reach" aria-labelledby="reach-title">
+        <div className={clsx(styles.sectionHead, landing.reveal)}>
           <h2 id="reach-title">Let agents use your browser and, on macOS, your desktop</h2>
           <p>Some work happens outside a terminal. Give agents browser access when a task needs it. Native desktop control is macOS only and requires permission on that Mac.</p>
         </div>
-        <Evidence items={REACH} />
+        <div className={styles.reachGrid}>
+          <article className={clsx(styles.chrome, landing.reveal)} aria-labelledby="chrome-title">
+            <BrowserDiagram />
+            <div className={styles.chromeCopy}>
+              <h3 id="chrome-title">{CHROME.name}</h3>
+              <p>{CHROME.detail}</p>
+              <p className={styles.chromeWho}>For agents running in SpecWithCode, whichever provider: Claude Code, Codex, GitHub Copilot, Grok and others.</p>
+              <a className="wv-btn wv-btn--secondary" href={CHROME_STORE_URL} data-track="chrome_extension_click" data-placement="reach">Get it from the Chrome Web Store<ArrowUpRight {...btnIcon} /></a>
+            </div>
+          </article>
+          <Cards items={REACH_CARDS} columns={3} label="Other ways agents reach beyond the terminal" />
+        </div>
       </section>
 
       <section className={clsx(styles.shell, styles.section)} aria-labelledby="specs-title">
-        <div className={styles.sectionHead}>
-          <h2 id="specs-title">Keep the spec with the code</h2>
-          <p>The optional SpecWeave CLI keeps acceptance criteria, task evidence and handoffs in your repository. SpecWithCode runs the agents against that record. <Link className="wv-link" to="/docs/compare/spec-as-code/">Compare spec as code, spec-driven and intent-first development</Link>, or <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">compare the planning tools</Link>.</p>
+        <div className={clsx(styles.specs, landing.reveal)}>
+          <span className={styles.specsIcon}><FileCheck2 size={22} strokeWidth={1.5} aria-hidden="true" /></span>
+          <div>
+            <h2 id="specs-title">Keep the spec with the code</h2>
+            <p>The optional SpecWeave CLI keeps acceptance criteria, task evidence and handoffs in your repository. SpecWithCode runs the agents against that record. <Link className="wv-link" to="/docs/compare/spec-as-code/">Compare spec as code, spec-driven and intent-first development</Link>, or <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">compare the planning tools</Link>.</p>
+          </div>
+          <div className={styles.specsFiles}><Tokens items={['spec.md', 'ledger.jsonl', 'reports/']} mono /></div>
         </div>
       </section>
 
       <div className={styles.shell}><WhySpecWithCode /></div>
 
       <section className={clsx(styles.shell, styles.section)} id="watch" aria-labelledby="watch-title">
-        <div className={styles.sectionHead}>
+        <div className={clsx(styles.sectionHead, landing.reveal)}>
           <h2 id="watch-title">Watch the recording: one goal, two workers</h2>
           <p>Follow a coordinator, a Codex thread and a Claude Code thread through a small coding task. The recording predates 1.0, so some screens have changed since, and the later usage-limit example is simulated. Or watch the <a className="wv-link" href={EXPLAINER_URL}>SpecWithCode explainer on YouTube</a>.</p>
         </div>
@@ -354,16 +392,16 @@ export default function Code() {
       </section>
 
       <section className={clsx(styles.shell, styles.section)} id="tutorials" aria-labelledby="tutorials-title">
-        <div className={styles.sectionHead}>
+        <div className={clsx(styles.sectionHead, landing.reveal)}>
           <h2 id="tutorials-title">SpecWithCode tutorials</h2>
           <p>Short guides built on real recordings, each with its steps and full transcript. <Link className="wv-link" to="/tutorials?product=specwithcode">All tutorials</Link></p>
         </div>
         {AGENT_GUIDES.length > 0 && <>
           <h3 className={styles.guidesTitle}>Run your first task with your agent</h3>
-          <GuideList guides={AGENT_GUIDES} />
+          <GuideCards guides={AGENT_GUIDES} rail />
         </>}
         <h3 className={styles.guidesTitle}>Projects, threads and machines</h3>
-        <GuideList guides={OTHER_GUIDES} />
+        <GuideCards guides={OTHER_GUIDES} />
       </section>
 
       <section className={clsx(styles.shell, styles.section, styles.faq)} aria-labelledby="questions-title">
@@ -377,11 +415,14 @@ export default function Code() {
       </section>
 
       <section className={clsx(styles.shell, styles.final)} aria-labelledby="final-title">
-        <h2 id="final-title">Build with the agents you choose</h2>
-        <p>Keep the work on machines you control. For work across agents or sessions, we strongly recommend an optional <Link className="wv-link" to="/product">SpecWeave increment</Link> with acceptance criteria, task evidence and a review before completion.</p>
-        <div className={styles.actions}>
-          <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="footer"><Download {...btnIcon} />Download SpecWithCode</a>
-          <a className={clsx('wv-link', styles.finalLink)} href={release.repoUrl}>View source on GitHub</a>
+        <div className={styles.finalPanel}>
+          <span className={styles.finalGlow} aria-hidden="true" />
+          <h2 id="final-title">Build with the agents you choose</h2>
+          <p>Keep the work on machines you control. For work across agents or sessions, we strongly recommend an optional <Link className="wv-link" to="/product">SpecWeave increment</Link> with acceptance criteria, task evidence and a review before completion.</p>
+          <div className={styles.actions}>
+            <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="footer"><Download {...btnIcon} />Download SpecWithCode</a>
+            <a className={clsx('wv-link', styles.finalLink)} href={release.repoUrl}>View source on GitHub</a>
+          </div>
         </div>
       </section>
     </main>

@@ -1,0 +1,322 @@
+/*
+  Motion kit for the marketing pages. Weave tokens only.
+  Rule: every class here is complete at rest. Scroll-driven keyframes run only
+  inside @supports (animation-timeline: view()) and prefers-reduced-motion:
+  no-preference, and they animate transform and opacity only.
+*/
+
+.srOnly {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Glow card: a panel with a pointer-follow iris glow ---------- */
+.card {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  padding: var(--wv-space-6);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  background: var(--wv-panel);
+  transition: border-color 160ms ease, transform 200ms ease;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--wv-iris) 14%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--wv-iris) 45%, var(--wv-line));
+}
+
+.card:hover::after {
+  opacity: 1;
+}
+
+/* Icon tile used on cards. */
+.icon {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-iris-tint);
+  color: var(--wv-iris-strong);
+}
+
+.icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Small mono label, e.g. "Illustration" or "Real capture". */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wv-space-1);
+  font-family: var(--wv-font-mono);
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  color: var(--wv-muted);
+}
+
+/* ---------- Real capture frame ---------- */
+.capture {
+  margin: 0;
+  min-width: 0;
+}
+
+.captureFrame {
+  position: relative;
+  overflow: clip;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  background: var(--wv-sunken);
+  box-shadow: var(--wv-shadow-window);
+}
+
+.captureFrame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.captureLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  margin-top: var(--wv-space-2);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--wv-muted);
+}
+
+.realDot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--wv-pass);
+}
+
+.onlyDark {
+  display: none !important;
+}
+
+:global(html[data-theme='dark']) .onlyDark {
+  display: block !important;
+}
+
+:global(html[data-theme='dark']) .onlyLight {
+  display: none !important;
+}
+
+/* ---------- Chrome extension strip ---------- */
+.extension {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-4);
+  padding: var(--wv-space-3) var(--wv-space-3) var(--wv-space-3) var(--wv-space-4);
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 30%, var(--wv-line));
+  border-radius: var(--wv-radius-lg);
+  background:
+    linear-gradient(100deg, color-mix(in srgb, var(--wv-iris) 10%, transparent), transparent 55%),
+    var(--wv-panel);
+}
+
+.extensionIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--wv-iris);
+  color: var(--wv-on-iris);
+}
+
+.extensionIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.extensionText {
+  flex: 1;
+  min-width: 0;
+  margin: 0 !important;
+  font-size: 14px !important;
+  line-height: 21px !important;
+  color: var(--wv-muted);
+}
+
+.extensionText strong {
+  color: var(--wv-ink);
+  font-weight: 600;
+}
+
+.extensionCta {
+  flex: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .extension {
+    flex-wrap: wrap;
+  }
+
+  .extensionText {
+    flex-basis: calc(100% - 52px);
+  }
+
+  .extensionCta {
+    width: 100%;
+  }
+}
+
+/* ---------- Provider plates ---------- */
+.plate {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-sm);
+  background: var(--wv-panel);
+}
+
+.plate img {
+  display: block;
+  object-fit: contain;
+}
+
+.plateDark {
+  border-color: transparent;
+  background: #241523;
+}
+
+.plateLetter {
+  font-weight: 650;
+  font-size: 13px;
+  color: var(--wv-iris-strong);
+}
+
+/* ---------- Scroll-driven motion (enhancement only) ---------- */
+@keyframes rise {
+  from { opacity: 0; transform: translate3d(0, 28px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes growX {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes growY {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes unveil {
+  from { opacity: 0; transform: translate3d(0, 48px, 0) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes driftSlow {
+  to { transform: translate3d(0, -40px, 0); }
+}
+
+@keyframes driftFast {
+  to { transform: translate3d(0, -110px, 0); }
+}
+
+@keyframes driftBack {
+  to { transform: translate3d(0, 60px, 0) scale(1.06); }
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Load-time stagger for hero lines: plays once, ends complete. */
+  .enter > * {
+    animation: enter 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms + 80ms);
+  }
+
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: rise linear both;
+      animation-timeline: view();
+      /* Fixed-length ranges: text is fully opaque within 200px of entering, however tall the block. */
+      animation-range: entry 0% entry 200px;
+    }
+
+    .stagger > * {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--i, 0) * 28px) entry calc(180px + var(--i, 0) * 28px);
+    }
+
+    .unveil {
+      animation: unveil linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 280px;
+    }
+
+    .drawX {
+      transform-origin: left center;
+      animation: growX linear both;
+      animation-timeline: view();
+      animation-range: entry 40px entry 260px;
+    }
+
+    /* Hero depth: three planes leave at different rates. */
+    .planeBack,
+    .planeMid,
+    .planeFront {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: exit -30% exit 100%;
+    }
+
+    .planeBack { animation-name: driftBack; }
+    .planeMid { animation-name: driftSlow; }
+    .planeFront { animation-name: driftFast; }
+  }
+}
+
+@media print {
+  .card::after {
+    display: none;
+  }
+}
