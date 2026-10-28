@@ -26,11 +26,11 @@
   width: 32px;
   height: 32px;
   border-radius: var(--sw-radius-full);
-  background: linear-gradient(135deg, var(--sw-color-primary-400), var(--sw-color-primary-500));
+  background: var(--wv-iris);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--wv-on-iris);
   font-size: var(--sw-font-size-sm);
   font-weight: var(--sw-font-weight-bold);
   flex-shrink: 0;

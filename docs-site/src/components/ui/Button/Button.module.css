@@ -111,7 +111,7 @@
 }
 
 :global([data-theme='dark']) .ghost:hover:not(.disabled) {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--wv-sunken);
 }
 
 :global([data-theme='dark']) .outline {

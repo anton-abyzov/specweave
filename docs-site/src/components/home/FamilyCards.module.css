@@ -1,0 +1,383 @@
+/*
+  #family: three product cards, one visual each. Weave tokens only.
+  Motion (scroll-driven, inside @supports + no-preference): cards rise in as they enter, the
+  pickup lines and skill rows stagger in. fill: forwards only, ranges start at entry 0%, so the
+  static layout (final state) shows before the range, in reduced motion, no-JS and captures.
+  Pointer glow is decoration (usePointerGlow sets --mx/--my).
+*/
+
+.cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--wv-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  background: var(--wv-panel);
+  overflow: hidden;
+  isolation: isolate;
+  transition: border-color 200ms ease, transform 300ms cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 300ms ease;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--wv-iris) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity 250ms ease;
+  pointer-events: none;
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--wv-iris) 45%, var(--wv-line));
+  box-shadow: var(--wv-shadow-window);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.featured {
+  border-color: color-mix(in srgb, var(--wv-iris) 35%, var(--wv-line));
+}
+
+/* ---------- Visual area ---------- */
+.visual {
+  position: relative;
+  height: 232px;
+  margin: 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--wv-line);
+  background: var(--wv-sunken);
+}
+
+.source {
+  position: absolute;
+  left: var(--wv-space-3);
+  bottom: var(--wv-space-2);
+  z-index: 1;
+  padding: 1px var(--wv-space-2);
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-panel);
+  border: 1px solid var(--wv-line);
+  font: 500 11px/16px var(--wv-font-sans);
+  letter-spacing: 0.02em;
+  color: var(--wv-muted);
+}
+
+/* Terminal: the real pickup output. */
+.term {
+  display: flex;
+  flex-direction: column;
+}
+
+.termBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--wv-space-2) var(--wv-space-3);
+  border-bottom: 1px solid var(--wv-line);
+  font: 400 11px/16px var(--wv-font-mono);
+  color: var(--wv-muted);
+}
+
+.termBar i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--wv-line);
+}
+
+.termBar span {
+  margin-left: auto;
+}
+
+.term pre {
+  flex: 1;
+  margin: 0;
+  padding: var(--wv-space-3);
+  background: none;
+  border: 0;
+  font: 400 12px/19px var(--wv-font-mono);
+  color: var(--wv-ink);
+  white-space: pre-wrap;
+  overflow: hidden;
+  /* Fade out above the source label so no line runs under it. */
+  -webkit-mask-image: linear-gradient(#000 55%, transparent 88%);
+  mask-image: linear-gradient(#000 55%, transparent 88%);
+}
+
+.prompt {
+  color: var(--wv-muted);
+}
+
+.tline {
+  display: inline;
+}
+
+.hl {
+  color: var(--wv-iris-strong);
+  font-weight: 600;
+}
+
+/* Real capture of the Threads pane. */
+.shot :global(span) {
+  border-radius: 0;
+}
+
+/* The crop runs past the frame: fade its bottom edge under the source label. */
+.shot::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 64px;
+  background: linear-gradient(transparent, var(--wv-sunken) 75%);
+  pointer-events: none;
+}
+
+/* Illustration of a skill page. */
+.skill {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-3);
+  padding: var(--wv-space-4);
+  background:
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--wv-iris) 20%, transparent) 1px, transparent 1.5px) 0 0 / 18px 18px,
+    var(--wv-sunken);
+}
+
+.skillHead {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-3);
+}
+
+.skillHead > span:last-child {
+  display: grid;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.skillHead strong {
+  color: var(--wv-ink);
+}
+
+.skillHead > span:last-child span {
+  font: 400 11px/16px var(--wv-font-mono);
+  color: var(--wv-muted);
+}
+
+.skillIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--wv-radius-sm);
+  background: linear-gradient(135deg, var(--wv-iris), color-mix(in srgb, var(--wv-iris) 50%, var(--wv-panel)));
+}
+
+.skill ul {
+  display: grid;
+  gap: var(--wv-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skill li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--wv-space-3);
+  margin: 0;
+  padding: var(--wv-space-2) var(--wv-space-3);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-sm);
+  background: var(--wv-panel);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wv-ink);
+}
+
+.skillVal {
+  font: 500 12px/16px var(--wv-font-sans);
+  padding: 1px var(--wv-space-2);
+  border-radius: var(--wv-radius-xs);
+}
+
+.iris { background: var(--wv-iris-tint); color: var(--wv-iris-strong); }
+.pass { background: var(--wv-pass-tint); color: var(--wv-pass); }
+.muted { background: var(--wv-sunken); color: var(--wv-muted); }
+
+/* ---------- Body ---------- */
+.body a.inline {
+  color: var(--wv-ink);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--wv-iris);
+  text-decoration-thickness: var(--wv-thread-width);
+  text-underline-offset: 0.22em;
+}
+
+.body a.inline:hover {
+  color: var(--wv-iris-strong);
+}
+
+.details {
+  width: 100%;
+  border-top: 1px solid var(--wv-line);
+  border-bottom: 1px solid var(--wv-line);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.details summary {
+  padding: var(--wv-space-2) 0;
+  font-weight: 500;
+  color: var(--wv-ink);
+  cursor: pointer;
+}
+
+.details dl {
+  margin: 0 0 var(--wv-space-3);
+}
+
+.details dt {
+  font-weight: 600;
+  color: var(--wv-ink);
+}
+
+.details dd {
+  margin: 0 0 var(--wv-space-2);
+  color: var(--wv-muted);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--wv-space-3);
+  padding: var(--wv-space-6);
+}
+
+.body > p {
+  font-size: 15px;
+  line-height: 23px;
+  color: var(--wv-muted);
+}
+
+.body > p.kind {
+  margin-top: calc(var(--wv-space-2) * -1);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.body > p.extra {
+  padding: var(--wv-space-3);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-iris-tint);
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--wv-ink);
+}
+
+.body code {
+  padding: 0 var(--wv-space-1);
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-sunken);
+  font: 400 0.85em var(--wv-font-mono);
+  color: var(--wv-ink);
+}
+
+.cmd {
+  width: 100%;
+  max-width: none;
+}
+
+.cmd :global(.wv-cmd) {
+  margin-top: 0;
+}
+
+.body > :last-child {
+  margin-top: auto;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--wv-space-3) var(--wv-space-6);
+}
+
+@media (min-width: 1024px) {
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--wv-space-4);
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .featured {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .featured .visual {
+    height: 300px;
+  }
+}
+
+/* ---------- Motion ---------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .card {
+      animation: card-in linear forwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 240px;
+    }
+
+    .tline,
+    .skill li {
+      animation: line-in linear forwards;
+      animation-timeline: view();
+      animation-range: entry 0% cover calc(22% + var(--k, 0) * 4%);
+    }
+
+    .shot img {
+      transform-origin: 50% 0;
+      animation: shot-in linear forwards;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+  }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translate3d(0, 48px, 0) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes line-in {
+  0%, 55% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes shot-in {
+  from { transform: scale(1.18); }
+  to { transform: none; }
+}

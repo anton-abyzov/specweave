@@ -37,23 +37,23 @@
 }
 
 :global([data-theme='dark']) .default {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--sw-gray-300);
+  background: var(--wv-sunken);
+  color: var(--wv-muted);
 }
 
 :global([data-theme='dark']) .success {
-  background: rgba(16, 185, 129, 0.15);
-  color: var(--sw-color-accent-400);
+  background: var(--wv-pass-tint);
+  color: var(--wv-pass);
 }
 
 :global([data-theme='dark']) .warning {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
+  background: var(--wv-warn-tint);
+  color: var(--wv-warn);
 }
 
 :global([data-theme='dark']) .info {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background: var(--wv-iris-tint);
+  color: var(--wv-iris-strong);
 }
 
 :global([data-theme='dark']) .primary {

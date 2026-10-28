@@ -1,78 +1,10 @@
 /*
   Homepage (src/pages/index.tsx) on Weave. Builds on continuity.module.css (.page type and buttons).
   Only --wv-* tokens. Left aligned, sections separated by space and hairlines.
-  Motion: the site's one scroll sequence is the handoff layers (HomeHandoff.module.css).
-  Nothing else on the site moves on scroll.
+  The hero lives in components/home/HomeHero, #family in components/home/FamilyCards and
+  #how's pinned stage in HomeHandoff. Here: section rhythm, the other sections, and the
+  scroll-driven .reveal (fill forwards only from entry 0%, so the static layout is the final state).
 */
-
-/* ---------- Hero: sized to content ---------- */
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--wv-space-12);
-  max-width: var(--wv-page-max);
-  margin: 0 auto;
-  padding: var(--wv-space-16) var(--wv-space-8) var(--wv-space-16);
-}
-
-.heroText {
-  min-width: 0;
-}
-
-.home .hero h1 {
-  margin-top: var(--wv-space-4);
-  max-width: 14ch;
-  font-size: clamp(44px, 5.6vw, 72px);
-  line-height: 1.02;
-}
-
-.home .lead {
-  max-width: 52ch;
-  margin-top: var(--wv-space-6);
-  font-size: 21px;
-  line-height: 32px;
-  color: var(--wv-muted);
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--wv-space-3);
-  margin-top: var(--wv-space-8);
-}
-
-.home .requirements {
-  margin-top: var(--wv-space-3);
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--wv-muted);
-}
-
-.cmd {
-  max-width: 440px;
-  margin-top: var(--wv-space-6);
-}
-
-.home .cmd button {
-  font: 500 13px/18px var(--wv-font-sans);
-}
-
-.heroShot {
-  min-width: 0;
-  width: 100%;
-  max-width: 640px;
-  align-self: center;
-  justify-self: start;
-}
-
-@media (min-width: 1024px) {
-  .hero {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
-    align-items: center;
-    gap: var(--wv-space-12);
-  }
-}
 
 /* ---------- Works with ---------- */
 .tools {
@@ -93,21 +25,48 @@
 }
 
 .home .tools .toolsLabel {
+  margin-right: var(--wv-space-2);
   color: var(--wv-ink);
   font-weight: 500;
+}
+
+.home .tools p {
+  align-items: center;
+  gap: var(--wv-space-2);
+}
+
+.home .tools .tool {
+  padding: 2px var(--wv-space-3);
+  border: 1px solid var(--wv-line);
+  border-radius: 999px;
+  background: var(--wv-panel);
+  font-size: 14px;
+  line-height: 20px;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.home .tools .tool:hover {
+  border-color: var(--wv-iris);
+  color: var(--wv-ink);
 }
 
 /* ---------- Sections ---------- */
 .section {
   max-width: var(--wv-page-max);
   margin: 0 auto;
-  padding: var(--wv-space-24) var(--wv-space-8) 0;
+  padding: var(--wv-space-16) var(--wv-space-8) 0;
   scroll-margin-top: 80px;
+}
+
+/* Below-fold sections. No content-visibility: auto here: Chromium leaves those sections blank in
+   full-page captures, and the page must render complete in screenshots. */
+.lazy {
+  contain: layout;
 }
 
 .head {
   max-width: var(--wv-measure);
-  margin-bottom: var(--wv-space-8);
+  margin-bottom: var(--wv-space-6);
 }
 
 .home .head p {
@@ -116,9 +75,13 @@
   color: var(--wv-muted);
 }
 
+.home .howHead {
+  margin-bottom: 0;
+}
+
 .home .howTitle {
-  font-size: 48px;
-  line-height: 54px;
+  font-size: 40px;
+  line-height: 46px;
   letter-spacing: -0.025em;
 }
 
@@ -159,6 +122,20 @@
 }
 
 /* ---------- Install command ---------- */
+.cmd {
+  max-width: 440px;
+  margin-top: var(--wv-space-6);
+}
+
+/* Not scoped to .home: the hero and family cards render it too. */
+.cmd button {
+  font: 500 13px/18px var(--wv-font-sans);
+}
+
+.appShot a {
+  overflow: hidden;
+}
+
 .install {
   max-width: 440px;
 }
@@ -170,78 +147,6 @@
   font-size: 13px;
   line-height: 18px;
   color: var(--wv-muted);
-}
-
-/* ---------- Family: one thread through the three products ---------- */
-.home .family {
-  gap: 0;
-  border-top: 1px solid var(--wv-line);
-}
-
-.family > li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--wv-space-3) var(--wv-space-8);
-  padding-top: var(--wv-space-8);
-  padding-bottom: var(--wv-space-8);
-}
-
-.family > li + li {
-  border-top: 1px solid var(--wv-line);
-}
-
-.home .family > li::before {
-  top: calc(var(--wv-space-8) + 6px);
-}
-
-.family:global(.wv-thread)::before {
-  top: calc(var(--wv-space-8) + 12px);
-  bottom: calc(var(--wv-space-8) + 12px);
-}
-
-.familyName {
-  min-width: 0;
-}
-
-.home .kind {
-  margin-top: var(--wv-space-1);
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--wv-muted);
-}
-
-.familyBody {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--wv-space-3);
-  min-width: 0;
-  max-width: var(--wv-measure);
-}
-
-.home .familyBody > p {
-  color: var(--wv-muted);
-}
-
-.familyCmd {
-  width: 100%;
-}
-
-.familyCmd .cmd {
-  margin-top: 0;
-}
-
-.familyActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--wv-space-3) var(--wv-space-6);
-}
-
-@media (min-width: 900px) {
-  .family > li {
-    grid-template-columns: 240px minmax(0, 1fr);
-  }
 }
 
 /* ---------- Proof: the folder and the gate ---------- */
@@ -327,18 +232,23 @@
   align-items: start;
 }
 
+.appShots {
+  display: grid;
+  gap: var(--wv-space-4);
+  min-width: 0;
+}
+
 .appShot {
   min-width: 0;
   margin: 0;
 }
 
-.appShot img {
+.appShot > a img {
   aspect-ratio: 1040 / 520;
   background: var(--wv-sunken);
 }
 
-.appShot a,
-.cropFrame {
+.appShot a {
   display: block;
 }
 
@@ -347,25 +257,7 @@
   display: none;
 }
 
-/* The hero capture is the whole app window, so it is always shrunk: keep its link. */
-.home .heroFullSize {
-  white-space: nowrap;
-}
-
-/* Phones: drop the project sidebar so the coordinator and the Threads pane read larger. */
 @media (max-width: 600px) {
-  .crop .cropFrame {
-    overflow: hidden;
-    aspect-ratio: 4 / 3;
-  }
-
-  .crop .cropFrame img {
-    width: 120%;
-    max-width: none;
-    height: auto;
-    margin-left: -20%;
-  }
-
   .home .fullSize {
     display: inline;
   }
@@ -414,72 +306,128 @@
   }
 }
 
-/* ---------- Skills ---------- */
-.skills {
+.nowrap {
+  white-space: nowrap;
+}
+
+/* ---------- Tutorials: three cards ---------- */
+.guides {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--wv-space-8);
-  align-items: start;
-}
-
-.home .skillsLead {
-  max-width: 44ch;
-  margin: var(--wv-space-3) 0 var(--wv-space-4);
-  color: var(--wv-muted);
-}
-
-.evidence {
-  min-width: 0;
-}
-
-.evidence :global(.wv-evidence) {
-  margin-top: var(--wv-space-2);
-}
-
-@media (min-width: 900px) {
-  .skills {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--wv-space-16);
-  }
-}
-
-/* ---------- Tutorials strip: a hairline list ---------- */
-.guides {
-  list-style: none;
+  gap: var(--wv-space-4);
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--wv-line);
+  list-style: none;
 }
 
 .guides li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--wv-space-1) var(--wv-space-8);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-2);
   margin: 0;
-  padding: var(--wv-space-4) 0;
+  padding: var(--wv-space-6);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  background: var(--wv-panel);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.guides li:hover {
+  border-color: color-mix(in srgb, var(--wv-iris) 45%, var(--wv-line));
+  box-shadow: var(--wv-shadow-window);
+}
+
+/* Real poster frame of each recording, bleeding to the card edges. */
+.guideThumb {
+  position: relative;
+  margin: calc(-1 * var(--wv-space-6)) calc(-1 * var(--wv-space-6)) 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--wv-radius-lg) var(--wv-radius-lg) 0 0;
   border-bottom: 1px solid var(--wv-line);
+  background: var(--wv-surface-2, var(--wv-panel));
+}
+
+.guideThumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.guides li:hover .guideThumb img {
+  transform: scale(1.04);
+}
+
+.guideTime {
+  position: absolute;
+  right: var(--wv-space-3);
+  bottom: var(--wv-space-3);
+  padding: 2px var(--wv-space-2);
+  border-radius: var(--wv-radius-xs);
+  background: rgb(0 0 0 / 0.72);
+  color: #fff;
+  font: 500 12px/18px var(--wv-font-mono);
+}
+
+/* Chapter strip: one segment per real chapter, sized by its length. */
+.guideChapters {
+  display: flex;
+  gap: 3px;
+  height: 3px;
+  margin: var(--wv-space-1) 0 var(--wv-space-2);
+}
+
+.guideChapters span {
+  flex-basis: 0;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--wv-iris) 22%, var(--wv-line));
+  transition: background-color 200ms ease;
+}
+
+.guides li:hover .guideChapters span {
+  background: var(--wv-iris);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guideThumb img { transition: none; }
+  .guides li:hover .guideThumb img { transform: none; }
+}
+
+.guideKind {
+  align-self: flex-start;
+  padding: 1px var(--wv-space-2);
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-iris-tint);
+  font: 500 12px/18px var(--wv-font-sans);
+  color: var(--wv-iris-strong);
 }
 
 .home .guideLink {
-  justify-self: start;
   font-size: 17px;
-  line-height: 26px;
+  line-height: 24px;
   font-weight: 600;
   color: var(--wv-ink);
-  text-decoration: underline;
-  text-decoration-color: var(--wv-iris);
-  text-underline-offset: 4px;
+}
+
+/* The whole card is the link's hit area. */
+.home .guideLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
 }
 
 .home .guideLink:hover {
   color: var(--wv-iris-strong);
-  text-decoration: underline;
-  text-decoration-color: var(--wv-iris-strong);
 }
 
 .guideMeta {
-  font-size: 15px;
-  line-height: 22px;
+  margin-top: auto;
+  font-size: 14px;
+  line-height: 20px;
   color: var(--wv-muted);
 }
 
@@ -488,9 +436,8 @@
 }
 
 @media (min-width: 760px) {
-  .guides li {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: baseline;
+  .guides {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -545,25 +492,29 @@
   }
 }
 
-/* ---------- Built with: hairline list ---------- */
+/* ---------- Built with: three cards ---------- */
 .built {
-  list-style: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--wv-space-4);
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--wv-line);
+  list-style: none;
 }
 
 .built li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--wv-space-1) var(--wv-space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-2);
   margin: 0;
-  padding: var(--wv-space-4) 0;
-  border-bottom: 1px solid var(--wv-line);
+  padding: var(--wv-space-6);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  background: var(--wv-panel);
 }
 
 .home .built li a {
-  justify-self: start;
+  align-self: flex-start;
   min-height: 0;
   font-size: 17px;
   font-weight: 600;
@@ -576,16 +527,36 @@
 }
 
 @media (min-width: 760px) {
-  .built li {
-    grid-template-columns: 220px minmax(0, 1fr);
-    align-items: baseline;
+  .built {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 /* ---------- Final call to action (short, centered) ---------- */
 .final {
-  max-width: var(--wv-page-max);
-  margin: 0 auto;
+  position: relative;
+  isolation: isolate;
+  width: min(calc(var(--wv-page-max) - 2 * var(--wv-space-8)), calc(100% - 2 * var(--wv-space-8)));
+  margin: var(--wv-space-16) auto;
+  padding: var(--wv-space-16) var(--wv-space-8);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 30%, var(--wv-line));
+  border-radius: var(--wv-radius-lg);
+  background:
+    radial-gradient(60% 120% at 50% 0%, color-mix(in srgb, var(--wv-iris) 16%, transparent), transparent 70%),
+    var(--wv-panel);
+}
+
+/* Dotted canvas, same grammar as the handoff stage, fading out toward the edges. */
+.final::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(color-mix(in srgb, var(--wv-iris) 35%, transparent) 1px, transparent 1.5px);
+  background-size: 18px 18px;
+  mask-image: radial-gradient(70% 90% at 50% 40%, #000, transparent 75%);
+  -webkit-mask-image: radial-gradient(70% 90% at 50% 40%, #000, transparent 75%);
 }
 
 .finalActions {
@@ -602,25 +573,19 @@
 
 /* ---------- Phones ---------- */
 @media (max-width: 760px) {
-  .hero {
-    padding: var(--wv-space-8) var(--wv-space-4) var(--wv-space-12);
-    gap: var(--wv-space-8);
-  }
-
-  .home .lead {
-    font-size: 19px;
-    line-height: 29px;
-  }
-
   .tools {
     padding: 0 var(--wv-space-4);
   }
 
   .section {
-    padding: var(--wv-space-16) var(--wv-space-4) 0;
+    padding: var(--wv-space-12) var(--wv-space-4) 0;
   }
 
-  .home .howTitle {
+  .home .howHead {
+  margin-bottom: 0;
+}
+
+.home .howTitle {
     font-size: 32px;
     line-height: 38px;
   }
@@ -630,6 +595,53 @@
   }
 
   .home .final {
-    padding: var(--wv-space-16) var(--wv-space-4);
+    width: calc(100% - 2 * var(--wv-space-4));
+    margin: var(--wv-space-12) auto;
+    padding: var(--wv-space-12) var(--wv-space-4);
   }
 }
+
+/* ---------- Scroll-driven reveal ---------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-in linear forwards;
+      animation-timeline: view();
+      /* A fixed distance, not a share of the element: tall blocks (the #app column on phones) were
+         still half transparent while fully readable on screen. */
+      animation-range: entry 0% entry 220px;
+    }
+
+    .appShot > a img {
+      animation: shot-zoom linear forwards;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+
+    .folderLine {
+      animation: line-in linear forwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+
+@keyframes reveal-in {
+  from { opacity: 0; transform: translate3d(0, 40px, 0); }
+  60% { opacity: 1; }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes shot-zoom {
+  from { transform: scale(1.12); }
+  to { transform: none; }
+}
+
+@keyframes line-in {
+  0% { opacity: 0; transform: translate3d(-12px, 0, 0); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* One row of guide links under the family cards. */
+.guides { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--wv-space-2) var(--wv-space-6); margin-top: var(--wv-space-8); font-size: 15px; }
+.guides > span { color: var(--wv-muted); font: 500 13px/20px var(--wv-font-mono); text-transform: uppercase; letter-spacing: 0.06em; }
