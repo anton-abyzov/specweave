@@ -1,0 +1,22 @@
+/* A region of a real screenshot. The image is positioned in percent of the frame, so the crop scales with it. */
+.crop {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  background: var(--wv-sunken);
+}
+
+span.crop > img {
+  position: absolute;
+  top: var(--crop-y);
+  left: var(--crop-x);
+  width: var(--crop-w);
+  max-width: none;
+  height: auto;
+}
+
+html[data-theme='dark'] .light,
+html:not([data-theme='dark']) .dark {
+  display: none !important;
+}

@@ -1,8 +1,16 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import clsx from 'clsx';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './CoordinatorFlow.module.css';
 
-type Shot = {src: string; w: number; h: number; alt: string};
+/*
+  /code #real-run: a pinned stage. On wide screens one app window stays in view and swaps
+  real captures while four beats scroll past beside it; the run state under the window follows.
+  On phones, with reduced motion, without JS and in print, it is a stacked list: every beat
+  carries its own capture. The final beat is the resting state, so first paint shows the finished run.
+*/
+
+type Shot = {src: string; w: number; h: number; alt: string; pos?: string};
 
 // Every line of copy below is taken from the recorded tip-calculator run
 // (docs-site/static/video/code-run-20261015.mp4, SpecWithCode 1.0.21, 15 October 2026).
@@ -18,22 +26,22 @@ const beats: {label: string; title: string; body: string; shot: Shot; back?: Sho
     label: 'Work assigned',
     title: 'The coordinator splits the work.',
     body: 'It starts a worker thread for each part. Here Codex writes tip.py while Claude Code adds the usage guide. Each thread keeps its own provider, model and permissions on the machine you chose.',
-    shot: {src: '/img/studio/flow-dispatch-20261015.webp', w: 1064, h: 680, alt: 'Actual coordinator reply starting two workers: Write tip.py CLI with approval requested, and README usage for tip.py working'},
+    shot: {src: '/img/studio/flow-dispatch-20261015.webp', w: 1064, h: 680, alt: 'Actual coordinator reply starting two workers: Write tip.py CLI with approval requested, and README usage for tip.py working', pos: 'left top'},
     caption: 'The coordinator starts two worker threads. SpecWithCode 1.0.21, 15 October 2026.',
   },
   {
     label: 'Working in parallel',
     title: 'Workers run side by side.',
     body: 'Each worker receives the coordinator’s brief in its own thread. Open any thread to see the commands it ran, the files it changed and the output it got, and approve commands when the mode asks you to.',
-    shot: {src: '/img/studio/flow-worker-codex-20261015.webp', w: 690, h: 1090, alt: 'Actual Codex worker thread on gpt-6.1-sol showing the coordinator brief and a command approval with Decline and Approve'},
-    back: {src: '/img/studio/flow-worker-claude-20261015.webp', w: 691, h: 797, alt: 'Actual Claude Code worker report: python3 tip.py 50 18 printed Tip $9.00 and Total $59.00, only README.md changed, nothing committed'},
+    shot: {src: '/img/studio/flow-worker-codex-20261015.webp', w: 690, h: 1090, alt: 'Actual Codex worker thread on gpt-6.1-sol showing the coordinator brief and a command approval with Decline and Approve', pos: 'center bottom'},
+    back: {src: '/img/studio/flow-worker-claude-20261015.webp', w: 691, h: 797, alt: 'Actual Claude Code worker report: python3 tip.py 50 18 printed Tip $9.00 and Total $59.00, only README.md changed, nothing committed', pos: 'center top'},
     caption: 'Codex asks for a command approval; Claude Code reports its evidence. SpecWithCode 1.0.21, 15 October 2026.',
   },
   {
     label: 'Results returned',
     title: 'Results come back to one conversation.',
     body: 'Workers report to the coordinator, which checks each result against the goal and tells you what is left. Review the evidence before you accept anything: a reported result still needs verification.',
-    shot: {src: '/img/studio/flow-coord-report-20261015.webp', w: 822, h: 875, alt: 'Actual coordinator summary: the README Usage example now shows the real output of python3 tip.py 50 18, only README.md changed and nothing is committed'},
+    shot: {src: '/img/studio/flow-coord-report-20261015.webp', w: 822, h: 875, alt: 'Actual coordinator summary: the README Usage example now shows the real output of python3 tip.py 50 18, only README.md changed and nothing is committed', pos: 'center top'},
     caption: 'Coordinator summary after a follow-up check. SpecWithCode 1.0.21, 15 October 2026.',
   },
 ];
@@ -59,38 +67,49 @@ const log: {phase: number; from: string; to?: string; text: string}[] = [
 const workerState = ['Idle', 'Assigned', 'Working', 'Reported'];
 const workerChip = ['', '', 'wv-chip--iris', 'wv-chip--pass'];
 
-function Frame({shot}: {shot: Shot}) {
-  return <div className={clsx('wv-window', styles.frame)}>
-    <img src={shot.src} width={shot.w} height={shot.h} alt={shot.alt} loading="lazy" decoding="async" />
-  </div>;
+function Img({shot, className, lazy = true}: {shot: Shot; className?: string; lazy?: boolean}) {
+  const src = useBaseUrl(shot.src);
+  return <img className={className} src={src} width={shot.w} height={shot.h} alt={shot.alt} loading={lazy ? 'lazy' : undefined} decoding="async" style={shot.pos ? {objectPosition: shot.pos} : undefined} />;
 }
 
 export default function CoordinatorFlow() {
-  const story = useRef<HTMLDivElement>(null);
-  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const beatRefs = useRef<(HTMLElement | null)[]>([]);
   // The final step is the resting state: no-JS, screenshots and first paint show the finished run.
   const [active, setActive] = useState(3);
 
+  // The active beat is the last one whose top has passed 55% of the viewport. Reading the
+  // scroll position (not a thin intersection band) means every beat, the last one included,
+  // gets its full share of the pinned scroll, and a fast fling never skips a state.
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = window.innerHeight * 0.55;
+      let next = 0;
+      beatRefs.current.forEach((el, i) => {
+        if (el && el.getBoundingClientRect().top <= line) next = i;
+      });
+      setActive(prev => (prev === next ? prev : next));
+    };
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
-  function select(index: number, focus = false) {
+  function jump(index: number) {
+    const el = beatRefs.current[index];
+    if (!el) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({block: 'center', behavior: reduce ? 'auto' : 'smooth'});
     setActive(index);
-    if (focus) tabs.current[index]?.focus();
-    // After a switch from far down a tall screenshot, bring the start of the new step back into view.
-    const box = story.current;
-    if (box && box.getBoundingClientRect().top < 0) {
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      box.scrollIntoView({block: 'start', behavior: reduce ? 'auto' : 'smooth'});
-    }
-  }
-
-  function onKeyDown(e: React.KeyboardEvent) {
-    const last = beats.length - 1;
-    const next = e.key === 'ArrowRight' ? Math.min(active + 1, last)
-      : e.key === 'ArrowLeft' ? Math.max(active - 1, 0)
-      : e.key === 'Home' ? 0 : e.key === 'End' ? last : -1;
-    if (next < 0) return;
-    e.preventDefault();
-    select(next, true);
   }
 
   const people = [
@@ -100,63 +119,72 @@ export default function CoordinatorFlow() {
     {name: 'Claude Code', model: 'claude-opus-5-5', status: status.claude[active], worker: true},
   ];
 
-  return <section className={styles.flow} id="real-run" aria-labelledby="workflow-title">
+  return <section className={styles.flow} id="real-run" aria-labelledby="workflow-title" style={{'--active': active} as React.CSSProperties}>
     <div className={styles.intro}>
+      <p className={styles.kicker}>One brief. Work you can follow.</p>
       <h2 id="workflow-title">Step through a real run</h2>
-      <p>A coordinator hands two parts of a small job to Codex and Claude Code, then brings their results back. Every screenshot below comes from that recorded run on SpecWithCode 1.0.21, 15 October 2026. It opens on the last step, the finished run; choose step 1 to replay it.</p>
+      <p>A coordinator hands two parts of a small job to Codex and Claude Code, then brings their results back. Every screenshot below comes from that recorded run on SpecWithCode 1.0.21, 15 October 2026. Keep the decisions, see the work: scroll and the window follows each step.</p>
     </div>
 
-    <div className={styles.tabs} role="tablist" aria-label="Steps of the recorded run" onKeyDown={onKeyDown}>
-      {beats.map((beat, index) => <button
-        key={beat.label}
-        ref={el => { tabs.current[index] = el; }}
-        type="button"
-        role="tab"
-        id={`flow-tab-${index}`}
-        aria-selected={active === index}
-        aria-controls={`flow-panel-${index}`}
-        tabIndex={active === index ? 0 : -1}
-        onClick={() => select(index)}>
-        <span className={styles.tabNum}>{index + 1}</span>{beat.label}
-      </button>)}
-    </div>
 
-    <div ref={story} className={styles.story}>
-      <div className={styles.panels}>
+    <div className={styles.stage}>
+      <div className={styles.beats}>
         {beats.map((beat, index) => <article
           key={beat.title}
-          id={`flow-panel-${index}`}
-          role="tabpanel"
-          aria-labelledby={`flow-tab-${index}`}
+          ref={el => { beatRefs.current[index] = el; }}
           className={styles.beat}
-          hidden={active !== index}>
-          <h3>{beat.title}</h3>
+          data-active={active === index}
+          aria-labelledby={`flow-beat-${index}`}>
+          <div className={styles.beatBody}>
+          <p className={styles.beatLabel}><span>{String(index + 1).padStart(2, '0')}</span>{beat.label}</p>
+          <h3 id={`flow-beat-${index}`}>{beat.title}</h3>
           <p>{beat.body}</p>
-          <figure className={clsx(styles.shot, beat.back && styles.pair)}>
-            <Frame shot={beat.shot} />
-            {beat.back && <Frame shot={beat.back} />}
+          <ol className={styles.log} aria-label={`Messages in step ${index + 1}`}>
+            {log.filter(line => line.phase === index).map((line, i) => <li key={i}>
+              <b>{line.from}{line.to && <> to {line.to}</>}</b>
+              <span>{line.text}</span>
+            </li>)}
+          </ol>
+          </div>
+          {/* Stacked layout: each beat carries its own capture. Hidden while the pinned window shows it. */}
+          <figure className={clsx(styles.inline, beat.back && styles.pair)}>
+            <div className="wv-window"><Img shot={beat.shot} /></div>
+            {beat.back && <div className="wv-window"><Img shot={beat.back} /></div>}
             <figcaption>{beat.caption}</figcaption>
           </figure>
         </article>)}
       </div>
 
-      <aside className={styles.state} aria-label={`Run state after step ${active + 1}, ${beats[active].label}`}>
-        <p className={styles.stateTitle}>Run state after step {active + 1}</p>
-        <ul className={clsx('wv-evidence', styles.people)}>
+      <div className={styles.pin}>
+        <nav className={styles.steps} aria-label="Steps of the recorded run">
+          <ol>
+            {beats.map((beat, index) => <li key={beat.label}>
+              <button type="button" aria-current={active === index ? 'step' : undefined} onClick={() => jump(index)}>
+                <span className={styles.stepNum}>{index + 1}</span>{beat.label}
+              </button>
+            </li>)}
+          </ol>
+          <span className={styles.progress} aria-hidden="true"><span /></span>
+        </nav>
+        <div className={clsx('wv-window', styles.window)}>
+          <div className="wv-window__bar"><span>Real capture · step {active + 1} of 4</span><span>SpecWithCode 1.0.21</span></div>
+          <div className={styles.screen}>
+            {beats.map((beat, index) => <div key={beat.title} className={clsx(styles.layer, beat.back && styles.layerPair)} data-active={active === index} data-before={index < active}>
+              <Img shot={beat.shot} className={styles.layerImg} />
+              {beat.back && <Img shot={beat.back} className={styles.layerImg} />}
+            </div>)}
+          </div>
+          <p className={styles.screenCaption}>{beats[active].caption}</p>
+        </div>
+
+        <ul className={styles.people} aria-label={`Run state after step ${active + 1}, ${beats[active].label}`}>
           {people.map(p => <li key={p.name}>
-            <span className="wv-evidence__name">{p.name}{p.model && <> <code className={styles.model}>{p.model}</code></>}</span>
-            {p.worker ? <span className={clsx('wv-chip', workerChip[active])}>{workerState[active]}</span> : <span />}
-            <span className="wv-evidence__detail">{p.status}</span>
+            <span className={styles.who}>{p.name}{p.model && <code className={styles.model}>{p.model}</code>}</span>
+            {p.worker && <span className={clsx('wv-chip', workerChip[active])}>{workerState[active]}</span>}
+            <span className={styles.what}>{p.status}</span>
           </li>)}
         </ul>
-        <p className={styles.stateTitle}>Messages</p>
-        <ol className={styles.log}>
-          {log.filter(line => line.phase <= active).map((line, i) => <li key={i} data-current={line.phase === active}>
-            <b>{line.from}{line.to && <> to {line.to}</>}</b>
-            <span>{line.text}</span>
-          </li>)}
-        </ol>
-      </aside>
+      </div>
     </div>
 
     <p className={styles.caption}>The run state summarizes the recorded run; screenshots are actual app captures. Your providers, models and permissions determine what runs.</p>

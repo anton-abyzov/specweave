@@ -1,0 +1,248 @@
+/*
+  /code hero illustration on Weave tokens only.
+  Resting state = finished run. Motion (12s loop) replays it when allowed:
+  0-14% goal (the cursor presses Send at 9%), 14-30% plan (tasks appear 18/22/26%), agents start as their
+  task appears and finish at 52/60/68% while the done counter climbs, 72-100% review.
+  The iris thread draws across the four steps over the same loop. A strip of real captures sits under it.
+*/
+
+.flow { margin: 0; box-shadow: var(--wv-shadow-window); }
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: var(--wv-space-6);
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: var(--wv-space-6);
+  position: relative;
+  text-align: left;
+}
+
+/* The thread connecting the four steps. */
+.steps::before {
+  content: "";
+  position: absolute;
+  left: var(--wv-space-6);
+  right: var(--wv-space-6);
+  top: calc(var(--wv-space-6) + 11px);
+  height: var(--wv-thread-width);
+  background: var(--wv-line);
+}
+
+.steps::after {
+  content: "";
+  position: absolute;
+  left: var(--wv-space-6);
+  right: var(--wv-space-6);
+  top: calc(var(--wv-space-6) + 11px);
+  height: 2px;
+  margin-top: -0.25px;
+  background: linear-gradient(90deg, var(--wv-iris), color-mix(in srgb, var(--wv-iris) 55%, var(--wv-iris-strong)));
+  transform-origin: left;
+}
+
+.step { position: relative; min-width: 0; display: flex; flex-direction: column; gap: var(--wv-space-3); }
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-2);
+  margin: 0;
+  width: fit-content;
+  padding-right: var(--wv-space-2);
+  background: var(--wv-panel);
+  font: 600 14px/22px var(--wv-font-sans);
+  color: var(--wv-ink);
+  position: relative;
+}
+.label > span {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--wv-iris);
+  color: var(--wv-on-iris);
+  font: 600 12px/1 var(--wv-font-mono);
+  box-shadow: 0 0 0 4px var(--wv-panel);
+}
+
+.card {
+  position: relative;
+  flex: 1;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-canvas);
+  padding: var(--wv-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-3);
+}
+.cardHead { display: flex; align-items: center; gap: var(--wv-space-2); margin: 0; font: 600 14px/20px var(--wv-font-sans); color: var(--wv-ink); }
+.cardIcon { color: var(--wv-iris); flex: none; }
+.goal { margin: 0; font: 500 16px/24px var(--wv-font-sans); color: var(--wv-ink); }
+
+.plan, .checks, .agents { list-style: none; margin: 0; padding: 0; }
+.plan { display: grid; gap: var(--wv-space-2); counter-reset: task; }
+.plan li {
+  counter-increment: task;
+  display: flex;
+  gap: var(--wv-space-2);
+  font: 400 14px/20px var(--wv-font-sans);
+  color: var(--wv-ink);
+}
+.plan li::before { content: counter(task); color: var(--wv-muted); font: 500 13px/20px var(--wv-font-mono); }
+
+.agents { display: grid; gap: var(--wv-space-2); flex: 1; }
+.agent {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--wv-space-2) var(--wv-space-3);
+  padding: var(--wv-space-3);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-canvas);
+}
+/* Provider marks are white-on-transparent or brand-coloured; they sit on one fixed dark tile. */
+.agent img { width: 28px; height: 28px; padding: 4px; border-radius: var(--wv-radius-sm); background: #241523; }
+.agentText { display: grid; min-width: 0; font: 400 13px/18px var(--wv-font-sans); color: var(--wv-muted); }
+.agentText strong { font: 600 14px/20px var(--wv-font-sans); color: var(--wv-ink); }
+.state { display: grid; justify-items: end; }
+.state > * { grid-area: 1 / 1; }
+.working { visibility: hidden; }
+.bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: var(--wv-line); overflow: hidden; }
+.bar > span { display: block; height: 100%; width: 100%; background: var(--wv-pass); transform-origin: left; }
+
+.send {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wv-space-1);
+  margin-top: auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--wv-iris);
+  color: var(--wv-on-iris);
+  font: 600 12px/16px var(--wv-font-sans);
+}
+.cursor {
+  position: absolute;
+  right: 22px;
+  bottom: 6px;
+  width: 16px;
+  height: 20px;
+  fill: var(--wv-ink);
+  stroke: var(--wv-panel);
+  stroke-width: 1.2;
+  opacity: 0;
+  pointer-events: none;
+}
+.tally { display: flex; align-items: baseline; gap: var(--wv-space-2); margin: 0; font: 400 14px/20px var(--wv-font-sans); color: var(--wv-muted); }
+.count { font: 700 32px/34px var(--wv-font-sans); letter-spacing: -0.03em; color: var(--wv-ink); font-variant-numeric: tabular-nums; }
+
+.checks { display: grid; gap: var(--wv-space-2); }
+.checks li { display: flex; align-items: center; gap: var(--wv-space-2); font: 400 14px/20px var(--wv-font-sans); color: var(--wv-ink); }
+.checks svg { color: var(--wv-pass); flex: none; }
+.merge { margin-top: auto; align-self: flex-start; pointer-events: none; }
+
+/* ---------- Real captures strip ---------- */
+.real { padding: 0 var(--wv-space-6) var(--wv-space-6); }
+.realHead { display: flex; flex-wrap: wrap; align-items: center; gap: var(--wv-space-2) var(--wv-space-3); margin: 0 0 var(--wv-space-3); font: 400 13px/18px var(--wv-font-sans); color: var(--wv-muted); }
+.captures { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--wv-space-4); }
+.capture { display: grid; gap: var(--wv-space-2); min-width: 0; }
+.captureFrame {
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-sunken);
+}
+.captureFrame img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.captureLabel { display: flex; gap: var(--wv-space-2); align-items: baseline; font: 500 13px/18px var(--wv-font-sans); color: var(--wv-ink); }
+.captureLabel b { font: 600 12px/18px var(--wv-font-mono); color: var(--wv-iris-strong); }
+
+/* ---------- Motion: replay the run ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .s1 .card { animation: hf-focus-1 12s ease-out infinite both; }
+  .s2 .card { animation: hf-focus-2 12s ease-out infinite both; }
+  .s4 .card { animation: hf-focus-4 12s ease-out infinite both; }
+  .plan li { animation: hf-plan 12s ease-out infinite both; }
+  .plan li:nth-child(2) { animation-name: hf-plan-2; }
+  .plan li:nth-child(3) { animation-name: hf-plan-3; }
+  .bar > span { animation: hf-bar-0 12s linear infinite both; }
+  .agent .working { animation: hf-working-0 12s steps(1, end) infinite both; }
+  .agent .done { animation: hf-done-0 12s steps(1, end) infinite both; }
+  .agent:nth-child(2) .bar > span { animation-name: hf-bar-1; }
+  .agent:nth-child(2) .working { animation-name: hf-working-1; }
+  .agent:nth-child(2) .done { animation-name: hf-done-1; }
+  .agent:nth-child(3) .bar > span { animation-name: hf-bar-2; }
+  .agent:nth-child(3) .working { animation-name: hf-working-2; }
+  .agent:nth-child(3) .done { animation-name: hf-done-2; }
+  .checks li, .merge, .tally { animation: hf-review 12s ease-out infinite both; }
+  .steps::after { animation: hf-thread 12s cubic-bezier(.5, 0, .2, 1) infinite both; }
+  .cursor { animation: hf-cursor 12s ease-out infinite both; }
+  .send { animation: hf-send 12s ease-out infinite both; }
+  .count { animation: hf-count 12s linear infinite both; }
+  .count { color: transparent; position: relative; }
+  .count::after { content: counter(done); counter-reset: done var(--done); position: absolute; left: 0; top: 0; color: var(--wv-ink); }
+  .capture .captureFrame { animation: hf-cap-0 12s ease-out infinite both; }
+  .capture:nth-child(2) .captureFrame { animation-name: hf-cap-1; }
+  .capture:nth-child(3) .captureFrame { animation-name: hf-cap-2; }
+  .capture:nth-child(4) .captureFrame { animation-name: hf-cap-3; }
+}
+
+@property --done { syntax: "<integer>"; inherits: false; initial-value: 3; }
+
+@keyframes hf-thread { 0% { transform: scaleX(0); } 14% { transform: scaleX(0.3); } 30% { transform: scaleX(0.5); } 68% { transform: scaleX(0.76); } 78%, 100% { transform: scaleX(1); } }
+@keyframes hf-cursor { 0% { opacity: 0; transform: translate3d(-60px, -34px, 0); } 3% { opacity: 1; } 8% { transform: translate3d(0, 0, 0); } 9% { transform: translate3d(0, 0, 0) scale(0.86); } 10.5% { transform: translate3d(0, 0, 0) scale(1); opacity: 1; } 14%, 100% { opacity: 0; transform: translate3d(6px, 4px, 0); } }
+@keyframes hf-send { 0%, 8.8% { transform: none; box-shadow: none; } 9.5% { transform: scale(0.92); box-shadow: 0 0 0 6px color-mix(in srgb, var(--wv-iris) 25%, transparent); } 13%, 100% { transform: none; box-shadow: 0 0 0 0 transparent; } }
+@keyframes hf-count { 0%, 51.9% { --done: 0; } 52%, 59.9% { --done: 1; } 60%, 67.9% { --done: 2; } 68%, 100% { --done: 3; } }
+@keyframes hf-cap-0 { 0%, 14% { border-color: var(--wv-iris); box-shadow: 0 0 0 3px var(--wv-iris-tint); } 18%, 100% { border-color: var(--wv-line); box-shadow: none; } }
+@keyframes hf-cap-1 { 0%, 14% { border-color: var(--wv-line); box-shadow: none; } 16%, 30% { border-color: var(--wv-iris); box-shadow: 0 0 0 3px var(--wv-iris-tint); } 34%, 100% { border-color: var(--wv-line); box-shadow: none; } }
+@keyframes hf-cap-2 { 0%, 30% { border-color: var(--wv-line); box-shadow: none; } 34%, 68% { border-color: var(--wv-iris); box-shadow: 0 0 0 3px var(--wv-iris-tint); } 72%, 100% { border-color: var(--wv-line); box-shadow: none; } }
+@keyframes hf-cap-3 { 0%, 72% { border-color: var(--wv-line); box-shadow: none; } 76%, 100% { border-color: var(--wv-iris); box-shadow: 0 0 0 3px var(--wv-iris-tint); } }
+
+/* Each step is "current" for its slice of the loop; the others rest at full legibility. */
+@keyframes hf-focus-1 { 0%, 14% { border-color: var(--wv-iris); background: var(--wv-iris-tint); } 18%, 100% { border-color: var(--wv-line); background: var(--wv-canvas); } }
+@keyframes hf-focus-2 { 0%, 14% { border-color: var(--wv-line); } 16%, 30% { border-color: var(--wv-iris); background: var(--wv-iris-tint); } 34%, 100% { border-color: var(--wv-line); background: var(--wv-canvas); } }
+@keyframes hf-focus-4 { 0%, 72% { border-color: var(--wv-line); background: var(--wv-canvas); } 76%, 100% { border-color: var(--wv-iris); background: var(--wv-iris-tint); } }
+@keyframes hf-plan { 0%, 14% { opacity: 0; transform: translateY(4px); } 18%, 100% { opacity: 1; transform: none; } }
+@keyframes hf-plan-2 { 0%, 18% { opacity: 0; transform: translateY(4px); } 22%, 100% { opacity: 1; transform: none; } }
+@keyframes hf-plan-3 { 0%, 22% { opacity: 0; transform: translateY(4px); } 26%, 100% { opacity: 1; transform: none; } }
+/* Agents start once their task is listed and finish one after another (52%, 60%, 68%), all before review. */
+@keyframes hf-bar-0 { 0%, 20% { transform: scaleX(0); background: var(--wv-iris); } 50% { transform: scaleX(0.85); background: var(--wv-iris); } 52%, 100% { transform: scaleX(1); background: var(--wv-pass); } }
+@keyframes hf-bar-1 { 0%, 24% { transform: scaleX(0); background: var(--wv-iris); } 58% { transform: scaleX(0.85); background: var(--wv-iris); } 60%, 100% { transform: scaleX(1); background: var(--wv-pass); } }
+@keyframes hf-bar-2 { 0%, 28% { transform: scaleX(0); background: var(--wv-iris); } 66% { transform: scaleX(0.85); background: var(--wv-iris); } 68%, 100% { transform: scaleX(1); background: var(--wv-pass); } }
+@keyframes hf-working-0 { 0% { visibility: hidden; } 20% { visibility: visible; } 52%, 100% { visibility: hidden; } }
+@keyframes hf-working-1 { 0% { visibility: hidden; } 24% { visibility: visible; } 60%, 100% { visibility: hidden; } }
+@keyframes hf-working-2 { 0% { visibility: hidden; } 28% { visibility: visible; } 68%, 100% { visibility: hidden; } }
+@keyframes hf-done-0 { 0% { visibility: hidden; } 52%, 100% { visibility: visible; } }
+@keyframes hf-done-1 { 0% { visibility: hidden; } 60%, 100% { visibility: visible; } }
+@keyframes hf-done-2 { 0% { visibility: hidden; } 68%, 100% { visibility: visible; } }
+@keyframes hf-review { 0%, 72% { opacity: 0.25; } 78%, 100% { opacity: 1; } }
+
+/* ---------- Narrow screens: one column, the thread runs down the left ---------- */
+@media (max-width: 900px) {
+  .steps { grid-template-columns: minmax(0, 1fr); gap: var(--wv-space-4); padding: var(--wv-space-4); }
+  .steps::before, .steps::after { left: calc(var(--wv-space-4) + 11px); right: auto; top: var(--wv-space-6); bottom: var(--wv-space-6); width: var(--wv-thread-width); height: auto; }
+  .steps::after { width: 2px; transform-origin: top; animation-name: hf-thread-y !important; }
+  .real { padding: 0 var(--wv-space-4) var(--wv-space-4); }
+  .captures { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: var(--wv-space-3); padding-bottom: var(--wv-space-2); }
+  .capture { flex: 0 0 62%; scroll-snap-align: start; }
+  .step { padding-left: 0; }
+  .card, .agents { margin-left: 34px; }
+  .merge { align-self: stretch; justify-content: center; }
+}
+
+@keyframes hf-thread-y { 0% { transform: scaleY(0); } 14% { transform: scaleY(0.3); } 30% { transform: scaleY(0.5); } 68% { transform: scaleY(0.76); } 78%, 100% { transform: scaleY(1); } }
+
+@media (prefers-reduced-motion: reduce), print {
+  .steps::after, .cursor, .send, .count, .capture .captureFrame { animation: none !important; }
+  .count { color: var(--wv-ink); }
+  .count::after { content: none; }
+}

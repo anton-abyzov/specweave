@@ -1,32 +1,177 @@
 /*
-  Coordinator flow on /code: a segmented control over four real steps, each with
-  actual captures in Weave window frames, beside a run-state list built from tokens.
-  No motion. The final step is the resting state.
+  /code #real-run on Weave tokens only.
+  Wide screens with motion allowed: a pinned stage. The beats scroll on the left; one sticky
+  app window on the right swaps real captures (clip reveal) and the run state follows.
+  Phones, reduced motion and print: a stacked list where every beat carries its capture.
+  Each beat spans about 70vh of scroll, so a swap never happens faster than a reader.
 */
 .flow {
-  padding-top: var(--wv-space-24);
+  padding-top: var(--wv-space-16);
   scroll-margin-top: calc(var(--ifm-navbar-height) + var(--wv-space-4));
 }
 
 .intro {
-  max-width: var(--wv-measure);
+  max-width: 760px;
   margin-bottom: var(--wv-space-8);
 }
 
-.intro p {
+.kicker {
+  margin: 0 0 var(--wv-space-3);
+  font: 600 13px/18px var(--wv-font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--wv-iris-strong);
+}
+
+.intro p:not(.kicker) {
   margin-top: var(--wv-space-4);
   color: var(--wv-muted);
 }
 
-/* ---------- Segmented control ----------
-   In the flow, not sticky: a pinned bar covered the top of the tall captures. */
-.tabs {
+/* ---------- Stage ---------- */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--wv-space-12);
+  align-items: start;
+}
+
+.beats {
+  display: grid;
+  min-width: 0;
+}
+
+.beat {
+  min-height: 64vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--wv-space-3);
+  padding: var(--wv-space-8) 0 var(--wv-space-8) var(--wv-space-6);
+  border-left: 2px solid var(--wv-line);
+  transition: border-color 300ms ease;
+}
+
+.beat:first-child {
+  min-height: 52vh;
+  justify-content: flex-start;
+}
+
+.beat:last-child {
+  /* Taller so the final state stays pinned for about half a screen before the stage releases. */
+  min-height: 88vh;
+  justify-content: flex-start;
+}
+
+/* Transparent wrapper; in the pinned layout the last beat's text rides with the window. */
+.beatBody {
+  display: contents;
+}
+
+@media screen and (min-width: 997px) and (prefers-reduced-motion: no-preference) {
+  .beat:last-child .beatBody {
+    position: sticky;
+    top: calc(var(--ifm-navbar-height) + var(--wv-space-6));
+    display: flex;
+    flex-direction: column;
+    gap: var(--wv-space-3);
+  }
+}
+
+.beat[data-active='true'] {
+  border-left-color: var(--wv-iris);
+}
+
+.beat h3 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 32px;
+  transition: color 300ms ease;
+}
+
+.beat[data-active='false'] h3 {
+  color: var(--wv-muted);
+}
+
+.beatBody > p {
+  margin: 0;
+  color: var(--wv-muted);
+}
+
+.beatLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-3);
+  font: 600 13px/18px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.beatLabel span {
+  font: 600 13px/18px var(--wv-font-mono);
+  color: var(--wv-iris-strong);
+}
+
+/* Messages for the beat, as a short thread. */
+.log {
+  list-style: none;
+  margin: var(--wv-space-2) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--wv-space-2);
+}
+
+.log li {
+  display: grid;
+  gap: 2px;
+  padding: var(--wv-space-2) var(--wv-space-3);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-panel);
+  font: 400 14px/20px var(--wv-font-sans);
+  color: var(--wv-ink);
+}
+
+.log b {
+  font: 600 12px/16px var(--wv-font-sans);
+  color: var(--wv-iris-strong);
+}
+
+/* ---------- Stacked capture inside each beat (phones, reduced motion, print) ---------- */
+.inline {
+  display: none;
+  margin: var(--wv-space-3) 0 0;
+}
+
+.inline :global(.wv-window) img {
+  max-height: 520px;
+  object-fit: cover;
+}
+
+.inline figcaption {
+  margin-top: var(--wv-space-2);
+  font: 400 13px/18px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.pair {
+  display: none;
+}
+
+/* ---------- Pinned window ---------- */
+.pin {
+  position: sticky;
+  top: calc(var(--ifm-navbar-height) + var(--wv-space-6));
+  min-width: 0;
+  display: grid;
+  gap: var(--wv-space-3);
+}
+
+.steps ol {
+  list-style: none;
+  margin: 0;
+  padding: var(--wv-space-1);
   display: flex;
   gap: var(--wv-space-1);
-  width: fit-content;
-  max-width: 100%;
-  padding: var(--wv-space-1);
-  margin-bottom: var(--wv-space-8);
   border: 1px solid var(--wv-line);
   border-radius: var(--wv-radius-sm);
   background: var(--wv-sunken);
@@ -34,169 +179,217 @@
   scrollbar-width: none;
 }
 
-.tabs button {
+.steps li {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+
+.steps button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--wv-space-2);
-  min-height: 36px;
+  width: 100%;
+  min-height: 34px;
   padding: 0 var(--wv-space-3);
   border: 1px solid transparent;
   border-radius: var(--wv-radius-xs);
   background: transparent;
   color: var(--wv-muted);
-  font: 500 15px/22px var(--wv-font-sans);
+  font: 500 14px/20px var(--wv-font-sans);
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
 }
 
-.tabs button:hover {
+.steps button:hover {
   color: var(--wv-ink);
 }
 
-.tabs button[aria-selected='true'] {
+.steps button[aria-current='step'] {
   background: var(--wv-panel);
   border-color: var(--wv-line);
   color: var(--wv-ink);
 }
 
-.tabNum {
+.stepNum {
+  font: 600 12px/1 var(--wv-font-mono);
   color: var(--wv-muted);
-  font-variant-numeric: tabular-nums;
 }
 
-.tabs button[aria-selected='true'] .tabNum {
+.steps button[aria-current='step'] .stepNum {
   color: var(--wv-iris);
 }
 
-/* ---------- Step and run state ---------- */
-.story {
+.progress {
+  display: block;
+  height: 2px;
+  margin-top: var(--wv-space-2);
+  border-radius: 2px;
+  background: var(--wv-line);
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--wv-iris);
+  transform-origin: left;
+  transform: scaleX(calc((var(--active) + 1) / 4));
+  transition: transform 500ms cubic-bezier(.3, 0, .2, 1);
+}
+
+.window {
+  position: relative;
+  box-shadow: var(--wv-shadow-window), 0 36px 72px -40px color-mix(in srgb, var(--wv-iris) 50%, transparent);
+}
+
+.screen {
+  position: relative;
+  height: clamp(300px, calc(100vh - 420px), 540px);
+  overflow: hidden;
+  background: var(--wv-sunken);
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: var(--wv-space-12);
-  align-items: start;
-  scroll-margin-top: calc(var(--ifm-navbar-height) + 64px);
+  opacity: 0;
+  clip-path: inset(0 0 100% 0);
+  transform: translate3d(0, 24px, 0) scale(1.02);
+  transition: opacity 450ms ease, clip-path 650ms cubic-bezier(.3, 0, .2, 1), transform 650ms cubic-bezier(.3, 0, .2, 1);
 }
 
-.panels {
-  display: grid;
-  gap: var(--wv-space-16);
-  min-width: 0;
+.layer[data-before='true'] {
+  clip-path: inset(0);
+  transform: translate3d(0, -16px, 0) scale(0.97);
 }
 
-.beat[hidden] {
-  display: none;
+.layer[data-active='true'] {
+  opacity: 1;
+  clip-path: inset(0);
+  transform: none;
 }
 
-.beat > p {
-  max-width: var(--wv-measure);
-  margin-top: var(--wv-space-3);
-  color: var(--wv-muted);
-}
-
-.shot {
-  display: grid;
-  gap: var(--wv-space-4);
-  margin-top: var(--wv-space-6);
-  justify-items: start;
-}
-
-.pair {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-}
-
-.pair figcaption {
-  grid-column: 1 / -1;
-}
-
-.frame {
+.layerImg {
+  display: block;
   width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
 }
 
-.shot figcaption {
-  font-size: 13px;
-  line-height: 20px;
+/* The composer is a wide strip: show all of it, centred, rather than crop it. */
+.layer:first-child {
+  place-items: center;
+  padding: 6%;
+}
+
+.layer:first-child .layerImg {
+  height: auto;
+  border-radius: var(--wv-radius-md);
+  box-shadow: var(--wv-shadow-overlay);
+}
+
+.layerPair {
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--wv-line);
+}
+
+.screenCaption {
+  margin: 0;
+  padding: var(--wv-space-2) var(--wv-space-4);
+  border-top: 1px solid var(--wv-line);
+  font: 400 13px/18px var(--wv-font-sans);
   color: var(--wv-muted);
 }
 
-.state {
-  position: sticky;
-  top: calc(var(--ifm-navbar-height) + 72px);
-  min-width: 0;
-  padding: var(--wv-space-6);
+/* Run state: four people in a compact grid under the window. */
+.people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--wv-space-2);
+}
+
+.people li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--wv-space-2);
+  align-items: center;
+  padding: var(--wv-space-2) var(--wv-space-3);
   border: 1px solid var(--wv-line);
   border-radius: var(--wv-radius-md);
   background: var(--wv-panel);
 }
 
-.stateTitle {
-  margin-bottom: var(--wv-space-2);
-  font-size: 13px;
-  line-height: 18px;
-  font-weight: 600;
-  color: var(--wv-muted);
-}
-
-.people {
-  margin-bottom: var(--wv-space-6);
-}
-
-.people > li {
-  padding-block: var(--wv-space-3);
-}
-
-.people .model {
-  margin-left: var(--wv-space-1);
-  font-weight: 400;
-  color: var(--wv-muted);
-}
-
-.log {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--wv-line);
-}
-
-.log li {
-  display: grid;
-  gap: 2px;
-  padding-block: var(--wv-space-3);
-  border-bottom: 1px solid var(--wv-line);
-  font-size: 15px;
-  line-height: 22px;
-  color: var(--wv-muted);
-}
-
-.log b {
-  font-size: 13px;
-  line-height: 18px;
-  font-weight: 600;
-  color: var(--wv-muted);
-}
-
-.log li[data-current='true'],
-.log li[data-current='true'] b {
+.who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--wv-space-2);
+  font: 600 14px/20px var(--wv-font-sans);
   color: var(--wv-ink);
+}
+
+.what {
+  grid-column: 1 / -1;
+  font: 400 13px/18px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.model {
+  font: 400 12px/16px var(--wv-font-mono);
+  color: var(--wv-muted);
+  background: none;
+  border: 0;
+  padding: 0;
 }
 
 .caption {
   max-width: var(--wv-measure);
   margin-top: var(--wv-space-8);
-  font-size: 13px;
-  line-height: 20px;
+  font: 400 13px/20px var(--wv-font-sans);
   color: var(--wv-muted);
 }
 
-@media (max-width: 996px) {
-  .story {
-    grid-template-columns: minmax(0, 1fr);
+/* ---------- Stacked list: phones, reduced motion, print ---------- */
+@media (max-width: 996px), (prefers-reduced-motion: reduce), print {
+  .stage {
+    display: block;
   }
 
-  .state {
-    position: static;
+  .pin {
+    display: none;
+  }
+
+  .beat,
+  .beat:last-child {
+    min-height: 0;
+    padding: var(--wv-space-6) 0 var(--wv-space-6) var(--wv-space-4);
+    border-left-color: var(--wv-iris);
+  }
+
+  .beat[data-active='false'] h3 {
+    color: var(--wv-ink);
+  }
+
+  .inline {
+    display: block;
+  }
+
+  .inline.pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--wv-space-3);
+  }
+
+  .inline.pair figcaption {
+    grid-column: 1 / -1;
   }
 }
 
@@ -205,24 +398,47 @@
     padding-top: var(--wv-space-16);
   }
 
-  /* Two by two on phones, so every step stays visible without sideways scrolling. */
-  .tabs {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
+  .beat h3 {
+    font-size: 21px;
+    line-height: 28px;
   }
 
-  .tabs button {
-    justify-content: flex-start;
+  .inline.pair {
+    grid-template-columns: 1fr;
   }
 
-  .state {
-    padding: var(--wv-space-4);
+  .inline :global(.wv-window) img {
+    max-height: 420px;
   }
 }
 
-@media (max-width: 480px) {
-  .pair {
-    grid-template-columns: minmax(0, 1fr);
+@media (prefers-reduced-motion: reduce) {
+  .layer,
+  .progress span,
+  .beat,
+  .beat h3 {
+    transition: none;
+  }
+}
+
+/* Stacked on a wide screen (reduced motion): text beside its capture, not under it. */
+@media (min-width: 997px) and (prefers-reduced-motion: reduce) {
+  .beat {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: var(--wv-space-12);
+    row-gap: var(--wv-space-3);
+    align-content: start;
+  }
+
+  .beat > *,
+  .beatBody > * {
+    grid-column: 1;
+  }
+
+  .beat > .inline {
+    grid-column: 2;
+    grid-row: 1 / span 5;
+    margin-top: 0;
   }
 }

@@ -1,170 +1,230 @@
 /*
-  #how on the homepage: four layers (spec, agents, ledger, handoff) in one column on one iris spine.
-  The site's one scroll sequence. Static layout first. Motion runs only inside
-  @supports (animation-timeline: view()) and prefers-reduced-motion: no-preference, starts at
-  entry 0% (the stage still off screen) and fills forwards only, so before the range starts the
-  static layout shows: no-JS, reduced motion and full-page screenshots show the complete picture.
-  Only opacity and transform animate: the handoff switch crossfades a stacked earlier state.
-  What moves explains the structure: the spine draws through the four layers, each layer's node
-  lights as it is reached, and the handoff node and its agent line switch from claude@cloud to
-  codex@laptop. Content blocks do not slide or fade.
+  #how on the homepage: a diagram (illustration) plus four beats: spec, agents, ledger, handoff.
+  Static first: diagram in its final state, beats one under another. That is what the server renders,
+  and what phones, short windows, reduced motion and print get.
+  [data-live] (set by HomeHandoff.tsx on wide screens with motion allowed): the root grows to
+  ~65vh of scroll per beat, the stage pins with position: sticky, and [data-beat] picks the beat
+  that shows. Only transform and opacity change. The diagram's wires draw (scaleX), nodes light,
+  a packet travels along the active wire and the ledger lines type in (a mask that scales away).
 */
 
-.stage {
-  --spine-x: 7px;
-  --spine-pad: var(--wv-space-8);
+.root {
+  --nav: var(--ifm-navbar-height, 60px);
   position: relative;
-  display: grid;
-  gap: var(--wv-space-16);
-  margin: 0;
-  padding: 0 0 0 var(--spine-pad);
-  list-style: none;
-  grid-template-columns: minmax(0, 1fr);
 }
 
-/* The spine joins the four layers. */
-.stage::before {
-  content: "";
+.pin {
+  display: grid;
+  gap: var(--wv-space-6);
+}
+
+/* ---------- Diagram ---------- */
+.diagram {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: var(--wv-space-3);
+  margin: 0;
+  padding: var(--wv-space-6) var(--wv-space-4) var(--wv-space-8);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  background:
+    radial-gradient(closest-side at 50% 50%, color-mix(in srgb, var(--wv-iris) 14%, transparent), transparent 100%),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--wv-iris) 22%, transparent) 1px, transparent 1.5px) 0 0 / 20px 20px,
+    var(--wv-panel);
+  overflow: hidden;
+}
+
+.node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-3);
+  min-width: 0;
+  padding: var(--wv-space-3) var(--wv-space-4);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-panel);
+  box-shadow: var(--wv-shadow-overlay);
+  transition: opacity 400ms ease, transform 400ms ease, border-color 400ms ease;
+}
+
+.plateLight,
+.plateDark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: var(--wv-radius-sm);
+  border: 1px solid var(--wv-line);
+  background: var(--wv-canvas);
+}
+
+/* The OpenAI mark is white: it needs the dark plate in both themes. */
+.plateDark {
+  background: #241523;
+  border-color: #241523;
+}
+
+.nodeText {
+  display: grid;
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.nodeText strong {
+  font-weight: 600;
+  color: var(--wv-ink);
+}
+
+.nodeText span {
+  font: 400 12px/16px var(--wv-font-mono);
+  color: var(--wv-muted);
+}
+
+.limit,
+.done {
   position: absolute;
-  left: var(--spine-x);
-  top: 12px;
-  bottom: 12px;
+  top: -12px;
+  right: -10px;
+  transition: opacity 300ms ease, transform 300ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.repo {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--wv-space-2);
+  padding: var(--wv-space-3);
+  border-color: color-mix(in srgb, var(--wv-iris) 50%, var(--wv-line));
+  box-shadow: var(--wv-shadow-overlay), 0 0 0 6px color-mix(in srgb, var(--wv-iris) 10%, transparent);
+}
+
+.repoTitle {
+  font: 500 12px/16px var(--wv-font-sans);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--wv-muted);
+}
+
+.files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--wv-space-2);
+}
+
+.file {
+  padding: 2px var(--wv-space-2);
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 40%, var(--wv-line));
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-iris-tint);
+  font: 500 13px/20px var(--wv-font-mono);
+  color: var(--wv-iris-strong);
+  transition: opacity 300ms ease, transform 300ms ease, box-shadow 300ms ease;
+}
+
+/* Wires: vertical on phones, across on wide screens. The fill scales in to "draw". */
+.wire {
+  position: relative;
+  display: block;
   width: var(--wv-thread-width);
+  height: 28px;
   background: var(--wv-line);
 }
 
-.stage::after {
-  content: "";
+.fill {
   position: absolute;
-  left: var(--spine-x);
-  top: 12px;
-  bottom: 12px;
-  width: var(--wv-thread-width);
+  inset: 0;
   background: var(--wv-iris);
   transform-origin: top;
+  transition: transform 600ms cubic-bezier(0.6, 0, 0.2, 1);
 }
 
-.plane {
-  position: relative;
+.packet {
+  display: none;
+}
+
+.tag {
+  position: absolute;
+  right: var(--wv-space-3);
+  bottom: var(--wv-space-2);
+  font: 500 11px/16px var(--wv-font-sans);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--wv-muted);
+}
+
+@media (min-width: 760px) {
+  .diagram {
+    grid-template-columns: auto minmax(32px, 1fr) auto minmax(32px, 1fr) auto;
+    align-items: center;
+    justify-items: stretch;
+    gap: 0;
+    padding: var(--wv-space-8) var(--wv-space-8) var(--wv-space-8);
+  }
+
+  .wire {
+    width: auto;
+    height: var(--wv-thread-width);
+    margin: 0 var(--wv-space-3);
+  }
+
+  .fill {
+    transform-origin: left;
+  }
+
+  .packet {
+    position: absolute;
+    top: -3px;
+    left: 0;
+    right: 0;
+    display: block;
+    height: 8px;
+    opacity: 0;
+  }
+
+  .packet::before {
+    content: "";
+    position: absolute;
+    left: -4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--wv-iris);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--wv-iris) 25%, transparent);
+  }
+}
+
+/* ---------- Progress (decorative; the h3s carry the structure) ---------- */
+.progress {
+  display: none;
+}
+
+/* ---------- Beats ---------- */
+.beats {
+  display: grid;
+  gap: var(--wv-space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.beat {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--wv-space-4);
   min-width: 0;
   margin: 0;
-}
-
-/* One node per layer, on the spine. */
-.plane::before {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: calc(var(--spine-x) + var(--wv-thread-width) / 2 - 7.5px - var(--spine-pad));
-  width: 15px;
-  height: 15px;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: var(--wv-canvas);
-  border: var(--wv-thread-width) solid var(--wv-iris);
-}
-
-.handoff::before {
-  background: var(--wv-iris);
-}
-
-/* The open node from before the handoff, stacked on the filled one; hidden at rest. */
-.handoff::after {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: calc(var(--spine-x) + var(--wv-thread-width) / 2 - 7.5px - var(--spine-pad));
-  width: 15px;
-  height: 15px;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: var(--wv-canvas);
-  border: var(--wv-thread-width) solid var(--wv-iris);
-  opacity: 0;
+  padding-top: var(--wv-space-6);
+  border-top: 1px solid var(--wv-line);
 }
 
 .label {
   min-width: 0;
-  max-width: var(--wv-measure);
 }
 
-/* The handoff point: who held the task before, and who holds it now. At rest codex@laptop is
-   the current holder and claude@cloud is the one that stopped. */
-.plane .switch {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--wv-space-2);
-  margin-top: var(--wv-space-3);
-  font: 500 13px/20px var(--wv-font-mono);
-}
-
-.from,
-.to {
-  position: relative;
-  padding: 0 var(--wv-space-2);
-  border: 1px solid var(--wv-line);
-  border-radius: var(--wv-radius-xs);
-}
-
-/* Each holder's state before the handoff, stacked on its resting state; hidden at rest.
-   The text comes from data-label and is hidden from assistive tech. */
-.from::before,
-.to::before {
-  content: attr(data-label);
-  content: attr(data-label) / "";
-  position: absolute;
-  inset: -1px;
-  box-sizing: border-box;
-  padding: 0 var(--wv-space-2);
-  border: 1px solid var(--wv-line);
-  border-radius: var(--wv-radius-xs);
-  background: var(--wv-canvas);
-  color: var(--wv-muted);
-  text-decoration: none;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.from::before {
-  border-color: var(--wv-iris);
-  background: var(--wv-iris-tint);
-  color: var(--wv-ink);
-}
-
-.from {
-  color: var(--wv-muted);
-  text-decoration: line-through;
-  text-decoration-color: var(--wv-muted);
-}
-
-.to {
-  border-color: var(--wv-iris);
-  background: var(--wv-iris-tint);
-  color: var(--wv-iris-strong);
-}
-
-.switchRule {
-  display: inline-block;
-  width: var(--wv-space-8);
-  height: var(--wv-thread-width);
-  background: var(--wv-iris);
-  transform-origin: left;
-}
-
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.plane .label p {
+.beat .label p {
   margin-top: var(--wv-space-1);
   font-size: 15px;
   line-height: 22px;
@@ -185,27 +245,88 @@
   overflow-wrap: anywhere;
 }
 
+/* The handoff point: claude@cloud stopped, codex@laptop holds the task now. */
+.beat .switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--wv-space-2);
+  margin-top: var(--wv-space-3);
+  font: 500 13px/20px var(--wv-font-mono);
+}
+
+.from,
+.to {
+  padding: 0 var(--wv-space-2);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-xs);
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.from {
+  color: var(--wv-muted);
+  text-decoration: line-through;
+}
+
+.to {
+  border-color: var(--wv-iris);
+  background: var(--wv-iris-tint);
+  color: var(--wv-iris-strong);
+}
+
+.switchRule {
+  display: inline-block;
+  width: var(--wv-space-8);
+  height: var(--wv-thread-width);
+  background: var(--wv-iris);
+  transform-origin: left;
+  transition: transform 500ms ease 150ms;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .body {
   min-width: 0;
 }
 
-.plane .code {
+.beat .code {
   font-size: 13px;
   line-height: 21px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
-/* Ledger lines stay one per row on wide screens; on phones they wrap so no field is cut off. */
-.plane .ledgerCode {
+.beat .ledgerCode {
+  font-size: 12.5px;
   white-space: pre;
   overflow-wrap: normal;
 }
 
+.line {
+  position: relative;
+  display: inline-block;
+}
+
 @media (max-width: 600px) {
-  .plane .ledgerCode {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+  /* One JSON object per line stays one line; the block scrolls sideways inside itself
+     (it is a focusable region) instead of breaking tokens like "T-\n01". */
+  .beat .ledgerCode {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre;
+    overflow-wrap: normal;
+    font-size: 12px;
+  }
+
+  .line {
+    display: inline;
   }
 }
 
@@ -220,8 +341,9 @@
   overflow-wrap: anywhere;
 }
 
-.thread :global(.wv-thread__body) {
-  margin-top: var(--wv-space-1);
+.thread > li {
+  transition: opacity 450ms ease, transform 450ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--k, 0) * 110ms + 120ms);
 }
 
 .chip {
@@ -229,71 +351,209 @@
 }
 
 @media (min-width: 900px) {
-  .stage {
-    --spine-pad: var(--wv-space-12);
+  .beat {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+    gap: var(--wv-space-8);
   }
 }
 
-@keyframes drawDown {
-  from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
+/* =================== Live: pinned stage =================== */
+.root[data-live] {
+  height: calc(100vh - var(--nav) + 4 * 65vh);
 }
 
-@keyframes drawAcross {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
+.root[data-live] .pin {
+  position: sticky;
+  top: var(--nav);
+  height: calc(100vh - var(--nav));
+  /* Centre the stage in the pinned viewport so tall windows do not leave an empty band below it. */
+  grid-template-rows: auto auto auto auto;
+  align-content: center;
+  gap: var(--wv-space-4);
+  padding: var(--wv-space-6) 0 var(--wv-space-4);
 }
 
-@keyframes nodeOn {
-  from { transform: scale(0.4); }
-  to { transform: none; }
+.root[data-live] .progress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--wv-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: 500 12px/16px var(--wv-font-sans);
+  letter-spacing: 0.02em;
+  color: var(--wv-muted);
 }
 
-/* The handoff: the earlier state (open node, claude@cloud holding the task) shows until the
-   switch, then crossfades out to the resting state underneath. */
-@keyframes earlierStateOut {
-  0%, 45% { opacity: 1; }
-  55%, 100% { opacity: 0; }
+.progress li {
+  display: grid;
+  gap: var(--wv-space-2);
+  margin: 0;
+  transition: color 300ms ease;
 }
 
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    /* The spine draws as the stage scrolls through. Ranges start at entry 0%, when the
-       element is still below the viewport, so the switch to the first frame is never seen. */
-    .stage::after {
-      animation: drawDown linear forwards;
-      animation-timeline: view();
-      animation-range: entry 0% cover 60%;
-    }
+.bar {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--wv-line);
+  overflow: hidden;
+}
 
-    .plane::before {
-      animation: nodeOn linear forwards;
-      animation-timeline: view();
-      animation-range: entry 0% entry 60%;
-    }
+.bar::after {
+  content: "";
+  display: block;
+  height: 100%;
+  background: var(--wv-iris);
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 400ms ease;
+}
 
-    .handoff::after,
-    .switch .from::before,
-    .switch .to::before {
-      animation: earlierStateOut linear forwards;
-      animation-timeline: view();
-      animation-range: entry 0% cover 40%;
-    }
+.root[data-live] .beats {
+  display: grid;
+  align-items: start;
+}
 
-    .switchRule {
-      animation: drawAcross linear forwards;
-      animation-timeline: view();
-      animation-range: entry 0% cover 40%;
-    }
+.root[data-live] .beat {
+  grid-area: 1 / 1;
+  align-self: start;
+  align-items: start;
+  border-top: 0;
+  padding-top: var(--wv-space-2);
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  pointer-events: none;
+  transition: opacity 380ms ease, transform 480ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
 
-    .thread::before {
-      animation: drawDown linear forwards;
-      animation-timeline: view();
-      animation-range: entry 0% cover 40%;
-    }
+.root[data-live] .thread > li {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+}
+
+.root[data-live] .line::after {
+  content: "";
+  position: absolute;
+  inset: 0 -2px;
+  background: var(--wv-sunken);
+  transform-origin: right;
+  transform: scaleX(1);
+  transition: transform 420ms steps(18, end);
+  transition-delay: calc(var(--k, 0) * 260ms + 200ms);
+}
+
+/* The current beat. */
+.root[data-beat="0"] .beat[data-i="0"],
+.root[data-beat="1"] .beat[data-i="1"],
+.root[data-beat="2"] .beat[data-i="2"],
+.root[data-beat="3"] .beat[data-i="3"] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.root[data-beat="1"] .beat[data-i="1"] .thread > li,
+.root[data-beat="3"] .beat[data-i="3"] .thread > li {
+  opacity: 1;
+  transform: none;
+}
+
+.root[data-beat="2"] .line::after {
+  transform: scaleX(0);
+}
+
+/* Progress: every beat up to the current one is filled. */
+.root[data-beat="0"] .progress li[data-n="0"],
+.root[data-beat="1"] .progress li:is([data-n="0"], [data-n="1"]),
+.root[data-beat="2"] .progress li:not([data-n="3"]),
+.root[data-beat="3"] .progress li {
+  color: var(--wv-ink);
+}
+
+.root[data-beat="0"] .progress li[data-n="0"] .bar::after,
+.root[data-beat="1"] .progress li:is([data-n="0"], [data-n="1"]) .bar::after,
+.root[data-beat="2"] .progress li:not([data-n="3"]) .bar::after,
+.root[data-beat="3"] .progress li .bar::after {
+  transform: none;
+}
+
+/* Diagram states before each beat is reached. */
+.root[data-beat="0"] .claude,
+.root[data-beat="2"] .claude,
+.root[data-beat="0"] .codex,
+.root[data-beat="1"] .codex,
+.root[data-beat="2"] .codex {
+  opacity: 0.45;
+}
+
+.root[data-beat="3"] .claude {
+  opacity: 0.6;
+}
+
+.root[data-beat="0"] .w1 .fill,
+.root[data-live]:is([data-beat="0"], [data-beat="1"], [data-beat="2"]) .w2 .fill {
+  transform: scaleX(0);
+}
+
+.root[data-beat="0"] .limit,
+.root[data-live]:is([data-beat="0"], [data-beat="1"], [data-beat="2"]) .done {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.root[data-live]:is([data-beat="0"], [data-beat="1"]) .file[data-f="ledger"],
+.root[data-live]:is([data-beat="0"], [data-beat="1"], [data-beat="2"]) .file[data-f="handoff"] {
+  opacity: 0.35;
+}
+
+/* The file the current beat writes, raised. */
+.root[data-beat="0"] .file[data-f="spec"],
+.root[data-beat="2"] .file[data-f="ledger"],
+.root[data-beat="3"] .file[data-f="handoff"] {
+  transform: translate3d(0, -3px, 0);
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wv-iris) 70%, transparent);
+}
+
+.root[data-beat="3"] .from {
+  opacity: 0.7;
+}
+
+.root[data-beat="3"] .codex {
+  transform: translate3d(0, -4px, 0);
+  border-color: var(--wv-iris);
+}
+
+.root[data-beat="1"] .claude {
+  transform: translate3d(0, -4px, 0);
+  border-color: var(--wv-warn);
+}
+
+/* A packet travels along the wire that is carrying work right now. */
+@media (prefers-reduced-motion: no-preference) and (min-width: 760px) {
+  .root[data-beat="1"] .w1 .packet,
+  .root[data-beat="2"] .w1 .packet,
+  .root[data-beat="3"] .w2 .packet {
+    animation: travel 1600ms cubic-bezier(0.5, 0, 0.5, 1) infinite;
   }
+}
 
-  @media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
-    .thread::before { animation-name: drawAcross; }
-  }
+@keyframes travel {
+  0% { opacity: 0; transform: translate3d(0, 0, 0); }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(100%, 0, 0); }
+}
+
+@media print {
+  .root[data-live] { height: auto; }
+  .root[data-live] .pin { position: static; height: auto; }
+  .root[data-live] .beat,
+  .root[data-live] .thread > li { opacity: 1; transform: none; }
+  .root[data-live] .line::after { display: none; }
+}
+
+/* Live: the diagram takes more of the screen. */
+.root[data-live] .diagram {
+  padding-block: var(--wv-space-12);
 }

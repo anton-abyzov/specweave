@@ -22,17 +22,17 @@
   --sw-color-primary-800: color-mix(in srgb, var(--wv-iris) 52%, var(--wv-ink));
   --sw-color-primary-900: color-mix(in srgb, var(--wv-iris) 38%, var(--wv-ink));
 
-  /* Secondary = pass ramp (canvas -> pass -> ink) */
-  --sw-color-accent-50: color-mix(in srgb, var(--wv-pass) 8%, var(--wv-canvas));
-  --sw-color-accent-100: color-mix(in srgb, var(--wv-pass) 14%, var(--wv-canvas));
-  --sw-color-accent-200: color-mix(in srgb, var(--wv-pass) 28%, var(--wv-canvas));
-  --sw-color-accent-300: color-mix(in srgb, var(--wv-pass) 48%, var(--wv-canvas));
-  --sw-color-accent-400: color-mix(in srgb, var(--wv-pass) 74%, var(--wv-canvas));
-  --sw-color-accent-500: var(--wv-pass);
-  --sw-color-accent-600: color-mix(in srgb, var(--wv-pass) 82%, var(--wv-ink));
-  --sw-color-accent-700: color-mix(in srgb, var(--wv-pass) 66%, var(--wv-ink));
-  --sw-color-accent-800: color-mix(in srgb, var(--wv-pass) 52%, var(--wv-ink));
-  --sw-color-accent-900: color-mix(in srgb, var(--wv-pass) 38%, var(--wv-ink));
+  /* Accent = iris ramp, brand violet (canvas -> iris -> ink); status green lives in --sw-color-success-* */
+  --sw-color-accent-50: color-mix(in srgb, var(--wv-iris) 8%, var(--wv-canvas));
+  --sw-color-accent-100: color-mix(in srgb, var(--wv-iris) 14%, var(--wv-canvas));
+  --sw-color-accent-200: color-mix(in srgb, var(--wv-iris) 28%, var(--wv-canvas));
+  --sw-color-accent-300: color-mix(in srgb, var(--wv-iris) 48%, var(--wv-canvas));
+  --sw-color-accent-400: color-mix(in srgb, var(--wv-iris) 74%, var(--wv-canvas));
+  --sw-color-accent-500: var(--wv-iris);
+  --sw-color-accent-600: color-mix(in srgb, var(--wv-iris) 82%, var(--wv-ink));
+  --sw-color-accent-700: color-mix(in srgb, var(--wv-iris) 66%, var(--wv-ink));
+  --sw-color-accent-800: color-mix(in srgb, var(--wv-iris) 52%, var(--wv-ink));
+  --sw-color-accent-900: color-mix(in srgb, var(--wv-iris) 38%, var(--wv-ink));
 
   /* Semantic colors from brand review / success / warning / danger */
   --sw-color-info: var(--sw-brand-review);
@@ -67,9 +67,9 @@
   --sw-color-danger-500: var(--sw-brand-danger);
   --sw-color-danger-700: var(--wv-fail);
   --sw-color-danger-900: var(--wv-ink);
-  --sw-color-tip: var(--wv-pass);
-  --sw-color-tip-light: var(--wv-pass-tint);
-  --sw-color-tip-dark: var(--wv-pass);
+  --sw-color-tip: var(--wv-iris);
+  --sw-color-tip-light: var(--wv-iris-tint);
+  --sw-color-tip-dark: var(--wv-iris-strong);
 
   /* Neutral scale on Weave neutrals; follows the theme (50 = canvas side, 900 = ink side).
      Dark "bands" built on gray-900/950 are retired in Weave. */
@@ -340,7 +340,7 @@
   --sw-gradient-hero: linear-gradient(var(--wv-canvas), var(--wv-canvas));
   --sw-gradient-cta: linear-gradient(var(--wv-sunken), var(--wv-sunken));
   --sw-gradient-dark: linear-gradient(var(--wv-sunken), var(--wv-sunken));
-  --sw-gradient-accent: linear-gradient(var(--wv-pass), var(--wv-pass));
+  --sw-gradient-accent: linear-gradient(var(--wv-iris), var(--wv-iris));
   --sw-gradient-text: linear-gradient(var(--wv-ink), var(--wv-ink));
 
   /* ============================================

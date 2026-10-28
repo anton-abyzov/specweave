@@ -1,43 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-
 /* ============================
-   YOUTUBE EMBED — Cinematic
+   YOUTUBE EMBED — Weave tokens (src/css/weave.css); light and dark follow data-theme
    ============================ */
 
 .wrapper {
-  --yt-amber: #e8a838;
-  --yt-amber-dim: #d4952f;
-  --yt-charcoal: #1a1a2e;
-  --yt-charcoal-deep: #12121f;
-  --yt-surface: #222240;
-  --yt-slate: #2a2a48;
-  --yt-text: #e8e6e3;
-  --yt-text-dim: #9b98a1;
-  --yt-border: rgba(255, 255, 255, 0.06);
-
-  font-family: 'Outfit', var(--ifm-font-family-base);
+  font-family: var(--wv-font-sans);
   position: relative;
   margin: 2rem 0;
-  border-radius: 16px;
+  border-radius: var(--wv-radius-lg);
+  border: 1px solid var(--wv-line);
   overflow: hidden;
-  background: var(--yt-charcoal);
+  background: var(--wv-panel);
+  color: var(--wv-ink);
+  box-shadow: var(--wv-shadow-window);
   isolation: isolate;
-}
-
-.wrapper::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  background-size: 128px;
-  pointer-events: none;
-  z-index: 1;
 }
 
 /* Header */
 .header {
   padding: 2rem 2rem 1.25rem;
-  background: linear-gradient(165deg, var(--yt-charcoal-deep) 0%, var(--yt-charcoal) 40%, #1e1e38 100%);
+  background: var(--wv-panel);
   position: relative;
 }
 
@@ -48,7 +29,7 @@
   left: 2rem;
   right: 2rem;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--yt-border), rgba(232, 168, 56, 0.15), var(--yt-border), transparent);
+  background: var(--wv-line);
 }
 
 .topRow {
@@ -64,14 +45,14 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--wv-font-mono);
   font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: normal;
   text-transform: none;
-  color: var(--yt-amber);
-  background: rgba(232, 168, 56, 0.08);
-  border: 1px solid rgba(232, 168, 56, 0.2);
+  color: var(--wv-iris-strong);
+  background: var(--wv-iris-tint);
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 30%, transparent);
   padding: 4px 12px;
   border-radius: 100px;
 }
@@ -81,8 +62,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--yt-amber);
-  box-shadow: 0 0 8px var(--yt-amber);
+  background: var(--wv-iris);
   animation: pulse 2.5s ease-in-out infinite;
 }
 
@@ -91,30 +71,34 @@
   50% { opacity: 0.4; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .badge::before { animation: none; }
+}
+
 .duration {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--wv-font-mono);
   font-size: 0.78rem;
-  color: var(--yt-text-dim);
+  color: var(--wv-muted);
 }
 
 .title {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--wv-font-sans);
   font-size: 1.6rem;
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.2;
-  color: var(--yt-text);
+  color: var(--wv-ink);
   margin: 0 0 0.5rem;
 }
 
 .title span {
-  color: var(--yt-amber);
+  color: var(--wv-iris);
 }
 
 .subtitle {
   font-size: 0.92rem;
-  font-weight: 300;
-  color: var(--yt-text-dim);
+  font-weight: 400;
+  color: var(--wv-muted);
   line-height: 1.5;
   max-width: 580px;
 }
@@ -126,18 +110,9 @@
 
 .videoFrame {
   position: relative;
-  border-radius: 10px;
+  border-radius: var(--wv-radius-md);
   overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 60px rgba(232, 168, 56, 0.05);
-}
-
-.videoFrame::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, rgba(232, 168, 56, 0.12) 0%, transparent 30%, transparent 70%, rgba(99, 102, 241, 0.08) 100%);
-  z-index: -1;
+  box-shadow: 0 0 0 1px var(--wv-line), var(--wv-shadow-window);
 }
 
 .videoAspect {
@@ -162,12 +137,12 @@
 }
 
 .chaptersLabel {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--wv-font-mono);
   font-size: 0.62rem;
   font-weight: 500;
   text-transform: none;
   letter-spacing: normal;
-  color: var(--yt-text-dim);
+  color: var(--wv-muted);
   margin-bottom: 0.6rem;
 }
 
@@ -185,31 +160,30 @@
   flex: 1;
   min-width: 95px;
   padding: 9px 11px;
-  background: var(--yt-surface);
-  border: 1px solid var(--yt-border);
-  border-radius: 8px;
+  background: var(--wv-sunken);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   text-decoration: none !important;
   display: block;
   color: inherit !important;
 }
 
 .chapter:hover {
-  background: var(--yt-slate);
-  border-color: rgba(232, 168, 56, 0.25);
+  background: var(--wv-iris-tint);
+  border-color: var(--wv-iris);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   text-decoration: none !important;
 }
 
-.chapter:hover .chapterTime { color: var(--yt-amber); }
+.chapter:hover .chapterTime { color: var(--wv-iris-strong); }
 
 .chapterTime {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--wv-font-mono);
   font-size: 0.66rem;
   font-weight: 500;
-  color: var(--yt-text-dim);
+  color: var(--wv-muted);
   margin-bottom: 3px;
   transition: color 0.2s ease;
 }
@@ -217,13 +191,13 @@
 .chapterTitle {
   font-size: 0.72rem;
   font-weight: 500;
-  color: var(--yt-text);
+  color: var(--wv-ink);
   line-height: 1.3;
 }
 
 /* Transcript */
 .transcriptSection {
-  border-top: 1px solid var(--yt-border);
+  border-top: 1px solid var(--wv-line);
 }
 
 .transcriptToggle {
@@ -235,14 +209,14 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--yt-text-dim);
-  font-family: 'Outfit', sans-serif;
+  color: var(--wv-muted);
+  font-family: var(--wv-font-sans);
   font-size: 0.82rem;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
-.transcriptToggle:hover { color: var(--yt-text); }
+.transcriptToggle:hover { color: var(--wv-ink); }
 
 .transcriptArrow {
   display: inline-flex;
@@ -266,17 +240,17 @@
   display: flex;
   gap: 1rem;
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--yt-border);
+  border-bottom: 1px solid var(--wv-line);
   align-items: baseline;
 }
 
 .transcriptLine:last-child { border-bottom: none; }
 
 .transcriptTimestamp {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--wv-font-mono);
   font-size: 0.7rem;
   font-weight: 500;
-  color: var(--yt-amber-dim);
+  color: var(--wv-iris);
   white-space: nowrap;
   min-width: 36px;
   flex-shrink: 0;
@@ -284,8 +258,8 @@
 
 .transcriptText {
   font-size: 0.85rem;
-  font-weight: 300;
-  color: var(--yt-text-dim);
+  font-weight: 400;
+  color: var(--wv-muted);
   line-height: 1.6;
 }
 
@@ -296,8 +270,8 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1.1rem 2rem;
-  background: var(--yt-charcoal-deep);
-  border-top: 1px solid var(--yt-border);
+  background: var(--wv-sunken);
+  border-top: 1px solid var(--wv-line);
   flex-wrap: wrap;
 }
 
@@ -311,97 +285,64 @@
 .channelLink {
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--yt-text) !important;
+  color: var(--wv-ink) !important;
   text-decoration: none !important;
   border-bottom: 1px solid transparent;
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 
 .channelLink:hover {
-  border-bottom-color: var(--yt-amber);
-  color: var(--yt-amber) !important;
+  border-bottom-color: var(--wv-iris);
+  color: var(--wv-iris-strong) !important;
 }
 
 .ccNotice {
   font-size: 0.7rem;
-  color: var(--yt-text-dim);
+  color: var(--wv-muted);
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
 .ccBadge {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--wv-font-mono);
   font-size: 0.58rem;
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--wv-panel);
+  border: 1px solid var(--wv-line);
   padding: 1px 5px;
   border-radius: 3px;
   letter-spacing: 0.05em;
 }
 
+/* CTA: iris fill; --wv-on-iris flips to dark ink on the light dark-mode iris (AA in both themes) */
 .watchBtn {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--wv-font-sans);
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--yt-charcoal-deep) !important;
-  background: var(--yt-amber);
+  color: var(--wv-on-iris) !important;
+  background: var(--wv-iris);
   border: none;
   padding: 7px 18px;
   border-radius: 100px;
   cursor: pointer;
   text-decoration: none !important;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 12px rgba(232, 168, 56, 0.3);
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .watchBtn:hover {
-  background: #f0b44a;
+  background: var(--wv-iris-strong);
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(232, 168, 56, 0.4);
-  color: var(--yt-charcoal-deep) !important;
+  color: var(--wv-on-iris) !important;
   text-decoration: none !important;
 }
 
 .watchBtn svg {
   width: 13px;
   height: 13px;
-}
-
-/* Light mode */
-:global([data-theme='light']) .wrapper {
-  --yt-charcoal: #f8f7f4;
-  --yt-charcoal-deep: #efede8;
-  --yt-surface: #f0eeea;
-  --yt-slate: #e8e6e0;
-  --yt-text: #1a1a2e;
-  --yt-text-dim: #6b687a;
-  --yt-border: rgba(0, 0, 0, 0.06);
-  --yt-amber: #c88520;
-  --yt-amber-dim: #a06a18;
-  box-shadow: 0 2px 24px rgba(0, 0, 0, 0.06);
-}
-
-:global([data-theme='light']) .header {
-  background: linear-gradient(165deg, var(--yt-charcoal-deep) 0%, var(--yt-charcoal) 40%, #f5f3ee 100%);
-}
-
-:global([data-theme='light']) .videoFrame {
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 8px 40px rgba(0, 0, 0, 0.12);
-}
-
-:global([data-theme='light']) .watchBtn {
-  color: #fff !important;
-  background: #b07818;
-}
-
-:global([data-theme='light']) .watchBtn:hover {
-  background: #c88520;
-  color: #fff !important;
 }
 
 /* Responsive */
