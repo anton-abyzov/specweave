@@ -575,3 +575,13 @@
     right: calc((100% - 3 * var(--wv-space-6)) / 4 - 7px);
   }
 }
+
+/* Keep the product proof in the first screen; detailed limits follow it. */
+.hero { padding-top: 32px; gap: 24px; }
+.heroBrand { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
+.hero h1 { font-size: clamp(42px, 5vw, 66px); }
+.hero .lead { font-size: 19px; line-height: 1.5; margin-block: 18px; }
+.hero .providers { margin-block: 20px; }
+.heroShot .requirements { margin-top: 24px; text-align: center; }
+.page { --wv-iris: #b44a29; --wv-iris-strong: #963b20; --wv-on-iris: #fff; }
+:global([data-theme='dark']) .page { --wv-iris: #d58162; --wv-iris-strong: #efaa8f; --wv-on-iris: #251f1b; }

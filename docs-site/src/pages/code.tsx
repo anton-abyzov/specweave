@@ -236,11 +236,6 @@ export default function Code() {
             <Link className="wv-btn wv-btn--primary wv-btn--lg" to="/code/download/" data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for macOS, Windows or Linux</Link>
             <a className="wv-btn wv-btn--secondary wv-btn--lg" href="#workflow">See how it works</a>
           </div>
-          <p className={styles.requirements}>Early access for macOS 13 or later on Apple silicon, Windows 10 and 11 (x64), and Linux (x64). Mac releases are signed and notarized; Windows and Linux installers are unsigned. <Link className="wv-link" to="/code/download/">Downloads, versions and installation steps</Link></p>
-          <div className={clsx('wv-note', styles.qualification)}>
-            <Info {...icon} />
-            <p><strong>Cloud models still receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>
-          </div>
         </div>
 
         <div className={styles.heroShot}>
@@ -251,10 +246,15 @@ export default function Code() {
             </a>
             <figcaption>Real app, fictional coffee orders. Recorded in SpecWithCode 1.0.76, October 24, 2026. <a className="wv-link" href="#real-run">Step through a real run</a></figcaption>
           </figure>
+          <p className={styles.requirements}>Early access for macOS 13 or later on Apple silicon, Windows 10 and 11 (x64), and Linux (x64). Mac releases are signed and notarized; Windows and Linux installers are unsigned. <Link className="wv-link" to="/code/download/">Downloads, versions and installation steps</Link></p>
+          <div className={clsx('wv-note', styles.qualification)}>
+            <Info {...icon} />
+            <p><strong>Cloud models still receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>
+          </div>
         </div>
       </header>
 
-      <section className={clsx(styles.shell, styles.workflow)} aria-label="From your goal to a reviewed result">
+      <section id="workflow" className={clsx(styles.shell, styles.workflow)} aria-label="From your goal to a reviewed result">
         <div className={styles.workflowHead}><p className={styles.productNote}>One brief. Work you can follow.</p><h2>Keep the decisions.<br />See the work.</h2></div>
         <ol className={styles.workflowRail}>
           <li><span>01</span><h3>Give the goal</h3><p>Tell the coordinator what done means. Your brief and decisions stay together.</p></li>
