@@ -152,7 +152,7 @@
   text-align: center;
   padding-top: 64px;
 }
-.heroCopy { max-width: 980px; margin-inline: auto; }
+.heroCopy { max-width: 980px; min-width: 0; margin-inline: auto; }
 .hero .product, .hero .actions { justify-content: center; }
 .hero h1 { font-size: clamp(44px, 5.8vw, 76px); line-height: 1.04; letter-spacing: -.055em; }
 .hero h1 em { font-style: normal; color: var(--wv-iris-strong); }
@@ -162,11 +162,10 @@
 .hero .qualification { max-width: 790px; margin: 16px auto 0; text-align: left; }
 .providers { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px 28px; padding: 0; margin: 28px auto; list-style: none; }
 .providers li { display: flex; gap: 9px; align-items: center; font-size: 14px; }
-.providers img { width: 32px; height: 32px; padding: 4px; border-radius: 6px; background: #f5f3ed; }
-.providers img[src*="openai"], .providers img[src*="cursor"] { background: #25251f; }
+.providers img { width: 32px; height: 32px; padding: 4px; border-radius: 6px; background: var(--wv-sunken); }
+/* White marks need a plate that stays dark in both themes (Weave light ink). */
+.providers img[src*="openai"], .providers img[src*="cursor"] { background: #241523; }
 .heroShot { width: 100%; max-width: 1120px; margin-inline: auto; text-align: left; }
-.heroShot figure { box-shadow: 0 24px 60px #24241e14; }
-.heroShot img { display: block; width: 100%; height: auto; }
 .workflow { padding-top: 88px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px 64px; align-items: start; }
 .workflowHead { position: sticky; top: 100px; }
 .workflowHead h2 { margin-top: 12px; }
@@ -566,6 +565,8 @@
 
   .actions :global(.wv-btn) {
     flex: 1 1 auto;
+    white-space: normal;
+    text-align: center;
   }
 }
 
@@ -583,5 +584,3 @@
 .hero .lead { font-size: 19px; line-height: 1.5; margin-block: 18px; }
 .hero .providers { margin-block: 20px; }
 .heroShot .requirements { margin-top: 24px; text-align: center; }
-.page { --wv-iris: #b44a29; --wv-iris-strong: #963b20; --wv-on-iris: #fff; }
-:global([data-theme='dark']) .page { --wv-iris: #d58162; --wv-iris-strong: #efaa8f; --wv-on-iris: #251f1b; }
