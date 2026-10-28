@@ -1,7 +1,7 @@
 {
   "version": 1,
   "historyId": "9e850c7a-5793-4c33-8346-b0ece9a05e16",
-  "currentRevision": null,
+  "currentRevision": "4f459060-406c-40bc-aaa4-4f1ea088413d",
   "pendingChanges": false,
   "files": {
     "assets/fonts/ibm-plex-sans-latin.woff2": {
@@ -45,8 +45,8 @@
       "content": "/Users/antonabyzov/.cache/hyperframes/history/9e850c7a-5793-4c33-8346-b0ece9a05e16/blobs/53/53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
     },
     "index.html": {
-      "hash": "2781f3016361c3541c61109053b8bf1498842db6b8044263007c4f9016e62252",
-      "content": "/Users/antonabyzov/.cache/hyperframes/history/9e850c7a-5793-4c33-8346-b0ece9a05e16/blobs/27/2781f3016361c3541c61109053b8bf1498842db6b8044263007c4f9016e62252"
+      "hash": "123dcce9266fb3b5b2fef14177fbc1160c1c147993a3db2e974d9e174c121098",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/9e850c7a-5793-4c33-8346-b0ece9a05e16/blobs/12/123dcce9266fb3b5b2fef14177fbc1160c1c147993a3db2e974d9e174c121098"
     },
     "meta.json": {
       "hash": "0a452da52f851a5e7d893d9a41c324fbd2386b145259596e5dbfb23e3eb1db71",
@@ -57,13 +57,59 @@
       "content": "/Users/antonabyzov/.cache/hyperframes/history/9e850c7a-5793-4c33-8346-b0ece9a05e16/blobs/e8/e83bb191e71a0dc3dcab04cf4afd72c0f478737c1b2bef3ff62fe5cb5c3e5db9"
     }
   },
-  "revisions": {},
+  "revisions": {
+    "4f459060-406c-40bc-aaa4-4f1ea088413d": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793216982521,
+      "endedAt": 1793216982522,
+      "files": {
+        "index.html": {
+          "before": "/Users/antonabyzov/.cache/hyperframes/history/9e850c7a-5793-4c33-8346-b0ece9a05e16/blobs/27/2781f3016361c3541c61109053b8bf1498842db6b8044263007c4f9016e62252",
+          "after": "/Users/antonabyzov/.cache/hyperframes/history/9e850c7a-5793-4c33-8346-b0ece9a05e16/blobs/12/123dcce9266fb3b5b2fef14177fbc1160c1c147993a3db2e974d9e174c121098"
+        }
+      }
+    }
+  },
   "checks": {
     "latest": {
-      "revision": null,
-      "id": "85277a27-11b6-4fa9-964b-447394da7f25"
+      "revision": "4f459060-406c-40bc-aaa4-4f1ea088413d",
+      "id": "8b99e860-aedd-4cbc-8e34-1860b6994aec"
     },
-    "revisions": {},
+    "revisions": {
+      "4f459060-406c-40bc-aaa4-4f1ea088413d": [
+        {
+          "id": "8b99e860-aedd-4cbc-8e34-1860b6994aec",
+          "scope": "project",
+          "report": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/codex/hyperframes/.hyperframes/artifacts/checks/8b99e860-aedd-4cbc-8e34-1860b6994aec.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 10000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1793216987581,
+          "contentHash": "2c5b61b1f952c3d909b31fee41ed0d772e940daaa91313031120ac2fe5e94a53",
+          "revision": "4f459060-406c-40bc-aaa4-4f1ea088413d",
+          "inputFingerprint": "06ce8b9d55bd317e8b79f75c9a2c2d61c5cebae3ef93b987f47cf15944c6b192",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
     "unversioned": [
       {
         "id": "85277a27-11b6-4fa9-964b-447394da7f25",
@@ -101,13 +147,15 @@
   },
   "renders": {
     "latest": {
-      "id": "ebfee422-7c70-4dcf-aabd-4e62355df682",
-      "completedAt": 1793209735428,
+      "id": "93044dec-c52b-4420-a2e1-436a25340b89",
+      "completedAt": 1793217029357,
       "output": "/Users/Shared/specwithcode-demo/r2-06-codex/build/render.mp4",
       "status": "completed",
-      "revision": null
+      "revision": "4f459060-406c-40bc-aaa4-4f1ea088413d"
     },
-    "retainedRevisions": []
+    "retainedRevisions": [
+      "4f459060-406c-40bc-aaa4-4f1ea088413d"
+    ]
   },
   "pendingArtifactCleanup": []
 }

@@ -40,7 +40,7 @@ const cues = [];
 // Align written caption words to Whisper's words (LCS on normalized tokens), so each
 // cue starts on its first spoken word and ends on its last one.
 const norm = (w) => w.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(/\s+/).filter(Boolean);
-const NUM = { eleven: "11" };
+const NUM = { eleven: "11", "1": "one" };
 function align(a, b) {
   const n = a.length, m = b.length, L = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
