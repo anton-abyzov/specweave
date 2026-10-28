@@ -84,6 +84,9 @@ export async function runNarration(argv = process.argv.slice(2)) {
       method: 'POST', headers: {'xi-api-key': key, 'content-type': 'application/json', accept: 'audio/mpeg'}, body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`${line.id}: synthesis returned HTTP ${res.status}; no retry was attempted`);
+    if (!res.headers.get('content-type')?.toLowerCase().includes('audio/')) {
+      throw new Error(`${line.id}: synthesis did not return audio; reconcile pending operation`);
+    }
     const audio = Buffer.from(await res.arrayBuffer());
     const requestId = res.headers.get('request-id');
     if (!audio.length || !requestId) throw new Error(`${line.id}: synthesis response lacks audio or request id; reconcile pending operation`);
