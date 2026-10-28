@@ -2,68 +2,6 @@
   "schemaVersion": 1,
   "guidesUpdatedAt": "2026-10-26",
   "guides": {
-    "specwithcode-claude-code": {
-      "agentNotes": [
-        "Claude Code is on by default, so it connects in the setup wizard rather than under Settings, Providers. Keep this computer, choose Continue, and check that the Claude card says Ready to code.",
-        "If the card does not say Ready to code, run `claude auth login` in a terminal first. On 0.2.6 a signed-out Claude card showed Needs attention rather than a Sign in button.",
-        "Claude reads project skills from `.claude/skills` only and ignores `.agents/skills`. `specweave init` writes both folders, so nothing extra is needed.",
-        "`claude auth status` prints the account email and organization, so keep it off screen when you record or share your terminal."
-      ],
-      "captures": [
-        {"file": "video/tutorials/claude-code/captures/08-specweave-task-list.json", "label": "The planned task, open until Claude Code claims it"}
-      ]
-    },
-    "specwithcode-codex": {
-      "agentNotes": [
-        "Codex is on by default and connects in the setup wizard. On the Codex card, choose Continue with ChatGPT, or run `codex login` in a terminal and choose Use existing CLI. The card then says Ready to code.",
-        "A signed-out existing CLI reports: Codex CLI is not authenticated. Run `codex login` and try again.",
-        "Codex reads the project's `.agents/skills` folder: its own prompt input lists that folder and the 11 `sw-*` skills.",
-        "In the recording, Codex built in a sibling worktree on `inc/0001-codex` and fast-forwarded `main`, while the chat stayed on Current checkout.",
-        "Its plan reply listed the acceptance criteria as bullets without AC ids, and the number of tasks varied between runs."
-      ],
-      "captures": [
-        {"file": "video/tutorials/codex/captures/04-codex-skills.json", "label": "Codex lists the project skills from its prompt input"},
-        {"file": "video/tutorials/codex/captures/09-spec-acs-tasks.json", "label": "The acceptance criteria and task Codex wrote to spec.md"}
-      ]
-    },
-    "specwithcode-opencode": {
-      "agentNotes": [
-        "Sign OpenCode in to a model provider before you add it: run `opencode auth login` in a terminal.",
-        "OpenCode is off by default. Add it under Settings, Providers with Add provider. Leave Server URL empty to let SpecWithCode start the OpenCode server when needed.",
-        "SpecWithCode 0.2.6 rated OpenCode 1.14.19 up to 2.0 as Limited support, so the recording used OpenCode 2.0.26.",
-        "The model picker lists models only for the upstream providers OpenCode reports as connected. The recording picked Claude Sonnet 5.5 through a connected OpenRouter provider.",
-        "Every OpenCode turn bills the connected provider."
-      ],
-      "captures": [
-        {"file": "video/tutorials/opencode/captures/04-opencode-debug-skill.json", "label": "OpenCode finds the 11 SpecWeave skills in the project"},
-        {"file": "video/tutorials/opencode/captures/06-opencode-auth-list.json", "label": "The model provider OpenCode was signed in to"}
-      ]
-    },
-    "specwithcode-grok": {
-      "agentNotes": [
-        "The `specweave init` tool picker has no Grok entry, so the recording used `--adapter generic`. The skills are the same either way.",
-        "Grok skips project skills in folders it does not trust. Before the grant, `grok inspect --json` reported `projectTrusted: false` and no `sw-*` skills. After `grok --trust` it reported 11, and the grant was saved in `~/.grok/trusted_folders.toml`.",
-        "In Add provider, pick Grok (existing CLI), not the Grok Build registry card, which is a different install.",
-        "Grok has no Auto-accept edits mode, and Supervised stops on every command, which is why the recording used Full access.",
-        "A signed-out Grok reports: Grok CLI is installed but not logged in. Run `grok login`."
-      ],
-      "captures": [
-        {"file": "video/tutorials/grok/captures/04-grok-trust-skills.json", "label": "After `grok --trust`, Grok loads the 11 SpecWeave skills"},
-        {"file": "video/tutorials/grok/captures/10-grok-version-models.json", "label": "The Grok CLI version and models used for the recording"}
-      ]
-    },
-    "specwithcode-antigravity": {
-      "agentNotes": [
-        "Antigravity is off by default. Add it under Settings, Providers with Add provider. The Sign-in method defaults to Google account.",
-        "Choose Install Antigravity: SpecWithCode downloads its own Antigravity agent, separate from your IDE, a 112 MB download in the recording. Signing in needs that runtime installed.",
-        "Then choose Sign in and finish in your browser. Google can refuse an account that is not allowed to use Antigravity with SUBSCRIPTION_REQUIRED.",
-        "Antigravity has no Build or Plan toggle, revert or edit-and-resubmit in SpecWithCode.",
-        "The API-key sign-in methods store the key in plain text, so the recording used a Google account."
-      ],
-      "captures": [
-        {"file": "video/tutorials/antigravity/captures/05-skill-names.json", "label": "The 11 SpecWeave skills `specweave init` installed for Antigravity"}
-      ]
-    },
     "how-specwithcode-works": {
       "chapterNotes": [
         {

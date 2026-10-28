@@ -8,6 +8,17 @@ import {getTutorial, type Tutorial} from '@site/src/data/tutorials';
 
 const guide = (slug: string) => getTutorial(slug) as Tutorial;
 
+// A per-agent guide as its catalogue entry renders; the per-agent episodes are unpublished while they are re-recorded.
+const agentGuide: Tutorial = {
+  ...guide('join-a-mac'),
+  slug: 'specwithcode-grok',
+  title: 'Run your first task with Grok',
+  agent: 'grok',
+  testedOn: 'SpecWithCode 0.2.6',
+  uploadDate: '2026-10-11',
+  agentNotes: ['Grok skips project skills in folders it does not trust. The grant is saved in `~/.grok/trusted_folders.toml`.'],
+};
+
 describe('GuideBody', () => {
   const transcript = [{start: 0, title: 'A disposable demo repository', text: 'Here is a real SpecWeave workflow.'}];
 
@@ -49,7 +60,7 @@ describe('GuideBody', () => {
       {start: 0, title: 'Intro', text: 'Grok in SpecWithCode.'},
       {start: 22.6, title: 'Connect Grok', text: 'Open SpecWithCode.'},
     ];
-    const {container} = render(<GuideBody tutorial={guide('specwithcode-grok')} transcript={sections} />);
+    const {container} = render(<GuideBody tutorial={agentGuide} transcript={sections} />);
     const heading = container.querySelector('#transcript-title')!;
     expect(heading.tagName).toBe('H2');
     expect(heading.closest('details')).toBeNull();
@@ -59,7 +70,7 @@ describe('GuideBody', () => {
 
   it('shows the agent notes and the recorded terminal runs of an agent guide', () => {
     const captures = [{label: 'After `grok --trust`', command: 'grok --trust inspect --json', exitCode: 0, stdout: 'sw-do\nsw-increment', truncated: false, capturedAt: '2026-10-11T05:03:35.230Z'}];
-    const {container} = render(<GuideBody tutorial={guide('specwithcode-grok')} captures={captures} />);
+    const {container} = render(<GuideBody tutorial={agentGuide} captures={captures} />);
     expect(screen.getByRole('heading', {name: 'Using Grok with SpecWithCode'})).toBeInTheDocument();
     expect(container.textContent).toContain('as recorded on SpecWithCode 0.2.6');
     expect(container.textContent).toContain('trusted_folders.toml');
@@ -81,7 +92,7 @@ describe('GuideBody', () => {
   });
 
   it('states the recorded version and the current SpecWithCode release', () => {
-    render(<GuideBody tutorial={guide('specwithcode-codex')} />);
+    render(<GuideBody tutorial={agentGuide} />);
     expect(screen.getByText(/Recorded on SpecWithCode 0\.2\.6, added 11 October 2026\. The current release is SpecWithCode \d+\.\d+\.\d+\./)).toBeInTheDocument();
   });
 });
