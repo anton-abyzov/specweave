@@ -108,7 +108,7 @@ describe('tokens.css', () => {
     expect(tokensCSS).toContain('--sw-grid-margin:');
   });
 
-  it('includes secondary accent (emerald) tokens', () => {
+  it('includes accent (iris) tokens', () => {
     expect(tokensCSS).toContain('--sw-color-accent-50:');
     expect(tokensCSS).toContain('--sw-color-accent-500:');
     expect(tokensCSS).toContain('--sw-color-accent-900:');

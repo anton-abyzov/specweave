@@ -529,13 +529,13 @@ flowchart LR
     T2R -->|Fail| Reject2["Rejected with analysis"]
     T3R -->|Fail| Reject3["Rejected with review notes"]
 
-    style Tier1 fill:#1a5276,color:#fff
-    style Tier2 fill:#1e8449,color:#fff
-    style Tier3 fill:#7d3c98,color:#fff
-    style Badge fill:#f39c12,color:#000
-    style Reject1 fill:#922b21,color:#fff
-    style Reject2 fill:#922b21,color:#fff
-    style Reject3 fill:#922b21,color:#fff
+    style Tier1 fill:#ece6f8,color:#241523,stroke:#6d4fb5
+    style Tier2 fill:#6d4fb5,color:#fff,stroke:#4a3678
+    style Tier3 fill:#4a3678,color:#fff,stroke:#4a3678
+    style Badge fill:#ece6f8,color:#4a3678,stroke:#6d4fb5,stroke-width:2px
+    style Reject1 fill:#b4232c,color:#fff
+    style Reject2 fill:#b4232c,color:#fff
+    style Reject3 fill:#b4232c,color:#fff
 ```
 
 ### Tier Progression Details
