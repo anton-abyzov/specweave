@@ -220,9 +220,11 @@
      "key": "Enter"
     },
     {
-     "do": "expect",
-     "text": "Routed to",
-     "timeout": 180000
+     "do": "waitFor",
+     "role": "button",
+     "nameRegex": "^Open thread ",
+     "timeout": 240000,
+     "note": "the coordinator replies \"Assigned to <thread>\" and links the new thread; speed-ramped"
     },
     {
      "do": "pause",
@@ -237,6 +239,11 @@
    "vo": "The thread plans increment 0001: acceptance criteria and one task with its test. Then it changes the code and runs that test. A task is done only when its test passes.",
    "stepChip": "Increment 0001 → acceptance criteria → task → test",
    "steps": [
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
     {
      "do": "click",
      "role": "button",
@@ -268,20 +275,19 @@
    "stepChip": "Summary · verify.md · review.md · Open diff",
    "steps": [
     {
-     "do": "expect",
-     "text": "verify.md",
-     "timeout": 30000
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
     },
     {
      "do": "hover",
-     "role": "link",
-     "name": "verify.md",
-     "ms": 1200
+     "text": "Fresh-context review found no issues",
+     "ms": 1800,
+     "note": "the worker's summary: tests and SpecWeave verification passed, review found no issues, increment closed"
     },
     {
      "do": "hover",
-     "role": "link",
-     "name": "review.md",
+     "text": "Increment 0001",
      "ms": 1200
     },
     {
@@ -292,12 +298,33 @@
     },
     {
      "do": "pause",
-     "ms": 2500
+     "ms": 800
+    },
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "hover",
+     "textRegex": "reports/verify\\.md$",
+     "ms": 900
+    },
+    {
+     "do": "hover",
+     "textRegex": "reports/review\\.md$",
+     "ms": 900
     },
     {
      "do": "clickIfPresent",
      "role": "button",
-     "nameRegex": "^Expand .*src/greeting\\.js$"
+     "nameRegex": "^Collapse .*ledger\\.jsonl$",
+     "note": "the ledger opens expanded; fold it so the code diff fits"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Expand src/greeting.js"
     },
     {
      "do": "pause",
