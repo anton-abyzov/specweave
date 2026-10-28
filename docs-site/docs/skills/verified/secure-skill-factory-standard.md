@@ -422,11 +422,11 @@ flowchart TD
     J --> M[Published with 'certified' label]
     E --> N[Author notified with findings]
 
-    style A fill:#1a1a2e,color:#fff,stroke:#16213e
-    style E fill:#c0392b,color:#fff,stroke:#922b21
-    style K fill:#27ae60,color:#fff,stroke:#1e8449
-    style L fill:#27ae60,color:#fff,stroke:#1e8449
-    style M fill:#27ae60,color:#fff,stroke:#1e8449
+    style A fill:#ece6f8,color:#241523,stroke:#6d4fb5
+    style E fill:#b4232c,color:#fff,stroke:#b4232c
+    style K fill:#1d7348,color:#fff,stroke:#155836
+    style L fill:#1d7348,color:#fff,stroke:#155836
+    style M fill:#1d7348,color:#fff,stroke:#155836
 ```
 
 ### 3.6 Vendor Auto-Verification
