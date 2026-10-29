@@ -1426,7 +1426,7 @@
       "agent": "any",
       "agentsShown": [],
       "video": {
-        "src": "/img/studio/agent-driven-demo.mp4",
+        "src": "/video/studio/agent-driven-demo.mp4",
         "poster": "/img/studio/agent-driven-demo-cover.jpg",
         "captionsVtt": "/img/studio/agent-driven-demo.vtt",
         "audio": "narrated",
