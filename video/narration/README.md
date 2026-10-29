@@ -28,3 +28,10 @@ so the on-screen sentences fit when spoken. Rebuild that source from the restore
 W=video/narration/work/agent-result-walkthrough
 ffmpeg -i $W/silent-source.mp4 -filter_complex "[0:v]split=2[a][b];[a]trim=0:38.9,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=2.8[va];[b]trim=start=38.9,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=3.5[vb];[va][vb]concat=n=2:v=1:a=0[v]" -map "[v]" -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 16 -preset slow -r 30 -movflags +faststart $W/silent-extended.mp4
 ```
+
+## Publishing
+
+Git ignores rendered videos under `docs-site/static/video/`; the site plays them from R2
+(`media.spec-weave.com`, bucket `specweave-docs-media`). After a render, upload it:
+`npm --prefix docs-site run videos:publish -- docs-site/static/video/<path>.mp4` (no file names uploads every render).
+Posters (`.jpg`) and captions (`.vtt`) stay in git next to where the video was.

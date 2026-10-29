@@ -31,7 +31,7 @@ Outside the repo, in `/Users/Shared/specwithcode-demo/<tutNN-slug>/`:
 - `build/`: `render.mp4`, both VTT files and `timeline.json`.
 - `out/`: old versions worth keeping.
 
-Only these go into the repo: the episode folder (about 260 KB), `docs-site/static/video/tutorials/<slug>.{mp4,jpg,en.vtt,chapters.vtt}` and the entry in `docs-site/src/data/tutorials.json`.
+Only these go into the repo: the episode folder (about 260 KB), `docs-site/static/video/tutorials/<slug>.{jpg,en.vtt,chapters.vtt}` (the `.mp4` goes to R2 with `npm --prefix docs-site run videos:publish`) and the entry in `docs-site/src/data/tutorials.json`.
 
 ## Steps
 

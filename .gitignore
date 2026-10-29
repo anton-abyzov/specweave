@@ -283,3 +283,9 @@ vskill.lock
 # Agent worktrees
 .worktrees/
 /video/tutorials/**/hyperframes/.hyperframes/
+
+# Rendered docs videos are served from R2 (media.spec-weave.com), not git.
+# Render into docs-site/static/video/ as before, then: npm --prefix docs-site run videos:publish
+docs-site/static/video/**/*.mp4
+docs-site/static/video/**/*.webm
+docs-site/static/video/**/*.mov

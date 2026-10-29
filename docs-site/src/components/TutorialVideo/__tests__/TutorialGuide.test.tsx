@@ -108,7 +108,7 @@ describe('InlineCode', () => {
 describe('TutorialEmbed', () => {
   it('plays a catalogued video with its captions and links to the guide', () => {
     const {container} = render(<TutorialEmbed slug="memory-and-usage" />);
-    expect(container.querySelector('source')).toHaveAttribute('src', '/video/studio-projects/memory-and-usage.mp4');
+    expect(container.querySelector('source')).toHaveAttribute('src', 'https://media.spec-weave.com/video/studio-projects/memory-and-usage.mp4');
     expect(container.querySelector('track')).toHaveAttribute('src', '/video/studio-projects/memory-and-usage.vtt');
     expect(container.querySelector('video')).toHaveAttribute('preload', 'none');
     expect(screen.getByRole('link', {name: /Open the guide/})).toHaveAttribute('href', '/tutorials/memory-and-usage/');

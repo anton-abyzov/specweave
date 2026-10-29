@@ -11,6 +11,7 @@
  */
 import data from './tutorials.json';
 import extrasData from './tutorial-extras.json';
+import {isHostedMedia, mediaUrl} from '../lib/media';
 
 export type AgentId = 'claude-code' | 'codex' | 'opencode' | 'antigravity' | 'grok' | 'cursor';
 /** `multi`: shows several agents (see agentsShown). `any`: works the same with every agent. */
@@ -333,7 +334,7 @@ export function transcriptText(transcript: readonly TranscriptSection[]): string
 
 /**
  * schema.org VideoObject for one tutorial, with Clip chapters; null until it has a first public
- * time. There is no embedUrl: the guide page is not a player, and contentUrl names the file.
+ * time. There is no embedUrl: the guide page is not a player, and contentUrl names the file on R2.
  */
 export function buildVideoObject(t: Tutorial, origin: string, transcript: readonly TranscriptSection[] = []) {
   if (!t.publishedAt) return null;
@@ -347,7 +348,7 @@ export function buildVideoObject(t: Tutorial, origin: string, transcript: readon
     thumbnailUrl: [`${origin}${t.poster}`],
     uploadDate: t.publishedAt,
     duration: isoDuration(duration),
-    contentUrl: `${origin}${t.src}`,
+    contentUrl: isHostedMedia(t.src) ? mediaUrl(t.src) : `${origin}${t.src}`,
     ...(text ? {transcript: text} : {}),
     inLanguage: 'en',
     isAccessibleForFree: true,

@@ -5,6 +5,7 @@ import {dirname, resolve, relative, isAbsolute, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {nativeProofScope, NATIVE_PROOF_NOTE} from './native-proof-scope.mjs';
+import {isHostedMedia, publishedBytes, publishedVideo} from '../../../scripts/media.mjs';
 
 const ownPath = fileURLToPath(import.meta.url);
 const defaultRoot = dirname(ownPath);
@@ -28,6 +29,12 @@ function inside(root, name) {
 function asset(root, value, extension) {
   assert(value && /^[a-f0-9]{64}$/.test(value.sha256), 'asset needs SHA256');
   assert(value.file.endsWith(extension), `asset must end with ${extension}`);
+  // Videos are served from R2 (scripts/media.mjs); without a local render, hash the published copy.
+  const sitePath = `/${relative(resolve(root, '..', '..'), resolve(root, value.file)).split(sep).join('/')}`;
+  if (isHostedMedia(sitePath) && !existsSync(resolve(root, value.file))) {
+    assert.equal(sha256(publishedBytes(sitePath)), value.sha256, `asset hash mismatch: ${value.file}`);
+    return publishedVideo(sitePath);
+  }
   const path = inside(root, value.file);
   assert.equal(sha256(readFileSync(path)), value.sha256, `asset hash mismatch: ${value.file}`);
   return path;
@@ -138,6 +145,7 @@ const GALLERY_STATUSES = ['published', 'coming-soon'];
 function firstParty(siteRoot, path, extension) {
   assert(typeof path === 'string' && /^\/[a-z0-9][a-z0-9/_.-]*$/i.test(path) && !path.includes('..'), `tutorial asset must be a first-party site path: ${path}`);
   assert(path.endsWith(extension), `tutorial asset must end with ${extension}: ${path}`);
+  if (isHostedMedia(path) && !existsSync(resolve(siteRoot, 'static', path.slice(1)))) return publishedVideo(path);
   return inside(resolve(siteRoot, 'static'), path.slice(1));
 }
 function probeDuration(video) {
