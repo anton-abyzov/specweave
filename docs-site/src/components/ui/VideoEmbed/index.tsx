@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import styles from './styles.module.css';
+import {mediaUrl} from '@site/src/lib/media';
 
 /** Static manifest mapping slugs to video metadata */
 export const VIDEO_MANIFEST: Record<
@@ -95,8 +96,8 @@ export default function VideoEmbed(props: VideoEmbedProps) {
   const manifest = props.slug ? VIDEO_MANIFEST[props.slug] : undefined;
 
   // Explicit props override manifest values
-  const src = props.src ?? manifest?.src ?? '';
-  const webm = props.webm;
+  const src = mediaUrl(props.src ?? manifest?.src ?? '');
+  const webm = props.webm && mediaUrl(props.webm);
   const thumbnail = props.thumbnail ?? manifest?.thumbnail ?? '';
   const title = props.title ?? manifest?.title ?? '';
   const duration = props.duration ?? manifest?.duration ?? 0;

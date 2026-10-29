@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode} from 'react';
 import clsx from 'clsx';
 import {formatDuration, type TutorialChapter} from '@site/src/data/tutorials';
+import {mediaUrl} from '@site/src/lib/media';
 import styles from './styles.module.css';
 
 export interface TutorialVideoProps {
@@ -137,9 +138,9 @@ export default function TutorialVideo({
           onLoadedMetadata={onLoadedMetadata}
           onTimeUpdate={onTimeUpdate}
         >
-          <source src={src} type="video/mp4" />
+          <source src={mediaUrl(src)} type="video/mp4" />
           {captionsVtt && !captionsBurnedIn && <track kind="captions" src={captionsVtt} srcLang="en" label="English" default={captionsOn} />}
-          Your browser does not support embedded video. <a href={src}>Download the video</a>.
+          Your browser does not support embedded video. <a href={mediaUrl(src)}>Download the video</a>.
         </video>
       </div>
       {hasDetails && (
