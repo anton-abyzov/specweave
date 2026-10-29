@@ -40,7 +40,7 @@ const cues = [];
 // Align written caption words to Whisper's words (LCS on normalized tokens), so each
 // cue starts on its first spoken word and ends on its last one.
 const norm = (w) => w.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(/\s+/).filter(Boolean);
-const NUM = { eleven: "11" };
+const NUM = { eleven: "11", "1": "one" };
 function align(a, b) {
   const n = a.length, m = b.length, L = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
@@ -119,7 +119,7 @@ for (const b of beats) {
     tweens.push(`tl.to("#intro .card-inner", { opacity: 0, duration: 0.25, ease: "none" }, ${b.start + 3.75});`);
   } else if (s.kind === "MG") {
     const [l1, l2, l3] = s.card.lines;
-    const l1html = esc(l1).replace("$sw-done", '<code class="accent">$sw-done</code>');
+    const l1html = esc(l1).replace(/(\$sw-done|0001)/, '<code class="accent">$1</code>');
     html.push(`
       <section id="outro" class="clip card" data-start="${b.start}" data-duration="${b.dur}" data-track-index="1">
         <div class="card-inner outro">
@@ -164,15 +164,12 @@ for (const b of beats) {
       <div id="sped-${vid}" class="clip chip sped" data-start="${r3(at)}" data-duration="${r3(d)}" data-track-index="3">Sped up ${Math.round(rate)}×</div>`);
       at = snap(at + d);
     });
-    // Privacy blur: 12 px over account data that must not be readable (SERIES.md, "Pointer and highlights").
-    (b.blurs ?? []).forEach((h, i) => html.push(`
-      <div id="blur-${b.id}-${i}" class="clip blur-box" data-start="${r3(b.start + h.from)}" data-duration="${r3(h.to - h.from)}" data-track-index="7" style="left:${h.x}px;top:${h.y}px;width:${h.w}px;height:${h.h}px"></div>`));
     (b.highlights ?? []).forEach((h, i) => html.push(`
       <div id="hl-${b.id}-${i}" class="clip hl-box" data-start="${r3(b.start + h.from)}" data-duration="${r3(h.to - h.from)}" data-track-index="4" style="left:${h.x}px;top:${h.y}px;width:${h.w}px;height:${h.h}px"></div>`));
   }
   if (s.stepChip) {
     const chip = s.stepChip.length > 64 ? "…" + s.stepChip.slice(-63) : s.stepChip;
-    const chipHtml = esc(chip).replace(/→/g, '<span class="arrow">→</span>').replace(/(specweave init \. --quick|~\/greet-app|ledger\.jsonl|\$)/g, "<code>$1</code>");
+    const chipHtml = esc(chip).replace(/→/g, '<span class="arrow">→</span>').replace(/(specweave init \. --quick --adapter generic|specweave init \. --quick|grok --trust|~\/greet-app|ledger\.jsonl|codex login|\$)/g, "<code>$1</code>");
     html.push(`
       <div id="chip-${b.id}" class="clip chip step" data-start="${b.start}" data-duration="${b.dur}" data-track-index="2"><span class="chip-inner" id="chipi-${b.id}">${chipHtml}</span></div>`);
     tweens.push(`tl.fromTo("#chipi-${b.id}", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${r3(b.start + 0.2)});`);
@@ -194,13 +191,13 @@ const doc = `<!doctype html>
     <title>${esc(shotlist.title)}</title>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
-      @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 100 700; src: url(assets/fonts/ibm-plex-sans-latin.woff2) format("woff2"); }
-      @font-face { font-family: "Newsreader"; font-style: normal; font-weight: 200 800; src: url(assets/fonts/newsreader-latin.woff2) format("woff2"); }
-      @font-face { font-family: "Newsreader"; font-style: italic; font-weight: 200 800; src: url(assets/fonts/newsreader-italic-latin.woff2) format("woff2"); }
+      @font-face { font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 400 900; src: url(assets/fonts/schibsted-grotesk-latin.woff2) format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; src: url(assets/fonts/jetbrains-mono-latin.woff2) format("woff2"); }
       :root {
-        --paper: #f6f4ee; --ink: #252820; --muted: #65695e; --line: #d9dcd0; --soft: #eff2e8; --accent: #bd481f;
-        --term-bg: #20231c; --term-ink: #e8ecdf; --dark-paper: #181914; --dark-ink: #ece8dc; --dark-soft: #23261e;
-        --sans: "IBM Plex Sans", sans-serif; --display: "Newsreader", serif; --mono: ui-monospace, monospace;
+        /* Weave violet design system (docs-site tokens.css): canvas, ink, iris. */
+        --paper: #f8f7f9; --ink: #241523; --muted: #675d69; --line: #dedae5; --soft: #ece6f8; --accent: #6d4fb5; --accent-strong: #4a3678;
+        --term-bg: #16131d; --term-ink: #f3eff9; --dark-paper: #16131d; --dark-ink: #f3eff9; --dark-soft: #2b2340;
+        --sans: "Schibsted Grotesk", sans-serif; --display: "Schibsted Grotesk", sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
       }
       body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
@@ -209,12 +206,12 @@ const doc = `<!doctype html>
       .card, .termstage { inset: 0; background: var(--paper); }
       .card-inner { position: absolute; inset: 96px; }
       .eyebrow { font: 500 24px/1.2 var(--sans); letter-spacing: 0.12em; color: var(--muted); }
-      .title { margin: 236px 0 0; font: italic 400 120px/1.05 var(--display); color: var(--ink); }
-      .title .roman { font-style: normal; }
-      .thread { height: 4px; width: 0; background: var(--accent); margin-top: 36px; }
+      .title { margin: 236px 0 0; font: 800 120px/1.02 var(--display); letter-spacing: -0.03em; color: var(--ink); }
+      .title .roman { font-weight: 500; color: var(--accent); }
+      .thread { height: 6px; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent), #a88cf6); margin-top: 36px; }
       .subtitle { margin: 40px 0 0; font: 400 36px/1.35 var(--sans); color: var(--muted); }
       .footer { position: absolute; left: 0; bottom: 0; font: 500 24px/1.2 var(--sans); color: var(--muted); }
-      .outro-l1 { margin-top: 300px; font: 400 72px/1.1 var(--display); color: var(--ink); }
+      .outro-l1 { margin-top: 300px; font: 800 80px/1.08 var(--display); letter-spacing: -0.02em; color: var(--ink); }
       .outro-l1 code { font-family: var(--mono); font-size: 62px; color: var(--accent); }
       .outro-l2 { margin-top: 40px; font: 400 32px/1.4 var(--sans); color: var(--ink); }
       .outro-l3 { margin-top: 12px; font: 400 32px/1.4 var(--sans); color: var(--muted); }
@@ -224,22 +221,21 @@ const doc = `<!doctype html>
       .term-row { white-space: pre; min-height: 45px; position: relative; }
       .term-row.out { opacity: 0; }
       .term-row.hl::before { content: ""; position: absolute; left: -48px; top: 4px; bottom: 4px; width: 3px; background: var(--accent); }
-      .prompt { color: #a8ab9d; }
+      .prompt { color: #a88cf6; }
       .caret { display: inline-block; width: 16px; height: 34px; background: var(--term-ink); vertical-align: -6px; margin-left: 2px; }
       .chip { top: 48px; z-index: 10; }
-      .chip.step { left: 48px; }
-      .chip-inner, .chip.sped { display: inline-block; background: rgba(239, 242, 232, 0.92); border: 1px solid var(--line); border-radius: 4px;
-        padding: 10px 18px; font: 500 26px/1.3 var(--sans); color: var(--ink); box-shadow: 0 18px 50px #25282008; white-space: nowrap; }
-      .chip.sped { right: 48px; font-size: 22px; color: var(--muted); }
+      .chip.step { left: 272px; }
+      .chip-inner, .chip.sped { display: inline-block; background: rgba(248, 247, 249, 0.94); border: 1px solid var(--line); border-radius: 999px;
+        padding: 10px 18px; font: 500 22px/1.3 var(--sans); color: var(--ink); box-shadow: 0 12px 40px rgba(74, 54, 120, 0.14); white-space: nowrap; }
+      .chip.sped { top: auto; right: 48px; bottom: 48px; color: var(--muted); }
       .chip .arrow { color: var(--accent); }
       .chip code { font-family: var(--mono); font-size: 0.92em; }
-      .blur-box { z-index: 7; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(246, 244, 238, 0.2); }
-      .hl-box { z-index: 8; background: rgba(189, 72, 31, 0.12); outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+      .hl-box { z-index: 8; background: rgba(109, 79, 181, 0.10); outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 10px; }
       .caption { left: 0; right: 0; bottom: 64px; z-index: 20; text-align: center; }
-      .caption .pill { display: inline-block; max-width: 880px; text-wrap: balance; background: rgba(246, 244, 238, 0.92); color: var(--ink);
-        padding: 12px 24px; border-radius: 4px; font: 600 40px/1.3 var(--sans); }
+      .caption .pill { display: inline-block; max-width: 880px; text-wrap: balance; background: rgba(36, 21, 35, 0.86); color: #f8f7f9;
+        padding: 12px 26px; border-radius: 14px; font: 600 38px/1.3 var(--sans); }
       .caption.dark .pill { background: rgba(24, 25, 20, 0.92); color: var(--dark-ink); }
-      .caption code { font-family: var(--mono); font-weight: 600; font-size: 0.92em; background: var(--soft); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
+      .caption code { font-family: var(--mono); font-weight: 600; font-size: 0.88em; color: #cbbcff; background: rgba(168, 140, 246, 0.18); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
       .caption.dark code { background: var(--dark-soft); }
     </style>
   </head>

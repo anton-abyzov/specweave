@@ -11,43 +11,48 @@
   "lines": [
     {
       "id": "01-intro",
-      "text": "Antigravity in SpecWithCode: plan, build, review.",
-      "spoken": "Antigravity in Spec With Code: plan, build, review."
+      "text": "Antigravity in SpecWithCode: one task, planned, built and reviewed with Gemini.",
+      "spoken": "Antigravity in Spec With Code: one task, planned, built, and reviewed, with Gemini."
     },
     {
       "id": "02-init",
-      "text": "In your repo, run specweave init with the Antigravity adapter. It adds AGENTS.md and eleven SpecWeave skills.",
-      "spoken": "In your repo, run spec weave init with the Antigravity adapter. It adds agents dot M D and eleven spec weave skills."
+      "text": "In your repo, run specweave init. It adds AGENTS.md and seven SpecWeave skills, such as sw-increment and sw-do.",
+      "spoken": "In your repo, run spec weave init. It adds agents dot M D, and seven spec weave skills, such as S W increment, and S W do."
     },
     {
-      "id": "03-connect",
-      "text": "Open SpecWithCode, then Settings, Providers. Click Add provider and pick Antigravity. SpecWithCode installs its own Antigravity agent. Click Sign in and finish with your Google account in the browser. This one is already signed in.",
-      "spoken": "Open Spec With Code, then Settings, Providers. Click Add provider and pick Antigravity. Spec With Code installs its own Antigravity agent. Click Sign in and finish with your Google account in the browser. This one is already signed in."
+      "id": "03-setup",
+      "text": "Open SpecWithCode and set this Mac up as your main machine. Antigravity isn't in the first-run list, so continue past it.",
+      "spoken": "Open Spec With Code, and set this Mac up as your main machine. Antigravity isn't in the first-run list, so continue past it."
     },
     {
-      "id": "04-project-chat",
-      "text": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Gemini 3.8 Flash under Antigravity, and set Full access for this demo.",
-      "spoken": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Gemini three point eight Flash under Antigravity, and set Full access for this demo."
+      "id": "04-connect",
+      "text": "In Settings, Providers, click Add provider, pick Antigravity, then Next, Next, and Add instance. SpecWithCode installs its own Antigravity agent. Sign in with your Google account; this one is already signed in.",
+      "spoken": "In Settings, Providers, click Add provider, pick Antigravity, then Next, Next, and Add instance. Spec With Code installs its own Antigravity agent. Sign in with your Google account; this one is already signed in."
     },
     {
-      "id": "05-plan",
-      "text": "Type a dollar sign, pick sw-increment, and describe the change. Antigravity writes spec.md: acceptance criteria and a task with its files and test.",
-      "spoken": "Type a dollar sign, pick S W increment, and describe the change. Antigravity writes spec dot M D: acceptance criteria, and a task with its files and test."
+      "id": "05-project",
+      "text": "Add the repo: the plus next to Projects, Local folder, then its path. The project opens on its coordinator, and the model picker already shows Gemini 3.8 Flash.",
+      "spoken": "Add the repo: the plus next to Projects, Local folder, then its path. The project opens on its coordinator, and the model picker already shows Gemini three point eight Flash."
     },
     {
-      "id": "06-build",
-      "text": "Then send sw-do. Antigravity claims the task, changes the code, and runs the test. The task is marked done only when the test passes.",
-      "spoken": "Then send S W do. Antigravity claims the task, changes the code, and runs the test. The task is marked done only when the test passes."
+      "id": "06-task",
+      "text": "Set Full access for this demo, describe the change, and send it. The coordinator hands the work to a new thread.",
+      "spoken": "Set Full access for this demo, describe the change, and send it. The coordinator hands the work to a new thread."
     },
     {
-      "id": "07-review",
-      "text": "Click Open diff to review the code, the test, and the ledger line that records who finished the task.",
-      "spoken": "Click Open diff to review the code, the test, and the ledger line that records who finished the task."
+      "id": "07-work",
+      "text": "The thread plans increment 1: acceptance criteria and one task with its test. Then it changes the code and runs that test. A task is done only when its test passes.",
+      "spoken": "The thread plans increment one: acceptance criteria, and one task with its test. Then it changes the code, and runs that test. A task is done only when its test passes."
     },
     {
-      "id": "08-outro",
-      "text": "Next, sw-done verifies and closes the increment.",
-      "spoken": "Next, S W done verifies and closes the increment."
+      "id": "08-review",
+      "text": "Open the thread to review it: the summary, the verification and review reports, and every changed file in Open diff.",
+      "spoken": "Open the thread to review it: the summary, the verification and review reports, and every changed file in Open diff."
+    },
+    {
+      "id": "09-outro",
+      "text": "Increment 1 is verified and closed. Next, run the same task with another agent.",
+      "spoken": "Increment one is verified and closed. Next, run the same task with another agent."
     }
   ]
 }

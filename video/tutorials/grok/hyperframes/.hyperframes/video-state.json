@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "historyId": "247e6f2d-498c-4636-9e5b-800469595ea2",
+  "currentRevision": "c09da052-abbc-46eb-a7a8-a8bb9e50df99",
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/ibm-plex-sans-latin.woff2": {
+      "hash": "056e4e2459f57a0033c8c9c844ff19d6e42ac8602027803d4345823bcc939818",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/05/056e4e2459f57a0033c8c9c844ff19d6e42ac8602027803d4345823bcc939818"
+    },
+    "assets/fonts/ibmplexsans-OFL.txt": {
+      "hash": "37784b44044a4ffd9256702b7c0982c37e5c8887ba90c6dca0479aea93dc898d",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/37/37784b44044a4ffd9256702b7c0982c37e5c8887ba90c6dca0479aea93dc898d"
+    },
+    "assets/fonts/jetbrains-mono-latin.woff2": {
+      "hash": "2c32b9b3ee358c119e210f6f5195f9bd34894d78a785ff2e95d60e718e400af4",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/2c/2c32b9b3ee358c119e210f6f5195f9bd34894d78a785ff2e95d60e718e400af4"
+    },
+    "assets/fonts/jetbrainsmono-OFL.txt": {
+      "hash": "b2fe5e8987594e9ffd1d2ca52a2f5d73eb8335243893c5d6254b5ad69269591d",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/b2/b2fe5e8987594e9ffd1d2ca52a2f5d73eb8335243893c5d6254b5ad69269591d"
+    },
+    "assets/fonts/newsreader-OFL.txt": {
+      "hash": "fdfad38143ec470553cae82a1e45320bdd1b9ec70415d37bd0171051d8a4ded8",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/fd/fdfad38143ec470553cae82a1e45320bdd1b9ec70415d37bd0171051d8a4ded8"
+    },
+    "assets/fonts/newsreader-italic-latin.woff2": {
+      "hash": "56febd06c694ba791028f22c659bc1f8c80954732a77db8d708432296268e163",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/56/56febd06c694ba791028f22c659bc1f8c80954732a77db8d708432296268e163"
+    },
+    "assets/fonts/newsreader-latin.woff2": {
+      "hash": "2a69ec1c0fb79a464de0e19957cdb3a65b5f626d85fffd164f9de557d3a64878",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/2a/2a69ec1c0fb79a464de0e19957cdb3a65b5f626d85fffd164f9de557d3a64878"
+    },
+    "assets/fonts/schibsted-grotesk-latin.woff2": {
+      "hash": "e3b56e90510a84ac0ed465b822e112983eaf58e37436bf769681c31f77b1f3a7",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/e3/e3b56e90510a84ac0ed465b822e112983eaf58e37436bf769681c31f77b1f3a7"
+    },
+    "assets/fonts/schibstedgrotesk-OFL.txt": {
+      "hash": "3b4f3063b6ac7c1e403e2c4a5e8ef3a58190ff83ed7b15af66511858699139ce",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/3b/3b4f3063b6ac7c1e403e2c4a5e8ef3a58190ff83ed7b15af66511858699139ce"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/53/53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "a1d97ea28036103dc5ff88a48d692d08150e99af63665c00312344bc65fc2b74",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/a1/a1d97ea28036103dc5ff88a48d692d08150e99af63665c00312344bc65fc2b74"
+    },
+    "meta.json": {
+      "hash": "672a21f9998fc0a66bc54e94861f8d99b451c41975757b98859cf60a2608aa00",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/67/672a21f9998fc0a66bc54e94861f8d99b451c41975757b98859cf60a2608aa00"
+    },
+    "package.json": {
+      "hash": "e83bb191e71a0dc3dcab04cf4afd72c0f478737c1b2bef3ff62fe5cb5c3e5db9",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/e8/e83bb191e71a0dc3dcab04cf4afd72c0f478737c1b2bef3ff62fe5cb5c3e5db9"
+    }
+  },
+  "revisions": {
+    "9fc1e5bd-9ec1-47b2-a439-3cd32d33391a": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793218578898,
+      "endedAt": 1793218578898,
+      "files": {
+        "index.html": {
+          "before": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/e1/e11f8ecf118d81f6f389f3ca58985a4edd6368afdf33d1ae7893613211334a85",
+          "after": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/1b/1be31945e4472d2c71608770ccc08bfc106409d829230a17edaa3318888f9b16"
+        }
+      }
+    },
+    "c09da052-abbc-46eb-a7a8-a8bb9e50df99": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793218698513,
+      "endedAt": 1793218698513,
+      "files": {
+        "index.html": {
+          "before": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/1b/1be31945e4472d2c71608770ccc08bfc106409d829230a17edaa3318888f9b16",
+          "after": "/Users/antonabyzov/.cache/hyperframes/history/247e6f2d-498c-4636-9e5b-800469595ea2/blobs/a1/a1d97ea28036103dc5ff88a48d692d08150e99af63665c00312344bc65fc2b74"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": "c09da052-abbc-46eb-a7a8-a8bb9e50df99",
+      "id": "50687f3f-d398-45bf-ad55-fa07eb9ce02f"
+    },
+    "revisions": {
+      "9fc1e5bd-9ec1-47b2-a439-3cd32d33391a": [
+        {
+          "id": "b4553fa7-be08-4abe-99a7-871eb0036d78",
+          "scope": "project",
+          "report": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/grok/hyperframes/.hyperframes/artifacts/checks/b4553fa7-be08-4abe-99a7-871eb0036d78.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 10000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1793218583821,
+          "contentHash": "696db214aac478f6784609f63079ffaf12fdc747f61cc3b0366cf10eb5999478",
+          "revision": "9fc1e5bd-9ec1-47b2-a439-3cd32d33391a",
+          "inputFingerprint": "ba81e0450c4beaf08dfffabde251e93b4ce2c6a94c6a742a997bc0fcddf4c959",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "c09da052-abbc-46eb-a7a8-a8bb9e50df99": [
+        {
+          "id": "50687f3f-d398-45bf-ad55-fa07eb9ce02f",
+          "scope": "project",
+          "report": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/grok/hyperframes/.hyperframes/artifacts/checks/50687f3f-d398-45bf-ad55-fa07eb9ce02f.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 10000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1793218703858,
+          "contentHash": "2b35b84a6dbaa70c15540b3f21b659007e6ce29c7cc97cd3471e0f95d80dfdec",
+          "revision": "c09da052-abbc-46eb-a7a8-a8bb9e50df99",
+          "inputFingerprint": "d6d86f497535a8b2de68b7b6d1bd3f6a474833154aebed63a985e06366a66ce8",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "id": "10a81308-6895-4f0e-8853-d00e7421f177",
+        "scope": "project",
+        "report": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/grok/hyperframes/.hyperframes/artifacts/checks/10a81308-6895-4f0e-8853-d00e7421f177.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": true,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 10000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793218574969,
+        "contentHash": "8bd53800485a5420e79cea0a3f8251d7e6dcec4cb9cc967308b2bc62fbb63b35",
+        "revision": null,
+        "inputFingerprint": "53b316fd1c2e619b5b7ea0bba4242d81d72e49b3a7c1fa42f58d1dd7c3efab16",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "8b8dd8a6-ee30-441c-b96a-1c7158684682",
+      "completedAt": 1793218737167,
+      "output": "/Users/Shared/specwithcode-demo/r2-13-grok/build/render.mp4",
+      "status": "completed",
+      "revision": "c09da052-abbc-46eb-a7a8-a8bb9e50df99"
+    },
+    "retainedRevisions": [
+      "c09da052-abbc-46eb-a7a8-a8bb9e50df99",
+      "9fc1e5bd-9ec1-47b2-a439-3cd32d33391a"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

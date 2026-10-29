@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "historyId": "3e391655-2eba-47fb-b4ff-ed798cca0ddd",
+  "currentRevision": "40a89c43-4d85-4883-a157-69ba7b1b51fc",
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/ibm-plex-sans-latin.woff2": {
+      "hash": "056e4e2459f57a0033c8c9c844ff19d6e42ac8602027803d4345823bcc939818",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/05/056e4e2459f57a0033c8c9c844ff19d6e42ac8602027803d4345823bcc939818"
+    },
+    "assets/fonts/ibmplexsans-OFL.txt": {
+      "hash": "37784b44044a4ffd9256702b7c0982c37e5c8887ba90c6dca0479aea93dc898d",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/37/37784b44044a4ffd9256702b7c0982c37e5c8887ba90c6dca0479aea93dc898d"
+    },
+    "assets/fonts/newsreader-OFL.txt": {
+      "hash": "fdfad38143ec470553cae82a1e45320bdd1b9ec70415d37bd0171051d8a4ded8",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/fd/fdfad38143ec470553cae82a1e45320bdd1b9ec70415d37bd0171051d8a4ded8"
+    },
+    "assets/fonts/newsreader-italic-latin.woff2": {
+      "hash": "56febd06c694ba791028f22c659bc1f8c80954732a77db8d708432296268e163",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/56/56febd06c694ba791028f22c659bc1f8c80954732a77db8d708432296268e163"
+    },
+    "assets/fonts/newsreader-latin.woff2": {
+      "hash": "2a69ec1c0fb79a464de0e19957cdb3a65b5f626d85fffd164f9de557d3a64878",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/2a/2a69ec1c0fb79a464de0e19957cdb3a65b5f626d85fffd164f9de557d3a64878"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/53/53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "abc227d10014e61ff97e0cf716684b9dab3b1408e52fd9bed6a83ae6586639b8",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/ab/abc227d10014e61ff97e0cf716684b9dab3b1408e52fd9bed6a83ae6586639b8"
+    },
+    "meta.json": {
+      "hash": "672a21f9998fc0a66bc54e94861f8d99b451c41975757b98859cf60a2608aa00",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/67/672a21f9998fc0a66bc54e94861f8d99b451c41975757b98859cf60a2608aa00"
+    },
+    "package.json": {
+      "hash": "e83bb191e71a0dc3dcab04cf4afd72c0f478737c1b2bef3ff62fe5cb5c3e5db9",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/e8/e83bb191e71a0dc3dcab04cf4afd72c0f478737c1b2bef3ff62fe5cb5c3e5db9"
+    },
+    "assets/fonts/jetbrains-mono-latin.woff2": {
+      "hash": "2c32b9b3ee358c119e210f6f5195f9bd34894d78a785ff2e95d60e718e400af4",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/2c/2c32b9b3ee358c119e210f6f5195f9bd34894d78a785ff2e95d60e718e400af4"
+    },
+    "assets/fonts/jetbrainsmono-OFL.txt": {
+      "hash": "b2fe5e8987594e9ffd1d2ca52a2f5d73eb8335243893c5d6254b5ad69269591d",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/b2/b2fe5e8987594e9ffd1d2ca52a2f5d73eb8335243893c5d6254b5ad69269591d"
+    },
+    "assets/fonts/schibsted-grotesk-latin.woff2": {
+      "hash": "e3b56e90510a84ac0ed465b822e112983eaf58e37436bf769681c31f77b1f3a7",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/e3/e3b56e90510a84ac0ed465b822e112983eaf58e37436bf769681c31f77b1f3a7"
+    },
+    "assets/fonts/schibstedgrotesk-OFL.txt": {
+      "hash": "3b4f3063b6ac7c1e403e2c4a5e8ef3a58190ff83ed7b15af66511858699139ce",
+      "content": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/3b/3b4f3063b6ac7c1e403e2c4a5e8ef3a58190ff83ed7b15af66511858699139ce"
+    }
+  },
+  "revisions": {
+    "40a89c43-4d85-4883-a157-69ba7b1b51fc": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793221890137,
+      "endedAt": 1793221891166,
+      "files": {
+        "assets/fonts/jetbrains-mono-latin.woff2": {
+          "before": null,
+          "after": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/2c/2c32b9b3ee358c119e210f6f5195f9bd34894d78a785ff2e95d60e718e400af4"
+        },
+        "assets/fonts/jetbrainsmono-OFL.txt": {
+          "before": null,
+          "after": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/b2/b2fe5e8987594e9ffd1d2ca52a2f5d73eb8335243893c5d6254b5ad69269591d"
+        },
+        "assets/fonts/schibsted-grotesk-latin.woff2": {
+          "before": null,
+          "after": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/e3/e3b56e90510a84ac0ed465b822e112983eaf58e37436bf769681c31f77b1f3a7"
+        },
+        "assets/fonts/schibstedgrotesk-OFL.txt": {
+          "before": null,
+          "after": "/Users/antonabyzov/.cache/hyperframes/history/3e391655-2eba-47fb-b4ff-ed798cca0ddd/blobs/3b/3b4f3063b6ac7c1e403e2c4a5e8ef3a58190ff83ed7b15af66511858699139ce"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "0b196ce2-ee3e-428b-b165-115820830f6d"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "ef6bc795-6a45-43a6-ba38-7b15beb7b03b",
+        "scope": "project",
+        "report": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/antigravity/hyperframes/.hyperframes/artifacts/checks/ef6bc795-6a45-43a6-ba38-7b15beb7b03b.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 10000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793221875468,
+        "contentHash": "735bc5c50f926cd71a20bd3d999e767c4e797b87277c26a1c2131989a59c04b8",
+        "revision": null,
+        "inputFingerprint": "22bfaec25f5a3f06365b45aa79d070d015ff31922445fc365996308648cdf3ec",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "id": "0b196ce2-ee3e-428b-b165-115820830f6d",
+        "scope": "project",
+        "report": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/antigravity/hyperframes/.hyperframes/artifacts/checks/0b196ce2-ee3e-428b-b165-115820830f6d.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 10000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793221884029,
+        "contentHash": "259355055dd6374673b8debdc9322bd4922290546e63c1c2fd7bec76018c69c1",
+        "revision": null,
+        "inputFingerprint": "22bfaec25f5a3f06365b45aa79d070d015ff31922445fc365996308648cdf3ec",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "0302e5ae-e357-4e9a-880a-131b8dea8463",
+      "completedAt": 1793222023722,
+      "output": "/Users/Shared/specwithcode-demo/r2-33-antigravity/build/render.mp4",
+      "status": "completed",
+      "revision": "40a89c43-4d85-4883-a157-69ba7b1b51fc"
+    },
+    "retainedRevisions": [
+      "40a89c43-4d85-4883-a157-69ba7b1b51fc"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

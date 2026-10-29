@@ -1,0 +1,484 @@
+{
+  "ok": false,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 5,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "Track 2 has 7 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/antigravity/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "Track 3 has 8 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/antigravity/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"intro\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#intro",
+        "dataAttributes": {},
+        "sourceFile": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/antigravity/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"intro\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"term\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#term",
+        "dataAttributes": {},
+        "sourceFile": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/antigravity/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"term\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"outro\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#outro",
+        "dataAttributes": {},
+        "sourceFile": "/Users/antonabyzov/.specwithcode/m4/worktrees/specweave/tutorial-rerecord/video/tutorials/antigravity/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"outro\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": false,
+    "errorCount": 4,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "http_error",
+        "severity": "error",
+        "message": "404 loading assets/fonts/schibsted-grotesk-latin.woff2",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-width": "1920",
+          "data-height": "1080",
+          "data-duration": "94.2"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0,
+        "url": "http://127.0.0.1:58642/assets/fonts/schibsted-grotesk-latin.woff2"
+      },
+      {
+        "code": "request_failed",
+        "severity": "error",
+        "message": "Failed to load assets/fonts/schibsted-grotesk-latin.woff2: net::ERR_ABORTED",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-width": "1920",
+          "data-height": "1080",
+          "data-duration": "94.2"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0,
+        "url": "http://127.0.0.1:58642/assets/fonts/schibsted-grotesk-latin.woff2"
+      },
+      {
+        "code": "http_error",
+        "severity": "error",
+        "message": "404 loading assets/fonts/jetbrains-mono-latin.woff2",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-width": "1920",
+          "data-height": "1080",
+          "data-duration": "94.2"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0,
+        "url": "http://127.0.0.1:58642/assets/fonts/jetbrains-mono-latin.woff2"
+      },
+      {
+        "code": "request_failed",
+        "severity": "error",
+        "message": "Failed to load assets/fonts/jetbrains-mono-latin.woff2: net::ERR_ABORTED",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-width": "1920",
+          "data-height": "1080",
+          "data-duration": "94.2"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0,
+        "url": "http://127.0.0.1:58642/assets/fonts/jetbrains-mono-latin.woff2"
+      }
+    ]
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 94.2,
+    "samples": [
+      5.233,
+      15.7,
+      26.167,
+      36.633,
+      47.1,
+      57.567,
+      68.033,
+      78.5,
+      88.967
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      5.233,
+      26.167,
+      47.1,
+      68.033,
+      88.967
+    ],
+    "checked": 21,
+    "passed": 21
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 3,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "first_frame_empty",
+        "severity": "warning",
+        "message": "Frame 0 shows only the background, and the first frame is the thumbnail on social players: have the title or key image already on screen at 0 s instead of entering from nothing; see references/review.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 20 text elements stay under it for 0.5 s or more, the smallest \"specweave init . --quick\" at 20 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "specweave init . --quick",
+        "selector": "#chipi-02-init > code:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 420.64,
+          "y": 61.15,
+          "width": 292.45,
+          "height": 24
+        },
+        "time": 7.549,
+        "times": [
+          0.157,
+          0.472,
+          7.549,
+          7.549,
+          18.557,
+          27.206,
+          27.521,
+          30.037,
+          32.239,
+          36.485,
+          39.63,
+          44.191,
+          44.191,
+          56.3,
+          58.816,
+          60.703,
+          65.421,
+          68.409,
+          78.788,
+          87.595
+        ],
+        "fontPx": 20.24,
+        "floorPx": 28,
+        "seconds": 10.693,
+        "elements": [
+          {
+            "selector": "#chipi-02-init > code:nth-of-type(1)",
+            "text": "specweave init . --quick",
+            "fontPx": 20.24,
+            "time": 7.549,
+            "seconds": 10.693
+          },
+          {
+            "selector": "#chipi-05-project > code:nth-of-type(1)",
+            "text": "~/greet-app",
+            "fontPx": 20.24,
+            "time": 44.191,
+            "seconds": 11.951
+          },
+          {
+            "selector": "#chipi-02-init",
+            "text": "In your repo:",
+            "fontPx": 22,
+            "time": 7.549,
+            "seconds": 10.693
+          },
+          {
+            "selector": "#chipi-03-setup",
+            "text": "Main machine Continue Continue Do not import projects",
+            "fontPx": 22,
+            "time": 18.557,
+            "seconds": 8.649
+          },
+          {
+            "selector": "#sped-4",
+            "text": "Sped up 3×",
+            "fontPx": 22,
+            "time": 27.206,
+            "seconds": 2.831
+          },
+          {
+            "selector": "#chipi-04-connect",
+            "text": "Settings Providers Add provider Antigravity Add instance",
+            "fontPx": 22,
+            "time": 27.521,
+            "seconds": 16.355
+          },
+          {
+            "selector": "#sped-5",
+            "text": "Sped up 2×",
+            "fontPx": 22,
+            "time": 30.037,
+            "seconds": 2.201
+          },
+          {
+            "selector": "#sped-6",
+            "text": "Sped up 2×",
+            "fontPx": 22,
+            "time": 32.239,
+            "seconds": 4.246
+          },
+          {
+            "selector": "#sped-7",
+            "text": "Sped up 2×",
+            "fontPx": 22,
+            "time": 36.485,
+            "seconds": 3.145
+          },
+          {
+            "selector": "#sped-8",
+            "text": "Sped up 5×",
+            "fontPx": 22,
+            "time": 39.63,
+            "seconds": 1.415
+          },
+          {
+            "selector": "#chipi-05-project",
+            "text": "+ Local folder",
+            "fontPx": 22,
+            "time": 44.191,
+            "seconds": 11.951
+          },
+          {
+            "selector": "#chipi-06-task",
+            "text": "Full access describe the change Enter",
+            "fontPx": 22,
+            "time": 56.3,
+            "seconds": 8.806
+          },
+          {
+            "selector": "#sped-13",
+            "text": "Sped up 2×",
+            "fontPx": 22,
+            "time": 58.816,
+            "seconds": 1.887
+          },
+          {
+            "selector": "#sped-14",
+            "text": "Sped up 12×",
+            "fontPx": 22,
+            "time": 60.703,
+            "seconds": 2.359
+          },
+          {
+            "selector": "#chipi-07-work",
+            "text": "Increment 0001 acceptance criteria task test",
+            "fontPx": 22,
+            "time": 65.421,
+            "seconds": 13.053
+          },
+          {
+            "selector": "#sped-17",
+            "text": "Sped up 29×",
+            "fontPx": 22,
+            "time": 68.409,
+            "seconds": 7.548
+          },
+          {
+            "selector": "#chipi-08-review",
+            "text": "Summary · verify.md · review.md · Open diff",
+            "fontPx": 22,
+            "time": 78.788,
+            "seconds": 8.649
+          },
+          {
+            "selector": "#intro > div:nth-of-type(1) > div:nth-of-type(1)",
+            "text": "SPECWITHCODE TUTORIAL · ANTIGRAVITY",
+            "fontPx": 24,
+            "time": 0.157,
+            "seconds": 3.774
+          },
+          {
+            "selector": "div.footer.rise",
+            "text": "spec-weave.com",
+            "fontPx": 24,
+            "time": 0.472,
+            "seconds": 3.459
+          },
+          {
+            "selector": "div.card-inner.outro > div:nth-of-type(1)",
+            "text": "SPECWITHCODE TUTORIAL 06",
+            "fontPx": 24,
+            "time": 87.595,
+            "seconds": 6.605
+          }
+        ]
+      },
+      {
+        "code": "dead_stretch",
+        "severity": "warning",
+        "message": "Nothing on screen changes for 5.98 s (10.22–16.20 s): start the next move within 3 s, or put data-hold on the element whose stillness is deliberate; see references/motion.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 10.222,
+        "seconds": 5.976,
+        "floorSeconds": 3,
+        "until": 16.198
+      }
+    ],
+    "enabled": true,
+    "step": 0.15700000000000003,
+    "samples": 599
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

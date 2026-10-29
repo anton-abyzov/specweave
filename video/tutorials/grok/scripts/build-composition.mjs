@@ -13,7 +13,6 @@ const [epDir, wordsDir, vttBase] = process.argv.slice(2);
 const shotlist = JSON.parse(readFileSync(join(epDir, "SHOTLIST.json"), "utf8"));
 const edit = JSON.parse(readFileSync(join(epDir, "edit.json"), "utf8"));
 const FPS = 30;
-const MAX_RATE = 8; // above this, segments are pre-rendered (see the APP branch)
 const snap = (t) => Math.round(t * FPS) / FPS;
 const r3 = (t) => Number(t.toFixed(3));
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -41,7 +40,7 @@ const cues = [];
 // Align written caption words to Whisper's words (LCS on normalized tokens), so each
 // cue starts on its first spoken word and ends on its last one.
 const norm = (w) => w.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(/\s+/).filter(Boolean);
-const NUM = { eleven: "11" };
+const NUM = { eleven: "11", "1": "one" };
 function align(a, b) {
   const n = a.length, m = b.length, L = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
@@ -120,11 +119,11 @@ for (const b of beats) {
     tweens.push(`tl.to("#intro .card-inner", { opacity: 0, duration: 0.25, ease: "none" }, ${b.start + 3.75});`);
   } else if (s.kind === "MG") {
     const [l1, l2, l3] = s.card.lines;
-    const l1html = esc(l1).replace("$sw-done", '<code class="accent">$sw-done</code>');
+    const l1html = esc(l1).replace(/(\$sw-done|0001)/, '<code class="accent">$1</code>');
     html.push(`
       <section id="outro" class="clip card" data-start="${b.start}" data-duration="${b.dur}" data-track-index="1">
         <div class="card-inner outro">
-          <div class="eyebrow rise">${esc(shotlist.shots[0].card.eyebrow.toUpperCase())}</div>
+          <div class="eyebrow rise">SPECWITHCODE TUTORIAL ${String(shotlist.episode).padStart(2, "0")}</div>
           <div class="outro-l1 rise">${l1html}</div>
           <div class="thread" id="outro-thread"></div>
           <div class="outro-l2 rise">${esc(l2)}</div>
@@ -134,35 +133,24 @@ for (const b of beats) {
     tweens.push(`tl.fromTo("#outro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, ${b.start});`);
     tweens.push(`tl.fromTo("#outro-thread", { width: 0 }, { width: 720, duration: 0.6, ease: "power2.out" }, ${b.start + 0.3});`);
   } else if (s.kind === "TERM") {
-    // One TERM beat per shot id. Either two picked lines with dim … rows (lineNumbers),
-    // or every non-empty stdout line (showLines "all …"), in a smaller, taller card.
     const step = s.steps[0];
-    const tid = `term-${b.id}`;
     const cap = JSON.parse(readFileSync(join(epDir, step.capture), "utf8"));
     const lines = cap.stdout.split("\n");
-    let rows, tall = false;
-    if (Array.isArray(step.lineNumbers)) {
-      step.lineNumbers.forEach((n, i) => { if (lines[n - 1] !== step.showLines[i]) throw new Error(`capture line ${n} differs: ${lines[n - 1]}`); });
-      rows = ["…", step.showLines[0], "…", step.showLines[1], "…"];
-    } else {
-      rows = lines.filter((l) => l.trim() !== "");
-      tall = true;
-    }
-    const hl = (r) => (tall ? (step.highlight ?? []).includes(r.trim()) : r !== "…");
+    step.lineNumbers.forEach((n, i) => { if (lines[n - 1] !== step.showLines[i]) throw new Error(`capture line ${n} differs: ${lines[n - 1]}`); });
+    const rows = ["…", step.showLines[0], "…", step.showLines[1], "…"];
     html.push(`
-      <section id="${tid}" class="clip termstage" data-start="${b.start}" data-duration="${b.dur}" data-track-index="1">
-        <div class="term${tall ? " tall" : ""}">
-          <div class="term-row"><span class="prompt">${esc(step.prompt)}</span> <span id="${tid}-cmd"></span><span class="caret" id="${tid}-caret"></span></div>
-          ${rows.map((r, i) => `<div class="term-row out ${r === "…" ? "elide" : ""}${hl(r) ? " hl" : ""}" id="${tid}-out-${i}">${esc(r.replace(/^ {3}/, ""))}</div>`).join("\n          ")}
+      <section id="term" class="clip termstage" data-start="${b.start}" data-duration="${b.dur}" data-track-index="1">
+        <div class="term">
+          <div class="term-row"><span class="prompt">${esc(step.prompt)}</span> <span id="term-cmd"></span><span class="caret" id="term-caret"></span></div>
+          ${rows.map((r, i) => `<div class="term-row out ${r === "…" ? "elide" : "hl"}" id="term-out-${i}">${esc(r.replace(/^ {3}/, ""))}</div>`).join("\n          ")}
         </div>
       </section>`);
     const cmd = step.command;
-    const cps = tall ? 60 : 40;
-    const typeStart = b.start + 0.35, typeDur = cmd.length / cps;
-    tweens.push(`{ const o = { n: 0 }; const el = document.getElementById("${tid}-cmd"); const cmd = ${JSON.stringify(cmd)};
+    const typeStart = b.start + 0.35, typeDur = cmd.length / 40;
+    tweens.push(`{ const o = { n: 0 }; const el = document.getElementById("term-cmd"); const cmd = ${JSON.stringify(cmd)};
       tl.to(o, { n: cmd.length, duration: ${r3(typeDur)}, ease: "none", onUpdate: () => { el.textContent = cmd.slice(0, Math.round(o.n)); } }, ${r3(typeStart)}); }`);
-    tweens.push(`tl.set("#${tid}-caret", { opacity: 0 }, ${r3(typeStart + typeDur + 0.25)});`);
-    rows.forEach((_, i) => tweens.push(`tl.fromTo("#${tid}-out-${i}", { opacity: 0 }, { opacity: ${rows[i] === "…" ? 0.5 : 1}, duration: 0.12, ease: "none" }, ${r3(typeStart + typeDur + 0.35 + i * 0.06)});`));
+    tweens.push(`tl.set("#term-caret", { opacity: 0 }, ${r3(typeStart + typeDur + 0.25)});`);
+    rows.forEach((_, i) => tweens.push(`tl.fromTo("#term-out-${i}", { opacity: 0 }, { opacity: ${rows[i] === "…" ? 0.5 : 1}, duration: 0.12, ease: "none" }, ${r3(typeStart + typeDur + 0.35 + i * 0.06)});`));
   } else {
     // APP: footage segments, back to back.
     let at = b.start;
@@ -170,18 +158,10 @@ for (const b of beats) {
       const isLast = i === b.segments.length - 1;
       const d = isLast ? snap(b.start + b.dur - at) : snap((se - ss) / rate);
       vid++;
-      if (rate > MAX_RATE) {
-        // Pre-render fast ramps with ffmpeg (frames sampled evenly), then play them at 1x.
-        const rel = `${edit.voDir}/ramp-${b.id}-${i}.mp4`;
-        const out = join(epDir, "hyperframes", rel);
-        if (!existsSync(out)) execFileSync("ffmpeg", ["-y", "-v", "error", "-ss", String(ss + edit.syncOffset), "-t", String(se - ss),
-          "-i", join(epDir, "hyperframes", edit.take), "-an", "-vf", `setpts=(PTS-STARTPTS)/${rate},fps=${FPS}`, "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", out]);
-        html.push(`
-      <video id="v${vid}" class="clip footage" src="${rel}" muted playsinline data-start="${r3(at)}" data-duration="${r3(d)}" data-media-start="0" data-track-index="0"></video>`);
-      } else html.push(`
+      html.push(`
       <video id="v${vid}" class="clip footage" src="${edit.take}" muted playsinline data-start="${r3(at)}" data-duration="${r3(d)}" data-media-start="${r3(ss + edit.syncOffset)}" data-playback-rate="${rate}" data-track-index="0"></video>`);
       if (rate > 1.05) html.push(`
-      <div id="sped-${vid}" class="clip chip sped" data-start="${r3(at)}" data-duration="${r3(d)}" data-track-index="3">Sped up ${Number.isInteger(rate) ? rate : rate.toFixed(1)}×</div>`);
+      <div id="sped-${vid}" class="clip chip sped" data-start="${r3(at)}" data-duration="${r3(d)}" data-track-index="3">Sped up ${Math.round(rate)}×</div>`);
       at = snap(at + d);
     });
     (b.highlights ?? []).forEach((h, i) => html.push(`
@@ -189,7 +169,7 @@ for (const b of beats) {
   }
   if (s.stepChip) {
     const chip = s.stepChip.length > 64 ? "…" + s.stepChip.slice(-63) : s.stepChip;
-    const chipHtml = esc(chip).replace(/→/g, '<span class="arrow">→</span>').replace(/(specweave init \. --quick --adapter generic|specweave init \. --quick|grok --trust|grok login|~\/greet-app|ledger\.jsonl|\$)/g, "<code>$1</code>");
+    const chipHtml = esc(chip).replace(/→/g, '<span class="arrow">→</span>').replace(/(specweave init \. --quick --adapter generic|specweave init \. --quick|grok --trust|~\/greet-app|ledger\.jsonl|codex login|\$)/g, "<code>$1</code>");
     html.push(`
       <div id="chip-${b.id}" class="clip chip step" data-start="${b.start}" data-duration="${b.dur}" data-track-index="2"><span class="chip-inner" id="chipi-${b.id}">${chipHtml}</span></div>`);
     tweens.push(`tl.fromTo("#chipi-${b.id}", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${r3(b.start + 0.2)});`);
@@ -211,13 +191,13 @@ const doc = `<!doctype html>
     <title>${esc(shotlist.title)}</title>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
-      @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 100 700; src: url(assets/fonts/ibm-plex-sans-latin.woff2) format("woff2"); }
-      @font-face { font-family: "Newsreader"; font-style: normal; font-weight: 200 800; src: url(assets/fonts/newsreader-latin.woff2) format("woff2"); }
-      @font-face { font-family: "Newsreader"; font-style: italic; font-weight: 200 800; src: url(assets/fonts/newsreader-italic-latin.woff2) format("woff2"); }
+      @font-face { font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 400 900; src: url(assets/fonts/schibsted-grotesk-latin.woff2) format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; src: url(assets/fonts/jetbrains-mono-latin.woff2) format("woff2"); }
       :root {
-        --paper: #f6f4ee; --ink: #252820; --muted: #65695e; --line: #d9dcd0; --soft: #eff2e8; --accent: #bd481f;
-        --term-bg: #20231c; --term-ink: #e8ecdf; --dark-paper: #181914; --dark-ink: #ece8dc; --dark-soft: #23261e;
-        --sans: "IBM Plex Sans", sans-serif; --display: "Newsreader", serif; --mono: ui-monospace, monospace;
+        /* Weave violet design system (docs-site tokens.css): canvas, ink, iris. */
+        --paper: #f8f7f9; --ink: #241523; --muted: #675d69; --line: #dedae5; --soft: #ece6f8; --accent: #6d4fb5; --accent-strong: #4a3678;
+        --term-bg: #16131d; --term-ink: #f3eff9; --dark-paper: #16131d; --dark-ink: #f3eff9; --dark-soft: #2b2340;
+        --sans: "Schibsted Grotesk", sans-serif; --display: "Schibsted Grotesk", sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
       }
       body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
@@ -226,39 +206,36 @@ const doc = `<!doctype html>
       .card, .termstage { inset: 0; background: var(--paper); }
       .card-inner { position: absolute; inset: 96px; }
       .eyebrow { font: 500 24px/1.2 var(--sans); letter-spacing: 0.12em; color: var(--muted); }
-      .title { margin: 236px 0 0; font: italic 400 120px/1.05 var(--display); color: var(--ink); }
-      .title .roman { font-style: normal; }
-      .thread { height: 4px; width: 0; background: var(--accent); margin-top: 36px; }
+      .title { margin: 236px 0 0; font: 800 120px/1.02 var(--display); letter-spacing: -0.03em; color: var(--ink); }
+      .title .roman { font-weight: 500; color: var(--accent); }
+      .thread { height: 6px; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent), #a88cf6); margin-top: 36px; }
       .subtitle { margin: 40px 0 0; font: 400 36px/1.35 var(--sans); color: var(--muted); }
       .footer { position: absolute; left: 0; bottom: 0; font: 500 24px/1.2 var(--sans); color: var(--muted); }
-      .outro-l1 { margin-top: 300px; font: 400 72px/1.1 var(--display); color: var(--ink); }
+      .outro-l1 { margin-top: 300px; font: 800 80px/1.08 var(--display); letter-spacing: -0.02em; color: var(--ink); }
       .outro-l1 code { font-family: var(--mono); font-size: 62px; color: var(--accent); }
       .outro-l2 { margin-top: 40px; font: 400 32px/1.4 var(--sans); color: var(--ink); }
       .outro-l3 { margin-top: 12px; font: 400 32px/1.4 var(--sans); color: var(--muted); }
       .term { position: absolute; left: 50%; top: 50%; width: 1500px; margin-left: -750px; margin-top: -200px; box-sizing: border-box;
         background: var(--term-bg); color: var(--term-ink); border: 1px solid var(--line); border-radius: 4px; padding: 40px 48px;
         font: 400 30px/1.5 var(--mono); }
-      .term.tall { top: 50%; margin-top: 0; transform: translateY(-50%); font-size: 24px; line-height: 1.45; padding: 32px 48px; }
-      .term.tall .term-row { min-height: 35px; }
-      .term.tall .caret { height: 28px; width: 13px; }
       .term-row { white-space: pre; min-height: 45px; position: relative; }
       .term-row.out { opacity: 0; }
       .term-row.hl::before { content: ""; position: absolute; left: -48px; top: 4px; bottom: 4px; width: 3px; background: var(--accent); }
-      .prompt { color: #a8ab9d; }
+      .prompt { color: #a88cf6; }
       .caret { display: inline-block; width: 16px; height: 34px; background: var(--term-ink); vertical-align: -6px; margin-left: 2px; }
       .chip { top: 48px; z-index: 10; }
-      .chip.step { left: 48px; }
-      .chip-inner, .chip.sped { display: inline-block; background: rgba(239, 242, 232, 0.92); border: 1px solid var(--line); border-radius: 4px;
-        padding: 10px 18px; font: 500 26px/1.3 var(--sans); color: var(--ink); box-shadow: 0 18px 50px #25282008; white-space: nowrap; }
-      .chip.sped { right: 48px; font-size: 22px; color: var(--muted); }
+      .chip.step { left: 272px; }
+      .chip-inner, .chip.sped { display: inline-block; background: rgba(248, 247, 249, 0.94); border: 1px solid var(--line); border-radius: 999px;
+        padding: 10px 18px; font: 500 22px/1.3 var(--sans); color: var(--ink); box-shadow: 0 12px 40px rgba(74, 54, 120, 0.14); white-space: nowrap; }
+      .chip.sped { top: auto; right: 48px; bottom: 48px; color: var(--muted); }
       .chip .arrow { color: var(--accent); }
       .chip code { font-family: var(--mono); font-size: 0.92em; }
-      .hl-box { z-index: 8; background: rgba(189, 72, 31, 0.12); outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+      .hl-box { z-index: 8; background: rgba(109, 79, 181, 0.10); outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 10px; }
       .caption { left: 0; right: 0; bottom: 64px; z-index: 20; text-align: center; }
-      .caption .pill { display: inline-block; max-width: 880px; text-wrap: balance; background: rgba(246, 244, 238, 0.92); color: var(--ink);
-        padding: 12px 24px; border-radius: 4px; font: 600 40px/1.3 var(--sans); }
+      .caption .pill { display: inline-block; max-width: 880px; text-wrap: balance; background: rgba(36, 21, 35, 0.86); color: #f8f7f9;
+        padding: 12px 26px; border-radius: 14px; font: 600 38px/1.3 var(--sans); }
       .caption.dark .pill { background: rgba(24, 25, 20, 0.92); color: var(--dark-ink); }
-      .caption code { font-family: var(--mono); font-weight: 600; font-size: 0.92em; background: var(--soft); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
+      .caption code { font-family: var(--mono); font-weight: 600; font-size: 0.88em; color: #cbbcff; background: rgba(168, 140, 246, 0.18); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
       .caption.dark code { background: var(--dark-soft); }
     </style>
   </head>
