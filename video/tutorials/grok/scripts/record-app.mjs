@@ -2,17 +2,23 @@
 // Headless only. Walks each APP shot's `steps` in SHOTLIST.json, draws a cursor
 // ring and click outlines into the page, and writes a cue log for the edit.
 //
-// Usage: PWDEBUG=0 node record-app.mjs <SHOTLIST.json> <storageState.json> <outDir> [origin]
+// Usage: PWDEBUG=0 [DEMO_HOME=<demo>/home] node record-app.mjs <SHOTLIST.json> <storageState.json> <outDir> [origin]
+// An "offCamera" step, or a click's "offCameraBeforeClick", runs scripts/<script> <DEMO_HOME> (episode 2:
+// codex-auth.sh); nothing changes on screen.
 // Output: <outDir>/take.webm, <outDir>/cues.json, <outDir>/stills/<shot>-<n>.png
 import { chromium } from "./pw.mjs";
 import { readFileSync, writeFileSync, mkdirSync, renameSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+const SCRIPTS = dirname(fileURLToPath(import.meta.url));
 
-const [shotlistFile, stateFile, outDir, origin = "http://127.0.0.1:8334"] = process.argv.slice(2);
+const [shotlistFile, stateFile, outDir, origin = "http://127.0.0.1:8331"] = process.argv.slice(2);
 const shotlist = JSON.parse(readFileSync(shotlistFile, "utf8"));
 mkdirSync(`${outDir}/stills`, { recursive: true });
 mkdirSync(`${outDir}/video`, { recursive: true });
 
-const ACCENT = "#bd481f";
+const ACCENT = "#6d4fb5"; // Weave iris
 const overlay = `
 (() => {
   const install = () => {
@@ -21,7 +27,7 @@ const overlay = `
     ring.id = "__rec_ring";
     Object.assign(ring.style, { position: "fixed", left: "-100px", top: "-100px", width: "32px", height: "32px",
       marginLeft: "-16px", marginTop: "-16px", borderRadius: "50%", border: "2px solid ${ACCENT}",
-      background: "rgba(189,72,31,0.15)", pointerEvents: "none", zIndex: 2147483647,
+      background: "rgba(109,79,181,0.15)", pointerEvents: "none", zIndex: 2147483647,
       transition: "transform 250ms ease-out", boxSizing: "border-box" });
     document.documentElement.appendChild(ring);
     addEventListener("mousemove", (e) => { ring.style.left = e.clientX + "px"; ring.style.top = e.clientY + "px"; }, true);
@@ -67,7 +73,8 @@ async function moveTo(x, y) {
 
 function locate(step) {
   let loc;
-  if (step.role) {
+  if (step.selector) loc = page.locator(step.selector);
+  else if (step.role) {
     const name = step.nameRegex ? new RegExp(step.nameRegex) : step.name;
     loc = page.getByRole(step.role, name === undefined ? {} : { name, exact: !!step.exact });
   } else if (step.textRegex) loc = page.getByText(new RegExp(step.textRegex));
@@ -76,14 +83,21 @@ function locate(step) {
   return step.last ? loc.last() : loc.first();
 }
 
-async function pointAndClick(loc) {
+async function pointAndClick(loc, beforeClick) {
   await loc.scrollIntoViewIfNeeded();
   const box = await loc.boundingBox();
   if (!box) throw new Error("no bounding box");
   await moveTo(box.x + box.width / 2, box.y + box.height / 2);
   await outline(box);
   await page.waitForTimeout(350);
+  if (beforeClick) { beforeClick(); await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2); return; }
   await loc.click();
+}
+
+function offCamera(shot, i, script) {
+  if (!process.env.DEMO_HOME) throw new Error("offCamera needs DEMO_HOME");
+  cue(shot, i, `offCamera ${script}`);
+  execFileSync(join(SCRIPTS, script), [process.env.DEMO_HOME], { stdio: ["ignore", "ignore", "inherit"] });
 }
 
 async function waitTurn(shot, i) {
@@ -104,28 +118,30 @@ async function waitTurn(shot, i) {
 async function runStep(shot, i, step) {
   switch (step.do) {
     case "expect":
-      await page.getByText(step.text, { exact: false }).first().waitFor({ state: "visible", timeout: 20000 });
+      await page.getByText(step.text, { exact: false }).first().waitFor({ state: "visible", timeout: step.timeout ?? 20000 });
       cue(shot, i, `expect ${step.text}`);
       break;
     case "pause":
       await page.waitForTimeout(step.ms);
       break;
     case "click":
-      cue(shot, i, `click ${step.name ?? step.nameRegex ?? step.textRegex ?? step.text}`);
-      await pointAndClick(locate(step));
+      cue(shot, i, `click ${step.name ?? step.nameRegex ?? step.textRegex ?? step.text ?? step.selector}`);
+      // offCameraBeforeClick: run the script after the pointer is on the target, right before the click.
+      await pointAndClick(locate(step), step.offCameraBeforeClick ? () => offCamera(shot, i, step.offCameraBeforeClick) : undefined);
       await page.waitForTimeout(500);
       break;
     case "clickIfPresent": {
       const loc = locate(step);
       if ((await loc.count()) && (await loc.isVisible())) {
-        cue(shot, i, `click ${step.name ?? step.nameRegex ?? step.textRegex}`);
-        await pointAndClick(loc);
+        cue(shot, i, `click ${step.name ?? step.nameRegex ?? step.textRegex ?? step.selector}`);
+        if (step.quiet) await loc.click(); else await pointAndClick(loc);
         await page.waitForTimeout(500);
       } else cue(shot, i, `skip ${step.name ?? step.nameRegex ?? step.textRegex}`);
       break;
     }
     case "hover": {
       const loc = locate(step);
+      if (step.optional && !(await loc.isVisible().catch(() => false))) { cue(shot, i, `skip ${step.text ?? step.textRegex ?? step.selector}`); break; }
       const box = await loc.boundingBox();
       await moveTo(box.x + box.width / 2, box.y + box.height / 2);
       cue(shot, i, `hover ${step.text ?? step.name}`);
@@ -157,6 +173,25 @@ async function runStep(shot, i, step) {
       } else cue(shot, i, `already ${step.option}`);
       break;
     }
+    case "select": {
+      const loc = page.locator(step.selector).first();
+      const box = await loc.boundingBox();
+      await moveTo(box.x + box.width / 2, box.y + box.height / 2);
+      await outline(box);
+      await page.waitForTimeout(350);
+      cue(shot, i, `select ${step.option}`);
+      await loc.selectOption({ label: step.option });
+      await page.waitForTimeout(500);
+      break;
+    }
+    case "waitFor":
+      cue(shot, i, "wait-start");
+      await locate(step).waitFor({ state: "visible", timeout: step.timeout ?? 600000 });
+      cue(shot, i, "wait-end");
+      break;
+    case "offCamera":
+      offCamera(shot, i, step.script);
+      break;
     default:
       throw new Error(`unknown step ${step.do}`);
   }

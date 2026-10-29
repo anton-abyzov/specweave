@@ -35,9 +35,9 @@
       "spoken": "Set Full access for this demo, describe the change, and send it. The coordinator hands the work to a new thread."
     },
     {
-      "id": "06-work",
-      "text": "The thread plans increment 0001: acceptance criteria and one task with its test. Then it changes the code and runs that test. A task is done only when its test passes.",
-      "spoken": "The thread plans increment zero zero zero one: acceptance criteria, and one task with its test. Then it changes the code, and runs that test. A task is done only when its test passes."
+      "id": "06-work-b",
+      "text": "The thread plans increment 1: acceptance criteria and one task with its test. Then it changes the code and runs that test. A task is done only when its test passes.",
+      "spoken": "The thread plans increment one: acceptance criteria, and one task with its test. Then it changes the code, and runs that test. A task is done only when its test passes."
     },
     {
       "id": "07-review",
@@ -45,9 +45,9 @@
       "spoken": "Open the thread to review it: the summary, the verification and review reports, and every changed file in Open diff."
     },
     {
-      "id": "08-outro",
-      "text": "Increment 0001 is verified and closed. Next, run the same task with another agent.",
-      "spoken": "Increment zero zero zero one is verified and closed. Next, run the same task with another agent."
+      "id": "08-outro-b",
+      "text": "Increment 1 is verified and closed. Next, run the same task with another agent.",
+      "spoken": "Increment one is verified and closed. Next, run the same task with another agent."
     }
   ],
   "reused": "02-init, 07-review and 08-outro have the same text as episode 1; their files are copied from episode 1's vo folder instead of generated again."

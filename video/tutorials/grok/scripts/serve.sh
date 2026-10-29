@@ -1,18 +1,21 @@
 #!/bin/sh
 # Start a disposable SpecWithCode server for recording.
-# Usage: serve.sh <demo-dir> <agent-tool> [port]
+# Usage: serve.sh <demo-dir> <agent-tool> [port]   (episode 2: codex, 8331)
 #   <demo-dir> holds home/ (HOME for the server and agent CLIs), studio/ (--base-dir),
 #   shim/ (scutil shim that names the computer "Demo Mac"), tmp/, secret/ (mode 700).
 # Runs the release's bin.mjs directly: the installed `specweave-studio` launcher
 # re-sets HOME, STUDIO_HOME and the port to the real instance, so it cannot be used.
 # Prints the server PID. Stop it with `kill <pid>`.
 set -eu
-DEMO="$1"; TOOL="$2"; PORT="${3:-8334}"
+DEMO="$1"; TOOL="$2"; PORT="${3:-8331}"
 NODE="$(command -v node)"
 LAUNCHER="$(command -v specweave-studio)"
-BIN="$(grep -o '[^ ]*/releases/[^ ]*/bin.mjs' "$LAUNCHER" | head -1)"
+BIN="${STUDIO_BIN:-$(grep -o '[^ ]*/releases/[^ ]*/bin.mjs' "$LAUNCHER" | head -1)}"
 [ -f "$BIN" ] || { echo "cannot find the release bin.mjs in $LAUNCHER" >&2; exit 1; }
-DEMO_PATH="$DEMO/shim:$(dirname "$NODE"):$(dirname "$(command -v grok)"):/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+# Episode 2: only node, npm-installed CLIs (specweave, codex) and the system dirs. ~/.local/bin and
+# Homebrew are left out so no other agent CLI (claude, cursor, grok) is found in the Codex episode.
+NODE_DIR="$(dirname "$NODE")"; [ "${ISOLATE:-0}" = 1 ] && NODE_DIR="$DEMO/bin"
+DEMO_PATH="$DEMO/shim:$DEMO/bin:$NODE_DIR:/usr/bin:/bin:/usr/sbin:/sbin"
 mkdir -p "$DEMO/tmp" "$DEMO/secret"; chmod 700 "$DEMO/secret"
 cd "$DEMO/home"
 umask 077

@@ -11,43 +11,53 @@
   "lines": [
     {
       "id": "01-intro",
-      "text": "OpenCode in SpecWithCode: plan, build, review.",
-      "spoken": "Open Code in Spec With Code: plan, build, review."
+      "text": "OpenCode in SpecWithCode: one task, planned, built and reviewed.",
+      "spoken": "Open Code in Spec With Code: one task, planned, built, and reviewed."
     },
     {
       "id": "02-init",
-      "text": "In your repo, run specweave init. It adds AGENTS.md and eleven SpecWeave skills.",
-      "spoken": "In your repo, run spec weave init. It adds agents dot M D, and eleven spec weave skills."
+      "text": "In your repo, run specweave init. It adds AGENTS.md and seven SpecWeave skills, such as sw-increment and sw-do.",
+      "spoken": "In your repo, run spec weave init. It adds agents dot M D, and seven spec weave skills, such as S W increment, and S W do."
     },
     {
-      "id": "03-connect",
-      "text": "Sign OpenCode in to a model provider first: run opencode auth login in a terminal. Open SpecWithCode, then Settings, Providers. Click Add provider, pick OpenCode, click Next twice, then Add instance.",
-      "spoken": "Sign Open Code in to a model provider first: run open code auth login in a terminal. Open Spec With Code, then Settings, Providers. Click Add provider, pick Open Code, click Next twice, then Add instance."
+      "id": "03-setup",
+      "text": "Open SpecWithCode and set this Mac up as your main machine. OpenCode isn't in the first-run list, so continue past it.",
+      "spoken": "Open Spec With Code, and set this Mac up as your main machine. Open Code isn't in the first-run list, so continue past it."
     },
     {
-      "id": "04-project-chat",
-      "text": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick OpenCode in the model picker, and set Full access for this demo.",
-      "spoken": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Open Code in the model picker, and set Full access for this demo."
+      "id": "04-connect",
+      "text": "OpenCode signs in with its own CLI. In Settings, Providers, SpecWithCode has already turned OpenCode on, because its CLI is signed in.",
+      "spoken": "Open Code signs in with its own C L I. In Settings, Providers, Spec With Code has already turned Open Code on, because its C L I is signed in."
     },
     {
-      "id": "05-plan",
-      "text": "Type a dollar sign, pick sw-increment, and describe the change. OpenCode writes spec.md: acceptance criteria and a task with its files and test.",
-      "spoken": "Type a dollar sign, pick S W increment, and describe the change. Open Code writes spec dot M D: acceptance criteria, and a task with its files and test."
+      "id": "05-project",
+      "text": "Add the repo: the plus next to Projects, Local folder, then its path. The project opens on its coordinator.",
+      "spoken": "Add the repo: the plus next to Projects, Local folder, then its path. The project opens on its coordinator."
     },
     {
-      "id": "06-build",
-      "text": "Then send sw-do. OpenCode claims the task, changes the code, and runs the test. The task is marked done only when the test passes.",
-      "spoken": "Then send S W do. Open Code claims the task, changes the code, and runs the test. The task is marked done only when the test passes."
+      "id": "06-model",
+      "text": "Choose a model. OpenCode lists every model your account can use. Search for one, such as Claude Sonnet 5.5.",
+      "spoken": "Choose a model. Open Code lists every model your account can use. Search for one, such as Claude Sonnet five point five."
     },
     {
-      "id": "07-review",
-      "text": "Click Open diff to review the code, the test, and the ledger line that records who finished the task.",
-      "spoken": "Click Open diff to review the code, the test, and the ledger line that records who finished the task."
+      "id": "07-task",
+      "text": "Set Full access for this demo, describe the change, and send it. The coordinator hands the work to a new thread.",
+      "spoken": "Set Full access for this demo, describe the change, and send it. The coordinator hands the work to a new thread."
     },
     {
-      "id": "08-outro",
-      "text": "Next, sw-done verifies and closes the increment.",
-      "spoken": "Next, S W done verifies and closes the increment."
+      "id": "08-work",
+      "text": "The thread plans increment 1: acceptance criteria and one task with its test. Then it changes the code and runs that test. A task is done only when its test passes.",
+      "spoken": "The thread plans increment one: acceptance criteria, and one task with its test. Then it changes the code, and runs that test. A task is done only when its test passes."
+    },
+    {
+      "id": "09-review",
+      "text": "Open the thread to review it: the summary, the verification and review reports, and every changed file in Open diff.",
+      "spoken": "Open the thread to review it: the summary, the verification and review reports, and every changed file in Open diff."
+    },
+    {
+      "id": "10-outro",
+      "text": "Increment 1 is verified and closed. Next, run the same task with another agent.",
+      "spoken": "Increment one is verified and closed. Next, run the same task with another agent."
     }
   ]
 }
