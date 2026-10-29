@@ -177,7 +177,7 @@ test('published gallery videos must be first-party, captioned and chaptered', ()
   const cases = [
     [g => {bySlug(g, 'specwithcode-tour').src = 'https://postiz.easychamp.com/uploads/x.mp4';}, /first-party site path/],
     [g => {bySlug(g, 'specwithcode-tour').captionsVtt = null;}, /first-party site path/],
-    [g => {bySlug(g, 'specwithcode-tour').src = '/video/missing.mp4';}, /ENOENT|no such file/],
+    [g => {bySlug(g, 'specwithcode-tour').src = '/video/missing.mp4';}, /ENOENT|no such file|not published/],
     [g => {bySlug(g, 'specwithcode-tour').chapters.reverse();}, /first chapter starts at 0|chapters must ascend/],
     [g => {bySlug(g, 'specwithcode-tour').chapters.push({start: 500, title: 'Late'});}, /chapter beyond the video/],
     [g => {bySlug(g, 'memory-and-usage').agentsShown = ['codex'];}, /only a multi-agent tutorial/],

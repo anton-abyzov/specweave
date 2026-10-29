@@ -25,7 +25,8 @@
     "remotion:join-tutorial": "remotion render remotion/index.ts JoinMachineTutorial tmp-join-tutorial.mp4 --public-dir=remotion/join-tutorial/public && ffmpeg -y -i tmp-join-tutorial.mp4 -c:v libx264 -crf 22 -preset slow -pix_fmt yuv420p -af loudnorm=I=-16:TP=-2:LRA=11 -c:a aac -b:a 192k -movflags +faststart static/video/tutorials/join-a-mac.mp4 && rm tmp-join-tutorial.mp4",
     "remotion:studio-tutorial": "remotion render remotion/index.ts StudioTutorial tmp-studio-tutorial.mp4 --public-dir=remotion/studio-tutorial/public && ffmpeg -y -i tmp-studio-tutorial.mp4 -c:v libx264 -crf 27 -preset slow -pix_fmt yuv420p -movflags +faststart -an static/video/studio-tutorial.mp4 && rm tmp-studio-tutorial.mp4",
     "remotion:youtube": "mkdir -p tmp-broll && remotion render remotion/index.ts broll-ColdOpen tmp-broll/ColdOpen.mp4 && remotion render remotion/index.ts broll-CommitTimelapse tmp-broll/CommitTimelapse.mp4 && remotion render remotion/index.ts broll-StatsCounter tmp-broll/StatsCounter.mp4 && remotion render remotion/index.ts broll-SocialGrowth tmp-broll/SocialGrowth.mp4 && remotion render remotion/index.ts broll-AppGrid tmp-broll/AppGrid.mp4 && remotion render remotion/index.ts broll-LayerDiagram tmp-broll/LayerDiagram.mp4 && remotion render remotion/index.ts broll-IncrementFlow tmp-broll/IncrementFlow.mp4 && remotion render remotion/index.ts broll-AutoMode tmp-broll/AutoMode.mp4 && remotion render remotion/index.ts broll-QualityGates tmp-broll/QualityGates.mp4 && remotion render remotion/index.ts broll-AgentSwarm tmp-broll/AgentSwarm.mp4 && remotion render remotion/index.ts broll-CTASteps tmp-broll/CTASteps.mp4",
-    "setup": "npm rebuild --ignore-scripts=false sharp esbuild"
+    "setup": "npm rebuild --ignore-scripts=false sharp esbuild",
+    "videos:publish": "node scripts/publish-videos.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "3.9.2",

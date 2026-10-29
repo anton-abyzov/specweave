@@ -4,19 +4,20 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import ThemedImage from '@theme/ThemedImage';
 import {Pause, Play, Volume2, VolumeX} from 'lucide-react';
 import {prefersReducedMotion} from './hooks';
+import {mediaUrl} from '@site/src/lib/media';
 import styles from './HeroStage.module.css';
 
 /*
   /code hero media in three planes: an iris light field (back), the app window (mid)
   and callouts quoting the capture (front). Scroll moves the planes at different rates.
 
-  The window shows the promo video when its files are published under /video/promo/.
+  The window shows the promo video when it is published to R2 at /video/promo/ (see src/lib/media.ts).
   Until then (or if a file is missing), it shows the real app capture of 27 October 2026.
   The server render always shows the capture, so no-JS and screenshots are complete.
 */
 
 const PROMO = {
-  video: '/video/promo/specwithcode-promo.mp4',
+  video: mediaUrl('/video/promo/specwithcode-promo.mp4'),
   poster: '/video/promo/specwithcode-promo-poster.jpg',
   captions: '/video/promo/specwithcode-promo.vtt',
 };

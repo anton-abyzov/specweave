@@ -17,6 +17,7 @@ import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {verifyManifest} from '../static/video/studio-projects/verify-tutorials.mjs';
 import {NATIVE_PROOF_NOTE} from '../static/video/studio-projects/native-proof-scope.mjs';
+import {isHostedMedia, publishedVideo} from './media.mjs';
 
 const ownPath = fileURLToPath(import.meta.url);
 const defaultSiteRoot = resolve(dirname(ownPath), '..');
@@ -55,6 +56,8 @@ function firstParty(siteRoot, sitePath, extension, label) {
   assert(sitePath.endsWith(extension), `${label} must end with ${extension}: ${sitePath}`);
   const root = resolve(siteRoot, 'static');
   const target = resolve(root, sitePath.slice(1));
+  // Videos are served from R2; a local render, when present, is what gets probed.
+  if (isHostedMedia(sitePath) && !existsSync(target)) return publishedVideo(sitePath);
   assert(existsSync(target), `${label} is missing: static${sitePath}`);
   const rel = relative(realpathSync(root), realpathSync(target));
   assert(rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel), `${label} escapes static/`);

@@ -158,7 +158,7 @@ describe('structured data', () => {
     const data = buildVideoJsonLd(TUTORIALS, origin);
     expect(data['@graph']).toHaveLength(TUTORIALS.filter(t => t.publishedAt).length);
     const tour = data['@graph'].find(v => v.name === getTutorial('specwithcode-tour')!.title)!;
-    expect(tour.contentUrl).toBe('https://spec-weave.com/video/studio-tutorial.mp4');
+    expect(tour.contentUrl).toBe('https://media.spec-weave.com/video/studio-tutorial.mp4');
     expect(tour.thumbnailUrl).toEqual(['https://spec-weave.com/img/studio/poster-tour-20261015.jpg']);
     expect(tour.duration).toBe('PT1M1S');
     expect(tour).not.toHaveProperty('embedUrl');
