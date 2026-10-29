@@ -8,6 +8,13 @@ set -eu
 DEMO="$1"
 [ -e "$DEMO/home/greet-app" ] && { echo "already seeded: $DEMO" >&2; exit 1; }
 NODE_BIN="$(dirname "$(command -v node)")"
+# ISOLATE=1: leave the node dir (and every npm-installed agent CLI in it) off PATH; link node,
+# specweave and the episode's agent into <demo>/bin with AGENT_BINS instead.
+[ "${ISOLATE:-0}" = 1 ] && NODE_BIN="$1/bin"
+TOOL="${TOOL:-codex}"
+mkdir -p "$DEMO/bin"
+# AGENT_BINS: "name=/abs/path" pairs linked into <demo>/bin (a bare path keeps its basename).
+for b in ${AGENT_BINS:-}; do case "$b" in *=*) ln -sf "${b#*=}" "$DEMO/bin/${b%%=*}" ;; *) ln -sf "$b" "$DEMO/bin/$(basename "$b")" ;; esac; done
 mkdir -p "$DEMO/home/greet-app/src" "$DEMO/home/greet-app/test" "$DEMO/studio" "$DEMO/shim" "$DEMO/tmp" "$DEMO/out" "$DEMO/secret"
 chmod 700 "$DEMO/secret"
 
@@ -27,7 +34,7 @@ chmod 755 "$DEMO/shim/scutil"
 cat > "$DEMO/home/.zprofile" <<EOF
 # Demo HOME: the shim first, so SpecWithCode names this computer "Demo Mac". PATH is set,
 # not prepended, so /etc/paths.d (Homebrew) cannot add other agent CLIs to the Codex episode.
-export PATH="$DEMO/shim:$NODE_BIN:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="$DEMO/shim:$DEMO/bin:$NODE_BIN:/usr/bin:/bin:/usr/sbin:/sbin"
 EOF
 
 cd "$DEMO/home/greet-app"
@@ -49,8 +56,8 @@ git config user.name "Demo User"
 git config user.email demo@example.com
 git add -A
 git commit -q -m "Initial greet-app" >/dev/null 2>&1
-env -i PATH="$DEMO/shim:$NODE_BIN:/usr/bin:/bin:/usr/sbin:/sbin" HOME="$DEMO/home" LANG=en_US.UTF-8 TMPDIR="$DEMO/tmp" \
-  SPECWEAVE_HOST=demo SPECWEAVE_TOOL=codex \
+env -i PATH="$DEMO/shim:$DEMO/bin:$NODE_BIN:/usr/bin:/bin:/usr/sbin:/sbin" HOME="$DEMO/home" LANG=en_US.UTF-8 TMPDIR="$DEMO/tmp" \
+  SPECWEAVE_HOST=demo SPECWEAVE_TOOL="$TOOL" \
   specweave init . --quick > "$DEMO/init.out" 2>&1
 git add -A
 git commit -q -m "Add SpecWeave" >/dev/null 2>&1

@@ -282,3 +282,4 @@ vskill.lock
 
 # Agent worktrees
 .worktrees/
+/video/tutorials/**/hyperframes/.hyperframes/

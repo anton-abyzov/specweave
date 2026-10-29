@@ -1,44 +1,47 @@
 #!/bin/sh
-# Seed one disposable demo root for the Grok episode: home/greet-app (the SERIES.md
-# seed, `specweave init . --quick --adapter generic`, two Demo User commits),
-# shim/scutil ("Demo Mac") and home/.zprofile (puts the shim first for login shells).
-# Usage: seed.sh <demo-root>     e.g. /Users/Shared/specwithcode-demo/ep05-grok/final
-# Grok sign-in and folder trust are separate (see SCRIPT.md, "Grok recording notes").
+# Seed one disposable demo folder for a take: home/greet-app (SERIES.md seed, then
+# `specweave init . --quick`), the scutil shim that names the computer "Demo Mac",
+# and home/.zprofile that puts the shim first in the agent's login shell.
+# Usage: seed.sh <demo-dir>     (refuses to reuse an existing home/greet-app)
+# Prints nothing private: the init output goes to <demo-dir>/init.out.
 set -eu
-ROOT="$1"
-[ -e "$ROOT/home/greet-app" ] && { echo "$ROOT/home/greet-app exists" >&2; exit 1; }
-mkdir -p "$ROOT/home/greet-app/src" "$ROOT/home/greet-app/test" "$ROOT/shim" "$ROOT/studio" "$ROOT/out" "$ROOT/tmp" "$ROOT/secret"
-chmod 700 "$ROOT/secret"
+DEMO="$1"
+[ -e "$DEMO/home/greet-app" ] && { echo "already seeded: $DEMO" >&2; exit 1; }
 NODE_BIN="$(dirname "$(command -v node)")"
-GROK_BIN="$(dirname "$(command -v grok)")"
+# ISOLATE=1: leave the node dir (and every npm-installed agent CLI in it) off PATH; link node,
+# specweave and the episode's agent into <demo>/bin with AGENT_BINS instead.
+[ "${ISOLATE:-0}" = 1 ] && NODE_BIN="$1/bin"
+TOOL="${TOOL:-codex}"
+mkdir -p "$DEMO/bin"
+# AGENT_BINS: "name=/abs/path" pairs linked into <demo>/bin (a bare path keeps its basename).
+for b in ${AGENT_BINS:-}; do case "$b" in *=*) ln -sf "${b#*=}" "$DEMO/bin/${b%%=*}" ;; *) ln -sf "$b" "$DEMO/bin/$(basename "$b")" ;; esac; done
+mkdir -p "$DEMO/home/greet-app/src" "$DEMO/home/greet-app/test" "$DEMO/studio" "$DEMO/shim" "$DEMO/tmp" "$DEMO/out" "$DEMO/secret"
+chmod 700 "$DEMO/secret"
 
-cat > "$ROOT/shim/scutil" <<'EOF'
+cat > "$DEMO/shim/scutil" <<'EOF'
 #!/bin/sh
-# Demo shim: SpecWithCode names this computer from `scutil --get ComputerName`.
-if [ "$1" = "--get" ] && [ "$2" = "ComputerName" ]; then echo "Demo Mac"; exit 0; fi
-if [ "$1" = "--get" ] && [ "$2" = "LocalHostName" ]; then echo "demo-mac"; exit 0; fi
-if [ "$1" = "--get" ] && [ "$2" = "HostName" ]; then echo "demo-mac"; exit 0; fi
+# Demo shim: SpecWithCode names this computer from scutil.
+if [ "${1:-}" = "--get" ]; then
+  case "${2:-}" in
+    ComputerName) echo "Demo Mac"; exit 0 ;;
+    LocalHostName|HostName) echo "demo-mac"; exit 0 ;;
+  esac
+fi
 exec /usr/sbin/scutil "$@"
 EOF
-chmod 755 "$ROOT/shim/scutil"
-cat > "$ROOT/home/.zprofile" <<EOF
-# Demo HOME: the shim first, so SpecWithCode names this computer "Demo Mac".
-export PATH="$ROOT/shim:$NODE_BIN:$GROK_BIN:\$PATH"
+chmod 755 "$DEMO/shim/scutil"
+
+cat > "$DEMO/home/.zprofile" <<EOF
+# Demo HOME: the shim first, so SpecWithCode names this computer "Demo Mac". PATH is set,
+# not prepended, so /etc/paths.d (Homebrew) cannot add other agent CLIs to the Codex episode.
+export PATH="$DEMO/shim:$DEMO/bin:$NODE_BIN:/usr/bin:/bin:/usr/sbin:/sbin"
 EOF
 
-cd "$ROOT/home/greet-app"
-cat > package.json <<'EOF'
-{
-  "name": "greet-app",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "test": "node --test"
-  }
-}
-EOF
-printf '%s\n' 'export function greet() {' '  return "Hello, world!";' '}' > src/greeting.js
+cd "$DEMO/home/greet-app"
+printf '%s\n' '{"name":"greet-app","version":"0.1.0","private":true,"type":"module","scripts":{"test":"node --test"}}' \
+  | python3 -c 'import json,sys; print(json.dumps(json.load(sys.stdin), indent=2))' > package.json
+printf '# greet-app\n' > README.md
+printf 'export function greet() {\n  return "Hello, world!";\n}\n' > src/greeting.js
 cat > test/greeting.test.js <<'EOF'
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -48,12 +51,14 @@ test("greets the world", () => {
   assert.equal(greet(), "Hello, world!");
 });
 EOF
-echo "# greet-app" > README.md
-G() { git -c user.name="Demo User" -c user.email=demo@example.com -c core.hooksPath=/dev/null "$@"; }
 git init -q -b main
-git config user.name "Demo User"; git config user.email demo@example.com
-G add -A; G commit -q -m "Initial greet-app"
-env -i PATH="$ROOT/shim:$NODE_BIN:/usr/bin:/bin:/usr/sbin:/sbin" HOME="$ROOT/home" LANG=en_US.UTF-8 TMPDIR="$ROOT/tmp" \
-  specweave init . --quick --adapter generic > "$ROOT/out/init.log" 2>&1
-G add -A; G commit -q -m "Add SpecWeave"
-git log --format='%h %an %s'
+git config user.name "Demo User"
+git config user.email demo@example.com
+git add -A
+git commit -q -m "Initial greet-app" >/dev/null 2>&1
+env -i PATH="$DEMO/shim:$DEMO/bin:$NODE_BIN:/usr/bin:/bin:/usr/sbin:/sbin" HOME="$DEMO/home" LANG=en_US.UTF-8 TMPDIR="$DEMO/tmp" \
+  SPECWEAVE_HOST=demo SPECWEAVE_TOOL="$TOOL" \
+  specweave init . --quick ${INIT_ARGS:-} > "$DEMO/init.out" 2>&1
+git add -A
+git commit -q -m "Add SpecWeave" >/dev/null 2>&1
+git log --oneline

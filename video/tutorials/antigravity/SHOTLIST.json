@@ -7,112 +7,273 @@
  "fps": 30,
  "demoRepo": "greet-app",
  "ledgerAgent": "antigravity@demo",
- "labelsCheckedAt": "SpecWithCode 0.2.8 (specweave-studio v0.2.8), Antigravity runtime 1.3.0, recorded 2026-10-11",
+ "labelsCheckedAt": "SpecWithCode 1.0.111 with Antigravity ACP 1.3.0, 2026-10-28",
+ "stepVerbs": {
+  "expect": "text visible within timeout (default 20 s)",
+  "click": "point at the element (role+name, text or selector), outline it, click",
+  "clickIfPresent": "click only when present",
+  "hover": "point and hold",
+  "type": "type into the focused element",
+  "press": "press a key",
+  "pause": "hold for ms",
+  "select": "point at a native select and pick an option",
+  "waitFor": "wait until an element is visible (long timeout); the edit speed-ramps this span",
+  "offCamera": "run scripts/<script> against DEMO_HOME; a click can carry it as offCameraBeforeClick"
+ },
  "shots": [
   {
    "id": "01-intro",
    "kind": "MG",
    "chapter": "Intro",
-   "vo": "Antigravity in SpecWithCode: plan, build, review.",
+   "vo": "Antigravity in SpecWithCode: one task, planned, built and reviewed with Gemini.",
    "card": {
-    "eyebrow": "SpecWithCode tutorial 06",
+    "eyebrow": "SpecWithCode tutorial · Antigravity",
     "title": "Antigravity in SpecWithCode",
-    "subtitle": "Plan, build and review one task. The plan stays in your repo."
+    "subtitle": "One task, planned, built and reviewed with Gemini. The plan stays in your repo."
    }
   },
   {
    "id": "02-init",
    "kind": "TERM",
    "chapter": "Set up the repo",
-   "vo": "In your repo, run specweave init with the Antigravity adapter. It adds AGENTS.md and eleven SpecWeave skills.",
-   "stepChip": "In your repo: specweave init . --quick --adapter antigravity",
+   "vo": "In your repo, run specweave init. It adds AGENTS.md and seven SpecWeave skills, such as sw-increment and sw-do.",
+   "stepChip": "In your repo: specweave init . --quick",
    "steps": [
     {
      "do": "command",
      "prompt": "greet-app %",
-     "command": "specweave init . --quick --adapter antigravity",
-     "capture": "captures/03-specweave-init.json",
+     "command": "specweave init . --quick",
+     "capture": "captures/11-specweave-init-antigravity.json",
      "showLines": [
       "   ✓ AGENTS.md created",
-      "   ✓ 11 skills installed as sw-* in .claude/skills/ and .agents/skills/"
+      "   ✓ 7 skills installed as sw-* in .claude/skills/ and .agents/skills/"
      ],
      "lineNumbers": [
-      7,
-      120
-     ],
-     "elide": "dim … row between and after the two lines"
+      13,
+      129
+     ]
     }
    ]
   },
   {
-   "id": "03-connect",
+   "id": "03-setup",
    "kind": "APP",
-   "chapter": "Connect Antigravity",
-   "vo": "Open SpecWithCode, then Settings, Providers. Click Add provider and pick Antigravity. SpecWithCode installs its own Antigravity agent. Click Sign in and finish with your Google account in the browser. This one is already signed in.",
-   "stepChip": "Settings → Providers → Add provider → Antigravity → Sign in",
+   "chapter": "Set up SpecWithCode",
+   "vo": "Open SpecWithCode and set this Mac up as your main machine. Antigravity isn't in the first-run list, so continue past it.",
+   "stepChip": "Main machine → Continue → Continue → Do not import projects",
    "steps": [
     {
      "do": "expect",
-     "text": "Control desk",
-     "note": "the wizard was finished off camera"
+     "text": "Set this Mac up as my main machine"
     },
     {
      "do": "pause",
-     "ms": 800
+     "ms": 1200
     },
     {
      "do": "click",
-     "role": "button",
-     "name": "Account: Demo Mac"
-    },
-    {
-     "do": "click",
-     "role": "menuitem",
-     "name": "Settings"
-    },
-    {
-     "do": "click",
-     "role": "button",
-     "name": "Providers",
-     "exact": true
-    },
-    {
-     "do": "click",
-     "role": "button",
-     "name": "Add provider"
-    },
-    {
-     "do": "expect",
-     "text": "Add an account or configure a provider"
-    },
-    {
-     "do": "click",
-     "role": "radio",
-     "name": "Antigravity",
-     "exact": true
+     "text": "Set this Mac up as my main machine"
     },
     {
      "do": "pause",
-     "ms": 1200,
-     "note": "the instance was added, installed and signed in off camera; the dialog is closed without adding a second one"
+     "ms": 1200
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "nameRegex": "^Continue$"
+    },
+    {
+     "do": "pause",
+     "ms": 2500
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "nameRegex": "^Continue$",
+     "last": true
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "clickIfPresent",
+     "role": "button",
+     "name": "Do not import projects"
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    }
+   ]
+  },
+  {
+   "id": "04-connect",
+   "kind": "APP",
+   "chapter": "Connect Antigravity",
+   "vo": "In Settings, Providers, click Add provider, pick Antigravity, then Next, Next, and Add instance. SpecWithCode installs its own Antigravity agent. Sign in with your Google account; this one is already signed in.",
+   "stepChip": "Settings → Providers → Add provider → Antigravity → Add instance",
+   "steps": [
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "click",
+     "selector": "button[aria-label=\"Account: Demo Mac\"]"
+    },
+    {
+     "do": "pause",
+     "ms": 700
+    },
+    {
+     "do": "click",
+     "selector": "div[role=menuitem]:has-text(\"Settings\")"
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "click",
+     "selector": "button:has-text(\"Providers\")"
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "click",
+     "selector": "button:has-text(\"Add provider\")"
+    },
+    {
+     "do": "pause",
+     "ms": 1000
+    },
+    {
+     "do": "click",
+     "selector": "[role=radio]:has-text(\"Antigravity\")"
+    },
+    {
+     "do": "pause",
+     "ms": 700
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next"
+    },
+    {
+     "do": "pause",
+     "ms": 900
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next"
+    },
+    {
+     "do": "pause",
+     "ms": 900
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Add instance",
+     "note": "the agent runtime was copied into the demo base dir before the take, so it is already installed; the Google sign-in token was copied too, standing in for Sign in"
+    },
+    {
+     "do": "pause",
+     "ms": 2000
+    },
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Select Antigravity\"]"
+    },
+    {
+     "do": "click",
+     "selector": "button:visible:has-text(\"Checked\")",
+     "note": "Refresh provider status; it reads the Google sign-in"
+    },
+    {
+     "do": "waitFor",
+     "timeout": 90000,
+     "note": "speed-ramped",
+     "textRegex": "^Authenticated · Google account"
+    },
+    {
+     "do": "pause",
+     "ms": 2500
     },
     {
      "do": "press",
      "key": "Escape"
     },
     {
+     "do": "pause",
+     "ms": 1000
+    }
+   ]
+  },
+  {
+   "id": "05-project",
+   "kind": "APP",
+   "chapter": "Add the project",
+   "vo": "Add the repo: the plus next to Projects, Local folder, then its path. The project opens on its coordinator, and the model picker already shows Gemini 3.8 Flash.",
+   "stepChip": "+ → Local folder → ~/greet-app",
+   "steps": [
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
      "do": "click",
-     "role": "button",
-     "name": "Select Antigravity"
+     "selector": "button[aria-label=\"Add project\"]"
+    },
+    {
+     "do": "pause",
+     "ms": 600
+    },
+    {
+     "do": "click",
+     "selector": "div[role=option]:has-text(\"Local folder\")"
+    },
+    {
+     "do": "pause",
+     "ms": 600
+    },
+    {
+     "do": "type",
+     "text": "~/greet-app",
+     "delay": 60
+    },
+    {
+     "do": "press",
+     "key": "Enter"
     },
     {
      "do": "expect",
-     "text": "Installed."
+     "text": "Excited to get started on greet-app",
+     "timeout": 30000,
+     "note": "a new project opens on its coordinator with a welcome and suggested first threads"
     },
     {
-     "do": "expect",
-     "text": "Signed in.",
-     "note": "\"Signed in as\" stays masked; never click the email visibility toggle"
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "hover",
+     "ms": 1500,
+     "selector": "button[aria-label^=\"Coordinator model\"]"
     },
     {
      "do": "pause",
@@ -121,155 +282,28 @@
    ]
   },
   {
-   "id": "04-project-chat",
+   "id": "06-task",
    "kind": "APP",
-   "chapter": "Add the project",
-   "vo": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick Gemini 3.8 Flash under Antigravity, and set Full access for this demo.",
-   "stepChip": "+ → Local folder → ~/greet-app · Gemini 3.8 Flash · Full access",
+   "chapter": "Send the task",
+   "vo": "Set Full access for this demo, describe the change, and send it. The coordinator hands the work to a new thread.",
+   "stepChip": "Full access → describe the change → Enter",
    "steps": [
     {
-     "do": "click",
-     "role": "button",
-     "name": "Back",
-     "exact": true,
-     "note": "leaves Settings (sidebar foot)"
-    },
-    {
-     "do": "click",
-     "role": "button",
-     "name": "Add project",
-     "note": "the + next to Projects"
-    },
-    {
-     "do": "click",
-     "role": "option",
-     "nameRegex": "^Local folder",
-     "note": "\"New project\" and \"Personal assistant\" rows sit above it"
-    },
-    {
-     "do": "type",
-     "placeholder": "Enter path (e.g. ~/projects/my-app)",
-     "text": "~/greet-app"
-    },
-    {
-     "do": "press",
-     "key": "Enter"
-    },
-    {
-     "do": "expect",
-     "text": "What should we build in",
-     "note": "adding the folder opens a new chat; no separate New chat click"
-    },
-    {
-     "do": "ensureOption",
-     "combobox": "Workspace",
-     "option": "Current checkout"
-    },
-    {
-     "do": "click",
-     "role": "button",
-     "nameRegex": "^(Gemini [0-9.]+ Flash.*|Claude (Opus|Sonnet|Haiku|Fable) [0-9.]+|GPT-[0-9.]+.*)$",
-     "note": "the model picker is labelled with the current model"
-    },
-    {
-     "do": "click",
-     "role": "option",
-     "nameRegex": "^Gemini 3\\.8 Flash \\(High\\)",
-     "note": "Antigravity rail: Gemini 3.8, 3.7 and 3.6 Flash, each High, Medium, Low"
-    },
-    {
-     "do": "click",
-     "role": "combobox",
-     "name": "Runtime mode",
-     "note": "defaults to Supervised"
-    },
-    {
-     "do": "click",
-     "role": "option",
-     "nameRegex": "^Full access"
+     "do": "select",
+     "selector": "select[aria-label=\"Project permissions\"]",
+     "option": "Full access"
     },
     {
      "do": "pause",
      "ms": 800
-    }
-   ]
-  },
-  {
-   "id": "05-plan",
-   "kind": "APP",
-   "chapter": "Plan",
-   "vo": "Type a dollar sign, pick sw-increment, and describe the change. Antigravity writes spec.md: acceptance criteria and a task with its files and test.",
-   "stepChip": "$ → Sw Increment → describe the change → Enter",
-   "steps": [
-    {
-     "do": "click",
-     "role": "textbox",
-     "name": "Message",
-     "note": "placeholder \"Ask for changes, send follow-ups, or attach images\" on a new chat"
-    },
-    {
-     "do": "type",
-     "text": "$"
-    },
-    {
-     "do": "expect",
-     "text": "Sw Increment",
-     "note": "the menu lists the 11 skills title-cased: Sw Auto … Sw Team, each tagged Project Skill"
     },
     {
      "do": "click",
-     "role": "option",
-     "nameRegex": "^Sw Increment"
+     "selector": "textarea"
     },
     {
      "do": "type",
-     "text": "Personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan only, no code yet.",
-     "delay": 14
-    },
-    {
-     "do": "press",
-     "key": "Enter",
-     "note": "send button aria-label \"Submit message\""
-    },
-    {
-     "do": "waitTurn",
-     "note": "speed-ramped in the edit, with the Sped up chip"
-    },
-    {
-     "do": "expect",
-     "text": "AC-01"
-    },
-    {
-     "do": "pause",
-     "ms": 2500,
-     "note": "hold on the reply"
-    }
-   ]
-  },
-  {
-   "id": "06-build",
-   "kind": "APP",
-   "chapter": "Build",
-   "vo": "Then send sw-do. Antigravity claims the task, changes the code, and runs the test. The task is marked done only when the test passes.",
-   "stepChip": "$ → Sw Do → claim → edit → test → done",
-   "steps": [
-    {
-     "do": "click",
-     "role": "textbox",
-     "name": "Message"
-    },
-    {
-     "do": "type",
-     "text": "$"
-    },
-    {
-     "do": "click",
-     "role": "option",
-     "nameRegex": "^Sw Do(?!ne)"
-    },
-    {
-     "do": "type",
-     "text": "Do T-01, then stop. I will close the increment myself.",
+     "text": "Add a personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan it with sw-increment, then build it with sw-do.",
      "delay": 14
     },
     {
@@ -277,44 +311,108 @@
      "key": "Enter"
     },
     {
-     "do": "waitTurn",
-     "note": "speed-ramped in the edit, with the Sped up chip"
-    },
-    {
-     "do": "click",
-     "textRegex": "^Worked for",
-     "last": true,
-     "note": "expands the turn's steps"
-    },
-    {
-     "do": "clickIfPresent",
-     "textRegex": "^Ran \\d+ commands",
-     "last": true
+     "do": "waitFor",
+     "role": "button",
+     "nameRegex": "^Open thread ",
+     "timeout": 240000,
+     "note": "the coordinator replies \"Assigned to <thread>\" and links the new thread; speed-ramped"
     },
     {
      "do": "pause",
-     "ms": 2500,
-     "note": "hold on the reply"
+     "ms": 2000
     }
    ]
   },
   {
-   "id": "07-review",
+   "id": "07-work",
    "kind": "APP",
-   "chapter": "Review",
-   "vo": "Click Open diff to review the code, the test, and the ledger line that records who finished the task.",
-   "stepChip": "Open diff → code · test · ledger.jsonl",
+   "chapter": "Plan, build, test",
+   "vo": "The thread plans increment 1: acceptance criteria and one task with its test. Then it changes the code and runs that test. A task is done only when its test passes.",
+   "stepChip": "Increment 0001 → acceptance criteria → task → test",
    "steps": [
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
     {
      "do": "click",
      "role": "button",
-     "nameRegex": "Open diff",
-     "last": true,
-     "note": "on the last turn's \"5 changed files\" card"
+     "nameRegex": "^Open thread ",
+     "last": true
     },
     {
-     "do": "expect",
-     "text": "Latest turn"
+     "do": "pause",
+     "ms": 2000
+    },
+    {
+     "do": "waitFor",
+     "role": "button",
+     "nameRegex": "^Open thread .*Done$",
+     "timeout": 900000,
+     "note": "speed-ramped in the edit"
+    },
+    {
+     "do": "pause",
+     "ms": 2500
+    }
+   ]
+  },
+  {
+   "id": "08-review",
+   "kind": "APP",
+   "chapter": "Review",
+   "vo": "Open the thread to review it: the summary, the verification and review reports, and every changed file in Open diff.",
+   "stepChip": "Summary · verify.md · review.md · Open diff",
+   "steps": [
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "hover",
+     "textRegex": "^Increment 0001",
+     "ms": 1500,
+     "note": "the thread header: Increment 0001, All done"
+    },
+    {
+     "do": "hover",
+     "text": "specweave verify",
+     "ms": 1500,
+     "optional": true,
+     "note": "the worker's own summary; its wording varies by model"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Open diff",
+     "last": true
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    },
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "hover",
+     "textRegex": "reports/verify\\.md$",
+     "ms": 900
+    },
+    {
+     "do": "hover",
+     "textRegex": "reports/review\\.md$",
+     "ms": 900
+    },
+    {
+     "do": "clickIfPresent",
+     "role": "button",
+     "nameRegex": "^Collapse .*ledger\\.jsonl$",
+     "note": "the ledger opens expanded; fold it so the code diff fits"
     },
     {
      "do": "click",
@@ -323,56 +421,22 @@
     },
     {
      "do": "pause",
-     "ms": 1200
-    },
-    {
-     "do": "click",
-     "role": "button",
-     "name": "Expand test/greeting.test.js"
-    },
-    {
-     "do": "pause",
-     "ms": 1200
-    },
-    {
-     "do": "click",
-     "role": "button",
-     "nameRegex": "^Expand .*ledger\\.jsonl$"
-    },
-    {
-     "do": "expect",
-     "text": "antigravity@demo"
-    },
-    {
-     "do": "pause",
-     "ms": 3000,
-     "note": "the done line: \"by\":\"antigravity@demo\" with its evidence"
+     "ms": 3500
     }
    ]
   },
   {
-   "id": "08-outro",
+   "id": "09-outro",
    "kind": "MG",
    "chapter": "Next",
-   "vo": "Next, sw-done verifies and closes the increment.",
+   "vo": "Increment 1 is verified and closed. Next, run the same task with another agent.",
    "card": {
     "lines": [
-     "Next: $sw-done · verify and close",
-     "SpecWithCode · free, early access · spec-weave.com/studio",
+     "Increment 0001: verified and closed",
+     "SpecWithCode · free, early access · spec-weave.com/code",
      "All tutorials · spec-weave.com/tutorials"
     ]
    }
   }
- ],
- "stepVerbs": {
-  "expect": "text must be visible within 20 s, else the take stops",
-  "click": "move the cursor to the element (role + name, or text), outline it, click",
-  "clickIfPresent": "click only when the element exists (optional wizard steps)",
-  "hover": "move the cursor to the element and hold",
-  "type": "type text (into a placeholder or the focused element)",
-  "press": "press a key",
-  "pause": "hold for ms",
-  "waitTurn": "wait until the agent turn ends (no Stop button); the edit speed-ramps this span",
-  "ensureOption": "open a combobox and pick an option only when it does not already show it"
- }
+ ]
 }

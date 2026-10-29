@@ -14,7 +14,8 @@ BIN="${STUDIO_BIN:-$(grep -o '[^ ]*/releases/[^ ]*/bin.mjs' "$LAUNCHER" | head -
 [ -f "$BIN" ] || { echo "cannot find the release bin.mjs in $LAUNCHER" >&2; exit 1; }
 # Episode 2: only node, npm-installed CLIs (specweave, codex) and the system dirs. ~/.local/bin and
 # Homebrew are left out so no other agent CLI (claude, cursor, grok) is found in the Codex episode.
-DEMO_PATH="$DEMO/shim:$(dirname "$NODE"):/usr/bin:/bin:/usr/sbin:/sbin"
+NODE_DIR="$(dirname "$NODE")"; [ "${ISOLATE:-0}" = 1 ] && NODE_DIR="$DEMO/bin"
+DEMO_PATH="$DEMO/shim:$DEMO/bin:$NODE_DIR:/usr/bin:/bin:/usr/sbin:/sbin"
 mkdir -p "$DEMO/tmp" "$DEMO/secret"; chmod 700 "$DEMO/secret"
 cd "$DEMO/home"
 umask 077

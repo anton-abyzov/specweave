@@ -1,433 +1,424 @@
 {
-  "series": "Your agent in SpecWithCode",
-  "episode": 4,
-  "agent": "opencode",
-  "title": "OpenCode in SpecWithCode",
-  "durationSec": 70.9,
-  "spokenWords": 157,
-  "resolution": "1920x1080",
-  "fps": 30,
-  "demoRepo": "greet-app",
-  "ledgerAgent": "opencode@demo",
-  "labelsCheckedAt": "SpecWithCode 0.2.6 (specweave-studio v0.2.6) with OpenCode 2.0.26, rendered and recorded 2026-10-11",
-  "stepVerbs": {
-    "expect": "text must be visible within 20 s (or timeout ms), else the take stops",
-    "click": "move the cursor to the element (role + name, or text), outline it, click",
-    "clickIfPresent": "click only when the element exists (optional steps)",
-    "hover": "move the cursor to the element and hold",
-    "type": "type text (into a placeholder or the focused element)",
-    "press": "press a key",
-    "pause": "hold for ms",
-    "waitTurn": "wait until the agent turn ends (no Stop button); the edit speed-ramps this span",
-    "ensureOption": "open a combobox and pick an option only when it does not already show it"
+ "series": "Your agent in SpecWithCode",
+ "episode": 4,
+ "agent": "opencode",
+ "title": "OpenCode in SpecWithCode",
+ "resolution": "1920x1080",
+ "fps": 30,
+ "demoRepo": "greet-app",
+ "ledgerAgent": "opencode@demo",
+ "labelsCheckedAt": "SpecWithCode 1.0.111 with OpenCode 2.2.0, 2026-10-28",
+ "stepVerbs": {
+  "expect": "text visible within timeout (default 20 s)",
+  "click": "point at the element (role+name, text or selector), outline it, click",
+  "clickIfPresent": "click only when present",
+  "hover": "point and hold",
+  "type": "type into the focused element",
+  "press": "press a key",
+  "pause": "hold for ms",
+  "select": "point at a native select and pick an option",
+  "waitFor": "wait until an element is visible (long timeout); the edit speed-ramps this span",
+  "offCamera": "run scripts/<script> against DEMO_HOME; a click can carry it as offCameraBeforeClick"
+ },
+ "shots": [
+  {
+   "id": "01-intro",
+   "kind": "MG",
+   "chapter": "Intro",
+   "vo": "OpenCode in SpecWithCode: one task, planned, built and reviewed.",
+   "card": {
+    "eyebrow": "SpecWithCode tutorial · OpenCode",
+    "title": "OpenCode in SpecWithCode",
+    "subtitle": "One task, planned, built and reviewed. The plan stays in your repo."
+   }
   },
-  "shots": [
+  {
+   "id": "02-init",
+   "kind": "TERM",
+   "chapter": "Set up the repo",
+   "vo": "In your repo, run specweave init. It adds AGENTS.md and seven SpecWeave skills, such as sw-increment and sw-do.",
+   "stepChip": "In your repo: specweave init . --quick",
+   "steps": [
     {
-      "id": "01-intro",
-      "kind": "MG",
-      "chapter": "Intro",
-      "startSec": 0,
-      "durationSec": 4,
-      "vo": "OpenCode in SpecWithCode: plan, build, review.",
-      "spokenWords": 6,
-      "card": {
-        "eyebrow": "SpecWithCode tutorial 04",
-        "title": "OpenCode in SpecWithCode",
-        "subtitle": "Plan, build and review one task. The plan stays in your repo."
-      }
-    },
-    {
-      "id": "02-init",
-      "kind": "TERM",
-      "chapter": "Set up the repo",
-      "startSec": 4,
-      "durationSec": 6.5,
-      "vo": "In your repo, run specweave init. It adds AGENTS.md and eleven SpecWeave skills.",
-      "spokenWords": 15,
-      "stepChip": "In your repo: specweave init . --quick",
-      "steps": [
-        {
-          "do": "command",
-          "prompt": "greet-app %",
-          "command": "specweave init . --quick",
-          "capture": "captures/02-specweave-init.json",
-          "showLines": [
-            "   ✓ AGENTS.md created",
-            "   ✓ 11 skills installed as sw-* in .claude/skills/ and .agents/skills/"
-          ],
-          "lineNumbers": [
-            12,
-            16
-          ],
-          "elide": "dim … row between and after the two lines"
-        }
-      ]
-    },
-    {
-      "id": "03-connect",
-      "kind": "APP",
-      "chapter": "Connect OpenCode",
-      "startSec": 10.5,
-      "durationSec": 15.7,
-      "vo": "Sign OpenCode in to a model provider first: run opencode auth login in a terminal. Open SpecWithCode, then Settings, Providers. Click Add provider, pick OpenCode, click Next twice, then Add instance.",
-      "spokenWords": 31,
-      "stepChip": "Settings → Providers → Add provider → OpenCode → Add instance",
-      "steps": [
-        {
-          "do": "pause",
-          "ms": 800
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Account: Demo Mac",
-          "note": "the sidebar footer; Settings is in this menu on 0.2.6"
-        },
-        {
-          "do": "click",
-          "role": "menuitem",
-          "name": "Settings"
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Providers",
-          "exact": true,
-          "note": "only Codex and Claude rows show; OpenCode is off by default"
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Add provider",
-          "exact": true
-        },
-        {
-          "do": "expect",
-          "text": "Add an account or configure a provider",
-          "note": "dialog \"Add provider\", steps Provider, Identity, Config"
-        },
-        {
-          "do": "click",
-          "role": "radio",
-          "name": "OpenCode",
-          "exact": true
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Next",
-          "exact": true
-        },
-        {
-          "do": "expect",
-          "text": "Instance ID",
-          "note": "Identity step: Label OpenCode, Instance ID opencode; left as is"
-        },
-        {
-          "do": "pause",
-          "ms": 500
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Next",
-          "exact": true
-        },
-        {
-          "do": "expect",
-          "text": "Leave blank to let SpecWithCode spawn the server when needed.",
-          "note": "Config step: Binary path, Server URL, Server password; all left empty"
-        },
-        {
-          "do": "pause",
-          "ms": 700
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Add instance",
-          "exact": true
-        },
-        {
-          "do": "expect",
-          "text": "OpenCode 2.0.26 lists",
-          "timeout": 45000,
-          "note": "\"Authenticated · OpenCode 2.0.26 lists N models.\" in the OpenCode panel"
-        },
-        {
-          "do": "hover",
-          "text": "OpenCode 2.0.26 lists",
-          "ms": 1800
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Back",
-          "exact": true,
-          "note": "settings sidebar footer; returns to the Overview (cut in the edit)"
-        }
-      ]
-    },
-    {
-      "id": "04-project-chat",
-      "kind": "APP",
-      "chapter": "Add the project",
-      "startSec": 26.2,
-      "durationSec": 11,
-      "vo": "Add the repo: the plus next to Projects, Local folder, then its path. A new chat opens. Pick OpenCode in the model picker, and set Full access for this demo.",
-      "spokenWords": 30,
-      "stepChip": "+ → Local folder → ~/greet-app · Sonnet 5.5 · Full access",
-      "steps": [
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Add project",
-          "exact": true,
-          "note": "the + next to Projects"
-        },
-        {
-          "do": "click",
-          "role": "option",
-          "nameRegex": "^Local folder",
-          "note": "\"New project\" and \"Personal assistant\" rows sit above it"
-        },
-        {
-          "do": "type",
-          "placeholder": "Enter path (e.g. ~/projects/my-app)",
-          "text": "~/greet-app"
-        },
-        {
-          "do": "press",
-          "key": "Enter"
-        },
-        {
-          "do": "expect",
-          "text": "What should we build in",
-          "note": "adding the folder opens a new chat; no separate New chat click"
-        },
-        {
-          "do": "expect",
-          "text": "Current checkout"
-        },
-        {
-          "do": "click",
-          "selector": "[data-chat-provider-model-picker=true]",
-          "note": "the model picker is labelled with the current model; with only OpenCode ready it defaults to an OpenCode model (Big Pickle or Aion 3.5 in the takes)"
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "OpenCode",
-          "exact": true,
-          "note": "the Providers rail; Codex and Claude are not signed in in the demo HOME"
-        },
-        {
-          "do": "type",
-          "placeholder": "Search models...",
-          "text": "sonnet 5.5",
-          "delay": 40
-        },
-        {
-          "do": "click",
-          "role": "option",
-          "nameRegex": "^Claude Sonnet 5\\.5 OpenCode"
-        },
-        {
-          "do": "click",
-          "role": "combobox",
-          "name": "Runtime mode",
-          "note": "defaults to Supervised"
-        },
-        {
-          "do": "click",
-          "role": "option",
-          "nameRegex": "^Full access"
-        },
-        {
-          "do": "pause",
-          "ms": 800
-        }
-      ]
-    },
-    {
-      "id": "05-plan",
-      "kind": "APP",
-      "chapter": "Plan",
-      "startSec": 37.2,
-      "durationSec": 11,
-      "vo": "Type a dollar sign, pick sw-increment, and describe the change. OpenCode writes spec.md: acceptance criteria and a task with its files and test.",
-      "spokenWords": 25,
-      "stepChip": "$ → Sw Increment → describe the change → Enter",
-      "steps": [
-        {
-          "do": "click",
-          "role": "textbox",
-          "name": "Message",
-          "note": "placeholder \"Ask for changes, send follow-ups, or attach images\" on a new chat"
-        },
-        {
-          "do": "type",
-          "text": "$"
-        },
-        {
-          "do": "expect",
-          "text": "Sw Increment",
-          "note": "the menu lists OpenCode's own OpenCode and Report skills, then the 11 skills title-cased (Sw Auto … Sw Team), each tagged Provider Skill"
-        },
-        {
-          "do": "click",
-          "role": "option",
-          "nameRegex": "^Sw Increment"
-        },
-        {
-          "do": "type",
-          "text": "Personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan only, no code yet.",
-          "delay": 14
-        },
-        {
-          "do": "press",
-          "key": "Enter",
-          "note": "send button aria-label \"Submit message\""
-        },
-        {
-          "do": "waitTurn",
-          "note": "speed-ramped in the edit, with the Sped up chip"
-        },
-        {
-          "do": "expect",
-          "text": "AC-01"
-        },
-        {
-          "do": "pause",
-          "ms": 2500,
-          "note": "hold on the reply: AC-01, AC-02, T-01 with its files and npm test"
-        }
-      ]
-    },
-    {
-      "id": "06-build",
-      "kind": "APP",
-      "chapter": "Build",
-      "startSec": 48.2,
-      "durationSec": 10.7,
-      "vo": "Then send sw-do. OpenCode claims the task, changes the code, and runs the test. The task is marked done only when the test passes.",
-      "spokenWords": 24,
-      "stepChip": "$ → Sw Do → claim → edit → test → done",
-      "steps": [
-        {
-          "do": "click",
-          "role": "textbox",
-          "name": "Message"
-        },
-        {
-          "do": "type",
-          "text": "$"
-        },
-        {
-          "do": "click",
-          "role": "option",
-          "nameRegex": "^Sw Do(?!ne)"
-        },
-        {
-          "do": "type",
-          "text": "Do T-01, then stop. I will close the increment myself.",
-          "delay": 14
-        },
-        {
-          "do": "press",
-          "key": "Enter"
-        },
-        {
-          "do": "waitTurn"
-        },
-        {
-          "do": "clickIfPresent",
-          "textRegex": "^Worked for",
-          "last": true,
-          "note": "expands the turn's steps"
-        },
-        {
-          "do": "clickIfPresent",
-          "textRegex": "^Ran \\d+ commands",
-          "last": true
-        },
-        {
-          "do": "pause",
-          "ms": 2500,
-          "note": "hold on: specweave task claim T-01, the edit to src/greeting.js, npm test and specweave task done … --run \"npm test\""
-        }
-      ]
-    },
-    {
-      "id": "07-review",
-      "kind": "APP",
-      "chapter": "Review",
-      "startSec": 58.9,
-      "durationSec": 8,
-      "vo": "Click Open diff to review the code, the test, and the ledger line that records who finished the task.",
-      "spokenWords": 19,
-      "stepChip": "Open diff → code · test · ledger.jsonl",
-      "steps": [
-        {
-          "do": "click",
-          "role": "button",
-          "nameRegex": "Open diff",
-          "last": true,
-          "note": "on the last turn's \"N changed files\" card"
-        },
-        {
-          "do": "expect",
-          "text": "Latest turn"
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Expand src/greeting.js"
-        },
-        {
-          "do": "pause",
-          "ms": 1200
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "name": "Expand test/greeting.test.js"
-        },
-        {
-          "do": "pause",
-          "ms": 1200
-        },
-        {
-          "do": "click",
-          "role": "button",
-          "nameRegex": "^Expand .*ledger\\.jsonl$"
-        },
-        {
-          "do": "expect",
-          "text": "opencode@demo"
-        },
-        {
-          "do": "pause",
-          "ms": 3000,
-          "note": "the done line: \"by\":\"opencode@demo\" with its evidence"
-        }
-      ]
-    },
-    {
-      "id": "08-outro",
-      "kind": "MG",
-      "chapter": "Next",
-      "startSec": 66.9,
-      "durationSec": 4,
-      "vo": "Next, sw-done verifies and closes the increment.",
-      "spokenWords": 7,
-      "card": {
-        "lines": [
-          "Next: $sw-done · verify and close",
-          "SpecWithCode · free, early access · spec-weave.com/studio",
-          "All tutorials · spec-weave.com/tutorials"
-        ]
-      }
+     "do": "command",
+     "prompt": "greet-app %",
+     "command": "specweave init . --quick",
+     "capture": "captures/11-specweave-init-opencode.json",
+     "showLines": [
+      "   ✓ AGENTS.md created",
+      "   ✓ 7 skills installed as sw-* in .claude/skills/ and .agents/skills/"
+     ],
+     "lineNumbers": [
+      13,
+      41
+     ]
     }
-  ]
+   ]
+  },
+  {
+   "id": "03-setup",
+   "kind": "APP",
+   "chapter": "Set up SpecWithCode",
+   "vo": "Open SpecWithCode and set this Mac up as your main machine. OpenCode isn't in the first-run list, so continue past it.",
+   "stepChip": "Main machine → Continue → Continue → Do not import projects",
+   "steps": [
+    {
+     "do": "expect",
+     "text": "Set this Mac up as my main machine"
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "click",
+     "text": "Set this Mac up as my main machine"
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "nameRegex": "^Continue$"
+    },
+    {
+     "do": "pause",
+     "ms": 2500
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "nameRegex": "^Continue$",
+     "last": true
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "clickIfPresent",
+     "role": "button",
+     "name": "Do not import projects"
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    }
+   ]
+  },
+  {
+   "id": "04-connect",
+   "kind": "APP",
+   "chapter": "Connect OpenCode",
+   "vo": "OpenCode signs in with its own CLI. In Settings, Providers, SpecWithCode has already turned OpenCode on, because its CLI is signed in.",
+   "stepChip": "Account menu → Settings → Providers → OpenCode: Authenticated",
+   "steps": [
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "click",
+     "selector": "button[aria-label=\"Account: Demo Mac\"]"
+    },
+    {
+     "do": "pause",
+     "ms": 700
+    },
+    {
+     "do": "click",
+     "selector": "div[role=menuitem]:has-text(\"Settings\")"
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "click",
+     "selector": "button:has-text(\"Providers\")"
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "hover",
+     "text": "Turned on automatically",
+     "ms": 2500,
+     "note": "1.0.111 turns OpenCode on by itself when its CLI is signed in"
+    },
+    {
+     "do": "press",
+     "key": "Escape"
+    },
+    {
+     "do": "pause",
+     "ms": 1000
+    }
+   ]
+  },
+  {
+   "id": "05-project",
+   "kind": "APP",
+   "chapter": "Add the project",
+   "vo": "Add the repo: the plus next to Projects, Local folder, then its path. The project opens on its coordinator.",
+   "stepChip": "+ → Local folder → ~/greet-app",
+   "steps": [
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "click",
+     "selector": "button[aria-label=\"Add project\"]"
+    },
+    {
+     "do": "pause",
+     "ms": 600
+    },
+    {
+     "do": "click",
+     "selector": "div[role=option]:has-text(\"Local folder\")"
+    },
+    {
+     "do": "pause",
+     "ms": 600
+    },
+    {
+     "do": "type",
+     "text": "~/greet-app",
+     "delay": 60
+    },
+    {
+     "do": "press",
+     "key": "Enter"
+    },
+    {
+     "do": "expect",
+     "text": "Excited to get started on greet-app",
+     "timeout": 30000,
+     "note": "a new project opens on its coordinator with a welcome and suggested first threads"
+    },
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "pause",
+     "ms": 2500
+    }
+   ]
+  },
+  {
+   "id": "06-model",
+   "kind": "APP",
+   "chapter": "Choose a model",
+   "vo": "Choose a model. OpenCode lists every model your account can use. Search for one, such as Claude Sonnet 5.5.",
+   "stepChip": "Choose model → search → Claude Sonnet 5.5",
+   "steps": [
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "click",
+     "selector": "button[aria-label=\"Choose model for the coordinator\"]"
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "type",
+     "text": "Sonnet 5.5",
+     "delay": 70
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "click",
+     "selector": "[role=option]:has-text(\"Claude Sonnet 5.5\")"
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "hover",
+     "selector": "button[aria-label^=\"Coordinator model\"]",
+     "ms": 1500
+    }
+   ]
+  },
+  {
+   "id": "07-task",
+   "kind": "APP",
+   "chapter": "Send the task",
+   "vo": "Set Full access for this demo, describe the change, and send it. The coordinator hands the work to a new thread.",
+   "stepChip": "Full access → describe the change → Enter",
+   "steps": [
+    {
+     "do": "select",
+     "selector": "select[aria-label=\"Project permissions\"]",
+     "option": "Full access"
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    },
+    {
+     "do": "click",
+     "selector": "textarea"
+    },
+    {
+     "do": "type",
+     "text": "Add a personal greeting: greet(name) returns \"Hello, <name>!\" and greet() still returns \"Hello, world!\". Use Ada in examples. Plan it with sw-increment, then build it with sw-do.",
+     "delay": 14
+    },
+    {
+     "do": "press",
+     "key": "Enter"
+    },
+    {
+     "do": "waitFor",
+     "role": "button",
+     "nameRegex": "^Open thread ",
+     "timeout": 240000,
+     "note": "the coordinator replies \"Assigned to <thread>\" and links the new thread; speed-ramped"
+    },
+    {
+     "do": "pause",
+     "ms": 2000
+    }
+   ]
+  },
+  {
+   "id": "08-work",
+   "kind": "APP",
+   "chapter": "Plan, build, test",
+   "vo": "The thread plans increment 1: acceptance criteria and one task with its test. Then it changes the code and runs that test. A task is done only when its test passes.",
+   "stepChip": "Increment 0001 → acceptance criteria → task → test",
+   "steps": [
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "nameRegex": "^Open thread ",
+     "last": true
+    },
+    {
+     "do": "pause",
+     "ms": 2000
+    },
+    {
+     "do": "waitFor",
+     "role": "button",
+     "nameRegex": "^Open thread .*Done$",
+     "timeout": 900000,
+     "note": "speed-ramped in the edit"
+    },
+    {
+     "do": "pause",
+     "ms": 2500
+    }
+   ]
+  },
+  {
+   "id": "09-review",
+   "kind": "APP",
+   "chapter": "Review",
+   "vo": "Open the thread to review it: the summary, the verification and review reports, and every changed file in Open diff.",
+   "stepChip": "Summary · verify.md · review.md · Open diff",
+   "steps": [
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "hover",
+     "textRegex": "^Increment 0001",
+     "ms": 1500,
+     "note": "the thread header: Increment 0001, All done"
+    },
+    {
+     "do": "hover",
+     "text": "specweave verify",
+     "ms": 1500,
+     "optional": true,
+     "note": "the worker's own summary; its wording varies by model"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Open diff",
+     "last": true
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    },
+    {
+     "do": "clickIfPresent",
+     "selector": "button[aria-label=\"Dismiss notification\"]",
+     "quiet": true
+    },
+    {
+     "do": "hover",
+     "textRegex": "reports/verify\\.md$",
+     "ms": 900
+    },
+    {
+     "do": "hover",
+     "textRegex": "reports/review\\.md$",
+     "ms": 900
+    },
+    {
+     "do": "clickIfPresent",
+     "role": "button",
+     "nameRegex": "^Collapse .*ledger\\.jsonl$",
+     "note": "the ledger opens expanded; fold it so the code diff fits"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Expand src/greeting.js"
+    },
+    {
+     "do": "pause",
+     "ms": 3500
+    }
+   ]
+  },
+  {
+   "id": "10-outro",
+   "kind": "MG",
+   "chapter": "Next",
+   "vo": "Increment 1 is verified and closed. Next, run the same task with another agent.",
+   "card": {
+    "lines": [
+     "Increment 0001: verified and closed",
+     "SpecWithCode · free, early access · spec-weave.com/code",
+     "All tutorials · spec-weave.com/tutorials"
+    ]
+   }
+  }
+ ]
 }
