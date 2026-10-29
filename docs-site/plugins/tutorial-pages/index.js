@@ -60,6 +60,8 @@ module.exports = function tutorialPages(context) {
         const extra = extras.guides[tutorial.slug] ?? {};
         const {video} = tutorial;
         for (const asset of [video.src, video.poster, video.captionsVtt]) {
+          // Videos are served from R2, not static/ (src/lib/media.ts); verify-tutorials checks they are published.
+          if (/^\/video\/.+\.(mp4|webm|mov)$/.test(asset)) continue;
           if (!fs.existsSync(staticFile(asset))) {
             throw new Error(`Tutorial ${tutorial.slug}: missing static file ${asset}`);
           }
