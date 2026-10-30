@@ -34,6 +34,8 @@ function PromoVideo({src, poster, captions, onFail}: {src: string; poster: strin
   const [muted, setMuted] = useState(true);
   // Starts false: iOS refuses autoplay in Low Power Mode, so only a real 'playing' event shows Pause.
   const [playing, setPlaying] = useState(false);
+  // The big Play button appears only once play was refused or paused, so it never flashes on load.
+  const [stopped, setStopped] = useState(false);
 
   useEffect(() => {
     const v = ref.current;
@@ -41,11 +43,12 @@ function PromoVideo({src, poster, captions, onFail}: {src: string; poster: strin
     if (prefersReducedMotion()) {
       v.pause();
       setPlaying(false);
+      setStopped(true);
       return;
     }
     // Play only while the hero is on screen.
     const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !v.dataset.userPaused) v.play().catch(() => setPlaying(false));
+      if (e.isIntersecting && !v.dataset.userPaused) v.play().catch(() => { setPlaying(false); setStopped(true); });
       else v.pause();
     }, {threshold: 0.25});
     io.observe(v);
@@ -57,7 +60,7 @@ function PromoVideo({src, poster, captions, onFail}: {src: string; poster: strin
     if (!v) return;
     if (v.paused) {
       delete v.dataset.userPaused;
-      v.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+      v.play().then(() => setPlaying(true)).catch(() => { setPlaying(false); setStopped(true); });
     } else {
       v.dataset.userPaused = '1';
       v.pause();
@@ -70,15 +73,18 @@ function PromoVideo({src, poster, captions, onFail}: {src: string; poster: strin
     if (!v) return;
     v.muted = !v.muted;
     setMuted(v.muted);
-    if (!v.muted && v.paused) v.play().then(() => setPlaying(true)).catch(() => undefined);
+    if (!v.muted && v.paused) {
+      delete v.dataset.userPaused;
+      v.play().then(() => setPlaying(true)).catch(() => undefined);
+    }
   }
 
   return <div className={styles.video}>
-    <video ref={ref} muted playsInline loop autoPlay preload="metadata" poster={poster} aria-label="SpecWithCode promo video" onClick={toggle} onPlaying={() => setPlaying(true)} onPause={() => setPlaying(false)}>
+    <video ref={ref} muted playsInline loop autoPlay preload="metadata" poster={poster} aria-label="SpecWithCode promo video" onClick={toggle} onPlaying={() => { setPlaying(true); setStopped(false); }} onPause={() => { setPlaying(false); setStopped(true); }}>
       <source src={src} type="video/mp4" onError={onFail} />
       {captions && <track kind="captions" src={captions} srcLang="en" label="English" />}
     </video>
-    {!playing && <button type="button" className={styles.bigPlay} onClick={toggle} aria-label="Play the promo video">
+    {stopped && !playing && <button type="button" className={styles.bigPlay} onClick={toggle} tabIndex={-1} aria-hidden="true">
       <Play size={28} strokeWidth={1.75} aria-hidden="true" />
     </button>}
     <div className={styles.videoControls}>
