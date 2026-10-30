@@ -10,6 +10,7 @@ import HomeHandoff from '../components/landing/HomeHandoff';
 import HomeHero from '../components/home/HomeHero';
 import FamilyCards from '../components/home/FamilyCards';
 import Crop, { type CropSpec } from '../components/home/Crop';
+import BuiltWithItself from '../components/code/BuiltWithItself';
 import { SPECWITHCODE_RELEASE as release } from '../data/specwithcodeRelease';
 
 /*
@@ -57,6 +58,7 @@ const MACHINES = [
 ];
 
 const BUILT = [
+  { name: 'SpecWithCode', href: '/code/#built-with-itself', body: 'The app itself: 367 pull requests merged from its own worker threads in October 2026.' },
   { name: 'EasyChamp', href: 'https://easychamp.com', body: 'League and club tools, built across Claude Code threads, two subscriptions and Codex.' },
   { name: 'JobWeave', href: 'https://jobweave.ai', body: 'Job search, tailored resumes and interview preparation.' },
   { name: 'Verified Skill', href: 'https://verified-skill.com', body: 'Skill discovery, source inspection and local evaluations.' },
@@ -131,6 +133,9 @@ export default function Home() {
           <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">Spec-driven tools compared</Link>
         </nav>
       </section>
+
+      {/* 2b. Proof that the app builds itself: real thread records and an end-to-end capture */}
+      <div className={h.section}><BuiltWithItself /></div>
 
       {/* 3. The handoff, layer by layer (the main scroll sequence) */}
       <section className={h.section} id="how" aria-labelledby="how-title">
