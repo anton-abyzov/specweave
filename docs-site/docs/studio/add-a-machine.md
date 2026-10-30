@@ -23,7 +23,7 @@ Only want to open a machine from your phone, a browser or another computer, with
 
 ## 1. Link Connect on the worker
 
-On the worker, open **Settings > Connections**, choose **Sign in to SpecWithCode Connect**, then turn on **Enable SpecWithCode Connect**. On a server without the desktop app, run `specwithcode connect` there instead. [Connect](/docs/studio/connect#link-a-machine) has the details.
+On the worker, choose **Sign in to SpecWithCode Connect** at the bottom of the Settings sidebar, then turn on **Enable SpecWithCode Connect** under **Settings > Connections**. On a server without the desktop app, run `specwithcode connect` there instead. [Connect](/docs/studio/connect#link-a-machine) has the details.
 
 Only the worker needs Connect. The main machine does not have to be signed in to Connect, or to the same account: the line works because the worker checks that the main machine's environment ID matches the one you enter in step 2. If the main machine cannot reach a machine, **Your private machines** shows a banner that says which machine is not linked yet.
 
@@ -35,14 +35,14 @@ The line holds a management credential for the worker. Treat it like a password:
 
 ### With the desktop app
 
-**On a new install**, the first screen asks how you will use this machine. Choose **Join my existing machines**; it skips setting up agents and projects on the worker.
+**On a new install**, the first screen asks how you will use this machine. Choose **Connect to an existing one**; it skips setting up agents and projects on the worker. **Start as a main machine** sets them up here instead.
 
 **On a machine that is already set up**, open **Settings > Connections > Your private machines** and, next to **Add this machine to another one**, choose **Invite this machine**.
 
 Then:
 
-1. The app checks how the main machine can reach this one. With Connect linked it says the line uses SpecWithCode Connect, and you can go on.
-2. Enter your main machine's environment ID. You find it on the main machine under **Settings > Connections**. This approves that machine, and only that one, to manage this worker.
+1. The app checks that Connect is linked here. If not, it shows **Link SpecWithCode Connect first** and clears on its own once you sign in and turn Connect on.
+2. Paste your main machine's environment ID under **Main machine environment ID**. The main machine shows it in its **Add a machine** steps and under **Settings > Connections**. This approves that machine, and only that one, to manage this worker.
 3. Optionally type a name under **Name on the main machine**. Left empty, the machine's own name is used.
 4. Choose **Make the line**, then **Copy** the `swc-machine-…` line. A line with a Connect address works once, within an hour.
 
@@ -66,7 +66,7 @@ Recorded with SpecWithCode 1.0.47: the invitation line on a Mac mini, adding it 
 
 <TutorialEmbed slug="add-a-machine" />
 
-Setting up a new Mac from scratch? [Join a new Mac to your main machine](/tutorials/join-a-mac/) shows the line made from the welcome screen's **Join my existing machines**.
+Setting up a new Mac from scratch? [Join a new Mac to your main machine](/tutorials/join-a-mac/) shows the line made from the welcome screen (now **Connect to an existing one**).
 
 ## One machine per subscription
 
@@ -83,7 +83,7 @@ You do not need Tailscale. If both machines are also on the same tailnet, the ma
 ## Add it on the main machine
 
 1. Open **Settings > Connections > Your private machines**.
-2. Paste the line into **Add a machine** and choose **Add machine**. The main machine checks that the address answers as that machine before saving it.
+2. Paste the line into **Add a machine** within an hour and choose **Add machine**. The main machine checks that the address answers as that machine before saving it. A line made for a different main machine stops with "made for a different main machine": make a new line on the worker with this machine's environment ID.
 3. With **Connect automatically** on, the main machine pairs with the worker within a minute. Otherwise choose **Connect machine** on its card. With Connect only, this browser pairing waits; see [With Connect only](#with-connect-only).
 4. Choose **Allow workers** on the card, and pick the most a worker there may do.
 

@@ -22,7 +22,7 @@ You do this once on **each machine** you want to reach, either sitting at it or 
 ### In the desktop app
 
 1. On the machine, open **Settings > Connections**.
-2. Under **SpecWithCode Connect**, choose **Sign in** and finish the sign-in in your browser.
+2. Choose **Sign in to SpecWithCode Connect** at the bottom of the Settings sidebar and finish the sign-in in your browser.
 3. Turn on **SpecWithCode Connect** for this machine's environment.
 
 The machine is linked when it shows as online in the Connect list. It keeps the same address from then on, through restarts, sleep and updates.
