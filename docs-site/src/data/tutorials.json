@@ -426,8 +426,8 @@
       "product": "specwithcode",
       "title": "See how SpecWithCode runs your agents",
       "seoTitle": "How SpecWithCode works: machines, limits and threads",
-      "summary": "Each of your machines can hold several AI subscriptions, and every session runs on the machine itself. SpecWithCode connects the machines over Tailscale, watches every limit, and lets one coordinator per project start threads that open their own pull requests. Auto-resolve closes a thread only once it is merged, green and approved.",
-      "seoDescription": "SpecWithCode connects your machines over Tailscale, watches every subscription's limits, and lets one coordinator per project start threads.",
+      "summary": "Each of your machines can hold several AI subscriptions, and every session runs on the machine itself. SpecWithCode connects the machines through SpecWithCode Connect, watches every limit, and lets one coordinator per project start threads that open their own pull requests. Auto-resolve closes a thread only once it is merged, green and approved.",
+      "seoDescription": "SpecWithCode connects your machines through SpecWithCode Connect, watches every subscription's limits, and lets one coordinator per project start threads.",
       "outcome": "You know how machines, subscriptions, usage limits, the coordinator and its threads fit together before you install.",
       "prerequisites": [],
       "testedOn": "SpecWithCode 1.0.5",
@@ -505,7 +505,7 @@
         "Open a thread to see what it ran and what it is waiting on. A thread resolves itself only when its pull requests are merged, checks pass and the review is approved."
       ],
       "transcript": "captions",
-      "note": "Recorded on SpecWithCode 1.0.5 with the author's real EasyChamp project, 12 October 2026, through a read-only session; the thread pane is sped up 1.6x and hostnames are masked. Stock footage is from Pexels, the diagrams are animated, the music is AI-generated, and the narration is AI in the author's cloned voice. Since this recording, machines join over Tailscale with an invite line made in the app, and the other connection routes the video mentions are no longer the setup path. The limits chapter (Limits, CLIProxyAPI and fallbacks) also predates the current advice: keep each machine signed in to one account per provider, and add a machine for more capacity instead of switching subscriptions on one.",
+      "note": "Recorded on SpecWithCode 1.0.5 with the author's real EasyChamp project, 12 October 2026, through a read-only session; the thread pane is sped up 1.6x and hostnames are masked. Stock footage is from Pexels, the diagrams are animated, the music is AI-generated, and the narration is AI in the author's cloned voice. Since this recording, machines join through SpecWithCode Connect with an invite line made in the app, with Tailscale as an optional fallback, and the other connection routes the video mentions are no longer the setup path. The limits chapter (Limits, CLIProxyAPI and fallbacks) also predates the current advice: keep each machine signed in to one account per provider, and add a machine for more capacity instead of switching subscriptions on one.",
       "action": {
         "label": "Download SpecWithCode for Mac",
         "to": "/code"
@@ -684,13 +684,13 @@
       "slug": "add-a-machine",
       "product": "specwithcode",
       "title": "Add a second machine",
-      "seoTitle": "Add a second Mac to SpecWithCode over Tailscale",
+      "seoTitle": "Add a second machine to SpecWithCode with SpecWithCode Connect",
       "summary": "A real run of SpecWithCode 1.0.47 on two Macs on one tailnet. On the Mac mini, Settings, Connections, Invite this machine makes a one-line invitation and publishes the app on the Mac mini's private Tailscale name. On the main Mac, the same page adds the machine from that line, checks it answers, and lists it as reachable. Allow workers then grants Full access for workers there; in 1.0.47 that also needs a one-time pairing code made on the Mac mini.",
-      "seoDescription": "A real run of SpecWithCode 1.0.47 on two Macs: invite the Mac mini, add it on the main Mac from the one-line invitation, and allow workers.",
+      "seoDescription": "Add a second Mac, Linux or Windows machine to SpecWithCode: link Connect on it, invite it with one line, add it on your main machine and allow workers.",
       "outcome": "You end with your second machine listed as reachable and allowed to run workers.",
       "prerequisites": [
-        "SpecWithCode for Mac on both machines",
-        "Tailscale on both machines, signed in to the same account, with MagicDNS and HTTPS certificates on"
+        "SpecWithCode on both machines (Mac, Windows 10 or 11 on x64, or Linux)",
+        "A SpecWithCode Connect account on the new machine; the main machine does not need one"
       ],
       "testedOn": "SpecWithCode 1.0.47 with SpecWeave 3.0.23, 18 October 2026",
       "agent": "codex",
@@ -728,15 +728,14 @@
         ]
       },
       "steps": [
-        "Install Tailscale on both machines, sign in to the same account, and turn on MagicDNS and HTTPS certificates for the tailnet.",
-        "On the new machine, open Settings, then Connections, and choose Invite this machine. Give it a name and choose Make the line. SpecWithCode publishes itself on that machine's private Tailscale name, never on the public internet.",
-        "Copy the line. It works like a password, so paste it only on your main machine.",
-        "On the main machine, open Settings, Connections, paste the line under Add a machine and choose Add machine. It checks the address answers as that machine and lists it as Reachable.",
-        "Pick the most a worker there may do. In 1.0.47, also run `specwithcode pair --scope orchestration:read --scope orchestration:operate` on the new machine and paste its one-time code into the pairing code field.",
-        "Choose Allow workers. The card reads Allowed: Full access."
+        "On the new machine, sign in to SpecWithCode Connect at the bottom of the Settings sidebar and turn on Enable SpecWithCode Connect under Settings, Connections. On a server, run `specwithcode connect`.",
+        "On the new machine, open Settings, Connections, and choose Invite this machine. Paste your main machine's environment ID, give it a name and choose Make the line.",
+        "Copy the line. It works like a password, so paste it only on your main machine. A Connect line works once, within an hour.",
+        "On the main machine, open Settings, Connections, paste the line under Add a machine and choose Add machine. It checks the address answers as that machine before saving it.",
+        "Choose Allow workers on the card and pick the most a worker there may do. Coordinators can now start threads there, and each one uses that machine's own sign-ins for Claude Code, Codex and the other agents."
       ],
       "transcript": "captions",
-      "note": "Recorded headlessly in one take on two disposable SpecWithCode 1.0.47 servers with disposable homes, a Mac (main) and a Mac mini (new machine) on one tailnet, 18 October 2026. The invitation line, the Mac mini's Tailscale address and the pairing code are blurred. The one-time pairing code was made off camera on the Mac mini with `specwithcode pair` (Operate threads scopes); the welcome wizard, adding the sample project and choosing Full access happened off camera, and Full access was chosen for the demo only. Navigation is sped up 2x where marked and one frame is held as a still. Known issues in 1.0.47: Allow workers asks for a pairing code although the guide describes one click; Connect machine fails with 'Could not pair this machine'; and a coordinator could not yet start a worker on the added machine ('no execution binding'), so the video ends at Allowed rather than a running worker. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps.",
+      "note": "Recorded headlessly in one take on two disposable SpecWithCode 1.0.47 servers with disposable homes, a Mac (main) and a Mac mini (new machine) on one tailnet, 18 October 2026. The invitation line, the Mac mini's Tailscale address and the pairing code are blurred. The one-time pairing code was made off camera on the Mac mini with `specwithcode pair` (Operate threads scopes); the welcome wizard, adding the sample project and choosing Full access happened off camera, and Full access was chosen for the demo only. Navigation is sped up 2x where marked and one frame is held as a still. Known issues in 1.0.47: Allow workers asks for a pairing code although the guide describes one click; Connect machine fails with 'Could not pair this machine'; and a coordinator could not yet start a worker on the added machine ('no execution binding'), so the video ends at Allowed rather than a running worker. Narration is an AI voice (ElevenLabs, the author's cloned voice); captions are timed from the voice service's character timestamps. Since this recording, machines pair through SpecWithCode Connect: only the new machine links Connect, Tailscale is an optional fallback, and Allow workers no longer needs a pairing code. Workers on a Mac, Linux or Windows use each agent's own sign-in, subscriptions included.",
       "action": {
         "label": "Download SpecWithCode for Mac",
         "to": "/code"
@@ -758,7 +757,7 @@
       "outcome": "You end with the new Mac listed under Your private machines on your main machine and allowed to run workers.",
       "prerequisites": [
         "SpecWithCode on both Macs (the desktop app, or the npm package with Node.js 22.16 or later)",
-        "Tailscale on both Macs, signed in to the same account, with MagicDNS and HTTPS certificates on"
+        "A SpecWithCode Connect account on the new Mac; the main machine does not need one"
       ],
       "testedOn": "SpecWithCode 1.0.47, 18 October 2026",
       "agent": "any",
@@ -808,8 +807,8 @@
         ]
       },
       "steps": [
-        "On the new Mac, open SpecWithCode. On How will you use this Mac, choose Join my existing machines.",
-        "SpecWithCode checks that Tailscale is installed and signed in. Give this Mac the name your main machine will show, then choose Make the line.",
+        "On the new Mac, open SpecWithCode. On How will you use this Mac, choose Connect to an existing one.",
+        "Sign in to SpecWithCode Connect if it asks. Paste your main machine's environment ID, give this Mac the name your main machine will show, then choose Make the line.",
         "Copy the line. It works like a password, so paste it only on your main machine. Revoke this line cancels it.",
         "On your main machine, open Settings, Connections, paste the line under Add a machine and choose Add machine.",
         "When the Mac appears under Your private machines, choose Allow workers on its card. If it does not connect on its own, choose Connect machine first.",
@@ -817,7 +816,7 @@
         "Already set up the new Mac? Use Invite this machine under Settings, Connections. Without the desktop app, run `npm i -g specwithcode`, `specwithcode service install` and `specwithcode fleet invite`."
       ],
       "transcript": "captions",
-      "note": "Built in Remotion from real screenshots of the released SpecWithCode 1.0.47 npm package, run as a private headless test server with a disposable home, 18 October 2026. The invitation line is masked in every screenshot and was revoked right after capture; the owner's machine name and the version row are blurred. Two scenes are not screenshots and say so on screen: the machine card under Your private machines is drawn over a real Connections screenshot, and the terminal is a styled graphic with abridged output, a placeholder address and a hidden line. In 1.0.47, Allow workers can also ask for a one-time pairing code made on the new Mac; Add a second machine shows where it goes. Narration is an AI voice (ElevenLabs); captions are timed from the narration clips.",
+      "note": "Built in Remotion from real screenshots of the released SpecWithCode 1.0.47 npm package, run as a private headless test server with a disposable home, 18 October 2026. The invitation line is masked in every screenshot and was revoked right after capture; the owner's machine name and the version row are blurred. Two scenes are not screenshots and say so on screen: the machine card under Your private machines is drawn over a real Connections screenshot, and the terminal is a styled graphic with abridged output, a placeholder address and a hidden line. In 1.0.47, Allow workers can also ask for a one-time pairing code made on the new Mac; Add a second machine shows where it goes. Narration is an AI voice (ElevenLabs); captions are timed from the narration clips. The recording shows the 1.0.47 screens, which checked Tailscale and called the choice Join my existing machines. Since this recording, machines pair through SpecWithCode Connect: only the new machine links Connect, Tailscale is an optional fallback, and Allow workers no longer needs a pairing code. Workers on a Mac, Linux or Windows use each agent's own sign-in, subscriptions included.",
       "action": {
         "label": "Download SpecWithCode for Mac",
         "to": "/code"

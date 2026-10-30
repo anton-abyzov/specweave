@@ -52,7 +52,7 @@ const MACHINE_STEPS: {title: string; body: React.ReactNode}[] = [
 
 const CAPACITY: {name: string; detail: React.ReactNode}[] = [
   {name: 'Capacity grows with machines', detail: <>Each machine brings the limits of the accounts signed in on it. Two machines signed in to the same account share that account’s limits, so running agents on both spends them faster, not slower.</>},
-  {name: 'Linux machines for API keys', detail: <>A Linux machine on x64 or arm64, such as a small VPS, can join as a worker. On a rented server, sign the provider CLIs in with an API key rather than a subscription; the app warns before you sign a subscription in there.</>},
+  {name: 'Mac, Linux or Windows workers', detail: <>A Mac, a Linux machine on x64 or arm64, or a Windows 10 or 11 PC on x64 can join as a worker over Connect. Each one runs Claude Code, Codex and the other agents on their own sign-ins, your subscriptions included, the same way on every system. On a server you rent in a datacenter we recommend API keys instead of a subscription.</>},
   {name: 'You choose where work runs', detail: <>Threads run on the coordinator’s machine unless the project or the coordinator names another machine you allowed. A usage limit never moves a thread to another machine by itself.</>},
   {name: 'Nothing is copied between machines', detail: <>Each machine needs its own checkout of the project, with the same remote, and its own provider sign-ins. If a machine drops, a chat can continue on another one.</>},
 ];
@@ -307,7 +307,7 @@ export default function Code() {
         <div className={styles.machinesHead}>
           <div className={clsx(styles.sectionHead, landing.reveal)}>
             <h2 id="machines-title">Add the machines you trust</h2>
-            <p>Start on one computer. When you want more capacity, link a supported Mac or Linux worker to SpecWithCode Connect, add it with an invite line and let coordinators start workers there. Machines reach each other through Connect, whatever network each one is on. If two machines also share a Tailscale network, SpecWithCode can use that address as a direct fallback; Connect stays the primary route.</p>
+            <p>Start on one computer. When you want more capacity, link a Mac, Linux or Windows worker to SpecWithCode Connect, add it with an invite line and let coordinators start workers there. Machines reach each other through Connect, whatever network each one is on. If two machines also share a Tailscale network, SpecWithCode can use that address as a direct fallback; Connect stays the primary route.</p>
           </div>
           <MachinesDiagram />
         </div>
