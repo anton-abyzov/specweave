@@ -16,6 +16,14 @@ Joining takes three steps:
 2. On your **main machine**, paste the line under **Settings > Connections > Your private machines > Add a machine** and choose **Add machine**.
 3. On the worker's card, choose **Allow workers**.
 
+Machines you pair yourself over your own Tailscale, as on this page, are unlimited. Connect, the hosted relay for reaching machines from anywhere and from your phone, includes 3 machines; the first 1,000 accounts to link a machine through Connect get 10 as founders. See [pricing](/pricing).
+
+## Link a machine through Connect
+
+Connect reaches your machines from anywhere, and from your phone, without Tailscale. On each machine, open **Settings > Connections > SpecWithCode Connect**, sign in and link the machine with your account, or run `specweave-studio connect link` in a terminal there. Linked machines then connect to each other on their own, with Tailscale kept as a fallback.
+
+Connect includes 3 machines per account. The first 1,000 accounts to link a machine get a founder number and 10 machines, granted on that first link with no form or card; the seat stays with the account. [Pricing](/pricing) shows how many founder seats are left.
+
 ## Watch it
 
 Two Macs on one tailnet, recorded with SpecWithCode 1.0.47: the invitation line on the Mac mini, adding it on the main Mac, and allowing workers. In 1.0.47, **Allow workers** also asks for a one-time pairing code; the video shows where it goes.

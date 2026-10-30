@@ -48,7 +48,7 @@ This page describes Spec Kit as its public repository documents it. Check the re
 
 **Spec Kit fits** when one developer and one agent are building a feature in one sitting, and you want a structured path through the design first.
 
-**SpecWeave fits** teams of 2–10 people whose work spans sessions, tools or teammates: you switch between Claude Code and Codex, run parallel threads, need proof that tests ran, or want issues in GitHub or Jira to follow the work.
+**SpecWeave fits** work that spans sessions, tools or teammates, for one developer or a whole team: you switch between Claude Code and Codex, run parallel threads, need proof that tests ran, or want issues in GitHub or Jira to follow the work.
 
 Nothing stops you from using both. A Spec Kit `spec.md` and `plan.md` are good input for a SpecWeave increment: copy the requirements into Acceptance Criteria, the design into Approach, and the task list into the Tasks section as `### T-01 Title` entries.
 

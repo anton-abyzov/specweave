@@ -20,7 +20,7 @@ The facts about other products below come from their own sites, docs and GitHub 
 | **Claude Pro or Max plan** | Through Claude Code's own sign-in on each machine | Its docs say Anthropic prohibits this and the plugin has not been bundled since v1.3.0 ([providers](https://opencode.ai/docs/providers/)) | Through Claude Code: "Works with your subscriptions" ([README](https://github.com/pingdotgg/t3code)) | Billed through each vendor's own plan |
 | **Other machines** | Pair supported machines over your network, SSH or Tailscale; move a project or continue a thread on another machine | `opencode serve` and `opencode web` listen on 127.0.0.1 by default and can bind a network address ([server](https://opencode.ai/docs/server/), [web](https://opencode.ai/docs/web/)) | Network, Tailscale, SSH or the T3 Connect relay ([remote access](https://github.com/pingdotgg/t3code/blob/main/docs/user/remote-access.md)) | Runs in the vendor's cloud |
 | **Apps** | macOS on Apple silicon, Windows 10/11 (x64), Linux (x64); Mac signed/notarized, Windows/Linux unsigned | Terminal, desktop for macOS, Windows and Linux, IDE extension ([download](https://opencode.ai/download)) | Desktop (Electron) for macOS, Windows and Linux, web, iOS, Android and a CLI ([README](https://github.com/pingdotgg/t3code)) | Web, IDE and GitHub |
-| **Price and license** | Free; source available, no new project-wide license grant | Open source (MIT) ([license](https://github.com/anomalyco/opencode/blob/dev/LICENSE)) | Open source (MIT) ([license](https://github.com/pingdotgg/t3code/blob/main/LICENSE)) | Included in or billed by each vendor's plan |
+| **Price and license** | Free for every developer and team; no seat, agent or hour fees; Connect relay included for 3 machines ([pricing](/pricing)); source available, no new project-wide license grant | Open source (MIT) ([license](https://github.com/anomalyco/opencode/blob/dev/LICENSE)) | Open source (MIT) ([license](https://github.com/pingdotgg/t3code/blob/main/LICENSE)) | Included in or billed by each vendor's plan |
 
 Cloud agents here means:
 
@@ -66,6 +66,6 @@ when work should keep running with your laptop closed and your repository alread
 
 ## Pick SpecWithCode
 
-when your team of 2–10 people wants one coordinator to split work across several agents on your own computers, watch every subscription's limits in one place, let agents use your Chrome through the SpecWithCode Browser extension, and keep your code off anyone else's servers.
+when you or your team want one coordinator to split work across several agents on your own computers, watch every subscription's limits in one place, let agents use your Chrome through the SpecWithCode Browser extension, and keep your code off anyone else's servers.
 
 [Download SpecWithCode](/code/) or compare it with [BridgeMind](/docs/compare/specwithcode-vs-bridgemind).

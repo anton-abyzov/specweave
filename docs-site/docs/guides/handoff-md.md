@@ -7,7 +7,7 @@ keywords: [handoff.md, claude code handoff, claude code handoff prompt, claude c
 
 # handoff.md: what goes in an AI agent handoff
 
-`handoff.md` is a short Markdown file that tells the next AI coding agent where the last one stopped. Codex, Cursor, OpenCode or a Claude Code session on another machine can't read this session, so anything not written down is lost when you switch. A good handoff is under a page: the reason you stopped, what is done, what you decided, which files have uncommitted edits, and the one next step.
+`handoff.md` is a short Markdown file that tells the next AI coding agent where the last one stopped. Each tool keeps its session in its own format, and a Claude Code session on another machine doesn't have it at all, so anything not written down is lost when you switch. A good handoff is under a page: the reason you stopped, what is done, what you decided, which files have uncommitted edits, and the one next step.
 
 ## What handoff.md is
 

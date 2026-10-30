@@ -33,7 +33,7 @@ flowchart LR
 
 ## The problem it solves
 
-AI coding tools are good at writing code and poor at remembering why. Each one keeps its conversation in its own private store. When you hit a usage limit halfway through a feature, the goal, the decisions and your uncommitted edits are stuck in a session no other tool can read. Claude Code project memory stays with one account, so even a second Claude subscription starts cold.
+AI coding tools are good at writing code and poor at remembering why. Each one keeps its conversation in its own format and location, and nothing hands it over for you. When you hit a usage limit halfway through a feature, the goal, the decisions and your uncommitted edits sit in that transcript. Another tool on the same machine could dig through those files, but they are long and tool-specific, and on another machine, another account or a cloud session they are not there at all. Claude Code project memory stays with one account, so even a second Claude subscription starts cold.
 
 Without a written definition of done, "it's finished" is whatever the agent says. SpecWeave makes the definition explicit before code is written, and closes the work only when the recorded evidence covers every acceptance criterion.
 

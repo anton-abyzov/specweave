@@ -10,6 +10,7 @@
 .band,
 .why,
 .plans,
+.founders,
 .pilot,
 .faq {
   max-width: var(--wv-page-max);
@@ -309,7 +310,7 @@
 /* ---------- Plans: three cards ---------- */
 .plans {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--wv-space-4);
   padding-bottom: var(--wv-space-16);
   scroll-margin-top: 80px;
@@ -407,6 +408,82 @@
 
 .cta {
   align-self: stretch;
+}
+
+/* ---------- Founders: live seat count from the Connect relay ---------- */
+.founders {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--wv-space-8) var(--wv-space-12);
+  width: calc(100% - 2 * var(--pr-gutter));
+  max-width: calc(var(--wv-page-max) - 2 * var(--pr-gutter));
+  margin-bottom: var(--wv-space-12);
+  padding-inline: 0;
+  padding-block: var(--wv-space-8);
+  border-block: 1px solid var(--wv-line);
+}
+
+.foundersText h2 {
+  margin-top: 0;
+}
+
+.foundersText > p:not(.kicker) {
+  max-width: 56ch;
+  margin-bottom: var(--wv-space-6) !important;
+  color: var(--wv-muted);
+}
+
+.seats {
+  padding: var(--wv-space-6);
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 45%, var(--wv-line));
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--wv-iris) 10%, transparent), transparent 60%),
+    var(--wv-panel);
+}
+
+.seatsCount {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--wv-space-1) var(--wv-space-3);
+  margin: 0 !important;
+}
+
+.page .seatsCount b {
+  font-size: 56px;
+  line-height: 60px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--wv-iris-strong);
+}
+
+.seatsCount > span {
+  font-size: 15px;
+  color: var(--wv-muted);
+}
+
+.seatsBar {
+  display: block;
+  height: 8px;
+  margin-top: var(--wv-space-4);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--wv-iris) 14%, var(--wv-line));
+  overflow: hidden;
+}
+
+.seatsBar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--wv-iris);
+}
+
+.seatsNote {
+  margin: var(--wv-space-3) 0 0 !important;
+  font-size: 13px;
+  color: var(--wv-muted);
 }
 
 /* ---------- Pilot: one panel, a drawn ten-day timeline ---------- */
@@ -583,13 +660,19 @@
   text-underline-offset: 0.22em;
 }
 
+@media (max-width: 1200px) {
+  .plans {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1000px) {
-  .hero {
+  .hero,
+  .founders {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .whyList,
-  .plans {
+  .whyList {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -601,6 +684,10 @@
 @media (max-width: 760px) {
   .page {
     --pr-gutter: var(--wv-space-4);
+  }
+
+  .plans {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .hero {

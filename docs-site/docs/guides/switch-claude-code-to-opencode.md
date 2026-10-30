@@ -25,7 +25,7 @@ The OpenCode behaviour on this page comes from OpenCode's own docs, checked 2026
 
 ## What does not carry over
 
-The Claude Code conversation. Claude Code keeps it in its own session store, and OpenCode can't read it. OpenCode's own `opencode --session <id>` (short form `-s`) continues an OpenCode session only, and `opencode export` writes OpenCode session data as JSON ([CLI](https://opencode.ai/docs/cli/)). The [cross-tool resume matrix](/docs/guides/cross-tool-handoff/#cross-tool-resume-matrix) shows how each tool stores its sessions.
+The Claude Code conversation. Claude Code keeps it in its own session files, and OpenCode doesn't pick it up. OpenCode's own `opencode --session <id>` (short form `-s`) continues an OpenCode session only, and `opencode export` writes OpenCode session data as JSON ([CLI](https://opencode.ai/docs/cli/)). The [cross-tool resume matrix](/docs/guides/cross-tool-handoff/#cross-tool-resume-matrix) shows how each tool stores its sessions.
 
 The next agent doesn't need the transcript. It needs the spec, the next task and your edits, and those travel through git.
 
