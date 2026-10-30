@@ -304,7 +304,7 @@ export default function Code() {
         <div className={styles.machinesHead}>
           <div className={clsx(styles.sectionHead, landing.reveal)}>
             <h2 id="machines-title">Add the machines you trust</h2>
-            <p>Start on one computer. When you want more capacity, link a supported Mac or Linux worker to SpecWithCode Connect, add it with an invite line and let coordinators start workers there. Machines reach each other through Connect, whatever network each one is on.</p>
+            <p>Start on one computer. When you want more capacity, link a supported Mac or Linux worker to SpecWithCode Connect, add it with an invite line and let coordinators start workers there. Machines reach each other through Connect, whatever network each one is on. If two machines also share a Tailscale network, SpecWithCode can use that address as a direct fallback; Connect stays the primary route.</p>
           </div>
           <MachinesDiagram />
         </div>
