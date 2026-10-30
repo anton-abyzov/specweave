@@ -146,7 +146,7 @@ function Footer(): ReactNode {
             ))}
           </div>
           <div className={styles.copyright}>
-            &copy; {new Date().getFullYear()} SpecWeave. MIT licensed.
+            &copy; {new Date().getFullYear()} SpecWeave. SpecWeave CLI: MIT licensed. SpecWithCode: free, source available.
           </div>
         </div>
       </div>

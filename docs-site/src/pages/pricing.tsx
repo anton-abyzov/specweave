@@ -128,7 +128,7 @@ const FAQ = [
   {q: 'What do teams pay for?', a: <>Setup for your team of 2–10, support with response times, and controls like audit export or SSO. Pro covers hosted private skills and unlimited Connect machines for one account.</>},
   {q: 'Where does our code go?', a: <>Nowhere new. Specs and handoffs are files in your repo, and agents run on your machines with your subscriptions.</>},
   {q: 'How does auto-handoff work?', a: <><code>specweave auto-handoff on</code> hands off at 90 percent of a usage window, or a threshold you pick. The next tool runs <code>specweave pickup</code>. <Link to="/docs/guides/auto-handoff">Details</Link>.</>},
-  {q: 'Is SpecWithCode ready?', a: <>It is in early access with a macOS download for Apple silicon. The SpecWeave CLI works everywhere with <code>npm install -g specweave</code>.</>},
+  {q: 'Is SpecWithCode ready?', a: <>It is in early access with downloads for macOS (Apple silicon), Windows 10 and 11, and Linux (x64 and arm64). The SpecWeave CLI works everywhere with <code>npm install -g specweave</code>.</>},
   {q: 'How do we pay?', a: <>Today only the pilot is paid, invoiced once you pick a start date. Team contracts are invoiced annually. Pro will be billed by card in your SpecWithCode account when it opens; nobody on the waitlist is charged before then.</>},
 ];
 
