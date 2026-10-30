@@ -34,8 +34,9 @@ describe('platformFromUserAgent', () => {
     expect(platformFromUserAgent(ua)).toEqual(expected);
   });
 
-  it('treats an iPad asking for the desktop site as mobile', () => {
+  it('treats tablets asking for the desktop site as mobile', () => {
     expect(platformFromUserAgent(UA.macSafari, 5)).toEqual({os: 'mobile', arch: null});
+    expect(platformFromUserAgent(UA.linuxFirefox, 5)).toEqual({os: 'mobile', arch: null});
   });
 });
 
@@ -58,6 +59,9 @@ describe('detectVisitorPlatform', () => {
   });
   it('spots an Intel Mac through client hints', async () => {
     expect(await detectVisitorPlatform({userAgent: UA.macSafari, userAgentData: hints('x86')})).toEqual({os: 'mac', arch: 'x64'});
+  });
+  it('treats Android behind a desktop user agent as mobile', async () => {
+    expect(await detectVisitorPlatform({userAgent: UA.linuxFirefox, userAgentData: {platform: 'Android'}})).toEqual({os: 'mobile', arch: null});
   });
   it('falls back to the user agent when client hints fail', async () => {
     const userAgentData = {getHighEntropyValues: async () => { throw new Error('denied'); }};

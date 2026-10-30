@@ -121,7 +121,7 @@ function HeroDownload() {
   const isMac = installer.key === 'mac';
   return <>
     <div className={styles.actions}>
-      <a className="wv-btn wv-btn--primary wv-btn--lg" href={installer.url} data-track="download_click" data-placement="download-page" data-os={installer.key}><Download {...btnIcon} />{installer.label} ({installer.size})</a>
+      <a className={clsx('wv-btn', unsupported ? 'wv-btn--secondary' : 'wv-btn--primary', 'wv-btn--lg')} href={installer.url} data-track="download_click" data-placement="download-page" data-os={installer.key}><Download {...btnIcon} />{installer.label} ({installer.size})</a>
       {installer.alt && <a className="wv-btn wv-btn--secondary wv-btn--lg" href={installer.alt.url} data-track="download_click" data-placement="download-page-alt" data-os={installer.key}><Download {...btnIcon} />{installer.alt.label} ({installer.alt.size})</a>}
       {!isMac && <a className="wv-btn wv-btn--secondary wv-btn--lg" href={MAC_INSTALLER.url} data-track="download_click" data-placement="download-page-mac" data-os="mac"><Download {...btnIcon} />Mac ({MAC_INSTALLER.size})</a>}
       {isMac && <a className="wv-btn wv-btn--secondary wv-btn--lg" href={ALL_DOWNLOADS_ANCHOR}>Windows and Linux</a>}

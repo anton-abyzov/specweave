@@ -23,6 +23,8 @@ export function platformFromUserAgent(ua: string, maxTouchPoints = 0): VisitorPl
   if (/Windows/i.test(ua)) return {os: 'windows', arch: /\b(ARM64|aarch64)\b/i.test(ua) ? 'arm64' : 'x64'};
   if (/CrOS/i.test(ua)) return {os: 'unknown', arch: null};
   if (/Linux|X11/i.test(ua)) {
+    // Android tablets ask for desktop pages with a Linux user agent; desktop Linux rarely has a touch screen.
+    if (maxTouchPoints > 1) return {os: 'mobile', arch: null};
     if (/\b(aarch64|arm64|armv8)/i.test(ua)) return {os: 'linux', arch: 'arm64'};
     if (/\b(x86_64|amd64|x64)\b/i.test(ua)) return {os: 'linux', arch: 'x64'};
     return {os: 'linux', arch: null};
@@ -37,6 +39,7 @@ interface HighEntropyValues {
 }
 
 interface NavigatorUAData {
+  platform?: string;
   getHighEntropyValues?: (hints: string[]) => Promise<HighEntropyValues>;
 }
 
@@ -51,6 +54,7 @@ export function archFromClientHints(values: HighEntropyValues): VisitorArch {
 }
 
 export async function detectVisitorPlatform(nav: NavigatorLike): Promise<VisitorPlatform> {
+  if (nav.userAgentData?.platform === 'Android') return {os: 'mobile', arch: null};
   const base = platformFromUserAgent(nav.userAgent ?? '', nav.maxTouchPoints ?? 0);
   if (base.os === 'mobile' || base.os === 'unknown') return base;
   const getValues = nav.userAgentData?.getHighEntropyValues;
