@@ -10,7 +10,11 @@ A Linux machine you control can run workers for the coordinators on your main co
 
 The machine reaches your main computer through [SpecWithCode Connect](/docs/studio/connect), the same way your other machines do. You need no Tailscale and no open inbound port.
 
-> **Use API keys on a rented server, never a subscription.** Do not sign Claude Code (Pro or Max) or Codex (ChatGPT) subscriptions in on Hetzner, AWS or any other rented server. Providers treat sign-ins from datacenter addresses, and one account active on several machines at once, as signs of reselling, and accounts get locked. Use an Anthropic Console key or an OpenAI API key there, billed per token. Keep subscription sign-ins on your own computers.
+## Subscriptions or API keys
+
+A Linux worker signs its agents in exactly as a Mac or Windows worker does: each agent's own sign-in, such as `claude auth login` for Claude Code or Connect with ChatGPT (or `codex login`) for Codex. Subscriptions work, and SpecWithCode needs no API key. On a Linux machine you own, at home or in an office, sign in with your subscriptions as you would on a Mac.
+
+> **On a server you rent, we recommend API keys.** Providers can treat subscription sign-ins from datacenter addresses (Hetzner, AWS and the like), and one account active on several machines at once, as signs of reselling, and accounts have been locked for it. On a rented server, use an Anthropic Console key or an OpenAI API key, billed per token, as in [Give the agents API keys](#give-the-agents-api-keys). This is our advice, not a limit: SpecWithCode does not check it.
 
 Every release ships `studio-<version>-linux-x64-….tar.gz` and `studio-<version>-linux-arm64-….tar.gz` with a `SHA256SUMS` file ([latest release assets](https://github.com/anton-abyzov/specwithcode/releases/latest)).
 
@@ -19,9 +23,9 @@ Every release ships `studio-<version>-linux-x64-….tar.gz` and `studio-<version
 - Linux on x64 or arm64 with glibc and a systemd user session: Debian 12, Ubuntu 22.04 or later, or Fedora 40 or later. AWS Graviton, Hetzner CAX and Azure Dpsv5 machines are arm64.
 - Node.js 22.20 or a later 22.x release.
 - A SpecWithCode Connect account, the same one your main computer is signed in to. Connect includes 3 machines; see [how many machines](/docs/studio/connect#how-many-machines).
-- The provider CLIs you want to run there (`claude`, `codex` and others), using API keys (see [Give the agents API keys](#give-the-agents-api-keys)).
+- The provider CLIs you want to run there (`claude`, `codex` and others), signed in with your subscriptions on a machine you own, or with API keys on a rented server (see [Subscriptions or API keys](#subscriptions-or-api-keys)).
 
-The server opens the Connect link outward, so the machine needs no open inbound port. Leave the provider's firewall closed to everything but SSH. Windows hosts cannot run workers.
+The server opens the Connect link outward, so the machine needs no open inbound port. Leave the provider's firewall closed to everything but SSH. A Windows 10 or 11 PC on x64 can be a worker too: install the Windows desktop app and follow [Add a machine](/docs/studio/add-a-machine).
 
 ## Install the server
 
@@ -72,6 +76,8 @@ The service runs the pinned copy under `~/.specwithcode/runtime/versions/<versio
 - Unpack the new release as above and run its `node bin.mjs service install` again, which pins the new version and rewrites the unit.
 
 ## Give the agents API keys
+
+On a rented server, follow these steps. On a machine you own, you can skip them and sign in with `claude auth login` and `codex login` instead.
 
 Create a key in the [Claude Console](https://platform.claude.com/settings/keys), set a spend limit on its workspace, and save it in a file only you can read. From your main computer, run this, then paste the key at the prompt; it is not shown:
 

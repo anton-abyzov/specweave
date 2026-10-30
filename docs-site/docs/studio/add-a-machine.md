@@ -8,7 +8,7 @@ import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
 
 # Add a machine
 
-Coordinators on your main machine can start workers on your other computers: a second Mac, a Linux box at home or a rented VPS. Each worker runs in its own checkout on that machine, with that machine's own provider sign-ins.
+Coordinators on your main machine can start workers on your other computers: a second Mac, a Windows PC, a Linux box at home or a rented VPS. Each worker runs in its own checkout on that machine, with that machine's own provider sign-ins.
 
 Machines reach each other through [SpecWithCode Connect](/docs/studio/connect), so it does not matter which network each one is on, and nothing on your router changes. Everything below is in **Settings > Connections**; you never need a terminal on a Mac with the desktop app.
 
@@ -107,7 +107,8 @@ The project must exist on the worker as its own checkout, cloned from the same r
 ## Keep your provider accounts safe
 
 - Each machine's agents talk to Anthropic, OpenAI and the other providers from that machine's own connection, with that machine's own sign-in. Connect and Tailscale change nothing about how a provider sees your account.
-- Prefer machines you own on a home or office connection for subscription sign-ins. On a rented server, sign the provider CLIs in with an API key: SpecWithCode warns before you sign a subscription in on one.
+- Workers on a Mac, Linux or Windows sign in the same way: each agent's own sign-in, such as `claude auth login` or Connect with ChatGPT for Codex, subscriptions included. Nothing requires an API key.
+- Prefer machines you own on a home or office connection for subscription sign-ins. On a server you rent in a datacenter, we recommend API keys instead, as [Linux worker](/docs/studio/linux-worker#subscriptions-or-api-keys) explains. SpecWithCode does not check this for you.
 - Never route one subscription through a shared proxy or pool several behind one endpoint.
 - Turn on two-factor sign-in for your SpecWithCode Connect account, and for Tailscale if you use it. They are the keys to every machine in the fleet.
 

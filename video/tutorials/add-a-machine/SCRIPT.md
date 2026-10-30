@@ -1,5 +1,7 @@
 # Add a second machine (add-a-machine)
 
+> **Outdated narration (1.0.47).** The recording pairs over Tailscale. Since 1.0.134, machines pair through SpecWithCode Connect: only the new machine links Connect, Tailscale is an optional fallback, and Mac, Linux and Windows workers use each agent's own sign-in, subscriptions included. The written steps on the tutorial page and in docs/studio/add-a-machine are current; re-record before reusing this script.
+
 SpecWithCode 1.0.47, two disposable servers: main on this Mac (127.0.0.1:8347), new machine on the Mac mini (127.0.0.1:8349, `--tailscale-serve --tailscale-serve-port 8445`). One headless take (`scripts/record-app.mjs SHOTLIST.json`), composed with `scripts/build-composition.mjs` from `edit.json`, finished with `scripts/finish.sh`. 73.4 s, -16 LUFS.
 
 Reproduce: `scripts/final-setup.sh` (seed, codex-auth, serve, pair, prepare, mint the pairing code), record, `scripts/tts.mjs scripts/vo-lines.json`, build, `npx hyperframes@0.8.145 render`, finish.
