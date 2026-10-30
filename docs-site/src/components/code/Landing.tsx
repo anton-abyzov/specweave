@@ -90,12 +90,12 @@ export function PolicyPicker() {
   </figure>;
 }
 
-/** Illustration: machines on one tailnet, providers outside it. */
+/** Illustration: machines linked through SpecWithCode Connect, providers outside it. */
 export function MachinesDiagram() {
   return <figure className={clsx(styles.diagram, styles.reveal)}>
-    <svg viewBox="0 0 560 300" role="img" aria-label="Illustration: a main Mac running the coordinator and two workers, a Mac and a Linux machine, joined on one private Tailscale network; each machine talks to its model providers directly, outside that network.">
+    <svg viewBox="0 0 560 300" role="img" aria-label="Illustration: a main Mac running the coordinator and two workers, a Mac and a Linux machine, linked through SpecWithCode Connect; each machine talks to its model providers directly, outside that link.">
       <rect className={styles.dNet} x="12" y="18" width="372" height="264" rx="16" />
-      <text className={styles.dCaption} x="30" y="44">Your tailnet (Tailscale)</text>
+      <text className={styles.dCaption} x="30" y="44">SpecWithCode Connect</text>
       <path className={clsx(styles.dLink, styles.draw)} d="M118 150 C 180 150, 190 92, 262 92" />
       <path className={clsx(styles.dLink, styles.draw)} d="M118 150 C 180 150, 190 214, 262 214" />
       <g className={styles.dNode}>
@@ -123,7 +123,7 @@ export function MachinesDiagram() {
       <path className={clsx(styles.dOut, styles.draw)} d="M368 214 C 400 214, 404 172, 430 172" />
       <path className={clsx(styles.dOut, styles.draw)} d="M92 188 C 92 270, 400 280, 489 196" />
     </svg>
-    <figcaption><span className={styles.illo}>Illustration</span> Machines reach each other by Tailscale name. Each one talks to its providers directly.</figcaption>
+    <figcaption><span className={styles.illo}>Illustration</span> Machines reach each other through SpecWithCode Connect. Each one talks to its providers directly.</figcaption>
   </figure>;
 }
 

@@ -42,7 +42,7 @@ const NEXT: {name: string; detail: React.ReactNode}[] = [
   {name: 'Run your first task', detail: <>Short <Link className="wv-link" to="/tutorials/">video tutorials</Link> walk through projects, threads and machines; per-agent first-task videos are being re-recorded.</>},
   {name: 'Never wait on a usage limit', detail: <>When one provider runs out, the same thread continues on another with its context. See <Link className="wv-link" to="/tutorials/provider-runs-out/">Keep working when a provider runs out</Link>.</>},
   {name: 'Let agents use your Chrome', detail: <>Add the free SpecWithCode extension from the <a className="wv-link" href={CHROME_URL}>Chrome Web Store</a> and pair it in Settings › Chrome. Agents then work in your own Chrome, in a tab group you can see.</>},
-  {name: 'Add another machine', detail: <>Pair a second Mac or a Linux worker over Tailscale. See <Link className="wv-link" to="/tutorials/add-a-machine/">Add a second machine</Link>.</>},
+  {name: 'Add another machine', detail: <>Add a second Mac or a Linux worker over SpecWithCode Connect. See <Link className="wv-link" to="/tutorials/add-a-machine/">Add a second machine</Link>.</>},
 ];
 
 const FAQ_TEXT: {q: string; a: string}[] = [

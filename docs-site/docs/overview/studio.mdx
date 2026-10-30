@@ -55,9 +55,9 @@ The trade-off is simple. Cloud project agents keep running when every one of you
 SpecWithCode runs as a small service on each machine, at `localhost:8319`. You use it from a desktop app for macOS 13 or later on Apple silicon, Windows 10 and 11 (x64), or Linux (x64), or from a paired browser. Intel Mac desktop builds are not published. See [downloads and platform-specific installation steps](/code/download/).
 
 - **One machine** needs nothing else.
-- **More machines for workers.** Install Tailscale on each machine, run `fleet invite` on the new one and paste the line it prints under **Settings > Connections > Add a machine** on your main machine. Coordinators can then start workers there. See [Add a machine](/docs/studio/add-a-machine).
+- **More machines for workers.** On the new machine, link it to [SpecWithCode Connect](/docs/studio/connect) with the same account as your main machine, then make an invitation line under **Settings > Connections > Your private machines > Invite this machine** (or `specwithcode fleet invite`). Paste it under **Add a machine** on your main machine and allow workers on its card. Coordinators can then start workers there. See [Add a machine](/docs/studio/add-a-machine).
 - **A Linux server or VPS** on x64 or arm64 runs the same server from the release's Linux archive, as a systemd user service. See [Linux worker](/docs/studio/linux-worker).
-- **Opening a machine from a browser or a phone** uses its own pairing, over the local network, an SSH tunnel the desktop app opens, Tailscale Serve, or Connect, the hosted relay ([3 machines included](/pricing)). SpecWithCode never uses Tailscale Funnel, which would make it public.
+- **Opening a machine from a browser or a phone** goes through Connect, the hosted relay, by default: sign in on the other device with the same account ([3 machines free](/pricing)). Local network pairing and an SSH tunnel the desktop app opens also work, and Tailscale Serve is an optional direct route. SpecWithCode never uses Tailscale Funnel, which would make it public.
 
 We recommend one machine per AI-provider subscription: each machine stays signed in to one account per provider for good, and you add machines for more capacity instead of switching accounts by hand.
 
@@ -83,7 +83,7 @@ Moving work outside SpecWithCode is a [SpecWeave handoff](/docs/guides/cross-too
 
 | Piece | Do you need it? | What it is for |
 |---|---|---|
-| Tailscale | For a second machine running workers, and for private HTTPS away from your local network or from a phone | Each machine's private name and HTTPS address. SpecWithCode pairing is still required. |
+| Tailscale | No. Connect is the default route | An optional direct route between machines on your tailnet. SpecWithCode pairing is still required. |
 | CLIProxyAPI | No | If you already run a CLIProxyAPI hub, SpecWithCode can show its pooled accounts' limits and redeem Codex reset credits. Native sessions never pass through it. Keep the hub on loopback: its management key reaches every pooled account. Check each provider's terms before pooling subscriptions. |
 | AnyModel | No | An adapter for API and local models that a native agent does not support. |
 | Switch | Optional, installed separately from SpecWeave’s `contrib/subscription-switch` | Reads account sign-in and limit observations on each machine for the capacity policy. |

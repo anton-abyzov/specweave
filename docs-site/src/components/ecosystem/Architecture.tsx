@@ -18,8 +18,8 @@ export default function Architecture() {
   return <figure className={styles.architecture} aria-label="SpecWithCode architecture: browser, optional private network, paired machines running native agents, model providers and repository">
     <div className={styles.diagramHeader}><strong>Your machines</strong><span className="wv-chip">Each boundary is explicit</span></div>
     <div className={styles.node}><Monitor {...icon} /><div><strong>SpecWithCode in your browser or desktop app</strong><span>Talk to the coordinator. Approve the next action.</span></div></div>
-    <div className={styles.connector}><span>Same network, SSH tunnel or Tailscale</span></div>
-    <div className={styles.node}><Network {...icon} /><div><strong>Your choice of route</strong><p>Pair over your local network, let the desktop app open an SSH tunnel, or use Tailscale Serve when you are away from home.</p></div></div>
+    <div className={styles.connector}><span>SpecWithCode Connect, same network or SSH tunnel</span></div>
+    <div className={styles.node}><Network {...icon} /><div><strong>Your choice of route</strong><p>Sign in to SpecWithCode Connect to reach your machines from anywhere. You can also pair over your local network or let the desktop app open an SSH tunnel.</p></div></div>
     <div className={styles.connector}><span>Separate SpecWithCode pairing on every host</span></div>
     <div className={styles.hosts}>
       {['Your laptop', 'Your workstation', 'Your remote Mac'].map(host => <div className={styles.host} key={host}><strong>{host}</strong><span>SpecWithCode runtime</span><div>Coordinator or workers on any provider</div><small>Local repo, skills and session state</small></div>)}

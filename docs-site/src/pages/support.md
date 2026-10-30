@@ -17,9 +17,9 @@ Bugs and feature requests can also go to [GitHub Issues](https://github.com/anto
 
 The iPhone app controls SpecWithCode running on your own computers. It needs SpecWithCode on at least one computer that the phone can reach.
 
-**Pair a computer.** On the computer, open SpecWithCode and go to Settings > Connections. Turn on Network access or Tailscale HTTPS so the phone has an address to reach. Under Authorized clients, choose Create link. On the phone, tap Pair a machine, then scan the QR code or paste the link. A pairing link works once and expires after 5 minutes.
+**Pair a computer.** On the computer, open SpecWithCode, go to Settings > Connections, sign in to SpecWithCode Connect and turn on Enable SpecWithCode Connect. On the phone, sign in to Connect with the same account and choose the computer. On the same Wi-Fi network you can pair directly instead: turn on Network access, then under Authorized clients choose Create link. On the phone, tap Pair a machine, then scan the QR code or paste the link. A pairing link works once and expires after 5 minutes.
 
-**A computer shows as offline.** The phone must be able to reach the computer: the same Wi-Fi network, Tailscale, or another address you set up. Check that SpecWithCode is running on the computer and that the iPhone app may use the local network (iPhone Settings > Privacy & Security > Local Network).
+**A computer shows as offline.** The phone must be able to reach the computer: through SpecWithCode Connect, the same Wi-Fi network, or another address you set up. Check that SpecWithCode is running on the computer and that the iPhone app may use the local network (iPhone Settings > Privacy & Security > Local Network).
 
 **Access expired.** Access to a computer lasts 30 days. In the last few days, that computer's page in the app shows when access ends. Create a new pairing link on the computer, then tap Pair again on that page.
 

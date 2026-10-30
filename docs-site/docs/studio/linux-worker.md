@@ -1,12 +1,16 @@
 ---
 title: "Run SpecWithCode workers on a Linux VPS or server"
 sidebar_label: Linux worker
-description: "Add a Linux machine on x64 or arm64, such as a Hetzner, DigitalOcean or AWS VPS, to your SpecWithCode fleet: verify and unpack the release archive, run it as a systemd user service over Tailscale Serve, and pair it with fleet invite."
+description: "Add a Linux machine on x64 or arm64, such as a Hetzner, DigitalOcean or AWS VPS, to your SpecWithCode fleet: verify and unpack the release archive, run it as a systemd user service, link SpecWithCode Connect, and pair it with fleet invite. Tailscale is an optional fallback."
 ---
 
 # Linux worker
 
 A Linux machine you control can run workers for the coordinators on your main computer: a small VPS, a cloud VM or a box at home. It runs the same SpecWithCode server as a Mac worker; only the install differs. You rent the machine and sign its provider CLIs in with your own accounts. SpecWithCode does not start sessions on anyone else's cloud.
+
+The machine reaches your main computer through [SpecWithCode Connect](/docs/studio/connect), the same way your other machines do. You need no Tailscale and no open inbound port.
+
+> **Use API keys on a rented server, never a subscription.** Do not sign Claude Code (Pro or Max) or Codex (ChatGPT) subscriptions in on Hetzner, AWS or any other rented server. Providers treat sign-ins from datacenter addresses, and one account active on several machines at once, as signs of reselling, and accounts get locked. Use an Anthropic Console key or an OpenAI API key there, billed per token. Keep subscription sign-ins on your own computers.
 
 Every release ships `studio-<version>-linux-x64-….tar.gz` and `studio-<version>-linux-arm64-….tar.gz` with a `SHA256SUMS` file ([latest release assets](https://github.com/anton-abyzov/specwithcode/releases/latest)).
 
@@ -14,28 +18,17 @@ Every release ships `studio-<version>-linux-x64-….tar.gz` and `studio-<version
 
 - Linux on x64 or arm64 with glibc and a systemd user session: Debian 12, Ubuntu 22.04 or later, or Fedora 40 or later. AWS Graviton, Hetzner CAX and Azure Dpsv5 machines are arm64.
 - Node.js 22.20 or a later 22.x release.
-- Tailscale, signed in to the same tailnet as your main computer, with MagicDNS. The fleet accepts only private `*.ts.net` HTTPS addresses.
-- The provider CLIs you want to run there (`claude`, `codex` and others), signed in on that machine. On a rented server, prefer an API key over a subscription sign-in.
+- A SpecWithCode Connect account, the same one your main computer is signed in to. Connect includes 3 machines; see [how many machines](/docs/studio/connect#how-many-machines).
+- The provider CLIs you want to run there (`claude`, `codex` and others), using API keys (see [Give the agents API keys](#give-the-agents-api-keys)).
 
-Tailscale connects outward, so the machine needs no open inbound port. Leave the provider's firewall closed to everything but SSH, or close SSH too and use Tailscale SSH. Windows hosts cannot run workers.
-
-## Join the tailnet
-
-```bash
-curl -fsSL https://tailscale.com/install.sh | sh
-sudo tailscale up --operator="$(id -un)"
-```
-
-On a machine where Tailscale is already up, run `sudo tailscale set --operator="$(id -un)"` instead. Making your user the operator lets SpecWithCode set up Tailscale Serve without root.
-
-Sign in with the Tailscale account your main computer uses, then turn off key expiry for this machine in the Tailscale admin console. HTTPS certificates must be on for the tailnet: in the admin console, open **DNS** and turn on **HTTPS Certificates**.
+The server opens the Connect link outward, so the machine needs no open inbound port. Leave the provider's firewall closed to everything but SSH. Windows hosts cannot run workers.
 
 ## Install the server
 
-Since 1.0.44 the release also carries `install.sh`, which does the steps below in one line, starts the background service and, with `--join`, prints the invitation line:
+Since 1.0.44 the release also carries `install.sh`, which does the steps below in one line and starts the background service. Then link Connect and make the line, as below:
 
 ```bash
-curl -fsSL https://github.com/anton-abyzov/specwithcode/releases/latest/download/install.sh | bash -s -- --join
+curl -fsSL https://github.com/anton-abyzov/specwithcode/releases/latest/download/install.sh | bash
 ```
 
 To install by hand instead, download the archive and its checksums, and verify them:
@@ -78,15 +71,54 @@ The service runs the pinned copy under `~/.specwithcode/runtime/versions/<versio
 - Update it from the Mac.
 - Unpack the new release as above and run its `node bin.mjs service install` again, which pins the new version and rewrites the unit.
 
-## Pair it with your main computer
+## Give the agents API keys
+
+Create a key in the [Claude Console](https://platform.claude.com/settings/keys), set a spend limit on its workspace, and save it in a file only you can read. From your main computer, run this, then paste the key at the prompt; it is not shown:
 
 ```bash
-specwithcode fleet invite --label "Hetzner VPS"
+ssh -t you@your-vps 'umask 077; mkdir -p ~/.config/specwithcode; printf "Paste the API key, then Enter: "; read -rs K; printf "%s\n" "$K" > ~/.config/specwithcode/anthropic.key; echo; echo saved'
 ```
 
-It publishes the server on `https://<host>.<tailnet>.ts.net` through Tailscale Serve; the address persists across restarts and is reachable only on your tailnet. It prints one line starting with `swc-machine-`. Treat it like a password. On the Mac, paste it under **Settings > Connections > Your private machines > Add a machine**, then choose **Allow workers** on the new card. [Add a machine](/docs/studio/add-a-machine) covers the rest, including the one-subscription-per-machine recommendation.
+Never paste a key into a chat. Then let Claude Code read it on the server, so nothing is signed in:
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+mkdir -p ~/.claude
+cat > ~/.claude/settings.json <<'EOF'
+{ "apiKeyHelper": "tr -d '[:space:]' < ~/.config/specwithcode/anthropic.key" }
+EOF
+claude -p "Reply with OK"
+```
+
+For Codex, install it with `sudo npm install -g @openai/codex`, then run `printenv OPENAI_API_KEY | codex login --with-api-key` with the key in that variable. Do not run `claude login` or `codex login` with a subscription on a rented server. Run `specwithcode service restart` afterwards.
+
+## Link SpecWithCode Connect
+
+On the server, run:
+
+```bash
+specwithcode connect
+```
+
+Over SSH it prints a link and a short code. Open the link on any device, check that the code matches, and approve with the same account your main computer uses. The machine keeps the same Connect address through restarts and updates. [Connect](/docs/studio/connect#link-a-machine) has the details.
+
+## Pair it with your main computer
+
+On the server, run:
+
+```bash
+specwithcode fleet invite --coordinator '<main-machine-environment-id>' --via connect --label "Hetzner VPS"
+```
+
+It prints one line starting with `swc-machine-`. Treat it like a password. With Connect linked, the line carries the machine's Connect address and works once, within an hour. On your main computer, paste it under **Settings > Connections > Your private machines > Add a machine** and choose **Add machine**, or run `specwithcode fleet add <that line>`. Then choose **Allow workers** on the new card. Reaching the machine does not let anyone use it: the line and **Allow workers** are what grant access. [Add a machine](/docs/studio/add-a-machine) covers the rest, including the one-subscription-per-machine recommendation.
+
+If your main computer cannot reach the worker, **Your private machines** shows a banner that it is not on SpecWithCode Connect. Run `specwithcode connect` on the worker again and make a new line.
 
 From then on a coordinator starts work there when you ask, for example "run the tests on the Hetzner VPS".
+
+## Optional: Tailscale as a fallback route
+
+You do not need Tailscale. If the server and your main computer are also on the same tailnet, a new line carries the private `*.ts.net` address too, and the main computer uses it only when Connect does not answer. [Add a machine](/docs/studio/add-a-machine#optional-tailscale-as-a-fallback-route) shows how to set it up.
 
 ## Projects on the worker
 

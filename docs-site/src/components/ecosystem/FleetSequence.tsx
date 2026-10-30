@@ -19,8 +19,8 @@ import styles from './FleetSequence.module.css';
 
 const workers = [
   {machine: 'This Mac', where: 'Where the coordinator runs', task: 'Write the parser', agent: 'Codex on this Mac’s ChatGPT plan'},
-  {machine: 'Second Mac', where: 'Added over Tailscale', task: 'Add the tests', agent: 'Claude Code on that Mac’s own Claude plan'},
-  {machine: 'Linux VPS', where: 'Added over Tailscale', task: 'Update the docs', agent: 'OpenCode with an API key'},
+  {machine: 'Second Mac', where: 'Added over Connect', task: 'Add the tests', agent: 'Claude Code on that Mac’s own Claude plan'},
+  {machine: 'Linux VPS', where: 'Added over Connect', task: 'Update the docs', agent: 'OpenCode with an API key'},
 ];
 
 export default function FleetSequence() {
