@@ -52,7 +52,7 @@ SpecWithCode runs each provider's own agent with the sign-ins already on that ma
 
 ### Optional components
 
-**CLIProxyAPI** is optional. SpecWithCode can read pooled account usage from a CLIProxyAPI hub you already run and show it under **Usage → Limits**. Native Claude Code and Codex turns never pass through it. Routing personal subscription sign-ins through a shared proxy can conflict with a provider's terms, so check them before pooling accounts. **AnyModel** is likewise optional and only matters for API or local-model compatibility work.
+**CLIProxyAPI** is optional. SpecWithCode can read the usage of Codex accounts in a CLIProxyAPI hub you already run and show it under **Usage → Limits**. It skips Claude accounts in a hub, because Anthropic does not let other apps use or relay Claude.ai sign-ins. Native Claude Code and Codex turns never pass through it. Routing personal subscription sign-ins through a shared proxy can conflict with a provider's terms, so check them before pooling accounts. **AnyModel** is likewise optional and only matters for API or local-model compatibility work.
 
 ### Security boundaries
 

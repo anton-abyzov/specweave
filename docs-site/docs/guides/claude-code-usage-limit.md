@@ -11,14 +11,14 @@ You are halfway through a task, Claude Code says you have hit your usage limit, 
 
 ## How the limits work
 
-On a Pro or Max plan, Claude Code shares its allowance with Claude in the browser and the desktop app. Two limits apply at the same time:
+On a Pro, Max or Ultra plan, Claude Code shares its allowance with Claude in the browser and the desktop app. Two limits apply at the same time:
 
 | Limit | What it is | When it resets |
 |---|---|---|
 | **Session window** | A rolling five-hour window that starts with your first message | Five hours after it started |
 | **Weekly limit** | A seven-day cap on total use, with a separate cap for the largest models on some plans | Seven days after the week started |
 
-Max plans raise both limits (5x and 20x the Pro allowance), but they don't remove them. Long agentic sessions use far more than chat: every tool call sends the conversation, your `CLAUDE.md`, and the definitions of every connected MCP tool again. Starting a new conversation doesn't reset either window.
+Max gives 5x the Pro allowance in both windows. Ultra gives 10x the Pro allowance each week and, once Anthropic verifies the account, has no five-hour limit; newer Ultra accounts keep the five-hour limit until they are verified ([pricing](https://claude.com/pricing), [usage limits](https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work)). The weekly limit applies on every plan. Anthropic renamed Max 5x to Max and Max 20x to Ultra on 30 October 2026; prices stayed at $100 and $200. Long agentic sessions use far more than chat: every tool call sends the conversation, your `CLAUDE.md`, and the definitions of every connected MCP tool again. Starting a new conversation doesn't reset either window.
 
 Anthropic adjusts the exact numbers from time to time, so check the [Claude help center](https://support.claude.com) for the current ones. Codex on a ChatGPT plan works the same way, with its own five-hour and weekly windows.
 

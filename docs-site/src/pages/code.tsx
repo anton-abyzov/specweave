@@ -37,7 +37,7 @@ const THREADS: {name: string; detail: React.ReactNode}[] = [
 
 const LIMITS: {name: string; detail: React.ReactNode}[] = [
   {name: 'A rule for each project', detail: <>Under When a provider runs out, choose Switch automatically, Offer the fallback, or Wait for the reset. Continuation depends on a compatible, available provider and the policy you choose.</>},
-  {name: 'Credits before the fallback, if you want them', detail: <>Redeem a banked reset, spend Codex credits or use Claude API credits first. Each is off until you turn it on, and SpecWithCode never buys credits for you.</>},
+  {name: 'Credits before the fallback, if you want them', detail: <>Redeem a Codex banked reset, spend Codex credits or use Claude API credits first. Each is off until you turn it on, and SpecWithCode never buys credits for you.</>},
   {name: 'The thread keeps its place', detail: <>Continuing hands the thread over with its context, in the same worktree. Tick Auto-continue when the limit resets, continue on another machine of the project, or undo a failover you did not want.</>},
   {name: 'Limits per account and machine', detail: <>Usage &gt; Limits names each account and the machine it is signed in on, with the share left in every session and weekly window.</>},
   {name: 'A status page with history', detail: <>The health of the app, your machines and each provider, with each day’s worst status kept on your computer for 90 days.</>},

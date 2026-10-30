@@ -500,7 +500,7 @@
         "Sign each machine in with the official tools. Keep every machine signed in to one account per provider for good, for example Claude Code on one account and Codex on another, and add machines when you need more capacity instead of switching subscriptions by hand.",
         "If you have one subscription, run it on the machine with the most free memory and disk, because every session runs on that machine.",
         "Connect your machines privately. Each machine runs its own SpecWithCode server.",
-        "Watch the limits: SpecWithCode shows session and weekly usage, banked resets and credits for every account. When one runs out, a thread waits for the reset or moves to another provider or machine.",
+        "Watch the limits: SpecWithCode shows session and weekly usage for every account, and Codex banked resets and credits. When one runs out, a thread waits for the reset or moves to another provider or machine.",
         "In a project, talk to one coordinator. It plans, then starts threads for the work, each on the machine and model that fits, and each thread opens its own pull request.",
         "Open a thread to see what it ran and what it is waiting on. A thread resolves itself only when its pull requests are merged, checks pass and the review is approved."
       ],

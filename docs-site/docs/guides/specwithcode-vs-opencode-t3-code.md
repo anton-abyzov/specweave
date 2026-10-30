@@ -17,7 +17,7 @@ The facts about other products below come from their own sites, docs and GitHub 
 |---|---|---|---|---|
 | **What runs the agent** | Each vendor's own agent: the Claude Code, Codex, Grok, OpenCode, Muse Code, Antigravity and Pi CLIs, Cursor through its official SDK ([Cursor SDK](https://cursor.com/docs/api/sdk/typescript)), plus GitHub Copilot CLI and Gemini CLI through the ACP registry | Its own agent loop with build and plan agents, across 75+ model providers ([providers](https://opencode.ai/docs/providers/), [README](https://github.com/anomalyco/opencode)) | Vendor CLIs: Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity ([README](https://github.com/pingdotgg/t3code)) | The vendor's agent in the vendor's environment |
 | **Where your code runs** | Your own computers | Your machine | Your machine | A vendor-hosted container or VM that clones your repo (sources below) |
-| **Claude Pro or Max plan** | Through Claude Code's own sign-in on each machine | Its docs say Anthropic prohibits this and the plugin has not been bundled since v1.3.0 ([providers](https://opencode.ai/docs/providers/)) | Through Claude Code: "Works with your subscriptions" ([README](https://github.com/pingdotgg/t3code)) | Billed through each vendor's own plan |
+| **Claude Pro, Max or Ultra plan** | Through Claude Code's own sign-in on each machine | Its docs say Anthropic prohibits this and the plugin has not been bundled since v1.3.0 ([providers](https://opencode.ai/docs/providers/)) | Through Claude Code: "Works with your subscriptions" ([README](https://github.com/pingdotgg/t3code)) | Billed through each vendor's own plan |
 | **Other machines** | Pair supported machines over SpecWithCode Connect (default), your network or SSH, with Tailscale as an optional direct route; move a project or continue a thread on another machine | `opencode serve` and `opencode web` listen on 127.0.0.1 by default and can bind a network address ([server](https://opencode.ai/docs/server/), [web](https://opencode.ai/docs/web/)) | Network, Tailscale, SSH or the T3 Connect relay ([remote access](https://github.com/pingdotgg/t3code/blob/main/docs/user/remote-access.md)) | Runs in the vendor's cloud |
 | **Apps** | macOS on Apple silicon, Windows 10/11 (x64, arm64), Linux (x64, arm64); Mac signed/notarized, Windows/Linux unsigned | Terminal, desktop for macOS, Windows and Linux, IDE extension ([download](https://opencode.ai/download)) | Desktop (Electron) for macOS, Windows and Linux, web, iOS, Android and a CLI ([README](https://github.com/pingdotgg/t3code)) | Web, IDE and GitHub |
 | **Price and license** | Free for every developer and team; no seat, agent or hour fees; Connect relay included for 3 machines ([pricing](/pricing)); source available, no new project-wide license grant | Open source (MIT) ([license](https://github.com/anomalyco/opencode/blob/dev/LICENSE)) | Open source (MIT) ([license](https://github.com/pingdotgg/t3code/blob/main/LICENSE)) | Included in or billed by each vendor's plan |
@@ -32,7 +32,7 @@ Cloud agents here means:
 
 ## Why a flat plan suits heavy agent work
 
-Claude Max costs $100 or $200 a month and includes Claude Code ([Anthropic](https://support.claude.com/en/articles/11049741-what-is-the-max-plan)). ChatGPT Pro costs $100, $200 or $500 a month and includes Codex ([OpenAI](https://learn.chatgpt.com/docs/pricing)). Both plans have session and weekly limits.
+Claude Max costs $100 and Claude Ultra $200 a month, and both include Claude Code ([Anthropic](https://claude.com/pricing)). ChatGPT Pro costs $100, $200 or $500 a month and includes Codex ([OpenAI](https://learn.chatgpt.com/docs/pricing)). Both have weekly limits; verified Claude Ultra accounts have no five-hour session limit.
 
 API billing charges for every input and output token ([Anthropic API pricing](https://platform.claude.com/docs/en/about-claude/pricing), [OpenAI API pricing](https://developers.openai.com/api/docs/pricing)). A coding agent resends its growing context on every turn, so a working day of several agents produces far more tokens than a chat. For that kind of sustained use, a flat plan can cost less than the same work at API rates. For light use, API billing can be cheaper. Compare against your own bills with the calculator on the [SpecWithCode page](/code/); we do not promise a saving.
 
@@ -40,9 +40,9 @@ SpecWithCode helps you use those plans fully:
 
 - it shows session and weekly windows for every connected account;
 - it can move a thread to another signed-in provider before a limit, and continue it on another machine;
-- it reads pooled accounts and banked resets from a CLIProxyAPI hub (for usage reporting; chat does not route through it).
+- it reads Codex accounts and their banked resets from a CLIProxyAPI hub (for usage reporting; chat does not route through it). It never reads Claude accounts from a hub.
 
-Anthropic does not let third-party apps offer Claude.ai login or route requests through Pro or Max credentials on behalf of users; signing in to Claude Code itself is fine ([Anthropic's terms](https://code.claude.com/docs/en/legal-and-compliance)). SpecWithCode runs the Claude Code CLI installed on your machine, which keeps its own sign-in.
+Anthropic does not let third-party apps offer Claude.ai login or route requests through Pro, Max or Ultra credentials on behalf of users, or collect and relay Claude.ai sign-in tokens; signing in to Claude Code itself is fine ([Anthropic's terms](https://code.claude.com/docs/en/legal-and-compliance)). SpecWithCode runs the Claude Code CLI installed on your machine, which keeps its own sign-in; SpecWithCode never reads that sign-in.
 
 ## Private by default
 
