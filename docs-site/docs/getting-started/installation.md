@@ -57,6 +57,8 @@ specweave get owner/repo
 specweave get "my-org/*" --pattern "service-*"
 ```
 
+`get` clones into `repositories/<owner>/<repo>` by default. That nesting is one layout, not a requirement: repositories you already have — as siblings, in service folders, anywhere on disk — join the same workspace by path. See [Adopt existing repositories](/docs/guides/workspace-adoption).
+
 ## Using a second tool or account
 
 Nothing extra to install per tool beyond the CLI on that machine. A cloud session (a Claude Code Projects thread, a Codex cloud task) reads `AGENTS.md` and the committed skills from the repository. On another machine, install the CLI and run `specweave pickup` in the clone. See [Handoff and pickup](/docs/guides/cross-tool-handoff).
