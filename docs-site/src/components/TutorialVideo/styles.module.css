@@ -32,8 +32,12 @@
   outline-offset: -3px;
 }
 
+/* One column as wide as the frame. With an implicit `auto` column the phone chapter row
+   (grid-auto-flow: column) sized it to every chapter side by side, about 1,900px, so the
+   frame clipped the meta row and all chapters after the first and the row never scrolled. */
 .details {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: 14px;
   padding: 18px 20px 20px;
