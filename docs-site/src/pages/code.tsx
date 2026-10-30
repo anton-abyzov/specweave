@@ -15,6 +15,7 @@ import BuiltWithItself from '../components/code/BuiltWithItself';
 import {BrowserDiagram, CHROME_STORE_URL, CardShot, Cards, ChromeAnnounce, FinishDiagram, GuideCards, MachinesDiagram, PolicyPicker, Tokens, WindowCrop, type CardItem} from '../components/code/Landing';
 import landing from '../components/code/Landing.module.css';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
+import {useSpecWithCodeInstaller} from '../data/specwithcodeInstaller';
 import {PATHS, TUTORIALS, buildVideoObject, byRecency, getTutorial, resolvePath} from '../data/tutorials';
 import styles from './code.module.css';
 
@@ -220,6 +221,12 @@ const REACH_CARDS = withIcons(REACH.filter(r => r.name !== 'SpecWithCode Browser
 ]);
 const CHROME = REACH.find(r => r.name === 'SpecWithCode Browser')!;
 
+/** The closing download button: the Mac .dmg until the visitor's own platform is known. */
+function FooterDownload() {
+  const {installer} = useSpecWithCodeInstaller();
+  return <a className="wv-btn wv-btn--primary wv-btn--lg" href={installer.url} data-track="download_click" data-placement="footer" data-os={installer.key}><Download {...btnIcon} />Download SpecWithCode</a>;
+}
+
 export default function Code() {
   const icon28 = useBaseUrl('/img/studio/specwithcode-icon.png');
   const providerBase = useBaseUrl('/img/studio/providers/');
@@ -424,7 +431,7 @@ export default function Code() {
           <h2 id="final-title">Build with the agents you choose</h2>
           <p>Keep the work on machines you control. For work across agents or sessions, we strongly recommend an optional <Link className="wv-link" to="/product">SpecWeave increment</Link> with acceptance criteria, task evidence and a review before completion.</p>
           <div className={styles.actions}>
-            <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="footer"><Download {...btnIcon} />Download SpecWithCode</a>
+            <FooterDownload />
             <a className={clsx('wv-link', styles.finalLink)} href={release.repoUrl}>View source on GitHub</a>
           </div>
         </div>
