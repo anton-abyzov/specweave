@@ -20,7 +20,7 @@ const ROWS: {label: string; cells: Cell[]}[] = [
     <>Your machine <Src href="https://opencode.ai/docs/server/" /></>,
     <>A vendor-hosted container or VM that clones your repo <Src href="https://learn.chatgpt.com/docs/environments/cloud-environment" /></>,
   ]},
-  {label: 'Claude Pro or Max plan', cells: [
+  {label: 'Claude Pro, Max or Ultra plan', cells: [
     'Through Claude Code’s own sign-in on each machine',
     <>Its docs say Anthropic prohibits this; the plugin is no longer bundled <Src href="https://opencode.ai/docs/providers/" /></>,
     'Billed through each vendor’s own plan',

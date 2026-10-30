@@ -84,7 +84,7 @@ Moving work outside SpecWithCode is a [SpecWeave handoff](/docs/guides/cross-too
 | Piece | Do you need it? | What it is for |
 |---|---|---|
 | Tailscale | No. Connect is the default route | An optional direct route between machines on your tailnet. SpecWithCode pairing is still required. |
-| CLIProxyAPI | No | If you already run a CLIProxyAPI hub, SpecWithCode can show its pooled accounts' limits and redeem Codex reset credits. Native sessions never pass through it. Keep the hub on loopback: its management key reaches every pooled account. Check each provider's terms before pooling subscriptions. |
+| CLIProxyAPI | No | If you already run a CLIProxyAPI hub, SpecWithCode can show its Codex accounts' limits and redeem Codex reset credits. Claude accounts in a hub are skipped. Native sessions never pass through it. Keep the hub on loopback: its management key reaches every pooled account. Check each provider's terms before pooling subscriptions. |
 | AnyModel | No | An adapter for API and local models that a native agent does not support. |
 | Switch | Optional, installed separately from SpecWeave’s `contrib/subscription-switch` | Reads account sign-in and limit observations on each machine for the capacity policy. |
 

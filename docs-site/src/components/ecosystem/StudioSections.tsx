@@ -81,7 +81,7 @@ export function StudioFaq() {
     </article>
     <article>
       <h3>What is CLIProxyAPI for?</h3>
-      <p>It is optional. Native Claude Code and Codex sessions talk to their providers directly and never pass through it. If you already run a CLIProxyAPI hub, SpecWithCode can read it to show pooled accounts’ limits and redeem Codex reset credits.</p>
+      <p>It is optional. Native Claude Code and Codex sessions talk to their providers directly and never pass through it. If you already run a CLIProxyAPI hub, SpecWithCode can read it to show its Codex accounts’ limits and redeem Codex reset credits. Claude accounts in a hub are skipped.</p>
       <p>Keep the hub on loopback, since its management key reaches every pooled account, and check your providers’ terms before pooling subscriptions. AnyModel is a similar optional adapter for API and local models.</p>
     </article>
     <article>
