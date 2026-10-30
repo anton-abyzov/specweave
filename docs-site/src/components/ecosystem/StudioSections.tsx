@@ -110,7 +110,7 @@ export function StudioFaq() {
     </article>
     <article>
       <h3>Is it a cloud service?</h3>
-      <p>No. SpecWithCode is a local app on each machine: a desktop app for Apple silicon Macs on macOS 13 or later, also usable from a browser. A Linux machine (x64 or arm64) can join as a worker; Windows 10 and 11 (x64 and arm64) and Linux (x64 and arm64) desktop installers are also available. Intel Macs are not supported. Telemetry is off by default, and Connect, the hosted relay, is used only after you sign in to it. By default the desktop app checks GitHub every hour and installs updates for itself and the service; you can turn that off in Settings. Model calls still go to the providers you choose.</p>
+      <p>No. SpecWithCode is a local app on each machine: a desktop app for Apple silicon Macs on macOS 13 or later, also usable from a browser. A Linux machine (x64 or arm64) or a Windows 10 or 11 PC (x64) can join as a worker; Windows 10 and 11 (x64 and arm64) and Linux (x64 and arm64) desktop installers are also available. Intel Macs are not supported. Telemetry is off by default, and Connect, the hosted relay, is used only after you sign in to it. By default the desktop app checks GitHub every hour and installs updates for itself and the service; you can turn that off in Settings. Model calls still go to the providers you choose.</p>
     </article>
     <article>
       <h3>Can I use it today?</h3>
