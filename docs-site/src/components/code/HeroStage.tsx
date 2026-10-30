@@ -11,9 +11,9 @@ import styles from './HeroStage.module.css';
   /code hero media in three planes: an iris light field (back), the app window (mid)
   and callouts quoting the capture (front). Scroll moves the planes at different rates.
 
-  The window shows the promo video when it is published to R2 at /video/promo/ (see src/lib/media.ts).
-  Until then (or if a file is missing), it shows the real app capture of 27 October 2026.
-  The server render always shows the capture, so no-JS and screenshots are complete.
+  The window shows the promo video from R2 at /video/promo/ (see src/lib/media.ts).
+  The server render shows the real app capture of 27 October 2026, so no-JS and screenshots are complete;
+  the browser swaps in the video and returns to the capture if the video fails to load.
 */
 
 const PROMO = {
@@ -22,36 +22,20 @@ const PROMO = {
   captions: '/video/promo/specwithcode-promo.vtt',
 };
 
-type Promo = {video: boolean; poster: boolean; captions: boolean};
-
-/** A static host answers 404 for a missing file; the dev server answers 200 with HTML, so check the type too. */
-async function exists(url: string, type: RegExp): Promise<boolean> {
-  try {
-    const res = await fetch(url, {method: 'HEAD', cache: 'no-store'});
-    return res.ok && type.test(res.headers.get('content-type') ?? '');
-  } catch {
-    return false;
-  }
+/** Render the video once the page is hydrated; fall back to the capture only if the browser cannot load it. */
+function usePromo(): [boolean, () => void] {
+  const [state, setState] = useState<'pending' | 'video' | 'failed'>('pending');
+  useEffect(() => setState(s => (s === 'pending' ? 'video' : s)), []);
+  return [state === 'video', () => setState('failed')];
 }
 
-function usePromo(video: string, poster: string, captions: string): Promo {
-  const [promo, setPromo] = useState<Promo>({video: false, poster: false, captions: false});
-  useEffect(() => {
-    let live = true;
-    exists(video, /^video\//).then(async ok => {
-      if (!ok || !live) return;
-      const [p, c] = await Promise.all([exists(poster, /^image\//), exists(captions, /text\/vtt|text\/plain|octet-stream/)]);
-      if (live) setPromo({video: true, poster: p, captions: c});
-    });
-    return () => { live = false; };
-  }, [video, poster, captions]);
-  return promo;
-}
-
-function PromoVideo({src, poster, captions}: {src: string; poster?: string; captions?: string}) {
+function PromoVideo({src, poster, captions, onFail}: {src: string; poster: string; captions: string; onFail: () => void}) {
   const ref = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
-  const [playing, setPlaying] = useState(true);
+  // Starts false: iOS refuses autoplay in Low Power Mode, so only a real 'playing' event shows Pause.
+  const [playing, setPlaying] = useState(false);
+  // The big Play button appears only once play was refused or paused, so it never flashes on load.
+  const [stopped, setStopped] = useState(false);
 
   useEffect(() => {
     const v = ref.current;
@@ -59,11 +43,12 @@ function PromoVideo({src, poster, captions}: {src: string; poster?: string; capt
     if (prefersReducedMotion()) {
       v.pause();
       setPlaying(false);
+      setStopped(true);
       return;
     }
     // Play only while the hero is on screen.
     const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !v.dataset.userPaused) v.play().catch(() => setPlaying(false));
+      if (e.isIntersecting && !v.dataset.userPaused) v.play().catch(() => { setPlaying(false); setStopped(true); });
       else v.pause();
     }, {threshold: 0.25});
     io.observe(v);
@@ -75,7 +60,7 @@ function PromoVideo({src, poster, captions}: {src: string; poster?: string; capt
     if (!v) return;
     if (v.paused) {
       delete v.dataset.userPaused;
-      v.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+      v.play().then(() => setPlaying(true)).catch(() => { setPlaying(false); setStopped(true); });
     } else {
       v.dataset.userPaused = '1';
       v.pause();
@@ -88,14 +73,20 @@ function PromoVideo({src, poster, captions}: {src: string; poster?: string; capt
     if (!v) return;
     v.muted = !v.muted;
     setMuted(v.muted);
-    if (!v.muted && v.paused) v.play().then(() => setPlaying(true)).catch(() => undefined);
+    if (!v.muted && v.paused) {
+      delete v.dataset.userPaused;
+      v.play().then(() => setPlaying(true)).catch(() => undefined);
+    }
   }
 
   return <div className={styles.video}>
-    <video ref={ref} muted playsInline loop autoPlay preload="metadata" poster={poster} aria-label="SpecWithCode promo video" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}>
-      <source src={src} type="video/mp4" />
+    <video ref={ref} muted playsInline loop autoPlay preload="metadata" poster={poster} aria-label="SpecWithCode promo video" onClick={toggle} onPlaying={() => { setPlaying(true); setStopped(false); }} onPause={() => { setPlaying(false); setStopped(true); }}>
+      <source src={src} type="video/mp4" onError={onFail} />
       {captions && <track kind="captions" src={captions} srcLang="en" label="English" />}
     </video>
+    {stopped && !playing && <button type="button" className={styles.bigPlay} onClick={toggle} tabIndex={-1} aria-hidden="true">
+      <Play size={28} strokeWidth={1.75} aria-hidden="true" />
+    </button>}
     <div className={styles.videoControls}>
       <button type="button" onClick={toggle} aria-label={playing ? 'Pause the promo video' : 'Play the promo video'}>
         {playing ? <Pause size={16} strokeWidth={1.75} aria-hidden="true" /> : <Play size={16} strokeWidth={1.75} aria-hidden="true" />}
@@ -116,7 +107,7 @@ export default function HeroStage() {
   const dark = useBaseUrl('/img/studio/code-window-20261027-dark.webp');
   const claude = useBaseUrl('/img/studio/providers/claude.svg');
   const openai = useBaseUrl('/img/studio/providers/openai.svg');
-  const promo = usePromo(video, poster, captions);
+  const [showVideo, failVideo] = usePromo();
   const stage = useRef<HTMLDivElement>(null);
 
   // Decorative pointer parallax on the front plane; carries no meaning.
@@ -134,11 +125,11 @@ export default function HeroStage() {
     <figure className={clsx('wv-window', styles.window)}>
       <div className="wv-window__bar">
         <span className={styles.dots} aria-hidden="true"><i /><i /><i /></span>
-        <span>{promo.video ? 'SpecWithCode promo' : 'Real app capture'}</span>
-        <span>{promo.video ? 'Video' : 'SpecWithCode, 27 Oct 2026'}</span>
+        <span>{showVideo ? 'SpecWithCode promo' : 'Real app capture'}</span>
+        <span>{showVideo ? 'Video' : 'SpecWithCode, 27 Oct 2026'}</span>
       </div>
-      {promo.video
-        ? <PromoVideo src={video} poster={promo.poster ? poster : undefined} captions={promo.captions ? captions : undefined} />
+      {showVideo
+        ? <PromoVideo src={video} poster={poster} captions={captions} onFail={failVideo} />
         : <div className={styles.crop}>
           <ThemedImage
             className={styles.shot}
@@ -152,7 +143,7 @@ export default function HeroStage() {
         </div>}
     </figure>
 
-    {!promo.video && <div className={styles.front} aria-hidden="true">
+    {!showVideo && <div className={styles.front} aria-hidden="true">
       <span className={clsx(styles.callout, styles.c1)}><i className={styles.live} />3 worker threads linked in the reply</span>
       <span className={clsx(styles.callout, styles.c2)}><i className={styles.ok} />tests · 23 passed in 0.09s</span>
       <span className={clsx(styles.callout, styles.c3)}>

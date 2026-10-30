@@ -101,6 +101,32 @@
   object-fit: cover;
 }
 
+.video video {
+  cursor: pointer;
+}
+
+/* Shown whenever the promo is paused, including when the phone refuses autoplay. */
+.bigPlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--wv-line);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--wv-panel) 88%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--wv-ink);
+  cursor: pointer;
+}
+
+.bigPlay:hover {
+  border-color: var(--wv-iris);
+}
+
 .videoControls {
   position: absolute;
   right: var(--wv-space-3);
