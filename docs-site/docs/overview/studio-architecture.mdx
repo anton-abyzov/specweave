@@ -41,7 +41,9 @@ A browser or phone opening a SpecWithCode host can use one of several routes, an
 | SSH | You can already SSH to the machine | The desktop app opens the tunnel and can start SpecWithCode on the remote host |
 | Tailscale HTTPS | You are away from that network, or you want phone access | Both devices in the same tailnet; Tailscale Serve, never Funnel |
 
-Tailscale **Serve** exposes a local service inside the private tailnet. **Funnel** is a different feature for public exposure; it is not SpecWithCode's remote-access design. See the [official Tailscale Serve documentation](https://tailscale.com/docs/features/tailscale-serve). Connect, the hosted relay, is the other way to reach your machines from anywhere and from your phone. It is off until you sign in to it and includes 3 machines; machines you pair over your own Tailscale are unlimited ([pricing](/pricing)).
+Tailscale **Serve** exposes a local service inside the private tailnet. **Funnel** is a different feature for public exposure; it is not SpecWithCode's remote-access design. See the [official Tailscale Serve documentation](https://tailscale.com/docs/features/tailscale-serve).
+
+[SpecWithCode Connect](/docs/studio/connect), the hosted relay, is the default way to reach your machines from anywhere and from your phone. It is off until you sign in to it and includes 3 machines ([pricing](/pricing)).
 
 ### Providers and switching
 
