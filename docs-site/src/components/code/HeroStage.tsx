@@ -85,7 +85,7 @@ function PromoVideo({src, poster, captions, onFail}: {src: string; poster: strin
       {captions && <track kind="captions" src={captions} srcLang="en" label="English" />}
     </video>
     {stopped && !playing && <button type="button" className={styles.bigPlay} onClick={toggle} tabIndex={-1} aria-hidden="true">
-      <Play size={28} strokeWidth={1.75} aria-hidden="true" />
+      <Play size={22} strokeWidth={2} aria-hidden="true" /><span>Play video</span>
     </button>}
     <div className={styles.videoControls}>
       <button type="button" onClick={toggle} aria-label={playing ? 'Pause the promo video' : 'Play the promo video'}>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Google Chrome">
+  <path fill="#EA4335" d="M24 13h19.05A22 22 0 0 0 4.95 13l9.52 16.5A11 11 0 0 1 24 13z"/>
+  <path fill="#FBBC04" d="M24 13h19.05A22 22 0 0 0 4.95 13l9.52 16.5A11 11 0 0 1 24 13z" transform="rotate(120 24 24)"/>
+  <path fill="#34A853" d="M24 13h19.05A22 22 0 0 0 4.95 13l9.52 16.5A11 11 0 0 1 24 13z" transform="rotate(240 24 24)"/>
+  <circle cx="24" cy="24" r="11" fill="#fff"/>
+  <circle cx="24" cy="24" r="9" fill="#1A73E8"/>
+</svg>
