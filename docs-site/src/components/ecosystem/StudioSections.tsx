@@ -76,7 +76,7 @@ export function StudioFaq() {
   return <div className={styles.faq}>
     <article>
       <h3>How do my machines connect?</h3>
-      <p>Through SpecWithCode Connect. One machine needs nothing extra: SpecWithCode runs at <code>localhost:8319</code>. To let coordinators start work on another Mac or a Linux machine, link that machine to Connect with the same account as your main one, under Settings &gt; Connections &gt; SpecWithCode Connect or with <code>specwithcode connect</code>. Then run <code>specwithcode fleet invite</code> on it, or choose Invite this machine in its Settings, and paste the line into Settings &gt; Connections &gt; Your private machines &gt; Add a machine on your main one. Connect includes 3 machines for free.</p>
+      <p>Through SpecWithCode Connect. One machine needs nothing extra: SpecWithCode runs at <code>localhost:8319</code>. To let coordinators start work on another Mac or a Linux machine, link that machine to Connect (only the worker needs it), under Settings &gt; Connections &gt; SpecWithCode Connect or with <code>specwithcode connect</code>. Then run <code>specwithcode fleet invite</code> on it, or choose Invite this machine in its Settings, and paste the line into Settings &gt; Connections &gt; Your private machines &gt; Add a machine on your main one. Connect includes 3 machines for free.</p>
       <p>Being reachable is not permission. The line is a credential you can revoke, and each machine is approved separately before workers run there. Tailscale is an optional direct route if you already use it.</p>
     </article>
     <article>
