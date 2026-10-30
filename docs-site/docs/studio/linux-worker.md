@@ -100,7 +100,7 @@ On the server, run:
 specwithcode connect
 ```
 
-Over SSH it prints a link and a short code. Open the link on any device, check that the code matches, and approve with the same account your main computer uses. The machine keeps the same Connect address through restarts and updates. [Connect](/docs/studio/connect#link-a-machine) has the details.
+Over SSH it prints a link and a short code. Open the link on any device, check that the code matches, and approve with your Connect account. Your main computer does not need to be signed in to Connect. The machine keeps the same Connect address through restarts and updates. [Connect](/docs/studio/connect#link-a-machine) has the details.
 
 ## Pair it with your main computer
 

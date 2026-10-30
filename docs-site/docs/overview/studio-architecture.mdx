@@ -31,7 +31,7 @@ SpecWithCode is not the app launched by `npx vskill studio`. That command opens 
 
 ### Connecting other machines
 
-Machines that run workers for your coordinators join through [SpecWithCode Connect](/docs/studio/connect). On the new machine, sign in to Connect with the same account as the main machine and link it, then make an invitation line under **Settings > Connections > Your private machines > Invite this machine** (or `specwithcode fleet invite`). Paste it on the main machine under **Add a machine** and allow workers on its card. A Linux server or VPS on x64 or arm64 joins the same way. Tailscale is an optional direct route between machines. Step by step: [Add a machine](/docs/studio/add-a-machine) and [Linux worker](/docs/studio/linux-worker).
+Machines that run workers for your coordinators join through [SpecWithCode Connect](/docs/studio/connect). On the new machine, sign in to Connect and link it (the main machine does not need Connect), then make an invitation line under **Settings > Connections > Your private machines > Invite this machine** (or `specwithcode fleet invite`). Paste it on the main machine under **Add a machine** and allow workers on its card. A Linux server or VPS on x64 or arm64 joins the same way. Tailscale is an optional direct route between machines. Step by step: [Add a machine](/docs/studio/add-a-machine) and [Linux worker](/docs/studio/linux-worker).
 
 [SpecWithCode Connect](/docs/studio/connect), the hosted relay, is the default way to reach your machines from anywhere and from your phone. It is off until you sign in to it and includes 3 machines ([pricing](/pricing)).
 
@@ -110,7 +110,7 @@ Since SpecWeave 3.0.11, `specweave auto-handoff on` gives one heads-up at 95% of
 
 Install SpecWithCode on each machine that runs work, then connect them:
 
-1. Link every machine to [SpecWithCode Connect](/docs/studio/connect) with the same account, and [add each worker machine](/docs/studio/add-a-machine) with **Invite this machine** on it and **Add a machine** on the main one.
+1. Link each worker machine to [SpecWithCode Connect](/docs/studio/connect), and [add each worker machine](/docs/studio/add-a-machine) with **Invite this machine** on it and **Add a machine** on the main one.
 2. To open a host from a browser or phone, pair that browser with the host. Reaching it is not enough.
 3. Confirm the connection, project, native provider and account before submitting a small test request.
 4. Inspect the actual output and any pending approval. A balance or usage percentage alone is not permission to run.

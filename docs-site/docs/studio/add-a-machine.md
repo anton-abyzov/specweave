@@ -23,9 +23,9 @@ Only want to open a machine from your phone, a browser or another computer, with
 
 ## 1. Link Connect on the worker
 
-On the worker, open **Settings > Connections**, choose **Sign in to SpecWithCode Connect** with the same account your main machine uses, then turn on **Enable SpecWithCode Connect**. On a server without the desktop app, run `specwithcode connect` there instead. [Connect](/docs/studio/connect#link-a-machine) has the details.
+On the worker, open **Settings > Connections**, choose **Sign in to SpecWithCode Connect**, then turn on **Enable SpecWithCode Connect**. On a server without the desktop app, run `specwithcode connect` there instead. [Connect](/docs/studio/connect#link-a-machine) has the details.
 
-Your main machine must be signed in to the same Connect account. If it cannot reach a machine, **Your private machines** shows a banner that says which machine is not linked yet.
+Only the worker needs Connect. The main machine does not have to be signed in to Connect, or to the same account: the line works because the worker checks that the main machine's environment ID matches the one you enter in step 2. If the main machine cannot reach a machine, **Your private machines** shows a banner that says which machine is not linked yet.
 
 Connect includes 3 machines; the first 1,000 accounts get 10 as [founders](/pricing).
 
@@ -119,7 +119,7 @@ A line works for a year unless you revoke it (`fleet invite --ttl` changes that)
 
 | You see | What to do |
 |---|---|
-| A banner says a machine "isn't on SpecWithCode Connect" | On that machine, open **Settings > Connections > SpecWithCode Connect** and link it with the same account. It then connects on its own. |
+| A banner says a machine "isn't on SpecWithCode Connect" | On that machine, open **Settings > Connections > SpecWithCode Connect** and link it. It then connects on its own. |
 | The invite asks for Tailscale | Connect is not linked on this machine yet. Link it (step 1) and choose **Invite this machine** again. |
 | "Tailscale is not installed", "no Tailscale name" or "could not publish on HTTPS port 443" | Only for the optional Tailscale route: install and sign in to Tailscale, turn on MagicDNS and HTTPS Certificates. Or skip Tailscale and use Connect. |
 | "No running SpecWithCode server found." | Open the desktop app, or start `specwithcode serve`, then run `fleet invite` again. |
