@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-28T06:03:55.816Z",
+  "timestamp": "2026-10-30T18:02:22.050Z",
   "metrics": {
     "deploymentFrequency": {
       "value": 100,
@@ -8,11 +8,11 @@
       "description": "On-demand deployment capability (multiple deploys per day)"
     },
     "leadTime": {
-      "value": 4.3,
+      "value": 2.6,
       "unit": "hours",
       "tier": "High",
-      "p50": 1.1,
-      "p90": 14.9
+      "p50": 1.2,
+      "p90": 5.6
     },
     "changeFailureRate": {
       "value": 0,
