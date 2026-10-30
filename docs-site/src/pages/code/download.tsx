@@ -3,9 +3,10 @@ import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
-import {ChevronDown, Download, ShieldCheck} from 'lucide-react';
+import {ChevronDown, Download, Info, ShieldCheck} from 'lucide-react';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../../data/specwithcodeRelease';
 import {providerSummary} from '../../data/tools';
+import {ALL_DOWNLOADS_ANCHOR, MAC_INSTALLER, useSpecWithCodeInstaller} from '../../data/specwithcodeInstaller';
 import styles from '../code.module.css';
 
 /*
@@ -110,6 +111,54 @@ const DOWNLOAD_LD = {
   ],
 };
 
+/*
+  The hero leads with the installer for the visitor's computer. The server render
+  (and a visitor without JavaScript) gets the Mac .dmg; after hydration Windows and
+  Linux visitors get theirs, matched to x64 or arm64 where the browser reports it.
+*/
+function HeroDownload() {
+  const {installer, detected, unsupported, archGuessed} = useSpecWithCodeInstaller();
+  const isMac = installer.key === 'mac';
+  return <>
+    <div className={styles.actions}>
+      <a className={clsx('wv-btn', unsupported ? 'wv-btn--secondary' : 'wv-btn--primary', 'wv-btn--lg')} href={installer.url} data-track="download_click" data-placement="download-page" data-os={installer.key}><Download {...btnIcon} />{installer.label} ({installer.size})</a>
+      {installer.alt && <a className="wv-btn wv-btn--secondary wv-btn--lg" href={installer.alt.url} data-track="download_click" data-placement="download-page-alt" data-os={installer.key}><Download {...btnIcon} />{installer.alt.label} ({installer.alt.size})</a>}
+      {!isMac && <a className="wv-btn wv-btn--secondary wv-btn--lg" href={MAC_INSTALLER.url} data-track="download_click" data-placement="download-page-mac" data-os="mac"><Download {...btnIcon} />Mac ({MAC_INSTALLER.size})</a>}
+      {isMac && <a className="wv-btn wv-btn--secondary wv-btn--lg" href={ALL_DOWNLOADS_ANCHOR}>Windows and Linux</a>}
+    </div>
+    <p className={styles.requirements} data-testid="download-requirements">
+      SpecWithCode {installer.version}, <code>{installer.file}</code>, {installer.size}. {isMac ? 'Apple silicon, macOS 13 or later.' : `${installer.platformName}.`}
+      {detected && !unsupported && <> Picked for your computer{archGuessed ? '; on an Arm machine choose arm64 below' : ''}. <a className="wv-link" href={ALL_DOWNLOADS_ANCHOR}>Other platforms</a>.</>}
+      {' '}<a className="wv-link" href={isMac ? release.notesUrl : desktop.notesUrl}>Release notes</a> · <a className="wv-link" href={isMac ? SHA_URL : desktop.sumsUrl}>SHA256SUMS</a>
+    </p>
+    {unsupported === 'intel-mac' && <div className={clsx('wv-note', styles.qualification)} role="note">
+      <Info {...icon} />
+      <p><strong>This looks like an Intel Mac.</strong> SpecWithCode for macOS needs Apple silicon (M1 or later); there is no Intel build. A Linux or Windows machine can run it instead, see <a className="wv-link" href={ALL_DOWNLOADS_ANCHOR}>Windows and Linux</a>.</p>
+    </div>}
+    {unsupported === 'mobile' && <div className={clsx('wv-note', styles.qualification)} role="note">
+      <Info {...icon} />
+      <p><strong>SpecWithCode is a desktop app.</strong> Open this page on your Mac, Windows or Linux computer to download it.</p>
+    </div>}
+    {isMac
+      ? !unsupported && <div className={clsx('wv-note', styles.qualification)}>
+        <ShieldCheck {...icon} />
+        <p><strong>Signed with an Apple Developer ID and notarized by Apple.</strong> The download comes straight from the project's GitHub releases.</p>
+      </div>
+      : <div className={clsx('wv-note', styles.qualification)}>
+        <Info {...icon} />
+        <p><strong>Not code-signed yet.</strong> The download comes straight from the project's GitHub releases; compare it with SHA256SUMS. Install notes are under <a className="wv-link" href={ALL_DOWNLOADS_ANCHOR}>Windows and Linux</a>.</p>
+      </div>}
+  </>;
+}
+
+function FooterDownload() {
+  const {installer} = useSpecWithCodeInstaller();
+  return <>
+    <a className="wv-btn wv-btn--primary wv-btn--lg" href={installer.url} data-track="download_click" data-placement="download-page-footer" data-os={installer.key}><Download {...btnIcon} />{installer.label}</a>
+    <a className="wv-btn wv-btn--secondary" href={ALL_DOWNLOADS_ANCHOR}>{installer.key === 'mac' ? 'Windows and Linux downloads' : 'All platforms'}</a>
+  </>;
+}
+
 export default function CodeDownload() {
   return <Layout title={TITLE} description={DESCRIPTION}>
     <Head>
@@ -136,15 +185,7 @@ export default function CodeDownload() {
           <h1>Download SpecWithCode</h1>
           <p>SpecWithCode, pronounced “Spec with Code”, brings your AI coding agents into one workspace.</p>
           <p className={styles.lead}>One free app for {providerSummary(4)}, on your own machines and the subscriptions you already pay for.</p>
-          <div className={styles.actions}>
-            <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="download-page"><Download {...btnIcon} />Download for Mac ({release.size})</a>
-            <a className="wv-btn wv-btn--secondary wv-btn--lg" href={release.releasesUrl}>All releases</a>
-          </div>
-          <p className={styles.requirements}>SpecWithCode {release.version}, <code>SpecWithCode-arm64.dmg</code>, {release.size}. Apple silicon, macOS 13 or later. <a className="wv-link" href={release.notesUrl}>Release notes</a> · <a className="wv-link" href={SHA_URL}>SHA256SUMS</a></p>
-          <div className={clsx('wv-note', styles.qualification)}>
-            <ShieldCheck {...icon} />
-            <p><strong>Signed with an Apple Developer ID and notarized by Apple.</strong> The download comes straight from the project's GitHub releases.</p>
-          </div>
+          <HeroDownload />
         </div>
         <div className={styles.heroShot}>
           <figure className="wv-window">
@@ -180,7 +221,7 @@ export default function CodeDownload() {
 
       <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="install-title">
         <div className={styles.sectionHead}>
-          <h2 id="install-title">Install in three steps</h2>
+          <h2 id="install-title">Install on a Mac in three steps</h2>
           <p>About a minute on a recent Mac. Nothing to configure before the first launch.</p>
         </div>
         <ol className={clsx('wv-evidence', styles.list)}>
@@ -218,8 +259,7 @@ export default function CodeDownload() {
         <h2 id="download-final-title">Get SpecWithCode for your computer</h2>
         <p>Free, source available, no account. Choose macOS on Apple silicon, Windows 10 and 11 (x64 or arm64), or Linux (x64 or arm64).</p>
         <div className={styles.actions}>
-          <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="download-page-footer"><Download {...btnIcon} />Download for Mac</a>
-          <a className="wv-btn wv-btn--secondary" href="#windows-linux-title">Windows and Linux downloads</a>
+          <FooterDownload />
           <a className={clsx('wv-link', styles.finalLink)} href={release.repoUrl}>View source on GitHub</a>
         </div>
       </section>
