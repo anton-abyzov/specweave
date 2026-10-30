@@ -11,6 +11,7 @@ import SubscriptionValue from '../components/ecosystem/SubscriptionValue';
 import WhySpecWithCode from '../components/ecosystem/WhySpecWithCode';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import HeroStage from '../components/code/HeroStage';
+import BuiltWithItself from '../components/code/BuiltWithItself';
 import {BrowserDiagram, CHROME_STORE_URL, CardShot, Cards, ChromeAnnounce, FinishDiagram, GuideCards, MachinesDiagram, PolicyPicker, Tokens, WindowCrop, type CardItem} from '../components/code/Landing';
 import landing from '../components/code/Landing.module.css';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
@@ -273,6 +274,8 @@ export default function Code() {
       </section>
 
       <div className={styles.shell}><CoordinatorFlow /></div>
+
+      <div className={clsx(styles.shell, styles.section)}><BuiltWithItself more={false} /></div>
 
       <section className={clsx(styles.shell, styles.section, styles.threads)} aria-labelledby="threads-title">
         <div className={styles.threadsMain}>
