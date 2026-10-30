@@ -4,14 +4,14 @@ import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
 import {ChevronDown, Download, ShieldCheck} from 'lucide-react';
-import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop} from '../../data/specwithcodeRelease';
+import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../../data/specwithcodeRelease';
 import {providerSummary} from '../../data/tools';
 import styles from '../code.module.css';
 
 /*
   The page people land on when they search "specwithcode download" or "SpecWithCode for Mac".
   Install facts come from the app's docs/user/install.md (anton-abyzov/specwithcode-dev, main,
-  19 October 2026) and the v1.0.53 release assets.
+  19 October 2026) and the v1.0.132 release assets (30 October 2026).
 */
 
 const icon = {size: 20, strokeWidth: 1.5, 'aria-hidden': true} as const;
@@ -32,9 +32,11 @@ const STEPS: {title: string; body: React.ReactNode}[] = [
 ];
 
 const DESKTOP_NOTES: {name: string; detail: React.ReactNode}[] = [
-  {name: 'Windows', detail: <>Run <code>{desktop.exe.name}</code>. It installs for your user only, with no administrator prompt. The installer is not code-signed yet, so SmartScreen shows <strong>Windows protected your PC</strong> the first time: choose <strong>More info</strong>, then <strong>Run anyway</strong>.</>},
-  {name: 'Debian and Ubuntu', detail: <><code>sudo apt install ./{desktop.deb.name}</code> installs the app with a menu entry.</>},
-  {name: 'Other Linux', detail: <>Make the AppImage executable with <code>chmod +x</code> and run it.</>},
+  {name: 'Which file', detail: <>Most Windows PCs and Linux machines are x64. Pick arm64 for an Arm device such as a Snapdragon Windows laptop or an Arm Linux machine; on Linux, <code>uname -m</code> prints <code>aarch64</code> there and <code>x86_64</code> on x64.</>},
+  {name: 'Windows', detail: <>Run <code>{desktop.exe.name}</code>, or <code>{desktop.exeArm64.name}</code> on Arm. It installs for your user only, with no administrator prompt. The installer is not code-signed yet, so SmartScreen shows <strong>Windows protected your PC</strong> the first time: choose <strong>More info</strong>, then <strong>Run anyway</strong>.</>},
+  {name: 'Debian and Ubuntu', detail: <><code>sudo apt install ./{desktop.deb.name}</code> (x64) or <code>sudo apt install ./{desktop.debArm64.name}</code> (arm64) installs the app with a menu entry.</>},
+  {name: 'Other Linux', detail: <>Make the AppImage for your architecture executable with <code>chmod +x</code> and run it. The app needs a glibc-based distribution.</>},
+  {name: 'Linux servers', detail: <>A machine without a desktop runs the server from the release's <code>studio-{desktop.version}-linux-x64</code> or <code>linux-arm64</code> archive as a worker. See <Link className="wv-link" to="/docs/studio/linux-worker">Linux worker</Link>.</>},
   {name: 'What differs', detail: <>Computer use controls a Mac screen and is macOS only. The app updates itself from new releases on Windows and Linux too; the .deb update asks for your password.</>},
 ];
 
@@ -47,8 +49,8 @@ const NEXT: {name: string; detail: React.ReactNode}[] = [
 
 const FAQ_TEXT: {q: string; a: string}[] = [
   {q: 'Is SpecWithCode free?', a: 'Yes. SpecWithCode is free, with no account. You bring your own provider subscriptions or API keys and pay any provider charges directly.'},
-  {q: 'Which Macs does SpecWithCode run on?', a: 'Apple silicon Macs (M1 or later) with macOS 13 or later. Intel Mac builds are not published yet; on an Intel Mac you can build the server from source.'},
-  {q: 'Is there a Windows or Linux download?', a: `Yes. SpecWithCode ${desktop.version} has a Windows installer for 64-bit Windows 10 and 11, and a Linux AppImage and .deb for x64. The Windows installer is not code-signed yet, so Windows asks you to confirm the first run. Computer use is macOS only.`},
+  {q: 'Which Macs does SpecWithCode run on?', a: 'Apple silicon Macs (M1 or later) with macOS 13 or later. Intel Macs are not supported.'},
+  {q: 'Is there a Windows or Linux download?', a: `Yes. SpecWithCode ${desktop.version} has Windows installers for Windows 10 and 11 on x64 and arm64, and a Linux AppImage and .deb for x64 and arm64 on glibc-based distributions. The Windows installers are is not code-signed yet, so Windows asks you to confirm the first run. Computer use is macOS only.`},
   {q: 'Is the download safe?', a: 'Every release is built in GitHub Actions. The Mac app is signed with an Apple Developer ID and notarized by Apple. The Windows installer and the Linux AppImage and .deb are not code-signed yet; check them against the SHA256SUMS-windows-linux file published with each release. The Mac download has its own SHA256SUMS file.'},
   {q: 'How do I update SpecWithCode?', a: 'Download the newest .dmg from this page and replace the app in Applications. When a machine runs an older server than your app, SpecWithCode shows an update notice in the conversation and in Settings › Connections.'},
 ];
@@ -81,7 +83,7 @@ const DOWNLOAD_LD = {
       alternateName: 'Spec with Code',
       url: `${SITE}/code/`,
       applicationCategory: 'DeveloperApplication',
-      operatingSystem: 'macOS 13 or later (Apple silicon), Windows 10 and 11 (x64), Linux (x64)',
+      operatingSystem: SPECWITHCODE_OPERATING_SYSTEMS,
       softwareVersion: release.version,
       fileSize: release.size,
       downloadUrl: release.dmgUrl,
@@ -156,11 +158,16 @@ export default function CodeDownload() {
       <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="windows-linux-title">
         <div className={styles.sectionHead}>
           <h2 id="windows-linux-title">Windows and Linux</h2>
-          <p>SpecWithCode {desktop.version} for 64-bit Windows 10 and 11 and for x64 Linux. The published {desktop.version} installers passed installed checks on Windows and Linux using a test provider. This does not establish live-provider or native-feature parity with macOS. Windows and Linux desktop builds may trail Mac releases. <a className="wv-link" href={desktop.notesUrl}>Release notes</a> · <a className="wv-link" href={desktop.sumsUrl}>SHA256SUMS</a></p>
+          <p>SpecWithCode {desktop.version} for Windows 10 and 11 on x64 and arm64, and for Linux on x64 and arm64 (glibc). The installers are not code-signed yet. Live-provider and native-feature parity with macOS is not established, and Windows and Linux desktop builds may trail Mac releases. <a className="wv-link" href={desktop.notesUrl}>Release notes</a> · <a className="wv-link" href={desktop.sumsUrl}>SHA256SUMS</a></p>
           <div className={styles.actions}>
-            <a className="wv-btn wv-btn--primary" href={desktop.exe.url} data-track="download_click" data-placement="download-page-windows"><Download {...btnIcon} />Windows ({desktop.exe.size})</a>
-            <a className="wv-btn wv-btn--secondary" href={desktop.appImage.url} data-track="download_click" data-placement="download-page-appimage"><Download {...btnIcon} />Linux AppImage ({desktop.appImage.size})</a>
-            <a className="wv-btn wv-btn--secondary" href={desktop.deb.url} data-track="download_click" data-placement="download-page-deb"><Download {...btnIcon} />Linux .deb ({desktop.deb.size})</a>
+            <a className="wv-btn wv-btn--primary" href={desktop.exe.url} data-track="download_click" data-placement="download-page-windows"><Download {...btnIcon} />Windows x64 ({desktop.exe.size})</a>
+            <a className="wv-btn wv-btn--secondary" href={desktop.exeArm64.url} data-track="download_click" data-placement="download-page-windows-arm64"><Download {...btnIcon} />Windows arm64 ({desktop.exeArm64.size})</a>
+          </div>
+          <div className={styles.actions}>
+            <a className="wv-btn wv-btn--secondary" href={desktop.appImage.url} data-track="download_click" data-placement="download-page-appimage"><Download {...btnIcon} />Linux x64 AppImage ({desktop.appImage.size})</a>
+            <a className="wv-btn wv-btn--secondary" href={desktop.deb.url} data-track="download_click" data-placement="download-page-deb"><Download {...btnIcon} />Linux x64 .deb ({desktop.deb.size})</a>
+            <a className="wv-btn wv-btn--secondary" href={desktop.appImageArm64.url} data-track="download_click" data-placement="download-page-appimage-arm64"><Download {...btnIcon} />Linux arm64 AppImage ({desktop.appImageArm64.size})</a>
+            <a className="wv-btn wv-btn--secondary" href={desktop.debArm64.url} data-track="download_click" data-placement="download-page-deb-arm64"><Download {...btnIcon} />Linux arm64 .deb ({desktop.debArm64.size})</a>
           </div>
         </div>
         <ul className={clsx('wv-evidence', styles.list)}>
@@ -209,7 +216,7 @@ export default function CodeDownload() {
 
       <section className={clsx(styles.shell, styles.final)} aria-labelledby="download-final-title">
         <h2 id="download-final-title">Get SpecWithCode for your computer</h2>
-        <p>Free, source available, no account. Choose macOS on Apple silicon, Windows 10 and 11 (x64), or Linux (x64).</p>
+        <p>Free, source available, no account. Choose macOS on Apple silicon, Windows 10 and 11 (x64 or arm64), or Linux (x64 or arm64).</p>
         <div className={styles.actions}>
           <a className="wv-btn wv-btn--primary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="download-page-footer"><Download {...btnIcon} />Download for Mac</a>
           <a className="wv-btn wv-btn--secondary" href="#windows-linux-title">Windows and Linux downloads</a>

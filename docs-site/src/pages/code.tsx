@@ -13,7 +13,7 @@ import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import HeroStage from '../components/code/HeroStage';
 import {BrowserDiagram, CHROME_STORE_URL, CardShot, Cards, ChromeAnnounce, FinishDiagram, GuideCards, MachinesDiagram, PolicyPicker, Tokens, WindowCrop, type CardItem} from '../components/code/Landing';
 import landing from '../components/code/Landing.module.css';
-import {SPECWITHCODE_RELEASE as release} from '../data/specwithcodeRelease';
+import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
 import {PATHS, TUTORIALS, buildVideoObject, byRecency, getTutorial, resolvePath} from '../data/tutorials';
 import styles from './code.module.css';
 
@@ -132,7 +132,7 @@ const SPECWITHCODE_LD = {
       applicationCategory: 'DeveloperApplication',
       applicationSubCategory: 'AI coding agent workspace',
       // Same wording as /code/download/, which offers the Mac, Windows and Linux builds.
-      operatingSystem: 'macOS 13 or later (Apple silicon), Windows 10 and 11 (x64), Linux (x64)',
+      operatingSystem: SPECWITHCODE_OPERATING_SYSTEMS,
       softwareVersion: release.version,
       fileSize: release.size,
       downloadUrl: release.dmgUrl,
@@ -260,7 +260,7 @@ export default function Code() {
           <HeroStage />
         </div>
         <div className={styles.topFine}>
-          <p className={styles.requirements}>Early access for macOS 13 or later on Apple silicon, Windows 10 and 11 (x64), and Linux (x64). Mac releases are signed and notarized; Windows and Linux installers are unsigned. <Link className="wv-link" to="/code/download/">Downloads, versions and installation steps</Link></p>
+          <p className={styles.requirements}>Early access for macOS 13 or later on Apple silicon, Windows 10 and 11 (x64 and arm64), and Linux (x64 and arm64). Mac releases are signed and notarized; Windows and Linux installers are unsigned. <Link className="wv-link" to="/code/download/">Downloads, versions and installation steps</Link></p>
           <div className={clsx('wv-note', styles.qualification)}>
             <Info {...icon} />
             <p><strong>Cloud models still receive prompts and relevant context through your chosen provider.</strong> Local execution does not mean offline AI.</p>

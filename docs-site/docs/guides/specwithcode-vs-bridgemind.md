@@ -21,7 +21,7 @@ This page describes BridgeMind as [its own site](https://www.bridgemind.ai) and 
 | **Record of the work** | Sessions in the app; diffs land on your disk | Specs, task evidence and handoffs in git through the open-source [SpecWeave CLI](/docs/getting-started), so any tool can carry on |
 | **Done means** | Not described on its site | A worker can report done; only a person marks it verified |
 | **Extras** | BridgeVoice dictation and the BridgeVerse 3D workspace on Pro and Ultra | Usage limits per subscription, with a thread able to continue on another signed-in provider |
-| **Platforms** | macOS 14+, Windows 10/11, Linux | macOS 13+ on Apple silicon, Windows 10/11 (x64), Linux (x64); native computer use is macOS only |
+| **Platforms** | macOS 14+, Windows 10/11, Linux | macOS 13+ on Apple silicon, Windows 10/11 (x64, arm64), Linux (x64, arm64); native computer use is macOS only |
 
 ## Pick BridgeMind
 

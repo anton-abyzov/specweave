@@ -31,7 +31,7 @@ const ROWS: {label: string; cells: Cell[]}[] = [
     'Runs in the vendor’s cloud',
   ]},
   {label: 'Apps', cells: [
-    'macOS on Apple silicon (Electron), Windows 10 and 11, and x64 Linux; Linux machines also as workers',
+    'macOS on Apple silicon (Electron), Windows 10 and 11, and Linux, on x64 and arm64; Linux machines also as workers',
     <>Terminal, desktop for macOS, Windows and Linux, IDE extension <Src href="https://opencode.ai/download" /></>,
     'Web, IDE and GitHub',
   ]},
