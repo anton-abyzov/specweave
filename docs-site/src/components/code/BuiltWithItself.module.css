@@ -1,6 +1,7 @@
 /* "SpecWithCode is built with SpecWithCode": Weave tokens only, violet accent, green only for Merged. */
 .band {
   position: relative;
+  scroll-margin-top: 80px;
   display: flex;
   flex-direction: column;
   gap: var(--wv-space-8);
@@ -86,7 +87,7 @@
   gap: var(--wv-space-3);
 }
 
-.merged h3 {
+.band .merged h3 {
   display: flex;
   align-items: center;
   gap: var(--wv-space-2);

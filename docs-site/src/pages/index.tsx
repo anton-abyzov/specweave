@@ -58,7 +58,7 @@ const MACHINES = [
 ];
 
 const BUILT = [
-  { name: 'SpecWithCode', href: '/code/#built-with-itself', body: 'The app itself: 367 pull requests merged from its own worker threads in October 2026.' },
+  { name: 'SpecWithCode', href: '/code/#built-with-itself', body: 'The app itself, planned in SpecWeave increments: 367 pull requests merged from its own worker threads in October 2026.' },
   { name: 'EasyChamp', href: 'https://easychamp.com', body: 'League and club tools, built across Claude Code threads, two subscriptions and Codex.' },
   { name: 'JobWeave', href: 'https://jobweave.ai', body: 'Job search, tailored resumes and interview preparation.' },
   { name: 'Verified Skill', href: 'https://verified-skill.com', body: 'Skill discovery, source inspection and local evaluations.' },

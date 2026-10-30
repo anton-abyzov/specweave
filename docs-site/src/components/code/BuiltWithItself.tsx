@@ -7,16 +7,17 @@ import styles from './BuiltWithItself.module.css';
 /*
   "SpecWithCode is built with SpecWithCode", shared by /code and the home page.
   Numbers come from the thread records (orchestration_v2_projection_threads, pullRequests with
-  source "agent" and state "merged", repository anton-abyzov/specwithcode-dev) on the maintainer's
-  main Mac, read on 30 October 2026; merges ran from 10 to 29 October 2026. A pull request linked
+  source "agent" and state "merged", repository anton-abyzov/specwithcode-dev or its earlier name
+  anton-abyzov/specweave-studio) on the maintainer's main Mac, read on 30 October 2026; merges ran
+  from 15 to 29 October 2026. A pull request linked
   by two threads counts once in the total and once per provider below it.
   The screenshot is a crop of the 1144 handoff E2E capture (30-worker-thread-on-ministorm.png),
   with the sidebar (account and personal chats) cut away.
 */
 
 const STATS: {value: string; label: string}[] = [
-  {value: '367', label: 'pull requests to SpecWithCode opened by worker threads and merged, 10 to 29 October 2026'},
-  {value: '164', label: 'worker threads behind them: 97 on Claude Code, 65 on Codex, the rest on Gemini CLI and Copilot'},
+  {value: '367', label: 'pull requests to SpecWithCode opened by worker threads and merged, 15 to 29 October 2026'},
+  {value: '167', label: 'worker threads behind them: 100 on Claude Code, 65 on Codex, the rest on Gemini CLI and Copilot'},
   {value: '2,473', label: 'threads on the maintainer’s main Mac since 9 October, across six projects'},
 ];
 
