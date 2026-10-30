@@ -16,11 +16,32 @@ const ENTERPRISE_MAILTO =
   'What%20you%20need%20(rollout%2C%20support%2C%20audit%2C%20SSO%2C%20policy%2C%20other)%3A%0A';
 
 const WAITLIST_URL = 'https://verified-skill.com/pricing';
+const FOUNDERS_URL = 'https://relay.spec-weave.com/v1/public/founders';
+
+type Founders = {seatCap: number; seatsLeft: number; grantsOpen: boolean};
+
+/** Live founder seats from the Connect relay; null until it answers or if it fails. */
+function useFounders(): Founders | null {
+  const [state, setState] = React.useState<Founders | null>(null);
+  React.useEffect(() => {
+    const ctl = new AbortController();
+    fetch(FOUNDERS_URL, {signal: ctl.signal})
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (d && typeof d.seatCap === 'number' && typeof d.seatsLeft === 'number') {
+          setState({seatCap: d.seatCap, seatsLeft: d.seatsLeft, grantsOpen: d.grantsOpen !== false});
+        }
+      })
+      .catch(() => {});
+    return () => ctl.abort();
+  }, []);
+  return state;
+}
 
 const WHY = [
   {title: 'Another agent finishes the task', body: 'Limit hit? When Claude Code nears its usage limit, the spec and progress hand off to Codex or the next tool you use.'},
   {title: 'No markup on your AI plans', body: 'Agents run on the Claude, Codex, Gemini or Cursor plans you already pay for. We never resell tokens.'},
-  {title: 'No per-seat or per-run fees', body: 'Add your whole team of 2–10. Nothing counts agents, seats or hours. Machines you pair yourself are unlimited.'},
+  {title: 'No per-seat or per-run fees', body: 'Bring yourself or your whole team. Nothing counts agents, seats or hours. Machines you pair yourself are unlimited.'},
 ];
 
 type Plan = {
@@ -37,39 +58,54 @@ type Plan = {
 
 const PLANS: Plan[] = [
   {
-    name: 'SpecWithCode + SpecWeave',
+    name: 'Free',
     price: '$0',
-    unit: 'free forever, built for teams of 2–10 people',
-    who: 'The desktop workspace and the CLI. No account with us.',
+    unit: 'forever, for every developer and team',
+    who: 'The SpecWithCode app and the SpecWeave CLI. The app needs no account with us.',
     features: [
-      'All your coding agents in one workspace',
-      'Claude Code, Codex, Grok, Gemini CLI, Cursor',
+      'Claude Code, Codex, Grok, Gemini CLI, Cursor in one workspace',
       'Auto-handoff before a usage limit stops you',
-      'Specs, tasks and evidence kept in git',
+      'Unlimited machines you pair over your own Tailscale',
+      'Connect: your phone and 3 machines from anywhere',
     ],
     cta: {label: 'Download free', to: '/code/'},
     featured: true,
   },
   {
-    tag: 'Waitlist',
-    name: 'Hosted skills',
-    price: '$20',
-    unit: 'a month · $30 a seat for teams',
-    who: 'Private skills we host for your team. Not charged until it opens.',
+    tag: 'First 1,000',
+    name: 'Founders',
+    price: '$0',
+    unit: 'a founder seat, kept with your account',
+    who: 'The first 1,000 accounts to link a machine through Connect. No form: the seat is granted on that link.',
     features: [
-      'Private skills hosted and versioned',
-      'Security scan on every version',
-      'One install into 50+ agents',
+      'Everything in Free',
+      '10 Connect machines instead of 3',
+      'A founder number on your account',
+      'Need more than 10? Ask and we raise it',
+    ],
+    cta: {label: 'Claim a founder seat', to: '/docs/studio/add-a-machine#link-a-machine-through-connect'},
+  },
+  {
+    tag: 'Waitlist',
+    name: 'Pro',
+    price: '$20',
+    unit: 'a month, per account',
+    who: 'For people who run many machines or share private skills. Not charged until it opens.',
+    features: [
+      'Unlimited Connect machines',
+      'Private skills, hosted and versioned',
+      'Security scan on every skill version',
+      'Billed in your SpecWithCode account',
     ],
     cta: {label: 'Join the waitlist', href: WAITLIST_URL},
   },
   {
-    name: 'For your team',
+    name: 'Teams',
     price: 'Custom',
     unit: 'annual contract',
-    who: 'For teams of 2–10 people on coding agents who want hands-on setup and a support line.',
+    who: 'For teams of 2–10 who want hands-on setup, a support line and audit records.',
     features: [
-      'Setup for your whole team of 2–10',
+      'Setup for your whole team',
       'Named engineer, response times in contract',
       'Audit export of who ran what, with evidence',
       'SSO, policy or self-hosted registry, scoped with you',
@@ -86,13 +122,14 @@ const PILOT_STEPS = [
 ];
 
 const FAQ = [
-  {q: 'Will it stay free?', a: <>Yes. The app, the CLI and running agents on your machines stay free. Paid plans only add hosting, team controls and support.</>},
-  {q: 'How many machines can I connect?', a: <>As many as you pair yourself over your own network. Connect, the hosted relay for your phone and remote machines, includes 3 machines. The first 1,000 Connect accounts are founders and get 10 machines free for a year.</>},
-  {q: 'What do teams pay for?', a: <>Hosted private skills, setup for your team of 2–10, support with response times, and controls like audit export or SSO.</>},
+  {q: 'Will it stay free?', a: <>Yes. The app, the CLI and running agents on your machines stay free, for one developer or a whole team. Paid plans only add what costs us to run (hosted relay capacity, hosted private skills) and support.</>},
+  {q: 'How many machines can I connect?', a: <>As many as you pair yourself over your own Tailscale network, on every plan. Connect, the hosted relay for your phone and machines outside your network, includes 3 machines. Founders get 10, and Pro will lift the limit. <Link to="/docs/studio/add-a-machine">Add a machine</Link>.</>},
+  {q: 'How do I become a founder?', a: <>Sign in to Connect in SpecWithCode and link a machine. The first 1,000 accounts to do that get a founder number and 10 machines, granted on that link. The seat stays with your account and does not expire; Pro opening later does not take it away.</>},
+  {q: 'What do teams pay for?', a: <>Setup for your team of 2–10, support with response times, and controls like audit export or SSO. Pro covers hosted private skills and unlimited Connect machines for one account.</>},
   {q: 'Where does our code go?', a: <>Nowhere new. Specs and handoffs are files in your repo, and agents run on your machines with your subscriptions.</>},
   {q: 'How does auto-handoff work?', a: <><code>specweave auto-handoff on</code> hands off at 90 percent of a usage window, or a threshold you pick. The next tool runs <code>specweave pickup</code>. <Link to="/docs/guides/auto-handoff">Details</Link>.</>},
   {q: 'Is SpecWithCode ready?', a: <>It is in early access with a macOS download for Apple silicon. The SpecWeave CLI works everywhere with <code>npm install -g specweave</code>.</>},
-  {q: 'How do we pay?', a: <>Today only the pilot is paid, invoiced once you pick a start date. Team contracts are invoiced annually.</>},
+  {q: 'How do we pay?', a: <>Today only the pilot is paid, invoiced once you pick a start date. Team contracts are invoiced annually. Pro will be billed by card in your SpecWithCode account when it opens; nobody on the waitlist is charged before then.</>},
 ];
 
 function Cta({cta, className}: {cta: Plan['cta']; className: string}) {
@@ -103,6 +140,7 @@ function Cta({cta, className}: {cta: Plan['cta']; className: string}) {
 
 const PLAN_ICONS: React.ReactNode[] = [
   <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M3 8h18M8 21h8M12 18v3" /></svg>,
+  <svg key="f" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8-5.3 2.8 1-6L3.3 9.4l6-.9L12 3Z" /></svg>,
   <svg key="1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 4 7v5c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V7l-8-4Z" /><path d="m9 12 2 2 4-4" /></svg>,
   <svg key="2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 14.5c3 0 6 1.8 6 5.5" /></svg>,
 ];
@@ -129,19 +167,43 @@ function WhyArt({index}: {index: number}) {
     <div className={p.team}>
       {Array.from({length: 10}, (_, i) => <span key={i} style={{['--i' as string]: i}} />)}
     </div>
-    <span className={p.teamLabel}>2–10 people · one free workspace</span>
+    <span className={p.teamLabel}>One developer or a whole team · one free workspace</span>
   </div>;
+}
+
+function FoundersBand() {
+  const f = useFounders();
+  const cap = f?.seatCap ?? 1000;
+  const left = f ? Math.max(0, f.seatsLeft) : null;
+  const taken = left === null ? 0 : cap - left;
+  const open = f ? f.grantsOpen && left! > 0 : true;
+  return <section className={`${p.founders} ${m.reveal}`} aria-labelledby="founders-title">
+    <div className={p.foundersText}>
+      <p className={p.kicker}><span className="wv-chip wv-chip--iris">Founders</span><span>{open ? 'Open now' : 'All seats taken'}</span></p>
+      <h2 id="founders-title">The first 1,000 accounts get 10 machines, free</h2>
+      <p>Link a machine through Connect and your account takes the next founder seat: 10 machines from anywhere instead of 3, and a founder number. No form, no card, and the seat stays yours.</p>
+      <Link className={styles.primary} to="/docs/studio/add-a-machine#link-a-machine-through-connect">Link your first machine</Link>
+    </div>
+    <div className={p.seats} role="img" aria-label={left === null ? `${cap.toLocaleString('en-US')} founder seats` : `${left.toLocaleString('en-US')} of ${cap.toLocaleString('en-US')} founder seats left`}>
+      <p className={p.seatsCount}>
+        {left === null ? <b>{cap.toLocaleString('en-US')}</b> : <b><CountUp value={left} /></b>}
+        <span>{left === null ? 'founder seats' : `of ${cap.toLocaleString('en-US')} seats left`}</span>
+      </p>
+      <span className={p.seatsBar} aria-hidden="true"><i style={{width: `${Math.max(1, (taken / cap) * 100)}%`}} /></span>
+      <p className={p.seatsNote}>{left === null ? 'Live count from the Connect relay.' : 'Live from the Connect relay.'}</p>
+    </div>
+  </section>;
 }
 
 export default function Pricing() {
   const glowWhy = useGlow<HTMLUListElement>();
   const glowPlans = useGlow<HTMLElement>();
-  return <Layout title="Pricing" description="SpecWithCode and the SpecWeave CLI are built for teams of 2–10 people and free, with no markup on your AI subscriptions. Teams pay only for hosted private skills, setup help and support.">
+  return <Layout title="Pricing" description="SpecWithCode and the SpecWeave CLI are free for every developer and team, with no markup on your AI subscriptions. The first 1,000 Connect accounts get 10 machines free. Pro adds unlimited machines and private skills; teams can buy setup and support.">
     <main className={`${styles.page} ${p.page}`}>
       <header className={p.hero}>
         <div className={`${p.heroText} ${m.enter}`}>
-          <p className={p.kicker} style={{['--i' as string]: 0}}><span className="wv-chip wv-chip--iris">Pricing</span><span>Free for teams of 2–10</span></p>
-          <h1 style={{['--i' as string]: 1}}>Every coding agent in one workspace, free.</h1>
+          <p className={p.kicker} style={{['--i' as string]: 0}}><span className="wv-chip wv-chip--iris">Pricing</span><span>Free for every developer and team</span></p>
+          <h1 style={{['--i' as string]: 1}}>Every coding agent in one workspace, free for everyone.</h1>
           <p className={p.sub} style={{['--i' as string]: 2}}>SpecWithCode runs Claude Code, Codex, Cursor and more side by side, and hands the task to the next one when a usage limit hits. You keep your own subscriptions.</p>
           <div className={p.heroActions} style={{['--i' as string]: 3}}>
             <Link className={styles.primary} to="/code/">Download SpecWithCode</Link>
@@ -186,6 +248,8 @@ export default function Pricing() {
         </ul>
         <p className={`${m.tag} ${p.artNote}`}>Diagrams are illustrations.</p>
       </section>
+
+      <FoundersBand />
 
       <section id="plans" className={`${p.plans} ${m.stagger}`} aria-label="Plans" ref={glowPlans}>
         {PLANS.map((plan, i) => (
@@ -233,7 +297,7 @@ export default function Pricing() {
       </section>
 
       <section className={`${styles.finalCta} ${p.final}`}>
-        <h2>Built for teams of 2–10 and free, with help when your team needs it</h2>
+        <h2>Free for everyone, with help when your team needs it</h2>
         <Link className={styles.primary} to="/code/">Download SpecWithCode</Link>
         <a className={styles.textLink} href={ENTERPRISE_MAILTO}>Talk to us about your team</a>
       </section>

@@ -18,7 +18,7 @@ Underneath, the open-source [SpecWeave CLI](/docs/getting-started/) keeps the sp
 <StudioProjectMock />
 
 :::info Availability
-SpecWithCode is built for teams of 2–10 people and free: no markup, no token resale and no seat fee to run agents on your own machines ([pricing](/pricing)). It is in early access. <a href={release.dmgUrl}>Download version {release.version} for macOS (Apple silicon)</a>, {release.size}, or see <a href={release.releasesUrl}>all releases</a>. Sessions, machines, approvals, usage limits and projects (coordinator, workers, memory, plans and routines) are all in the current build. The Mac app runs on Apple silicon with macOS 13 or later and is signed with Developer ID and notarized by Apple. Windows 10 and 11 and x64 Linux builds, and the install steps, are on the [SpecWithCode download page](/code/download/).
+SpecWithCode is free for every developer and team: no markup, no token resale and no seat fee to run agents on your own machines ([pricing](/pricing)). It is in early access. <a href={release.dmgUrl}>Download version {release.version} for macOS (Apple silicon)</a>, {release.size}, or see <a href={release.releasesUrl}>all releases</a>. Sessions, machines, approvals, usage limits and projects (coordinator, workers, memory, plans and routines) are all in the current build. The Mac app runs on Apple silicon with macOS 13 or later and is signed with Developer ID and notarized by Apple. Windows 10 and 11 and x64 Linux builds, and the install steps, are on the [SpecWithCode download page](/code/download/).
 :::
 
 ## One workspace for many agents
@@ -57,7 +57,7 @@ SpecWithCode runs as a small service on each machine, at `localhost:8319`. You u
 - **One machine** needs nothing else.
 - **More machines for workers.** Install Tailscale on each machine, run `fleet invite` on the new one and paste the line it prints under **Settings > Connections > Add a machine** on your main machine. Coordinators can then start workers there. See [Add a machine](/docs/studio/add-a-machine).
 - **A Linux server or VPS** on x64 or arm64 runs the same server from the release's Linux archive, as a systemd user service. See [Linux worker](/docs/studio/linux-worker).
-- **Opening a machine from a browser or a phone** uses its own pairing, over the local network, an SSH tunnel the desktop app opens, or Tailscale Serve. SpecWithCode never uses Tailscale Funnel, which would make it public.
+- **Opening a machine from a browser or a phone** uses its own pairing, over the local network, an SSH tunnel the desktop app opens, Tailscale Serve, or Connect, the hosted relay ([3 machines included](/pricing)). SpecWithCode never uses Tailscale Funnel, which would make it public.
 
 We recommend one machine per AI-provider subscription: each machine stays signed in to one account per provider for good, and you add machines for more capacity instead of switching accounts by hand.
 
@@ -98,6 +98,6 @@ Moving work outside SpecWithCode is a [SpecWeave handoff](/docs/guides/cross-too
 
 **Will my local skills work?** Yes, on the machine where the agent runs. SpecWithCode starts the provider's own agent there with its configuration, so the skills, MCP servers and settings you set up for it apply. A skill on another machine has to be installed on that machine too.
 
-**Is my code sent anywhere new?** No. Folders, sessions and project data stay on the machine. Telemetry and the hosted relay are off by default. The desktop app checks GitHub for new releases and installs them by default, which you can turn off in Settings. Model calls go to the providers you choose, as they would from your terminal.
+**Is my code sent anywhere new?** No. Folders, sessions and project data stay on the machine. Telemetry is off by default, and Connect, the hosted relay, is used only after you sign in to it. The desktop app checks GitHub for new releases and installs them by default, which you can turn off in Settings. Model calls go to the providers you choose, as they would from your terminal.
 
 **Is SpecWithCode the same as Skill Studio?** No. `npx vskill studio` opens [Skill Studio](/docs/skills/skill-studio/), which develops and evaluates skills.

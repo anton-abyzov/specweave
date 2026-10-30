@@ -42,7 +42,7 @@ This page describes BMAD as [its repository and docs](https://github.com/bmad-co
 
 **BMAD fits** a new product where the planning itself is the work, and you want each role's output as its own document.
 
-**SpecWeave fits** teams of 2–10 people doing ongoing work on a product that already exists: many small changes, several tools or accounts, parallel threads, and a need to prove each change passed its tests.
+**SpecWeave fits** ongoing work on a product that already exists, for one developer or a whole team: many small changes, several tools or accounts, parallel threads, and a need to prove each change passed its tests.
 
 ## Using both
 

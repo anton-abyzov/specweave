@@ -20,7 +20,7 @@ Two skills sharpen the intent. sw-grill-me, a core skill, interviews you in roun
 
 **Decisions evaporate.** Why JWT and not sessions? What did we try that failed? In a chat transcript, nobody will find it. In SpecWeave it is in the spec's Decisions or Approach, in a ledger note, or in a one-fact file under `.specweave/memory/`, all committed with the code.
 
-**Work is stuck in one tool.** Every coding tool keeps its session private. When you hit a usage limit halfway through a feature, or want a second model's opinion, the next tool starts cold. SpecWeave keeps the state in git and gives you one command to hand off and one to pick up, so Codex can continue what Claude Code started, or a second Claude subscription can continue the first.
+**Work is stuck in one tool.** Every coding tool keeps its session in its own format and location, and none hands it to the next one. Another tool on the same machine could dig through those transcript files, but they are long, tool-specific and not meant as a handoff, and on another machine or account they are not there at all. When you hit a usage limit halfway through a feature, or want a second model's opinion, the next tool starts cold. SpecWeave keeps the state in git and gives you one command to hand off and one to pick up, so Codex can continue what Claude Code started, or a second Claude subscription can continue the first.
 
 ## Review the plan, not every line
 

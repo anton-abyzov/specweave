@@ -65,7 +65,7 @@ When your Claude Code limit resets, say "hand off" in Cursor and "pick up" in Cl
 
 **Do I need Cursor rules for SpecWeave?** No. `AGENTS.md` is enough; Cursor reads it alongside any `.mdc` rules you already have.
 
-**Will Cursor see the Claude Code conversation?** No. Neither tool can read the other's chat history. The next agent works from the spec, the ledger and `handoff.md`.
+**Will Cursor see the Claude Code conversation?** No. Each tool keeps its chat history in its own format and place, and nothing hands it to the other; on another machine or account it is not there at all. The next agent works from the spec, the ledger and `handoff.md`.
 
 **Does it work the other way?** Yes. The same two commands move a task from Cursor back to Claude Code, or on to Codex or OpenCode.
 

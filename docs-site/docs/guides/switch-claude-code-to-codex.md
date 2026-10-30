@@ -11,7 +11,7 @@ import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
 
 Run `specweave handoff` in Claude Code: it writes `handoff.md`, releases your task claims and pushes your branch with a snapshot of your uncommitted edits. Open Codex in the same repository and run `specweave pickup`: it applies those edits and prints the next task with its acceptance criteria.
 
-Switching tools at the start of a task is easy. Switching halfway through is where work gets lost: Codex can't read Claude Code's session, so the plan, the decisions and your uncommitted edits stay behind. This guide moves all of that through git in two commands, and works the same in the other direction.
+Switching tools at the start of a task is easy. Switching halfway through is where work gets lost: Codex doesn't pick up Claude Code's session, which sits in Claude Code's own files on one machine, so the plan, the decisions and your uncommitted edits stay behind. This guide moves all of that through git in two commands, and works the same in the other direction.
 
 <TutorialEmbed slug="handoff-claude-to-codex" />
 
@@ -24,7 +24,7 @@ Switching tools at the start of a task is easy. Switching halfway through is whe
 | **Your code** | Your branch, plus a snapshot of uncommitted and untracked edits | |
 | **Where you stopped** | `handoff.md` with the reason, the exact next step and notes | |
 | **Instructions and skills** | One `AGENTS.md` both tools read, and the same skills in both skill folders | |
-| **The conversation** | | Claude Code's transcript. Neither tool can read the other's, and the next agent doesn't need it |
+| **The conversation** | | Claude Code's transcript. It stays in Claude Code's own files, and the next agent doesn't need it |
 
 ## Before the first switch (once per repository)
 

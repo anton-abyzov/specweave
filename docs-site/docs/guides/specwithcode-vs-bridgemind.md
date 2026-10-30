@@ -15,7 +15,7 @@ This page describes BridgeMind as [its own site](https://www.bridgemind.ai) and 
 
 | | BridgeMind | SpecWithCode |
 |---|---|---|
-| **Price** | $20, $50 or $100 a month (Basic, Pro, Ultra), 20 percent off yearly; an active plan is required to use the app | Free; built for teams of 2–10 people; no markup, no token resale, no seat fee ([pricing](/pricing)) |
+| **Price** | $20, $50 or $100 a month (Basic, Pro, Ultra), 20 percent off yearly; an active plan is required to use the app | Free for every developer and team; no seat, agent or hour fees, no markup, no token resale; Connect relay included for 3 machines ([pricing](/pricing)) |
 | **AI usage** | Your own Claude, ChatGPT/Codex or SuperGrok subscription or API key; BridgeMind also sells monthly credits for its own metered features | Your own subscriptions; we run no inference and sell no credits |
 | **How work is organised** | Agent, Code and Thread modes: named agents on routines, live terminals over your folders, sessions read as conversations | Projects: a coordinator splits a goal across worker threads, each on the provider and model you pick, with plans, routines and shared memory |
 | **Record of the work** | Sessions in the app; diffs land on your disk | Specs, task evidence and handoffs in git through the open-source [SpecWeave CLI](/docs/getting-started), so any tool can carry on |
@@ -29,6 +29,6 @@ when you want voice-first work (dictation and a voice teammate), a 3D view of yo
 
 ## Pick SpecWithCode
 
-when your team of 2–10 people wants one coordinator to split work across Claude Code, Codex, Grok and Cursor threads on your own machines, keep the spec and evidence in git so the work survives a usage limit or a tool switch, and pay nothing for the workspace.
+when you or your team want one coordinator to split work across Claude Code, Codex, Grok and Cursor threads on your own machines, keep the spec and evidence in git so the work survives a usage limit or a tool switch, and pay nothing for the workspace.
 
 [Download SpecWithCode](/code/) or read [how projects work](/docs/studio/projects).

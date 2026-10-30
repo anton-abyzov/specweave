@@ -50,6 +50,6 @@ A higher pass rate on a small test set does not prove general productivity gains
 
 The authoring workspace and project files run locally. **Cloud model calls send evaluation inputs to the provider you select.** Publishing sends content to the chosen destination, and tools invoked by a skill have their own data boundaries.
 
-Private GitHub skills and public registry submissions are different workflows. Current vskill protections keep private skill content out of public platform requests; still verify the selected destination, installed version and provider configuration before working with sensitive material.
+Private GitHub skills and public registry submissions are different workflows. Current vskill protections keep private skill content out of public platform requests; still verify the selected destination, installed version and provider configuration before working with sensitive material. Hosted private skills, versioned with a security scan on every version, are part of Pro, which is on a waitlist; see [Pricing](/pricing).
 
 For command details, see the [vskill CLI reference](/docs/skills/vskill-cli). For the current interface and walkthrough, see the [canonical Skill Studio guide](https://verified-skill.com/docs/studio).

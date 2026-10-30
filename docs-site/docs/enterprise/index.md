@@ -2,16 +2,34 @@
 sidebar_position: 1
 title: SpecWeave for teams
 sidebar_label: Teams
-description: SpecWeave for teams of 2–10 people, covering audit trails, brownfield work, multi-repo workspaces, tracker sync and parallel delivery.
+description: SpecWeave and SpecWithCode are free for every developer and team. What teams get for free, what the founders offer and Pro add, and what a team contract covers, plus audit trails, brownfield work, multi-repo workspaces and tracker sync.
 ---
 
 # SpecWeave for teams
 
-SpecWeave is built for teams of 2–10 people working on legacy codebases, across locations, on work that has to stand up to an audit.
+Everything a team needs to run coding agents on its own machines is free: the SpecWithCode app, the SpecWeave CLI, every agent you already pay for, handoffs between them, and the record of who did what. Bring one developer or the whole team. Nothing counts seats, agents or hours, and we never resell model tokens.
 
-## Team plan
+## What your team gets, and what costs money
 
-SpecWeave and SpecWithCode are built for teams of 2–10 people and free. A team contract adds what a team putting coding agents to work needs around them. It never charges for running agents on your own machines and never resells model tokens.
+| | Free | Founders | Pro (waitlist) | Team contract |
+|---|---|---|---|---|
+| Price | $0 forever | $0, first 1,000 accounts | $20 a month per account | Annual, scoped with you |
+| SpecWithCode app and SpecWeave CLI | Yes | Yes | Yes | Yes |
+| Every agent, auto-handoff, specs and ledger in git | Yes | Yes | Yes | Yes |
+| Machines you pair over your own Tailscale | Unlimited | Unlimited | Unlimited | Unlimited |
+| Connect machines (hosted relay, reach them from anywhere and from your phone) | 3 | 10 | Unlimited | Scoped in contract |
+| Private skills, hosted and security-scanned | | | Yes | Self-hosted registry on request |
+| Setup, named engineer, response times | | | | Yes |
+| Audit export, security review pack, invoice billing | | | | Yes |
+| SSO, provider and model policy | | | | Scoped in contract |
+
+**Founders.** The first 1,000 accounts to link a machine through Connect get a founder number and 10 Connect machines. The seat is granted on that link, with no form or card, and stays with the account. [Pricing](/pricing) shows how many seats are left, live. A founder who needs more than 10 machines can ask, and we raise the limit for that account.
+
+**Pro** is on a waitlist and charges nothing until it opens. It is for one account that runs many machines or shares private skills; it will be billed by card in your SpecWithCode account.
+
+## Team contract
+
+A contract adds what a team of 2–10 people putting coding agents to work needs around them. It never charges for running agents on your own machines.
 
 | Offered today | Scoped with your contract |
 |---|---|
@@ -20,7 +38,7 @@ SpecWeave and SpecWithCode are built for teams of 2–10 people and free. A team
 | Export of who ran which agent, on which machine, with what evidence (from the ledger and `specweave report`) | A self-hosted skill registry |
 | Security review pack and invoice billing | Anything else your team needs, scheduled and priced in the contract |
 
-Contracts are annual. The two-week [founding team pilot](/pricing) is the usual first step. To start a conversation, email [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com?subject=SpecWithCode%20for%20our%20team) with your team size (2–10 people) and the tools you use, or see [pricing](/pricing).
+Contracts are annual. The two-week [founding team pilot](/pricing) ($990, five places, no charge if the handoff drill fails in your repo) is the usual first step. To start a conversation, email [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com?subject=SpecWithCode%20for%20our%20team) with your team size and the tools you use.
 
 ## Inspectable delivery records
 
@@ -38,7 +56,7 @@ The CLI appends ledger events; it does not rewrite prior events. The ledger is a
 
 ## Three products, distinct responsibilities
 
-SpecWeave owns the project workflow. vskill and Skill Studio provide skill installation and evaluation. The separate **SpecWithCode** app, built for teams of 2–10 people, free and in early access, provides a native coding workspace across machines. Read the [shared architecture](/docs/overview/studio-architecture) for connection options, per-host pairing, account boundaries and the current verification scope. [See SpecWithCode](/code/) before planning a rollout around it.
+SpecWeave owns the project workflow. vskill and Skill Studio provide skill installation and evaluation. The separate **SpecWithCode** app, free and in early access, provides a native coding workspace across machines. Read the [shared architecture](/docs/overview/studio-architecture) for connection options, per-host pairing, account boundaries and the current verification scope. [See SpecWithCode](/code/) before planning a rollout around it.
 
 ## Brownfield work
 

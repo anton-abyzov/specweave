@@ -9,7 +9,7 @@ description: How a SpecWeave session stops cleanly so another tool, account or m
 
 A **handoff** is how a session stops so that another one can continue: in another AI tool, under another account, on another machine or in a cloud thread. **Pickup** is the other half: the new session reads everything it needs in one command.
 
-No AI tool can read another tool's chat history. A handoff puts what matters into git instead.
+Each AI tool keeps its chat history in its own format and place, and nothing hands it to the next tool. On another machine or account it is not there at all. A handoff puts what matters into git instead.
 
 ## In plain words
 

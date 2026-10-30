@@ -8,12 +8,12 @@ description: "Claude Code handoff in one command: write handoff.md, push your ed
 > **Out of tokens, or want a second opinion from another model? Hand off in one command, pick up in the next tool in one read.**
 
 :::tip Works across tools and accounts
-Claude Code (including Projects threads), Codex, Grok Build, Cursor, GitHub Copilot, Gemini CLI, OpenCode and a second Claude subscription all read the same files: `AGENTS.md`, the increment's `spec.md`, its ledger and the handoff. None of them can read another tool's private transcript, so SpecWeave keeps what matters in git.
+Claude Code (including Projects threads), Codex, Grok Build, Cursor, GitHub Copilot, Gemini CLI, OpenCode and a second Claude subscription all read the same files: `AGENTS.md`, the increment's `spec.md`, its ledger and the handoff. Each tool keeps its own transcript in its own format, and none of them hands it to the next, so SpecWeave keeps what matters in git.
 :::
 
 ## The problem
 
-No AI coding tool can read another's session. Each one keeps its transcript in its own store. When you hit a usage limit mid-task, the goal, the decisions and your uncommitted edits are stuck there. Claude Code project memory stays with one account, so even a second Claude subscription starts cold.
+Each AI coding tool keeps its transcript in its own format and location, and nothing hands it over for you. Another tool on the same machine could dig through those files, but they are long, tool-specific and not meant as a handoff. On another machine, another account or a cloud session they are not there at all. When you hit a usage limit mid-task, the goal, the decisions and your uncommitted edits stay behind. Claude Code project memory stays with one account, so even a second Claude subscription starts cold.
 
 ## Hand off
 
@@ -118,10 +118,10 @@ Every tool stores its session differently. The handoff document is portable acro
 
 | Tool | Session storage | Find current session | Native resume command | Export / transferable |
 |---|---|---|---|---|
-| **Claude Code** | `~/.claude/projects/<munged-cwd>/<uuid>.jsonl` | `ls ~/.claude/projects/<munged-cwd>/` (see munge rule below) | `claude -r <uuid>` | Not readable by other tools — use the handoff doc |
-| **Codex** | `~/.codex/sessions/<uuid>/` | `ls ~/.codex/sessions/` (newest dir) | `codex resume <uuid>` (or `codex resume --last`) | Not readable by other tools — use the handoff doc |
-| **OpenCode** | SQLite-backed session store | `opencode sessions list` | `opencode -s <id>` (long form `opencode --session <id>`) | Not readable by other tools — use the handoff doc |
-| **Gemini CLI** | Tagged saved chats | run `/chat list` inside the session | `/chat resume <tag>` | Not readable by other tools — use the handoff doc |
+| **Claude Code** | `~/.claude/projects/<munged-cwd>/<uuid>.jsonl` | `ls ~/.claude/projects/<munged-cwd>/` (see munge rule below) | `claude -r <uuid>` | Tool-specific, not a handoff: use the handoff doc |
+| **Codex** | `~/.codex/sessions/<uuid>/` | `ls ~/.codex/sessions/` (newest dir) | `codex resume <uuid>` (or `codex resume --last`) | Tool-specific, not a handoff: use the handoff doc |
+| **OpenCode** | SQLite-backed session store | `opencode sessions list` | `opencode -s <id>` (long form `opencode --session <id>`) | Tool-specific, not a handoff: use the handoff doc |
+| **Gemini CLI** | Tagged saved chats | run `/chat list` inside the session | `/chat resume <tag>` | Tool-specific, not a handoff: use the handoff doc |
 | **Antigravity** | Encrypted `.pb` | open the Agent Manager, pick the prior task thread | resume the thread from the Antigravity Agent Manager | Encrypted — use the handoff doc |
 | **Cursor** | App-internal chat history | open the chat panel history | reopen the prior chat in-app | Not exportable — use the handoff doc |
 | **Aider** | `.aider.chat.history.md` in repo root | the file is in the repo root | `aider --restore-chat-history` | Markdown file, but Aider-specific — use the handoff doc |

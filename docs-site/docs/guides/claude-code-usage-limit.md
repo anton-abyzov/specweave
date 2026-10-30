@@ -28,7 +28,7 @@ Anthropic adjusts the exact numbers from time to time, so check the [Claude help
 - **Settings > Usage** on claude.ai shows the same bars.
 - **A status line** can show the percentage all the time. `specweave statusline` does this, and it is what SpecWeave's automatic handoff reads (below).
 
-Claude Code also warns you when you are close to a limit. That warning is the moment to act, because once the limit is reached the session stops mid-step and anything it hasn't written down is stuck in a transcript no other tool can read.
+Claude Code also warns you when you are close to a limit. That warning is the moment to act, because once the limit is reached the session stops mid-step and anything it hasn't written down stays in Claude Code's own transcript files, which the next tool does not pick up and which are not there at all on another machine or account.
 
 ## Your options when the limit hits
 
@@ -97,7 +97,7 @@ Cloud sessions (Claude Code on the web, Projects threads, Codex cloud tasks) hav
 
 **Does starting a new chat reset the Claude Code limit?** No. Both the five-hour window and the weekly limit count all your use, across Claude Code and Claude in the browser.
 
-**Can Codex continue my Claude Code session?** Not directly; Codex can't read Claude Code's transcript. With SpecWeave, the spec, the task state, a handoff note and your uncommitted edits go through git, and `specweave pickup` in Codex continues from there.
+**Can Codex continue my Claude Code session?** Not directly; Codex doesn't pick up Claude Code's transcript, which sits in Claude Code's own files. With SpecWeave, the spec, the task state, a handoff note and your uncommitted edits go through git, and `specweave pickup` in Codex continues from there.
 
 **Does it work with a second Claude account instead of Codex?** Yes. Project memory in Claude Code stays with one account, so a second account starts cold without a handoff. `specweave pickup` gives it the same starting point Codex would get.
 

@@ -64,7 +64,7 @@ See [SpecWeave vs the BMAD Method](/docs/compare/specweave-vs-bmad-method/) for 
 
 ## Where SpecWeave fits
 
-SpecWeave is for teams of 2–10 people whose work outlives one session: a feature that runs into a usage limit, parallel Claude Code Projects threads, or teammates whose Claude Code and Codex both touch the same repository.
+SpecWeave is for developers and teams whose work outlives one session: a feature that runs into a usage limit, parallel Claude Code Projects threads, or teammates whose Claude Code and Codex both touch the same repository.
 
 - **Hand off and pick up.** `specweave handoff` releases your task claims and pushes the branch and a snapshot of your uncommitted edits. `specweave pickup` in the next tool applies them and prints the next task with its acceptance criteria. See [Handoff and pickup](/docs/guides/cross-tool-handoff).
 - **Evidence instead of checkboxes.** A task is done when its test command exited 0 and the output was stored.

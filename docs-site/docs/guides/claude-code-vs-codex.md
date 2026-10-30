@@ -19,9 +19,9 @@ Many developers now have both Claude Code and Codex. Which model is better chang
 | **Resume the same session** | `claude -r <id>` | `codex resume <id>` or `codex resume --last` |
 | **Cloud option** | Claude Code on the web and Projects threads | Codex cloud tasks |
 | **Usage** | 5-hour and weekly windows on Pro and Max plans | 5-hour and weekly windows on ChatGPT plans |
-| **Can it read the other's session?** | No | No |
+| **Picks up the other's session?** | No | No |
 
-The last row is the important one. Neither tool can open the other's transcript, and a second account of the same tool can't either. When one runs out, the plan, the decisions and your uncommitted edits are stuck in a session nothing else can read.
+The last row is the important one. Neither tool picks up the other's transcript, and a second account of the same tool doesn't either. On the same machine one tool could dig through the other's files, but they are long, tool-specific and not meant as a handoff. On another machine, another account or in the cloud they are not there at all. When one runs out, the plan, the decisions and your uncommitted edits stay behind.
 
 ## When Claude Code hits its usage limit
 
@@ -74,7 +74,7 @@ Switching isn't only for emergencies. Some teams let one tool implement and the 
 
 ## Common questions
 
-**Can Codex read my Claude Code conversation?** No, and no tool can read another's. SpecWeave carries what matters (the spec, the task state, your edits and a note) through git instead.
+**Can Codex read my Claude Code conversation?** Not as a handoff. On the same machine Codex could open Claude Code's transcript files, but they are long, tool-specific and leave out your uncommitted edits, and on another machine or in the cloud they are not there. SpecWeave carries what matters (the spec, the task state, your edits and a note) through git instead.
 
 **Do I need both subscriptions?** No. The same handoff works between two accounts of one tool, or to Grok Build, Gemini CLI, Cursor or Copilot.
 
