@@ -184,7 +184,7 @@
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
-.announceText { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.announceText { min-width: 0; line-height: 18px; }
 .announceCta {
   display: inline-flex;
   flex: none;
@@ -201,10 +201,14 @@
 .announceCta svg { transition: transform 200ms ease; }
 .announce:hover .announceCta svg { transform: translate3d(2px, -2px, 0); }
 
-@media (max-width: 480px) {
-  .announce { gap: 8px; font-size: 13px; }
+/* Icon-only button where the hero column is narrow: phones, and the two-column hero just above 996px. */
+@media (max-width: 480px), (min-width: 997px) and (max-width: 1199px) {
   .announceCtaLabel { display: none; }
   .announceCta { padding: 6px; margin-left: 0; }
+}
+
+@media (max-width: 480px) {
+  .announce { gap: 8px; font-size: 13px; border-radius: 22px; }
 }
 
 /* ---------- Crops of the app window ---------- */
