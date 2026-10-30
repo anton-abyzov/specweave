@@ -2,6 +2,7 @@ import {describe, it, expect} from 'vitest';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop} from '../specwithcodeRelease';
 
 const REPO = 'https://github.com/anton-abyzov/specwithcode';
+const ALL = [desktop.exe, desktop.exeArm64, desktop.appImage, desktop.appImageArm64, desktop.deb, desktop.debArm64];
 
 describe('SpecWithCode download constant', () => {
   it('links the stable Latest installer and the release notes of the recorded version', () => {
@@ -30,14 +31,17 @@ describe('SpecWithCode download constant', () => {
     expect(desktop.exe.url).toBe(`${base}/SpecWithCode-${desktop.version}-x64.exe`);
     expect(desktop.appImage.url).toBe(`${base}/SpecWithCode-${desktop.version}-x86_64.AppImage`);
     expect(desktop.deb.url).toBe(`${base}/SpecWithCode-${desktop.version}-amd64.deb`);
-    for (const asset of [desktop.exe, desktop.appImage, desktop.deb]) {
+    expect(desktop.exeArm64.url).toBe(`${base}/SpecWithCode-${desktop.version}-arm64.exe`);
+    expect(desktop.appImageArm64.url).toBe(`${base}/SpecWithCode-${desktop.version}-arm64.AppImage`);
+    expect(desktop.debArm64.url).toBe(`${base}/SpecWithCode-${desktop.version}-arm64.deb`);
+    for (const asset of ALL) {
       expect(asset.bytes).toBeGreaterThan(20_000_000);
       expect(asset.size).toBe(`${Math.round(asset.bytes / 1_000_000)} MB`);
     }
   });
 
   it.skipIf(!process.env.CHECK_RELEASE_LINKS)('the Windows and Linux installers exist with the recorded sizes', async () => {
-    for (const asset of [desktop.exe, desktop.appImage, desktop.deb]) {
+    for (const asset of ALL) {
       const res = await fetch(asset.url, {method: 'HEAD', redirect: 'follow'});
       expect(res.status, asset.name).toBe(200);
       expect(Number(res.headers.get('content-length')), asset.name).toBe(asset.bytes);

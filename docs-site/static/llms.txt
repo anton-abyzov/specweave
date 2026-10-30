@@ -10,7 +10,7 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 
 - [What is SpecWeave?](https://spec-weave.com/docs/overview/introduction/): the spec, the ledger and the handoff in one page
 - [SpecWithCode](https://spec-weave.com/code/): the free AI coding agent workspace: a coordinator and worker threads per project, usage limits and fallbacks, your own machines
-- [Download SpecWithCode](https://spec-weave.com/code/download/): free notarized .dmg for Apple silicon (macOS 13+), a Windows 10 and 11 installer, and a Linux AppImage and .deb, with install steps
+- [Download SpecWithCode](https://spec-weave.com/code/download/): free notarized .dmg for Apple silicon (macOS 13+), Windows 10 and 11 installers for x64 and arm64, and a Linux AppImage and .deb for x64 and arm64, with install steps
 - [SpecWithCode overview](https://spec-weave.com/docs/overview/studio/): every AI agent in one workspace on your own machines
 - [How it works](https://spec-weave.com/docs/overview/how-it-works/): the daily loop from spec to closed increment
 - [Installation](https://spec-weave.com/docs/getting-started/installation/): install, update, uninstall
