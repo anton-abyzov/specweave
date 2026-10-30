@@ -26,7 +26,7 @@ const ROWS: {label: string; cells: Cell[]}[] = [
     'Billed through each vendor’s own plan',
   ]},
   {label: 'Other machines', cells: [
-    'Add Macs and Linux machines over your Tailscale network; choose where workers run',
+    'Add Macs and Linux machines over SpecWithCode Connect; choose where workers run',
     <>Run <code>opencode serve</code> or <code>web</code> on a reachable address <Src href="https://opencode.ai/docs/web/" /></>,
     'Runs in the vendor’s cloud',
   ]},

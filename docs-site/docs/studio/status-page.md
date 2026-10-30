@@ -20,7 +20,7 @@ When a thread fails, the first question is whose fault it is: the provider, GitH
 | Gemini | status.cloud.google.com | Gemini and Antigravity threads |
 | Grok | status.x.ai | Grok threads |
 | GitHub | githubstatus.com: Git operations, API requests, pull requests, Actions | Code Review and pull requests, clone and publish, app updates |
-| Tailscale | This machine and status.tailscale.com | Remote machines, phone and browser access over Tailscale |
+| Tailscale | This machine and status.tailscale.com | The optional Tailscale route to remote machines, phone and browser |
 | Updates | The SpecWithCode release feed and the GitHub API | App updates, service updates on paired machines |
 
 A provider's level combines its public status page with what this app saw in the last hour: sign-in, usage limits and failed turns. So trouble that only your account hits still shows up, even when the provider's page says everything is fine.

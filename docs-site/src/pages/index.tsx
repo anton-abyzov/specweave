@@ -195,7 +195,7 @@ export default function Home() {
             <h3>Your machines, not a cloud container</h3>
             <ul className={h.list}>
               {MACHINES.map((l) => <li key={l}>{l}</li>)}
-              <li>Add a Mac mini or a Linux machine by its Tailscale name: choose Invite this machine in its Settings or run <code>specwithcode fleet invite</code> there, then paste the line into Add a machine under Settings, Connections on your main Mac.</li>
+              <li>Add a Mac mini or a Linux machine over SpecWithCode Connect: link Connect on it with your account, choose Invite this machine in its Settings or run <code>specwithcode fleet invite</code> there, then paste the line into Add a machine under Settings, Connections on your main Mac.</li>
             </ul>
             <div className={clsx('wv-note', h.boundary)}>
               <MonitorIcon />

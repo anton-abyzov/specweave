@@ -82,7 +82,7 @@ describe('GuideBody', () => {
     const sections = [{start: 44.1, title: 'Connect your machines', text: 'Old setup.'}];
     const {container} = render(<GuideBody tutorial={guide('how-specwithcode-works')} transcript={sections} />);
     const note = container.querySelector('#t-44')!.parentElement!.querySelector('aside');
-    expect(note).toHaveTextContent('machines join over Tailscale');
+    expect(note).toHaveTextContent('machines join over SpecWithCode Connect');
     expect(note!.querySelector('a')).toHaveAttribute('href', '/tutorials/join-a-mac/');
   });
 

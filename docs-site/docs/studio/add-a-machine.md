@@ -1,30 +1,72 @@
 ---
-title: "Add a machine to SpecWithCode: Tailscale, fleet invite and one subscription per machine"
+title: "Add a machine to SpecWithCode: link Connect, invite the machine, allow workers"
 sidebar_label: Add a machine
-description: "Let coordinators on your main computer start workers on a second Mac, a Linux box or a VPS. Install Tailscale on both, make an invitation line with fleet invite on the new machine, paste it under Settings > Connections, and allow workers. Why we recommend one machine per AI-provider subscription."
+description: "Let coordinators on your main computer start workers on a second Mac, a Linux box or a VPS. Link SpecWithCode Connect on the new machine, choose Invite this machine in Settings > Connections, paste the line on your main machine and allow workers. Tailscale is an optional fallback. Why we recommend one machine per AI-provider subscription."
 ---
 
 import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
 
 # Add a machine
 
-Coordinators on your main machine can start workers on your other computers: a second Mac, a Linux box at home or a rented VPS. Each worker runs in its own checkout on that machine, with that machine's own provider sign-ins. This page covers SpecWithCode 1.0.44 and later ([1.0.44 release notes](https://github.com/anton-abyzov/specwithcode/releases/tag/v1.0.44)).
+Coordinators on your main machine can start workers on your other computers: a second Mac, a Linux box at home or a rented VPS. Each worker runs in its own checkout on that machine, with that machine's own provider sign-ins.
 
-Joining takes three steps:
+Machines reach each other through [SpecWithCode Connect](/docs/studio/connect), so it does not matter which network each one is on, and nothing on your router changes. Everything below is in **Settings > Connections**; you never need a terminal on a Mac with the desktop app.
 
-1. On the machine you are adding (the **worker**), make an invitation line. It starts with `swc-machine-`.
-2. On your **main machine**, paste the line under **Settings > Connections > Your private machines > Add a machine** and choose **Add machine**.
-3. On the worker's card, choose **Allow workers**.
+Adding a machine takes four steps:
 
-To reach a machine from another device or your phone, link it with [SpecWithCode Connect](/docs/studio/connect) instead: Connect includes 3 machines, and the first 1,000 accounts to link one get 10 as founders ([pricing](/pricing)).
+1. On the new machine (the **worker**), [link SpecWithCode Connect](#1-link-connect-on-the-worker).
+2. On the worker, [make an invitation line](#2-make-the-line-on-the-worker). It starts with `swc-machine-`.
+3. On your **main machine**, [paste the line](#add-it-on-the-main-machine) under **Settings > Connections > Your private machines > Add a machine**.
+4. On the worker's card there, choose **Allow workers**.
+
+Only want to open a machine from your phone, a browser or another computer, without starting workers on it? Step 1 is all you need: see [Connect](/docs/studio/connect).
+
+## 1. Link Connect on the worker
+
+On the worker, open **Settings > Connections**, choose **Sign in to SpecWithCode Connect** with the same account your main machine uses, then turn on **Enable SpecWithCode Connect**. On a server without the desktop app, run `specwithcode connect` there instead. [Connect](/docs/studio/connect#link-a-machine) has the details.
+
+Your main machine must be signed in to the same Connect account. If it cannot reach a machine, **Your private machines** shows a banner that says which machine is not linked yet.
+
+Connect includes 3 machines; the first 1,000 accounts get 10 as [founders](/pricing).
+
+## 2. Make the line on the worker
+
+The line holds a management credential for the worker. Treat it like a password: paste it only into your own main machine, never into a chat, an issue or a shared document.
+
+### With the desktop app
+
+**On a new install**, the first screen asks how you will use this machine. Choose **Join my existing machines**; it skips setting up agents and projects on the worker.
+
+**On a machine that is already set up**, open **Settings > Connections > Your private machines** and, next to **Add this machine to another one**, choose **Invite this machine**.
+
+Then:
+
+1. The app checks how the main machine can reach this one. With Connect linked it says the line uses SpecWithCode Connect, and you can go on.
+2. Enter your main machine's environment ID. You find it on the main machine under **Settings > Connections**. This approves that machine, and only that one, to manage this worker.
+3. Optionally type a name under **Name on the main machine**. Left empty, the machine's own name is used.
+4. Choose **Make the line**, then **Copy** the `swc-machine-…` line. A line with a Connect address works once, within an hour.
+
+The line is shown only once: copy it before you close the dialog, or make a new one. **Revoke this line** turns it off. Only a session with **Manage access** on that machine can make the line. Version 1.0.43 and earlier have no button for this, so update the app first.
+
+### Without the desktop app
+
+One line installs SpecWithCode on an Apple silicon Mac or a Linux machine (x64 or arm64, with glibc and systemd) and starts it as a background service:
+
+```bash
+curl -fsSL https://github.com/anton-abyzov/specwithcode/releases/latest/download/install.sh | bash
+```
+
+The installer checks the archive against `SHA256SUMS` and brings its own Node.js 22.20; `--node /path/to/node` uses yours instead (22.20 or a later 22.x). Add `--dry-run` (`bash -s -- --dry-run`) to see what it would do. On that machine, run `specwithcode connect` to link Connect, then `specwithcode fleet invite --coordinator '<main-machine-environment-id>' --via connect` to print a fresh line.
+
+For a Linux server or VPS that should keep running after you log out, follow [Linux worker](/docs/studio/linux-worker) instead.
 
 ## Watch it
 
-Two Macs on one tailnet, recorded with SpecWithCode 1.0.47: the invitation line on the Mac mini, adding it on the main Mac, and allowing workers. In 1.0.47, **Allow workers** also asks for a one-time pairing code; the video shows where it goes.
+Recorded with SpecWithCode 1.0.47: the invitation line on a Mac mini, adding it on the main Mac, and allowing workers. That recording joins the machines over Tailscale; with Connect the steps on screen are the same. In 1.0.47, **Allow workers** also asks for a one-time pairing code; the video shows where it goes.
 
 <TutorialEmbed slug="add-a-machine" />
 
-Setting up a new Mac from scratch? [Join a new Mac to your main machine](/tutorials/join-a-mac/) shows the same line made from the welcome screen's **Join my existing machines**, and the `specwithcode fleet invite` path for a Mac without the desktop app.
+Setting up a new Mac from scratch? [Join a new Mac to your main machine](/tutorials/join-a-mac/) shows the line made from the welcome screen's **Join my existing machines**.
 
 ## One machine per subscription
 
@@ -34,40 +76,9 @@ Do not switch subscriptions by hand on those machines. A machine that changes ac
 
 When you need more capacity, add another machine with its own subscription. Two machines signed in to the same account share that account's limits, so running agents on both spends the limit faster, not slower.
 
-## Before you start: Tailscale on both machines
+## Optional: Tailscale as a fallback route
 
-Every machine reaches the others by its private Tailscale name, so it does not matter which network each one is on. Do this once on the main machine and on every worker.
-
-1. Install Tailscale from [tailscale.com/download](https://tailscale.com/download). On a Mac with Homebrew: `brew install --cask tailscale`. On Linux: `curl -fsSL https://tailscale.com/install.sh | sh`.
-2. Open Tailscale and sign in **with the same account on every machine**, so they share one tailnet. On Linux, run `sudo tailscale up` and open the link it prints.
-3. In the [Tailscale admin console](https://login.tailscale.com/admin), check once that **DNS > MagicDNS** is on and **DNS > HTTPS Certificates** is enabled.
-4. Under **Machines**, open each machine's menu and choose **Disable key expiry**, or Tailscale signs it out after a few months and it drops out of the fleet.
-
-The worker is published only inside your tailnet with Tailscale Serve, never on the public internet. Nothing is copied between machines: each keeps its own sign-ins and checkouts.
-
-## Make the line on the worker
-
-The line holds a management credential for the worker. Treat it like a password: paste it only into your own main machine, never into a chat, an issue or a shared document.
-
-### With the desktop app
-
-On the worker, open **Settings > Connections > Your private machines > Add this machine to another one** and choose **Invite this machine**. On a new install, the first screen asks how you will use the machine: **Join my existing machines** does the same without setting up agents or projects.
-
-Give the machine a name if you like and choose **Make the line**. Before the line, the app shows what Tailscale still needs on this machine (installed, signed in, a MagicDNS name) and checks again every few seconds. It never installs Tailscale or runs `sudo` itself. The line is shown once: copy it before you close the dialog, or make a new one. **Revoke this line** turns it off.
-
-Only a session with **Manage access** on that machine can make the line. Version 1.0.43 and earlier have no button for this, so update the app first.
-
-### Without the desktop app
-
-Since 1.0.44, one line installs SpecWithCode on an Apple silicon Mac or a Linux machine (x64 or arm64, with glibc and systemd), starts it as a background service, sets up Tailscale if it is missing and prints the invitation line:
-
-```bash
-curl -fsSL https://github.com/anton-abyzov/specwithcode/releases/latest/download/install.sh | bash -s -- --join
-```
-
-The installer checks the archive against `SHA256SUMS` and brings its own Node.js 22.20; `--node /path/to/node` uses yours instead (22.20 or a later 22.x). Add `--dry-run` after `--` to see what it would do. Where the `specwithcode` command is already installed, `specwithcode fleet invite` prints a new line on its own.
-
-For a Linux server or VPS that should keep running after you log out, follow [Linux worker](/docs/studio/linux-worker) instead.
+You do not need Tailscale. If both machines are also on the same tailnet, the main machine keeps the worker's private Tailscale name as a direct fallback and still tries Connect first. To add it, install [Tailscale](https://tailscale.com/download) on both machines, sign in with the same account, make sure **DNS > MagicDNS** and **DNS > HTTPS Certificates** are on in the admin console, and choose **Disable key expiry** for each machine. Then make a new line on the worker; it carries both addresses. The worker is published inside your tailnet with Tailscale Serve, never on the public internet. `specwithcode fleet invite --via tailscale` makes a Tailscale-only line for a main machine on an older version that cannot read a Connect line.
 
 ## Add it on the main machine
 
@@ -78,7 +89,7 @@ For a Linux server or VPS that should keep running after you log out, follow [Li
 
 From a terminal on the main machine, `specwithcode fleet add swc-machine-…` does the same. `specwithcode fleet list` shows every machine and whether it answers now; `specwithcode fleet remove <name>` takes one off the list.
 
-Keep SpecWithCode running on the worker. Coordinators can start work there only while its app or server runs and Tailscale is connected.
+Keep SpecWithCode running on the worker. Coordinators can start work there only while its app or server runs and its Connect link is online.
 
 ## What the worker needs for a project
 
@@ -86,10 +97,10 @@ The project must exist on the worker as its own checkout, cloned from the same r
 
 ## Keep your provider accounts safe
 
-- Each machine's agents talk to Anthropic, OpenAI and the other providers from that machine's own connection, with that machine's own sign-in. Tailscale changes nothing about how a provider sees your account.
+- Each machine's agents talk to Anthropic, OpenAI and the other providers from that machine's own connection, with that machine's own sign-in. Connect and Tailscale change nothing about how a provider sees your account.
 - Prefer machines you own on a home or office connection for subscription sign-ins. On a rented server, sign the provider CLIs in with an API key: SpecWithCode warns before you sign a subscription in on one.
 - Never route one subscription through a shared proxy or pool several behind one endpoint.
-- Turn on two-factor sign-in for your Tailscale account. It is the key to every machine in the fleet.
+- Turn on two-factor sign-in for your SpecWithCode Connect account, and for Tailscale if you use it. They are the keys to every machine in the fleet.
 
 ## Revoke a line
 
@@ -99,13 +110,13 @@ A line works for a year unless you revoke it (`fleet invite --ttl` changes that)
 
 | You see | What to do |
 |---|---|
-| "Tailscale is not installed on this machine." | Install Tailscale, open it and sign in, then try again. |
-| "This machine has no Tailscale name yet." | Sign in to Tailscale and turn on MagicDNS in the admin console. |
-| "Tailscale could not publish this machine on HTTPS port 443." | Enable **DNS > HTTPS Certificates** in the admin console. |
+| A banner says a machine "isn't on SpecWithCode Connect" | On that machine, open **Settings > Connections > SpecWithCode Connect** and link it with the same account. It then connects on its own. |
+| The invite asks for Tailscale | Connect is not linked on this machine yet. Link it (step 1) and choose **Invite this machine** again. |
+| "Tailscale is not installed", "no Tailscale name" or "could not publish on HTTPS port 443" | Only for the optional Tailscale route: install and sign in to Tailscale, turn on MagicDNS and HTTPS Certificates. Or skip Tailscale and use Connect. |
 | "No running SpecWithCode server found." | Open the desktop app, or start `specwithcode serve`, then run `fleet invite` again. |
 | "This is not a machine invitation." | Part of the line is missing. Make a new one and copy all of it. |
-| "This machine is unavailable. Check its private connection and retry." | The worker is off, asleep, signed out of Tailscale or not running SpecWithCode. |
+| "This machine is unavailable. Check its private connection and retry." | The worker is off, asleep or not running SpecWithCode, or its Connect link is offline. See [when a machine shows as offline](/docs/studio/connect#when-a-machine-shows-as-offline). |
 
-A laptop that moves to another Wi-Fi keeps its Tailscale name, so nothing needs to change. While a machine is offline, its threads show "Host offline", and a chat whose machine dropped can continue on another machine.
+A laptop that moves to another Wi-Fi keeps its Connect address, so nothing needs to change. While a machine is offline, its threads show "Host offline", and a chat whose machine dropped can continue on another machine.
 
 The full reference is in the SpecWithCode repository: [Add a machine](https://github.com/anton-abyzov/specwithcode/blob/main/docs/user/add-a-machine.md).

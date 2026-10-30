@@ -6,7 +6,7 @@
       "chapterNotes": [
         {
           "start": 44.1,
-          "text": "Since this recording, machines join over Tailscale with an invite line made in the app, and the other connection routes the video mentions are no longer the setup path.",
+          "text": "Since this recording, machines join over SpecWithCode Connect with an invite line made in the app, and the other connection routes the video mentions are no longer the setup path.",
           "to": "/tutorials/join-a-mac/",
           "label": "Join a Mac with an invite line"
         },
