@@ -65,8 +65,8 @@ const PLANS: Plan[] = [
     features: [
       'Claude Code, Codex, Grok, Gemini CLI, Cursor in one workspace',
       'Auto-handoff before a usage limit stops you',
-      'Unlimited machines you pair over your own Tailscale',
-      'Connect: your phone and 3 machines from anywhere',
+      'Connect: reach 3 machines from anywhere, and your phone',
+      'Local network and SSH routes, never counted',
     ],
     cta: {label: 'Download free', to: '/code/'},
     featured: true,
@@ -83,7 +83,7 @@ const PLANS: Plan[] = [
       'A founder number on your account',
       'Need more than 10? Ask and we raise it',
     ],
-    cta: {label: 'Claim a founder seat', to: '/docs/studio/add-a-machine#link-a-machine-through-connect'},
+    cta: {label: 'Claim a founder seat', to: '/docs/studio/connect#link-a-machine'},
   },
   {
     tag: 'Waitlist',
@@ -123,7 +123,7 @@ const PILOT_STEPS = [
 
 const FAQ = [
   {q: 'Will it stay free?', a: <>Yes. The app, the CLI and running agents on your machines stay free, for one developer or a whole team. Paid plans only add what costs us to run (hosted relay capacity, hosted private skills) and support.</>},
-  {q: 'How many machines can I connect?', a: <>As many as you pair yourself over your own Tailscale network, on every plan. Connect, the hosted relay for your phone and machines outside your network, includes 3 machines. Founders get 10, and Pro will lift the limit. <Link to="/docs/studio/add-a-machine">Add a machine</Link>.</>},
+  {q: 'How many machines can I connect?', a: <>Connect, the hosted relay that reaches your machines from anywhere and from your phone, includes 3 machines. Founders get 10, and Pro will lift the limit. Direct routes over your local network or SSH are never counted. <Link to="/docs/studio/connect">How Connect works</Link>.</>},
   {q: 'How do I become a founder?', a: <>Sign in to Connect in SpecWithCode and link a machine. The first 1,000 accounts to do that get a founder number and 10 machines, granted on that link. The seat stays with your account and does not expire; Pro opening later does not take it away.</>},
   {q: 'What do teams pay for?', a: <>Setup for your team of 2–10, support with response times, and controls like audit export or SSO. Pro covers hosted private skills and unlimited Connect machines for one account.</>},
   {q: 'Where does our code go?', a: <>Nowhere new. Specs and handoffs are files in your repo, and agents run on your machines with your subscriptions.</>},
@@ -182,7 +182,7 @@ function FoundersBand() {
       <p className={p.kicker}><span className="wv-chip wv-chip--iris">Founders</span><span>{open ? 'Open now' : 'All seats taken'}</span></p>
       <h2 id="founders-title">The first 1,000 accounts get 10 machines, free</h2>
       <p>Link a machine through Connect and your account takes the next founder seat: 10 machines from anywhere instead of 3, and a founder number. No form, no card, and the seat stays yours.</p>
-      <Link className={styles.primary} to="/docs/studio/add-a-machine#link-a-machine-through-connect">Link your first machine</Link>
+      <Link className={styles.primary} to="/docs/studio/connect#link-a-machine">Link your first machine</Link>
     </div>
     <div className={p.seats} role="img" aria-label={left === null ? `${cap.toLocaleString('en-US')} founder seats` : `${left.toLocaleString('en-US')} of ${cap.toLocaleString('en-US')} founder seats left`}>
       <p className={p.seatsCount}>

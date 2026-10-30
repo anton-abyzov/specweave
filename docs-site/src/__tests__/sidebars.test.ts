@@ -111,10 +111,9 @@ describe('Docusaurus navbar items (Weave)', () => {
     expect(navItems[3]).toEqual(expect.objectContaining({to: '/tutorials'}));
   });
 
-  it('keeps Verified Skill, Pricing, GitHub and search on the right', () => {
+  it('keeps Verified Skill, GitHub and search on the right; Pricing lives in the footer', () => {
     expect(rightItems).toEqual(expect.arrayContaining([
       expect.objectContaining({label: 'Verified Skill', href: 'https://verified-skill.com/claude-code-skills'}),
-      expect.objectContaining({label: 'Pricing', to: '/pricing'}),
       expect.objectContaining({href: 'https://github.com/anton-abyzov/specweave', className: 'header-github-link'}),
       expect.objectContaining({type: 'search'}),
     ]));

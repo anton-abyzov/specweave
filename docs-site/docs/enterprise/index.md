@@ -16,8 +16,8 @@ Everything a team needs to run coding agents on its own machines is free: the Sp
 | Price | $0 forever | $0, first 1,000 accounts | $20 a month per account | Annual, scoped with you |
 | SpecWithCode app and SpecWeave CLI | Yes | Yes | Yes | Yes |
 | Every agent, auto-handoff, specs and ledger in git | Yes | Yes | Yes | Yes |
-| Machines you pair over your own Tailscale | Unlimited | Unlimited | Unlimited | Unlimited |
-| Connect machines (hosted relay, reach them from anywhere and from your phone) | 3 | 10 | Unlimited | Scoped in contract |
+| [Connect](/docs/studio/connect) machines, reached from anywhere and from your phone | 3 | 10 | Unlimited | Scoped in contract |
+| Direct routes (local network, SSH) | Unlimited | Unlimited | Unlimited | Unlimited |
 | Private skills, hosted and security-scanned | | | Yes | Self-hosted registry on request |
 | Setup, named engineer, response times | | | | Yes |
 | Audit export, security review pack, invoice billing | | | | Yes |
