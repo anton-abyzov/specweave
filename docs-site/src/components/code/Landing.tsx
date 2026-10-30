@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import ThemedImage from '@theme/ThemedImage';
-import {ArrowUpRight, Globe, MousePointer2} from 'lucide-react';
+import {ArrowUpRight, MousePointer2} from 'lucide-react';
 import {formatDuration, guidePath, type Tutorial} from '@site/src/data/tutorials';
 import {glowHandlers} from './hooks';
 import styles from './Landing.module.css';
@@ -35,10 +35,12 @@ export function Cards({items, rail, columns = 2, label}: {items: CardItem[]; rai
 
 /** Slim link above the headline to the SpecWithCode Browser extension. */
 export function ChromeAnnounce() {
-  return <a className={styles.announce} href={CHROME_STORE_URL} data-track="chrome_extension_click" data-placement="hero">
-    <span className={styles.announceTag}><Globe size={14} strokeWidth={1.75} aria-hidden="true" />Chrome extension</span>
-    <span className={styles.announceText}>Let agents use your Chrome<span className={styles.announceMeta}> For agents in Claude Code, Codex, GitHub Copilot, Grok and more</span></span>
-    <ArrowUpRight size={16} strokeWidth={1.75} aria-hidden="true" className={styles.announceArrow} />
+  const chrome = useBaseUrl('/img/brands/chrome.svg');
+  return <a className={styles.announce} href={CHROME_STORE_URL} data-track="chrome_extension_click" data-placement="hero" title="SpecWithCode Browser for Chrome: for agents in Claude Code, Codex, GitHub Copilot, Grok and more">
+    <span className={styles.announceLogo}><img src={chrome} alt="" width="22" height="22" /></span>
+    <span className={styles.announceTag}>New</span>
+    <span className={styles.announceText}>Let agents use your Chrome</span>
+    <span className={styles.announceCta}><span className={styles.announceCtaLabel}>Add to Chrome</span><ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" /></span>
   </a>;
 }
 

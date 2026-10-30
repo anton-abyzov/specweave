@@ -140,44 +140,76 @@
   color: var(--wv-muted);
 }
 
-/* ---------- Hero announcement chip ---------- */
+/* ---------- Hero announcement chip: one slim line with the Chrome logo ---------- */
 .announce {
-  display: inline-grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  display: inline-flex;
   align-items: center;
-  gap: var(--wv-space-3);
+  gap: 10px;
   max-width: 100%;
   margin-bottom: var(--wv-space-6);
-  padding: 6px 14px 6px 6px;
-  border: 1px solid color-mix(in srgb, var(--wv-iris) 35%, var(--wv-line));
-  border-radius: var(--wv-radius-lg);
-  background: color-mix(in srgb, var(--wv-iris-tint) 70%, var(--wv-panel));
+  padding: 5px 6px 5px 5px;
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 30%, var(--wv-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--wv-iris-tint) 55%, var(--wv-panel));
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--wv-ink) 8%, transparent);
   color: var(--wv-ink) !important;
   text-decoration: none !important;
-  font: 500 14px/20px var(--wv-font-sans);
-  transition: border-color 200ms ease, box-shadow 200ms ease;
+  font: 600 14px/20px var(--wv-font-sans);
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
 }
-
 .announce:hover {
   border-color: var(--wv-iris);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--wv-iris) 14%, transparent);
 }
-
+.announce:focus-visible { outline: 2px solid var(--wv-iris); outline-offset: 3px; }
+/* The logo sits on a white disc so its colours read the same in light and dark themes. */
+.announceLogo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--wv-ink) 10%, transparent);
+}
+.announceLogo img { display: block; }
 .announceTag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 10px;
+  flex: none;
+  padding: 1px 8px;
   border-radius: 999px;
   background: var(--wv-iris);
   color: var(--wv-on-iris);
-  font: 600 12px/18px var(--wv-font-sans);
+  font: 700 11px/18px var(--wv-font-sans);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.announceText { min-width: 0; line-height: 18px; }
+.announceCta {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--wv-panel);
+  box-shadow: inset 0 0 0 1px var(--wv-line);
+  color: var(--wv-iris-strong);
+  font: 600 13px/18px var(--wv-font-sans);
+}
+.announceCta svg { transition: transform 200ms ease; }
+.announce:hover .announceCta svg { transform: translate3d(2px, -2px, 0); }
+
+/* Icon-only button where the hero column is narrow: phones, and the two-column hero just above 996px. */
+@media (max-width: 480px), (min-width: 997px) and (max-width: 1199px) {
+  .announceCtaLabel { display: none; }
+  .announceCta { padding: 6px; margin-left: 0; }
 }
 
-.announceText { min-width: 0; font-weight: 600; line-height: 18px; }
-.announceMeta { display: block; color: var(--wv-muted); font: 400 12px/16px var(--wv-font-sans); }
-.announceArrow { color: var(--wv-iris-strong); transition: transform 200ms ease; }
-.announce:hover .announceArrow { transform: translate3d(2px, -2px, 0); }
+@media (max-width: 480px) {
+  .announce { gap: 8px; font-size: 13px; border-radius: 22px; }
+}
 
 /* ---------- Crops of the app window ---------- */
 .crop { position: relative; }

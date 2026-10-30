@@ -111,20 +111,21 @@
   top: 50%;
   left: 50%;
   translate: -50% -50%;
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 64px;
-  border: 1px solid var(--wv-line);
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--wv-panel) 88%, transparent);
-  backdrop-filter: blur(8px);
-  color: var(--wv-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px 12px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--wv-iris);
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 35%, transparent);
+  color: var(--wv-on-iris);
+  font: 600 15px/20px var(--wv-font-sans);
   cursor: pointer;
 }
 
 .bigPlay:hover {
-  border-color: var(--wv-iris);
+  filter: brightness(1.08);
 }
 
 .videoControls {
