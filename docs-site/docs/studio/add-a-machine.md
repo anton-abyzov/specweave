@@ -84,12 +84,21 @@ You do not need Tailscale. If both machines are also on the same tailnet, the ma
 
 1. Open **Settings > Connections > Your private machines**.
 2. Paste the line into **Add a machine** and choose **Add machine**. The main machine checks that the address answers as that machine before saving it.
-3. With **Connect automatically** on, the main machine pairs with the worker within a minute. Otherwise choose **Connect machine** on its card.
+3. With **Connect automatically** on, the main machine pairs with the worker within a minute. Otherwise choose **Connect machine** on its card. With Connect only, this browser pairing waits; see [With Connect only](#with-connect-only).
 4. Choose **Allow workers** on the card, and pick the most a worker there may do.
 
 From a terminal on the main machine, `specwithcode fleet add swc-machine-…` does the same. `specwithcode fleet list` shows every machine and whether it answers now; `specwithcode fleet remove <name>` takes one off the list.
 
 Keep SpecWithCode running on the worker. Coordinators can start work there only while its app or server runs and its Connect link is online.
+
+## With Connect only
+
+Everything coordinators need works over Connect alone. Two conveniences still need the optional Tailscale route, and each has a Connect alternative:
+
+| Without Tailscale | Do this instead |
+|---|---|
+| **Connect automatically** or **Connect machine** does not pair your browser with the worker | Open the worker from your devices through its own [Connect](/docs/studio/connect) link. Work you send to it still goes through. |
+| **Use this Mac's GitHub sign-in** is not offered (it never goes through Connect) | Choose **Sign in with a code instead** on the worker's readiness check. |
 
 ## What the worker needs for a project
 
