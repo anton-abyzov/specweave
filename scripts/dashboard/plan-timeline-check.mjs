@@ -121,7 +121,9 @@ try {
     check((await page.locator('.gantt-now-label').count()) === 1, 'Gantt shows a Now line');
     const kpis = await page.locator('[data-testid="timeline-kpis"]').innerText();
     check(/Open increments\s*1\s*2 tasks left/.test(kpis), 'KPI: one open increment, two tasks left');
-    check((await page.locator('.timeline-activity li').count()) === 3, 'Activity feed lists the open increment\'s 3 ledger events');
+    // Open picks the Gantt rows only: closed work in the window still feeds activity and the Closed tile.
+    check((await page.locator('.timeline-activity li').count()) === 17, 'Activity feed under Open keeps the 17 events of work closed in the window');
+    check(/Closed in the last 7 days\s*9/.test(kpis), 'KPI under Open: 9 tasks closed in the last 7 days');
     check((await page.locator('.timeline-throughput rect').count()) > 0, 'Throughput chart has bars');
     check((await page.locator('.timeline-pace tbody tr').count()) >= 2, 'Pace table lists the measured rates');
 

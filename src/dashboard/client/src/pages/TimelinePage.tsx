@@ -5,6 +5,7 @@ import { useProjectApi } from '../hooks/useProjectApi';
 import { useUrlState } from '../hooks/useUrlState';
 import { useSSEEvent } from '../contexts/SSEContext';
 import type { PlanActivity, PlanRow, PlanTimelinePayload, WorkState } from '../../../work-types';
+import { isOpen, timelineView } from './timeline-view';
 import './timeline.css';
 
 const DAY = 86400000;
@@ -44,7 +45,6 @@ function ago(iso: string, now: number): string {
   if (m < 1440) return `${Math.round(m / 60)}h ago`;
   return `${Math.round(m / 1440)}d ago`;
 }
-const isOpen = (r: PlanRow) => r.state !== 'done' && r.status !== 'completed' && r.status !== 'abandoned';
 const FAMILIES = ['claude', 'codex', 'copilot', 'cursor', 'gemini', 'grok'];
 /** `codex-seo-coordinator` → `codex`: custom agent names keep their tool's colour. */
 const toolClass = (tool: string) => FAMILIES.find((f) => tool === f || tool.startsWith(`${f}-`)) ?? 'other';
@@ -74,51 +74,16 @@ export function TimelinePage() {
 
   const windowDays = WINDOWS[windowKey] ?? 30;
   const windowStart = windowDays ? now - windowDays * DAY : 0;
-  const needle = query.trim().toLowerCase();
-
-  const rows = useMemo(() => {
-    const list = (data?.rows ?? []).filter((r) => {
-      if (scope === 'open' && !isOpen(r)) return false;
-      if (scope === 'done' && isOpen(r)) return false;
-      if (tool !== 'all' && !r.tools.includes(tool)) return false;
-      if (needle && !`${r.incrementId} ${r.title}`.toLowerCase().includes(needle)) return false;
-      // Open work always shows; finished work only when it touched the window.
-      if (windowStart && !isOpen(r) && Date.parse(r.end ?? r.start) < windowStart) return false;
-      return true;
-    });
-    return list.sort((a, b) => {
-      if (isOpen(a) !== isOpen(b)) return isOpen(a) ? -1 : 1;
-      return (b.lastEvent?.at ?? b.end ?? b.start).localeCompare(a.lastEvent?.at ?? a.end ?? a.start);
-    });
-  }, [data, scope, tool, needle, windowStart]);
-
-  // Activity, throughput and the KPI tiles follow the same filters as the Gantt rows.
-  const visible = useMemo(() => new Set(rows.map((r) => r.incrementId)), [rows]);
-  const activity = useMemo(
-    () =>
-      (data?.activity ?? []).filter(
-        (a) =>
-          visible.has(a.incrementId) &&
-          (tool === 'all' || a.tool === tool) &&
-          (!windowStart || Date.parse(a.at) >= windowStart),
-      ),
-    [data, visible, tool, windowStart],
-  );
-  const closes = useMemo(
-    () => (data?.closes ?? []).filter((c) => visible.has(c.incrementId) && (tool === 'all' || c.tool === tool)),
-    [data, visible, tool],
-  );
+  const view = useMemo(() => timelineView(data, { scope, tool, query, windowStart }, now), [data, scope, tool, query, windowStart, now]);
+  const { rows, activity, closes } = view;
   const throughput = useMemo(() => dailyCloses(closes, now), [closes, now]);
 
   const tools = useMemo(() => [...new Set((data?.rows ?? []).flatMap((r) => r.tools))].sort(), [data]);
-  const open = rows.filter((r) => r.remaining);
+  const open = view.kpis.forecast;
   const p50 = open.reduce((n, r) => n + (r.remaining?.p50Minutes ?? 0), 0);
   const p80 = open.reduce((n, r) => n + (r.remaining?.p80Minutes ?? 0), 0);
   const lanes = Math.max(1, Math.min(data?.lanes ?? 1, open.length || 1));
-  const tasksLeft = open.reduce((n, r) => n + (r.remaining?.tasks ?? 0), 0);
-  const finished = rows.filter((r) => !isOpen(r) && r.tasks.done + r.tasks.skipped >= 2);
-  const live = finished.filter((r) => !r.recordedAfter).length;
-  const week = closes.filter((c) => Date.parse(c.at) >= now - 7 * DAY).length;
+  const { tasksLeft, closedThisWeek: week, finished, live } = view.kpis;
 
   return (
     <div className="work-page timeline-page">
@@ -194,7 +159,7 @@ export function TimelinePage() {
       <div className="work-metrics timeline-metrics" data-testid="timeline-kpis">
         <div>
           <span>Open increments</span>
-          <strong>{open.length}</strong>
+          <strong>{view.kpis.open}</strong>
           <small>{tasksLeft} tasks left</small>
         </div>
         <div>
@@ -213,11 +178,11 @@ export function TimelinePage() {
         </div>
         <div>
           <span>Planned before the work</span>
-          <strong className={finished.length && live / finished.length < 0.5 ? 'timeline-warn' : ''}>
-            {finished.length ? `${Math.round((live / finished.length) * 100)}%` : '—'}
+          <strong className={finished && live / finished < 0.5 ? 'timeline-warn' : ''}>
+            {finished ? `${Math.round((live / finished) * 100)}%` : '—'}
           </strong>
           <small>
-            {finished.length - live} of {finished.length} recorded after the fact · {data?.smallFixes ?? 0} small fixes
+            {finished - live} of {finished} recorded after the fact · {data?.smallFixes ?? 0} small fixes
           </small>
         </div>
       </div>
