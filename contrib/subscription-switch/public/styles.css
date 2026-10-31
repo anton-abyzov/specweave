@@ -1,9 +1,9 @@
-/* SpecWithCode tokens (Studio apps/web index.css): zinc neutrals, indigo primary, blue-to-teal brand accent. */
+/* SpecWithCode tokens (Studio apps/web index.css): zinc neutrals, indigo primary, indigo brand accent (the logo tile, #5B6CFF). */
 :root {
   --bg: #fafafa; --card: #ffffff; --hover: #f4f4f5; --fg: #27272a; --muted: #71717a; --faint: #a1a1aa;
   --border: #e4e4e7; --track: #ececef;
   --primary: oklch(0.488 0.217 264); --primary-fg: #ffffff;
-  --brand: linear-gradient(90deg, #4f5ff8, #3bd9c3);
+  --brand: linear-gradient(90deg, #5B6CFF, #5B6CFF);
   --ok: #047857; --ok-bg: color-mix(in srgb, #10b981 12%, transparent);
   --warn: #b45309; --warn-bg: color-mix(in srgb, #f59e0b 14%, transparent); --warn-bar: #f59e0b;
   --bad: #b91c1c; --bad-bg: color-mix(in srgb, #ef4444 11%, transparent); --bad-bar: #ef4444;
