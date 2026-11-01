@@ -43,6 +43,16 @@ If you skipped the service, start the server yourself with `specwithcode serve`.
 
 On your other device (the desktop app on another computer, a browser, or the iPhone app), sign in to the same Connect account and choose the machine. Projects, threads, terminals and agents stay on that machine and run with its own provider sign-ins; your device only drives them.
 
+### Add your iPhone, or a second one
+
+1. On the computer, open **Settings > Connections**. Under **Use SpecWithCode on your phone**, sign in and choose **Turn on**. It then says the computer is ready for your iPhone.
+2. On the iPhone, install SpecWithCode, open it and sign in with the same account.
+3. The computer appears in the iPhone's list. Tap it to start.
+
+For another iPhone, repeat steps 2 and 3 on it. Every iPhone signs in on its own and sees the same machines; phones do not count toward the machine limit below. Signing out on one iPhone leaves the others connected.
+
+**Pair a phone** in the same settings opens this guide first. Its **Use a private QR code instead** option is a fallback for when you can't use Connect: the iPhone must then reach the computer directly, on the same network or over Tailscale, and scan a one-time code.
+
 When both devices are also on the same local network, SpecWithCode learns the machine's local address through Connect and uses it while you are at home, then falls back to Connect when you leave. You do not set this up.
 
 ## How many machines
