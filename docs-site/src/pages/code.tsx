@@ -3,8 +3,9 @@ import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
-import {Activity, ArrowRightLeft, ArrowUpRight, Check, ChevronDown, CirclePause, Cloud, Coins, Copy, Cpu, Download, FileCheck2, FileText, Gauge, Info, Laptop, ListChecks, MessagesSquare, Mic, MousePointerClick, Network, Route, Server, ShieldCheck, Users} from 'lucide-react';
+import {Activity, ArrowRightLeft, Layers, Puzzle, ArrowUpRight, Check, ChevronDown, CirclePause, Cloud, Coins, Copy, Cpu, Download, FileCheck2, FileText, Gauge, Info, Laptop, ListChecks, MessagesSquare, Mic, MousePointerClick, Network, Route, Server, ShieldCheck, Users} from 'lucide-react';
 import useBaseUrl from '@docusaurus/useBaseUrl';
+import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import CoordinatorFlow from '../components/ecosystem/CoordinatorFlow';
 import HeroFlow from '../components/ecosystem/HeroFlow';
 import SubscriptionValue from '../components/ecosystem/SubscriptionValue';
@@ -12,6 +13,7 @@ import WhySpecWithCode from '../components/ecosystem/WhySpecWithCode';
 import StudioTutorialVideo from '../components/ecosystem/StudioTutorialVideo';
 import HeroStage from '../components/code/HeroStage';
 import BuiltWithItself from '../components/code/BuiltWithItself';
+import HarnessStack from '../components/code/Harness';
 import {BrowserDiagram, CHROME_STORE_URL, CardShot, Cards, ChromeAnnounce, FinishDiagram, GuideCards, MachinesDiagram, PolicyPicker, Tokens, WindowCrop, type CardItem} from '../components/code/Landing';
 import landing from '../components/code/Landing.module.css';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
@@ -34,6 +36,13 @@ const THREADS: {name: string; detail: React.ReactNode}[] = [
   {name: 'Stop all, continue all', detail: <>Pause every thread at once, or type <code>/stop</code>, <code>/continue</code> or <code>/status</code>. Messages held after a stop or a restart wait with Resume and Discard.</>},
   {name: 'Reports you can reopen', detail: <>Long worker reports become cards, saved beside the increment under <code>.specweave/increments/&lt;id&gt;/reports/</code>. Short replies stay inline.</>},
   {name: 'Plan progress on the thread', detail: <>Link a thread to a SpecWeave increment and a chip shows how many of its tasks are done, read from <code>spec.md</code> and <code>ledger.jsonl</code>.</>},
+];
+
+const HARNESS: {name: string; detail: React.ReactNode}[] = [
+  {name: 'Each agent at full strength', detail: <>The vendor’s own harness runs every thread, so its tools, permission rules and instruction files come with it, and the vendor’s updates reach you through the agent itself.</>},
+  {name: 'Sign-ins stay with the vendor', detail: <>SpecWithCode starts the agent installed on your machine, which keeps its own sign-in and subscription. SpecWithCode never reads or relays those credentials.</>},
+  {name: 'Skills follow you across harnesses', detail: <>Skills and plugins belong to each harness, so a skill set up for Claude Code is not there when a thread runs on Codex. The <a href="https://verified-skill.com">Verified Skill</a> CLI installs the same skill into every agent you use.</>},
+  {name: 'One place above all of them', detail: <>A coordinator plans across harnesses, every thread looks and works the same whichever agent runs it, and a thread can move to another harness with its context when a provider runs out.</>},
 ];
 
 const LIMITS: {name: string; detail: React.ReactNode}[] = [
@@ -81,7 +90,7 @@ const FAQ: {q: string; a: React.ReactNode}[] = [
   {q: 'Should one machine switch between accounts of the same provider?', a: <>We recommend against it. Keep each machine signed in to one account per provider and leave it that way. For more capacity, add a machine with its own subscriptions instead of switching accounts by hand.</>},
   {q: 'What is free?', a: <>SpecWithCode is free, with source available. You bring your provider accounts and pay any provider charges directly. The <Link className="wv-link" to="/docs/getting-started/">SpecWeave CLI</Link> keeps specs, task evidence and handoffs in git so another tool can continue the work.</>},
   BRAND_FAQ,
-  {q: 'Is SpecWithCode a coding-agent harness?', a: <>SpecWithCode is an agentic development environment that coordinates existing coding agents. Claude Code, Codex and other supported agents keep their own execution runtimes. The app adds project coordination, worker threads, context handoffs and shared tools. SpecWithCode is independently maintained, with its own settings, portable specs and handoff workflows.</>},
+  {q: 'Is SpecWithCode a coding-agent harness?', a: <>No. A harness is the agent loop, tools, permissions and sign-in a vendor builds around its model, and Claude Code, Codex and GitHub Copilot CLI are harnesses. SpecWithCode is an interface to those native harnesses: each one keeps running its own agent, and the app adds project coordination, worker threads, usage limits, machines and context handoffs on top. SpecWithCode is independently maintained, with its own settings, portable specs and handoff workflows. <a className="wv-link" href="#harnesses">How it works with harnesses</a></>},
   {q: 'Do I need SpecWeave increments?', a: <>Increments are optional. We strongly recommend them for work that spans several agents or sessions: write the acceptance criteria, record task evidence and review the result before closing. Add skills for the work at hand, such as design, testing or code review. Passing checks supports those specific results; it does not guarantee bug-free software.</>},
 ];
 
@@ -93,14 +102,14 @@ const FAQ_TEXT: {q: string; a: string}[] = [
   {q: FAQ[3].q, a: 'We recommend against it. Keep each machine signed in to one account per provider and leave it that way. For more capacity, add a machine with its own subscriptions instead of switching accounts by hand.'},
   {q: FAQ[4].q, a: 'SpecWithCode is free, with source available. You bring your provider accounts and pay any provider charges directly. The SpecWeave CLI keeps specs, task evidence and handoffs in git so another tool can continue the work.'},
   BRAND_FAQ,
-  {q: FAQ[6].q, a: 'SpecWithCode is an agentic development environment that coordinates existing coding agents. Claude Code, Codex and other supported agents keep their own execution runtimes. The app adds project coordination, worker threads, context handoffs and shared tools. SpecWithCode is independently maintained, with its own settings, portable specs and handoff workflows.'},
+  {q: FAQ[6].q, a: 'No. A harness is the agent loop, tools, permissions and sign-in a vendor builds around its model, and Claude Code, Codex and GitHub Copilot CLI are harnesses. SpecWithCode is an interface to those native harnesses: each one keeps running its own agent, and the app adds project coordination, worker threads, usage limits, machines and context handoffs on top. SpecWithCode is independently maintained, with its own settings, portable specs and handoff workflows.'},
   {q: FAQ[7].q, a: 'Increments are optional. We strongly recommend them for work that spans several agents or sessions: write the acceptance criteria, record task evidence and review the result before closing. Add skills for the work at hand, such as design, testing or code review. Passing checks supports those specific results; it does not guarantee bug-free software.'},
 ];
 
 const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/`;
 const TITLE = 'SpecWithCode (Spec with Code): agents on your own computers';
-const DESCRIPTION = 'SpecWithCode (Spec with Code): run Claude Code, Codex and Cursor on your own computers. Free workspace for macOS, Windows and Linux.';
+const DESCRIPTION = 'SpecWithCode (Spec with Code): one interface for Claude Code, Codex, Copilot and more, in their native harnesses. Free for macOS, Windows and Linux.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 /** The SpecWithCode explainer on the AI Power YouTube channel. */
 const EXPLAINER_URL = 'https://www.youtube.com/watch?v=eCLJSZ8wo9w';
@@ -212,6 +221,8 @@ const LIMIT_CARDS = withIcons(LIMITS, [
   {icon: Activity},
 ]);
 
+const HARNESS_CARDS = withIcons(HARNESS, [{icon: Layers}, {icon: ShieldCheck}, {icon: Puzzle}, {icon: ArrowRightLeft}]);
+
 const CAPACITY_CARDS = withIcons(CAPACITY, [{icon: Cpu}, {icon: Server}, {icon: Network}, {icon: Laptop}]);
 
 const REACH_CARDS = withIcons(REACH.filter(r => r.name !== 'SpecWithCode Browser'), [
@@ -230,6 +241,10 @@ function FooterDownload() {
 export default function Code() {
   const icon28 = useBaseUrl('/img/studio/specwithcode-icon.png');
   const providerBase = useBaseUrl('/img/studio/providers/');
+  // Other pages link to /code/#harnesses and #built-with-itself; section ids on a custom page must be declared to the link checker.
+  const brokenLinks = useBrokenLinks();
+  brokenLinks.collectAnchor('harnesses');
+  brokenLinks.collectAnchor('built-with-itself');
   return <Layout title={TITLE} description={DESCRIPTION}>
     <Head>
       <title>{TITLE}</title>
@@ -254,14 +269,14 @@ export default function Code() {
             <span className={styles.productNote}>Free, source available</span>
           </p>
           <h1><span className={styles.heroBrand}>SpecWithCode</span> Give the goal.<br /><em>Keep the whole picture.</em></h1>
-          <p className={styles.lead}>One workspace for your coding agents on your own computers. A coordinator keeps the brief, workers do the work, and you review the result.</p>
+          <p className={styles.lead}>One interface for Claude Code, Codex, GitHub Copilot and more, each in its own native harness on your computers. A coordinator keeps the brief, workers do the work, you review the result.</p>
           <div className={styles.actions}>
             <Link className="wv-btn wv-btn--primary wv-btn--lg" to="/code/download/" data-track="download_click" data-placement="hero"><Download {...btnIcon} />Download for macOS, Windows or Linux</Link>
             <a className="wv-btn wv-btn--secondary wv-btn--lg" href="#workflow">See how it works</a>
           </div>
           <ul className={styles.providers} aria-label="Some supported coding agents">
             {[['claude', 'Claude Code'], ['openai', 'Codex'], ['cursor', 'Cursor'], ['opencode', 'OpenCode']].map(([file, name]) => <li key={name}><img src={`${providerBase}${file}.svg`} alt="" width="28" height="28" /><span>{name}</span></li>)}
-            <li><a href="#tutorials">More agents</a></li>
+            <li><a href="#harnesses">More agents</a></li>
           </ul>
         </div>
         <div className={styles.topMedia}>
@@ -281,6 +296,15 @@ export default function Code() {
       </section>
 
       <div className={styles.shell}><CoordinatorFlow /></div>
+
+      <section className={clsx(styles.shell, styles.section)} id="harnesses" aria-labelledby="harnesses-title">
+        <div className={clsx(styles.sectionHead, landing.reveal)}>
+          <h2 id="harnesses-title">One interface. The native harnesses underneath.</h2>
+          <p>A harness is everything a vendor builds around its model so it can write code: the agent loop, the tools, permissions, context handling and sign-in. Claude Code, Codex and GitHub Copilot CLI are harnesses. SpecWithCode does not replace them or rebuild them. It talks to each one natively and gives you one place to plan, steer and review the work they do.</p>
+        </div>
+        <HarnessStack />
+        <div className={styles.harnessCards}><Cards items={HARNESS_CARDS} columns={4} label="What running native harnesses means" /></div>
+      </section>
 
       <div className={clsx(styles.shell, styles.section)}><BuiltWithItself more={false} /></div>
 
@@ -386,7 +410,7 @@ export default function Code() {
           <span className={styles.specsIcon}><FileCheck2 size={22} strokeWidth={1.5} aria-hidden="true" /></span>
           <div>
             <h2 id="specs-title">Keep the spec with the code</h2>
-            <p>The optional SpecWeave CLI keeps acceptance criteria, task evidence and handoffs in your repository. SpecWithCode runs the agents against that record. <Link className="wv-link" to="/docs/compare/spec-as-code/">Compare spec as code, spec-driven and intent-first development</Link>, or <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">compare the planning tools</Link>. See also <Link className="wv-link" to="/docs/compare/specwithcode-vs-opencode-t3-code/">SpecWithCode vs OpenCode and T3 Code</Link> and <Link className="wv-link" to="/docs/compare/specwithcode-vs-bridgemind/">SpecWithCode vs BridgeMind</Link>.</p>
+            <p>The optional SpecWeave CLI keeps acceptance criteria, task evidence and handoffs in your repository. SpecWithCode runs the agents against that record. <Link className="wv-link" to="/docs/compare/spec-as-code/">Compare spec as code, spec-driven and intent-first development</Link>, or <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">compare the planning tools</Link>. See also <Link className="wv-link" to="/docs/compare/specwithcode-vs-opencode-t3-code/">SpecWithCode vs OpenCode and other agent apps</Link> and <Link className="wv-link" to="/docs/compare/specwithcode-vs-bridgemind/">SpecWithCode vs BridgeMind</Link>.</p>
           </div>
           <div className={styles.specsFiles}><Tokens items={['spec.md', 'ledger.jsonl', 'reports/']} mono /></div>
         </div>

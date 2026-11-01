@@ -49,6 +49,7 @@ The words SpecWeave uses, as they apply to 3.0. Terms with their own page link t
 
 | Term | Meaning |
 |---|---|
+| Harness | The agent loop, tools, permissions, context handling and sign-in that a vendor builds around its model so it can write code. Claude Code, Codex and GitHub Copilot CLI are harnesses. SpecWeave writes files any harness can read; [SpecWithCode](/code/#harnesses) is one interface over several native harnesses. |
 | Skill | A `SKILL.md` file an AI tool loads on demand. SpecWeave's seven core skills are increment, grill-me, do, auto, done, review and handoff; glossary, sync, project and jev are optional (`specweave skills`). See [skills reference](/docs/reference/skills). |
 | Cross-model review | `specweave review`: a reviewer from another model family than the one that wrote the code reviews the increment's diff. |
 | Auto mode | Unattended execution of an increment's tasks: `/sw:auto`, "run until done", or `specweave auto`. See [autonomous execution](/docs/guides/autonomous-execution). |

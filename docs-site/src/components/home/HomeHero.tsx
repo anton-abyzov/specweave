@@ -64,7 +64,7 @@ export default function HomeHero() {
         <span>SpecWithCode Browser: let Claude Code, Codex, GitHub Copilot or Grok use your own Chrome</span>
       </a>
       <h1>Switch AI tools without losing your place.</h1>
-      <p className={s.lead}>SpecWeave writes the plan and every finished task into git, so Claude Code, Codex or any other agent can pick up the same work. <Link className={s.inline} to="/code/">SpecWithCode</Link> (pronounced “Spec with Code”) runs those agents on your own machines and subscriptions.</p>
+      <p className={s.lead}>SpecWeave writes the plan and every finished task into git, so Claude Code, Codex or any other agent can pick up the same work. <Link className={s.inline} to="/code/">SpecWithCode</Link> (pronounced “Spec with Code”) is one interface over those agents’ own native harnesses, on your machines and subscriptions.</p>
       <div className={s.actions}>
         <a className={base.primary} href={release.dmgUrl} aria-label={downloadLabel}>Download for Mac</a>
         <Link className={base.secondary} to="/product">Get the CLI</Link>
