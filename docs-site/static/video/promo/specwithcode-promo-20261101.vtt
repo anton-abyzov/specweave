@@ -9,19 +9,19 @@ Give SpecWithCode one goal.
 Its coordinator hands each piece of work to a thread.
 
 3
-00:00:07.650 --> 00:00:10.400
+00:00:07.650 --> 00:00:09.550
 A thread keeps its context,
 
 4
-00:00:10.400 --> 00:00:13.810
+00:00:09.550 --> 00:00:13.810
 so a follow-up goes back to the thread that already knows the work.
 
 5
-00:00:14.300 --> 00:00:17.700
+00:00:14.300 --> 00:00:18.350
 Claude Code, Codex and other agents work in parallel,
 
 6
-00:00:17.700 --> 00:00:19.900
+00:00:18.350 --> 00:00:19.900
 on your own machines.
 
 7

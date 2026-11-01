@@ -6,17 +6,18 @@
 set -euo pipefail
 OLD=$1 THREADS=$2 BROWSER=$3 VO=$4 OUT=$5
 # segment: source start end (seconds); the usage-limit shot stops before its fade and holds 0.8 s.
+# The end card starts at 26.7, after the old browser scene has faded out; browser.mp4 is 6.3 s.
 ffmpeg -y -v error -i "$OLD" -i "$THREADS" -i "$BROWSER" \
   -i "$VO/01-goal.wav" -i "$VO/02-threads.wav" -i "$VO/03-reuse.wav" -i "$VO/04-parallel.wav" \
   -i "$VO/05-review.wav" -i "$VO/06-limit.wav" -i "$VO/07-chrome.wav" -i "$VO/08-download.wav" -i "$VO/09-url.wav" \
   -filter_complex "
   [0:v]trim=0:3.2,setpts=PTS-STARTPTS,fps=30,format=yuv420p[s1];
-  [1:v]fps=30,format=yuv420p,setpts=PTS-STARTPTS[s2];
+  [1:v]fps=30,format=yuv420p,setpts=PTS-STARTPTS,fade=t=in:d=0.25:color=0x13101a,fade=t=out:st=10.6:d=0.3:color=0x13101a[s2];
   [0:v]trim=6.75:12.75,setpts=PTS-STARTPTS,fps=30,format=yuv420p[s3];
   [0:v]trim=12.75:16.0,setpts=PTS-STARTPTS,fps=30,format=yuv420p[s4];
   [0:v]trim=16.0:20.6,setpts=PTS-STARTPTS,fps=30,format=yuv420p,tpad=stop_mode=clone:stop_duration=0.8[s5];
-  [2:v]fps=30,format=yuv420p,setpts=PTS-STARTPTS[s6];
-  [0:v]trim=26.5:37.0,setpts=PTS-STARTPTS,fps=30,format=yuv420p[s7];
+  [2:v]fps=30,format=yuv420p,setpts=PTS-STARTPTS,fade=t=in:d=0.25:color=0x13101a,fade=t=out:st=6.0:d=0.3:color=0x13101a[s6];
+  [0:v]trim=26.7:37.0,setpts=PTS-STARTPTS,fps=30,format=yuv420p[s7];
   [s1][s2][s3][s4][s5][s6][s7]concat=n=7:v=1:a=0[v];
   [3:a]adelay=700:all=1[a1]; [4:a]adelay=3400:all=1[a2]; [5:a]adelay=7650:all=1[a3];
   [6:a]adelay=14300:all=1[a4]; [7:a]adelay=20300:all=1[a5]; [8:a]adelay=23550:all=1[a6];

@@ -63,27 +63,23 @@ svg{position:absolute;inset:0;overflow:visible}
   <div class="kick in" style="animation-delay:.1s">04 <b>YOUR BROWSER</b></div>
   <div class="h in" style="animation-delay:.25s">Agents can use <em>your Chrome.</em></div>
 
-  <div class="card in" id="toolbar" style="left:150px;top:350px;width:1000px;animation-delay:.6s;display:none"><img src="a/toolbar.png"></div>
-  <div class="card in" id="store" style="left:150px;top:360px;width:1000px;padding:34px 40px;animation-delay:.6s"><img src="a/store-head.png"></div>
-  <div class="pill in" id="storepill" style="left:150px;top:300px;animation-delay:.7s"><i>●</i> Chrome Web Store · SpecWithCode Browser 1.0.4</div>
+  <div class="pill in" style="left:150px;top:300px;animation-delay:.6s"><i>●</i> SpecWithCode Browser · in your toolbar</div>
+  <div class="card in" style="left:150px;top:360px;width:420px;animation-delay:.7s;background:#fbf8fe"><img src="a/toolbar.png"></div>
+  <div class="ring pop" style="left:446px;top:373px;width:96px;height:96px;border-radius:24px;animation-delay:1.6s"></div>
+
+  <div class="pill in" style="left:150px;top:620px;animation-delay:2.2s"><i>●</i> Agent tabs, grouped and labelled</div>
+  <div class="card in" style="left:150px;top:680px;width:1000px;padding:14px 12px;animation-delay:2.4s;background:#fbf8fe"><img src="a/tab-groups.png"></div>
+  <div class="in" style="position:absolute;left:150px;top:800px;width:1000px;font-size:34px;line-height:1.35;color:#d8d2e6;animation-delay:3.0s">Signed in as you, on this computer only. Drag a tab out and it is yours again.</div>
 
   <div class="card inR" style="left:1280px;top:290px;width:500px;animation-delay:1.3s"><img src="a/popup.png"></div>
   <div class="pill in" style="left:1280px;top:232px;animation-delay:1.5s"><i>●</i> The extension, paired</div>
-  <div class="ring pop" style="left:1288px;top:344px;width:290px;height:42px;border-radius:10px;animation-delay:2.4s"></div>
-
-  <div class="tag pop" id="grp" style="left:150px;top:640px;background:#1a73e8;box-shadow:0 10px 30px rgba(26,115,232,.45);animation-delay:3.0s">SpecWithCode · Personal</div>
-  <div class="in" id="grptext" style="position:absolute;left:150px;top:712px;width:1000px;font-size:34px;line-height:1.35;color:#d8d2e6;animation-delay:3.2s">Agent tabs open in their own blue tab group, signed in as you, on this computer only.</div>
+  <div class="ring pop" style="left:1288px;top:344px;width:290px;height:42px;border-radius:10px;animation-delay:2.6s"></div>
 </section>
 
 <script>
 const q = new URLSearchParams(location.search);
 const scene = q.get('scene') || 'threads';
 document.getElementById(scene).style.display = 'block';
-if (q.get('toolbar') === '1') {
-  for (const id of ['store']) document.getElementById(id).style.display = 'none';
-  document.getElementById('toolbar').style.display = 'block';
-  document.getElementById('storepill').innerHTML = '<i>●</i> Pinned in the Chrome toolbar';
-}
 window.seek = t => { for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; } };
 window.seek(0);
 </script>
