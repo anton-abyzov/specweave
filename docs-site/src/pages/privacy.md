@@ -5,9 +5,9 @@ description: How SpecWeave, SpecWithCode and spec-weave.com handle your informat
 
 # Privacy Policy
 
-Effective 18 October 2026.
+Effective 1 November 2026.
 
-This policy covers the SpecWeave command-line tool, the SpecWithCode desktop app and service, the SpecWithCode iPhone app, and this website, spec-weave.com. They are made by Anton Abyzov ("we"). Questions go to [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com).
+This policy covers the SpecWeave command-line tool, the SpecWithCode desktop app and service, the SpecWithCode iPhone and Android apps, and this website, spec-weave.com. They are made by Anton Abyzov ("we"). Questions go to [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com).
 
 ## Where your data lives
 
@@ -50,6 +50,16 @@ On the phone, the app keeps the list of computers you paired: each computer's na
 The camera is used only to scan the pairing QR code, and local network access only to reach your own computers.
 
 Removing a computer in the app deletes its addresses and tokens from the phone, but does not tell the computer. To end the phone's access sooner, revoke it in SpecWithCode on that computer, under Settings > Connections > Authorized clients. Otherwise access ends after 30 days.
+
+## SpecWithCode for Android
+
+The SpecWithCode Android app controls SpecWithCode on computers you own. It reaches them in one of two ways.
+
+**SpecWithCode Connect (optional).** You sign in with a SpecWithCode account. Sign-in is handled by Clerk, our authentication provider, which stores your email address, your name and the sign-in method you chose (for example Google or GitHub). The app then asks the SpecWithCode relay (relay.spec-weave.com) for the computers linked to your account and for a one-time credential to open one of them. After that, the app talks to your computer directly through that computer's own tunnel address. The relay does not carry your messages, replies or files. To delete your account and the data Clerk holds for it, email us from the address you signed in with.
+
+**Direct pairing.** You pair with a link or QR code from SpecWithCode on your computer. No account is needed, and nothing goes through our relay.
+
+Either way, the app sends your messages only to your own computers, and replies come back only from them. SpecWithCode on the computer passes your messages to the coding agent or AI provider you set up there, as described above. The app keeps the list of computers you can reach, its sign-in tokens and your settings in its private storage on the phone. It has no analytics, no advertising and no tracking. The camera is used only to scan a pairing QR code. Notifications about your agents are created on the phone from what your computers report.
 
 ## This website
 
