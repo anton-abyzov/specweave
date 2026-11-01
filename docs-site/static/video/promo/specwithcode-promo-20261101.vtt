@@ -1,0 +1,53 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.020
+Give SpecWithCode one goal.
+
+2
+00:00:03.400 --> 00:00:07.080
+Its coordinator hands each piece of work to a thread.
+
+3
+00:00:07.650 --> 00:00:10.400
+A thread keeps its context,
+
+4
+00:00:10.400 --> 00:00:13.810
+so a follow-up goes back to the thread that already knows the work.
+
+5
+00:00:14.300 --> 00:00:17.700
+Claude Code, Codex and other agents work in parallel,
+
+6
+00:00:17.700 --> 00:00:19.900
+on your own machines.
+
+7
+00:00:20.300 --> 00:00:22.700
+Then you review one result.
+
+8
+00:00:23.550 --> 00:00:25.700
+When one agent hits a usage limit,
+
+9
+00:00:25.700 --> 00:00:28.350
+the same thread continues on another.
+
+10
+00:00:29.100 --> 00:00:31.200
+Agents can even use your own Chrome,
+
+11
+00:00:31.200 --> 00:00:33.980
+with the SpecWithCode Browser extension.
+
+12
+00:00:35.150 --> 00:00:39.790
+SpecWithCode is a free download for macOS, Windows and Linux.
+
+13
+00:00:40.000 --> 00:00:42.720
+At spec-weave.com/code.

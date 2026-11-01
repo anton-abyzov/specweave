@@ -17,9 +17,9 @@ import styles from './HeroStage.module.css';
 */
 
 const PROMO = {
-  video: mediaUrl('/video/promo/specwithcode-promo.mp4'),
+  video: mediaUrl('/video/promo/specwithcode-promo-20261101.mp4'),
   poster: '/video/promo/specwithcode-promo-poster.jpg',
-  captions: '/video/promo/specwithcode-promo.vtt',
+  captions: '/video/promo/specwithcode-promo-20261101.vtt',
 };
 
 /** Render the video once the page is hydrated; fall back to the capture only if the browser cannot load it. */
