@@ -10,7 +10,7 @@ import StudioOverviewVideo from '@site/src/components/ecosystem/StudioOverviewVi
 
 # One ecosystem, three distinct jobs
 
-**SpecWeave** keeps project intent and evidence in your repository. **vskill and Skill Studio** help you install and evaluate skills. **SpecWithCode** is the workspace on top: projects with a coordinator and workers on any provider, across your machines. Start with [the SpecWithCode overview](/docs/overview/studio/) for what it does; this page covers how the pieces connect.
+**SpecWeave** keeps project intent and evidence in your repository. **vskill and Skill Studio** help you install and evaluate skills. **SpecWithCode** is the interface on top: projects with a coordinator and workers on any harness, across your machines. See [harnesses, models and the interface](/docs/studio/harnesses/). Start with [the SpecWithCode overview](/docs/overview/studio/) for what it does; this page covers how the pieces connect.
 
 <ProductMap />
 
@@ -24,8 +24,8 @@ SpecWithCode is not the app launched by `npx vskill studio`. That command opens 
 | --- | --- | --- |
 | Browser | Display sessions, output and approvals | Browser connection state does not grant execution authority |
 | Network route | SpecWithCode Connect, the hosted relay, between machines and devices; also the local network, an SSH tunnel or an optional Tailscale route | Reaching a host is not permission; SpecWithCode still requires pairing on every route |
-| SpecWithCode runtime | Own host-local sessions, accounts, admission and recovery | Pair each host separately; do not copy credentials between accounts |
-| Native agent | Execute a turn through its selected provider/account | Provider availability and approval rules still apply |
+| SpecWithCode runtime | Track host-local threads, accounts, admission and recovery; the harness owns its native session | Pair each host separately; do not copy credentials between accounts |
+| Harness | Run the agent loop, execute tools and keep the native session, on its selected model and account | Harness availability and approval rules still apply |
 | Repository | Code, specs, task ledger and verification evidence | Git transports project changes; it is not a shared live session database |
 | vskill | Inspect/install skills and run evaluations | Source trust and evaluation results require independent assessment |
 
@@ -46,9 +46,9 @@ A browser or phone opening a SpecWithCode host can use one of several routes, an
 
 If you use the optional Tailscale route, note that Tailscale **Serve** exposes a local service inside the private tailnet. **Funnel** is a different feature for public exposure; it is not SpecWithCode's remote-access design. See the [official Tailscale Serve documentation](https://tailscale.com/docs/features/tailscale-serve).
 
-### Providers and switching
+### Harnesses and switching
 
-SpecWithCode runs each provider's own agent with the sign-ins already on that machine: Claude Code, Codex, Cursor, Grok Build, OpenCode, Muse Code, Antigravity and Pi through their own integrations, and Gemini CLI, GitHub Copilot and other agents through the ACP Registry. Cursor is the exception: you sign in once inside SpecWithCode, or set `CURSOR_API_KEY`, and it runs as a local agent in the selected workspace through Cursor's SDK. SpecWithCode never starts Cursor cloud agents. Each thread picks its provider, model and effort. You can change provider inside a thread: SpecWithCode passes a budgeted selection of the conversation to the new agent, which continues in the same checkout. When a provider hits its usage limit, the project’s rule decides: switch to the fallback provider on its own (the default), offer the fallback, or wait for the reset.
+SpecWithCode runs no agent loop of its own. It drives each vendor's own harness with the sign-ins already on that machine: Claude Code (Agent SDK), Codex (app-server), Cursor (SDK), OpenCode (HTTP API), Pi (RPC), and Muse Code and Antigravity through their own integrations; Grok Build connects over ACP, and Gemini CLI, GitHub Copilot and other agents through the ACP Registry. Cursor is the exception: you sign in once inside SpecWithCode, or set `CURSOR_API_KEY`, and it runs as a local agent in the selected workspace through Cursor's SDK. SpecWithCode never starts Cursor cloud agents. Each thread picks its harness, model and effort. You can change harness inside a thread: SpecWithCode passes a budgeted selection of the conversation to the new agent, which continues in the same checkout. When a provider hits its usage limit, the project’s rule decides: switch to the fallback provider on its own (the default), offer the fallback, or wait for the reset.
 
 ### Optional components
 

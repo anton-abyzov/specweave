@@ -15,7 +15,7 @@ The facts about other products below come from their own sites, docs and GitHub 
 
 | | SpecWithCode | OpenCode | T3 Code | Cloud agents |
 |---|---|---|---|---|
-| **What runs the agent** | Each vendor's own agent: the Claude Code, Codex, Grok, OpenCode, Muse Code, Antigravity and Pi CLIs, Cursor through its official SDK ([Cursor SDK](https://cursor.com/docs/api/sdk/typescript)), plus GitHub Copilot CLI and Gemini CLI through the ACP registry | Its own agent loop with build and plan agents, across 75+ model providers ([providers](https://opencode.ai/docs/providers/), [README](https://github.com/anomalyco/opencode)) | Vendor CLIs: Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity ([README](https://github.com/pingdotgg/t3code)) | The vendor's agent in the vendor's environment |
+| **What runs the agent** | Each vendor's own harness; SpecWithCode is the interface and runs no agent loop of its own. Claude Code, Codex, OpenCode, Muse Code, Antigravity and Pi natively, Cursor through its official SDK ([Cursor SDK](https://cursor.com/docs/api/sdk/typescript)), and Grok Build, GitHub Copilot CLI and Gemini CLI through ACP | Its own agent loop with build and plan agents, across 75+ model providers ([providers](https://opencode.ai/docs/providers/), [README](https://github.com/anomalyco/opencode)) | Vendor CLIs: Claude Code, Codex, Cursor, Grok Build, OpenCode, Google Antigravity ([README](https://github.com/pingdotgg/t3code)) | The vendor's agent in the vendor's environment |
 | **Where your code runs** | Your own computers | Your machine | Your machine | A vendor-hosted container or VM that clones your repo (sources below) |
 | **Claude Pro, Max or Ultra plan** | Through Claude Code's own sign-in on each machine | Its docs say Anthropic prohibits this and the plugin has not been bundled since v1.3.0 ([providers](https://opencode.ai/docs/providers/)) | Through Claude Code: "Works with your subscriptions" ([README](https://github.com/pingdotgg/t3code)) | Billed through each vendor's own plan |
 | **Other machines** | Pair supported machines over SpecWithCode Connect (default), your network or SSH, with Tailscale as an optional direct route; move a project or continue a thread on another machine | `opencode serve` and `opencode web` listen on 127.0.0.1 by default and can bind a network address ([server](https://opencode.ai/docs/server/), [web](https://opencode.ai/docs/web/)) | Network, Tailscale, SSH or the T3 Connect relay ([remote access](https://github.com/pingdotgg/t3code/blob/main/docs/user/remote-access.md)) | Runs in the vendor's cloud |
@@ -54,7 +54,7 @@ SpecWithCode works without any CLI. If the project uses [SpecWeave](/docs/gettin
 
 ## Pick OpenCode
 
-when you want one open agent loop across many API providers, or need Windows or Linux. SpecWithCode can also run OpenCode as one of its agents.
+when you want one open agent loop across many API model providers. SpecWithCode can also use OpenCode as one of its harnesses.
 
 ## Pick T3 Code
 

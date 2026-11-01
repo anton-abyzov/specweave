@@ -11,7 +11,7 @@ type Cell = React.ReactNode;
 const COLUMNS = ['SpecWithCode', 'OpenCode', 'Cloud agents'];
 const ROWS: {label: string; cells: Cell[]}[] = [
   {label: 'What runs the agent', cells: [
-    'Each vendor’s own agent: the Claude Code, Codex and Grok CLIs, Cursor through its official SDK, and more',
+    'Each vendor’s own harness: Claude Code, Codex, GitHub Copilot, Gemini CLI, Grok Build, Cursor and more. SpecWithCode is the interface on top',
     <>Its own agent loop with build and plan agents, across 75+ model providers <Src href="https://opencode.ai/docs/providers/" /></>,
     <>The vendor’s agent in the vendor’s environment <Src href="https://code.claude.com/docs/en/claude-code-on-the-web" /></>,
   ]},
@@ -26,7 +26,7 @@ const ROWS: {label: string; cells: Cell[]}[] = [
     'Billed through each vendor’s own plan',
   ]},
   {label: 'Other machines', cells: [
-    'Add Macs and Linux machines over SpecWithCode Connect; choose where workers run',
+    'Add Mac, Linux and Windows machines over SpecWithCode Connect; choose where workers run',
     <>Run <code>opencode serve</code> or <code>web</code> on a reachable address <Src href="https://opencode.ai/docs/web/" /></>,
     'Runs in the vendor’s cloud',
   ]},
@@ -66,7 +66,7 @@ export default function WhySpecWithCode() {
         </table>
       </div>
       <ul className={styles.picks}>
-        <li><b>Pick OpenCode</b> for one open agent loop across many API providers. SpecWithCode can also run OpenCode as one of its agents.</li>
+        <li><b>Pick OpenCode</b> for one open agent loop across many API providers. SpecWithCode can also use OpenCode as one of its harnesses.</li>
         <li><b>Pick a cloud agent</b> when work should keep running with your laptop closed and your repo already lives on GitHub.</li>
         <li><b>Pick SpecWithCode</b> to coordinate several agents across your own machines, watch every subscription’s limits, and keep code off anyone else’s servers.</li>
       </ul>

@@ -103,7 +103,7 @@ export default function HeroFlow() {
       </div>
 
       <figcaption id="hero-flow-caption">
-        You give one goal; a coordinator agent splits it into tasks, worker agents such as Claude Code, Codex and Cursor do them in parallel, and you review one result. The four cards are an illustration; the strip under them shows real captures. <a className="wv-link" href="#real-run">Step through a real run</a>
+        You give one goal; a coordinator agent splits it into tasks, worker agents such as Claude Code, Codex and GitHub Copilot do them in parallel, and you review one result. The four cards are an illustration; the strip under them shows real captures. <a className="wv-link" href="#real-run">Step through a real run</a>
       </figcaption>
     </figure>
   );

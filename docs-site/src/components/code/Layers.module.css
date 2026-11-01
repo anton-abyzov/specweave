@@ -1,0 +1,62 @@
+.layers { display: grid; gap: var(--wv-space-8, 32px); }
+.head { max-width: var(--wv-measure); }
+.head > p:last-child { margin-top: var(--wv-space-4); color: var(--wv-muted); }
+.kicker { margin: 0 0 var(--wv-space-2); color: var(--wv-iris); font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+
+/* Three stacked plates, top one lit: the stack reads interface over harness over model. */
+.stack { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; position: relative; }
+.layer {
+  position: relative;
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: var(--wv-space-6);
+  align-items: start;
+  padding: var(--wv-space-6);
+  border: 1px solid var(--wv-line);
+  background: var(--wv-panel);
+}
+.layer + .layer { border-top-style: dashed; }
+.layer:first-child { border-radius: var(--wv-radius-lg) var(--wv-radius-lg) 0 0; }
+.layer:last-child { border-radius: 0 0 var(--wv-radius-lg) var(--wv-radius-lg); background: var(--wv-sunken); }
+.interface {
+  border-color: var(--wv-iris);
+  background: linear-gradient(135deg, var(--wv-iris-tint), var(--wv-panel) 70%);
+  box-shadow: 0 0 0 1px var(--wv-iris) inset;
+  z-index: 1;
+}
+.tag {
+  justify-self: start;
+  padding: 4px 10px;
+  border: 1px solid var(--wv-line);
+  border-radius: 999px;
+  font-family: var(--wv-font-mono);
+  font-size: 12px;
+  color: var(--wv-muted);
+  background: var(--wv-canvas);
+}
+.interface .tag { border-color: var(--wv-iris); color: var(--wv-on-iris); background: var(--wv-iris); }
+.body h3 { margin: 0 0 var(--wv-space-1); font-size: 18px; }
+.body > p { margin: 0; color: var(--wv-muted); }
+
+.adds, .marks, .models { display: flex; flex-wrap: wrap; gap: 8px 10px; margin: var(--wv-space-4) 0 0; padding: 0; list-style: none; }
+.adds li {
+  padding: 5px 10px;
+  border-radius: var(--wv-radius-sm);
+  font-size: 13px;
+  color: var(--wv-ink);
+  background: var(--wv-panel);
+  border: 1px solid var(--wv-line);
+}
+.adds li::before { content: '+ '; color: var(--wv-iris); font-weight: 600; }
+.marks li { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.marks img { width: 28px; height: 28px; padding: 4px; border-radius: 6px; background: var(--wv-canvas); border: 1px solid var(--wv-line); }
+/* White marks need a dark plate in both themes; OpenCode is dark and needs a light one. */
+.marks img[data-mark="openai"], .marks img[data-mark="cursor"], .marks img[data-mark="copilot"] { background: #241523; border-color: #241523; }
+.marks img[data-mark="opencode"] { background: #f4f2f1; }
+.more { margin: var(--wv-space-3) 0 0; font-size: 13px; color: var(--wv-muted); }
+.models li { padding: 3px 9px; border-radius: 999px; font-family: var(--wv-font-mono); font-size: 12px; color: var(--wv-muted); border: 1px solid var(--wv-line); }
+.fine { margin: 0; font-size: 14px; color: var(--wv-muted); }
+
+@media (max-width: 760px) {
+  .layer { grid-template-columns: 1fr; gap: var(--wv-space-3); padding: var(--wv-space-4); }
+}

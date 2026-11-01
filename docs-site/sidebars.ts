@@ -28,6 +28,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         {type: 'doc', id: 'overview/studio', label: 'SpecWithCode overview'},
+        {type: 'doc', id: 'studio/harnesses', label: 'Harnesses and models'},
         {type: 'doc', id: 'studio/projects', label: 'Projects and threads'},
         {type: 'doc', id: 'studio/memory-and-usage', label: 'Memory and usage'},
         {type: 'doc', id: 'studio/plans-and-routines', label: 'Plans and routines'},

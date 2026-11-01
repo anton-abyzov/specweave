@@ -164,7 +164,9 @@
 .providers li { display: flex; gap: 9px; align-items: center; font-size: 14px; }
 .providers img { width: 32px; height: 32px; padding: 4px; border-radius: 6px; background: var(--wv-sunken); }
 /* White marks need a plate that stays dark in both themes (Weave light ink). */
-.providers img[src*="openai"], .providers img[src*="cursor"] { background: #241523; }
+.providers img[src*="openai"], .providers img[src*="cursor"], .providers img[src*="copilot"] { background: #241523; }
+/* OpenCode is a dark mark: keep a light plate in both themes. */
+.providers img[src*="opencode"] { background: #f4f2f1; }
 .heroShot { width: 100%; max-width: 1120px; margin-inline: auto; text-align: left; }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
