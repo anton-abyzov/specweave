@@ -41,7 +41,7 @@ const THREADS: {name: string; detail: React.ReactNode}[] = [
 const HARNESS: {name: string; detail: React.ReactNode}[] = [
   {name: 'Each agent at full strength', detail: <>The vendor’s own harness runs every thread, so its tools, permission rules and instruction files come with it, and the vendor’s updates reach you through the agent itself.</>},
   {name: 'Sign-ins stay with the vendor', detail: <>SpecWithCode starts the agent installed on your machine, which keeps its own sign-in and subscription. Your subscription is used through that agent, the way its vendor ships it.</>},
-  {name: 'Skills follow you across harnesses', detail: <>Skills and plugins belong to each harness, so a skill set up for Claude Code is not there when a thread runs on Codex. The <a href="https://verified-skill.com">Verified Skill</a> CLI installs the same skill into every agent you use.</>},
+  {name: 'Skills follow you across harnesses', detail: <>Most harnesses read skills from their own folders, so a skill in <code>.claude/skills</code> is not there when a thread runs on Codex until you add it. The <a href="https://verified-skill.com">Verified Skill</a> CLI can install the same skill into each agent it finds.</>},
   {name: 'One place above all of them', detail: <>A coordinator plans across harnesses, every thread shares the same view whichever agent runs it, and a thread can move to another harness with its context when a provider runs out.</>},
 ];
 
@@ -75,13 +75,13 @@ const FINISH: {title: string; body: React.ReactNode}[] = [
 ];
 
 const REACH: {name: string; detail: React.ReactNode}[] = [
-  {name: 'Computer use', detail: <>Agents can see and control the Mac the app runs on: take screenshots, click, type and scroll in any native app. Every provider gets it. It is set per machine, and macOS asks once for Screen Recording and Accessibility.</>},
+  {name: 'Computer use', detail: <>Agents can see and control the Mac the app runs on: take screenshots, click, type and scroll in any native app. Every harness gets it. It is set per machine, and macOS asks once for Screen Recording and Accessibility.</>},
   {name: 'SpecWithCode Browser', detail: <>A Chrome extension that lets an agent open, read, click and screenshot pages in your own Chrome profile, inside a tab group you can see and close. Install it from the <a href="https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb">Chrome Web Store</a> and pair it in Settings › Chrome.</>},
   {name: 'Isolated agent tabs', detail: <>Agents open pages in the app’s browser signed out by default: an isolated session that keeps no logins and is cleared when the app closes. To let agents use saved logins, choose a SpecWithCode browser profile for them, for every project or per project.</>},
   {name: 'Voice calls with the coordinator', detail: <>Talk to the coordinator out loud. Speech recognition and speech run on your Mac; an ElevenLabs voice is optional and uses your own key.</>},
 ];
 
-const BRAND_FAQ = {q: 'Is Spec with Code the same as SpecWithCode?', a: 'Yes. SpecWithCode is written as one word and pronounced Spec with Code. It is the free AI coding agent workspace. SpecWeave is the separate CLI that keeps specifications, task evidence and handoffs in git.'};
+const BRAND_FAQ = {q: 'Is Spec with Code the same as SpecWithCode?', a: 'Yes. SpecWithCode is written as one word and pronounced Spec with Code. It is a free interface for the coding agents you already use. SpecWeave is the separate CLI that keeps specifications, task evidence and handoffs in git.'};
 
 const FAQ: {q: string; a: React.ReactNode}[] = [
   {q: 'Does everything stay on my machine?', a: <>No. Agent processes and project files live on the selected machine, but cloud models receive prompts and relevant context, which can include code and file contents. Connected tools use their own services. Private machine connections do not make model inference local.</>},
@@ -108,7 +108,7 @@ const FAQ_TEXT: {q: string; a: string}[] = [
 
 const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/`;
-const TITLE = 'SpecWithCode (Spec with Code): agents on your own computers';
+const TITLE = 'SpecWithCode (Spec with Code): one interface for agents on your own computers';
 const DESCRIPTION = 'SpecWithCode (Spec with Code): one interface for Claude Code, Codex, Copilot and more, in their native harnesses. Free for macOS, Windows and Linux.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 /** The SpecWithCode explainer on the AI Power YouTube channel. */
@@ -141,7 +141,7 @@ const SPECWITHCODE_LD = {
       description: DESCRIPTION,
       url: PAGE_URL,
       applicationCategory: 'DeveloperApplication',
-      applicationSubCategory: 'AI coding agent workspace',
+      applicationSubCategory: 'Agentic development environment',
       // Same wording as /code/download/, which offers the Mac, Windows and Linux builds.
       operatingSystem: SPECWITHCODE_OPERATING_SYSTEMS,
       softwareVersion: release.version,
@@ -254,9 +254,9 @@ export default function Code() {
       <meta property="og:image" content={OG_IMAGE} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content="SpecWithCode: run Claude Code and Codex agents on your own computers. macOS, Windows and Linux. Free, source available." />
+      <meta property="og:image:alt" content="SpecWithCode: one interface for Claude Code, Codex, GitHub Copilot and other coding agents on your own computers. macOS, Windows and Linux. Free, source available." />
       <meta name="twitter:image" content={OG_IMAGE} />
-      <meta name="twitter:image:alt" content="SpecWithCode: agents on your own computers. macOS, Windows and Linux." />
+      <meta name="twitter:image:alt" content="SpecWithCode: one interface for your coding agents. macOS, Windows and Linux." />
       <script type="application/ld+json">{JSON.stringify(SPECWITHCODE_LD)}</script>
     </Head>
     <main className={clsx('wv-root', styles.page, styles.landing)}>
@@ -275,7 +275,7 @@ export default function Code() {
             <a className="wv-btn wv-btn--secondary wv-btn--lg" href="#workflow">See how it works</a>
           </div>
           <ul className={styles.providers} aria-label="Some supported coding agents">
-            {[['claude', 'Claude Code'], ['openai', 'Codex'], ['cursor', 'Cursor'], ['opencode', 'OpenCode']].map(([file, name]) => <li key={name}><img src={`${providerBase}${file}.svg`} alt="" width="28" height="28" /><span>{name}</span></li>)}
+            {[['claude', 'Claude Code'], ['openai', 'Codex'], ['copilot', 'GitHub Copilot'], ['gemini', 'Gemini CLI'], ['cursor', 'Cursor'], ['opencode', 'OpenCode']].map(([file, name]) => <li key={name}><img src={`${providerBase}${file}.svg`} alt="" width="28" height="28" /><span>{name}</span></li>)}
             <li><a href="#harnesses">More agents</a></li>
           </ul>
         </div>
@@ -397,7 +397,7 @@ export default function Code() {
             <div className={styles.chromeCopy}>
               <h3 id="chrome-title">{CHROME.name}</h3>
               <p>{CHROME.detail}</p>
-              <p className={styles.chromeWho}>For agents running in SpecWithCode, whichever provider: Claude Code, Codex, GitHub Copilot, Grok and others.</p>
+              <p className={styles.chromeWho}>For agents running in SpecWithCode, whichever harness: Claude Code, Codex, GitHub Copilot, Grok and others.</p>
               <a className="wv-btn wv-btn--secondary" href={CHROME_STORE_URL} data-track="chrome_extension_click" data-placement="reach">Get it from the Chrome Web Store<ArrowUpRight {...btnIcon} /></a>
             </div>
           </article>
@@ -410,7 +410,7 @@ export default function Code() {
           <span className={styles.specsIcon}><FileCheck2 size={22} strokeWidth={1.5} aria-hidden="true" /></span>
           <div>
             <h2 id="specs-title">Keep the spec with the code</h2>
-            <p>The optional SpecWeave CLI keeps acceptance criteria, task evidence and handoffs in your repository. SpecWithCode runs the agents against that record. <Link className="wv-link" to="/docs/compare/spec-as-code/">Compare spec as code, spec-driven and intent-first development</Link>, or <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">compare the planning tools</Link>. See also <Link className="wv-link" to="/docs/compare/specwithcode-vs-opencode-t3-code/">SpecWithCode vs OpenCode and other agent apps</Link> and <Link className="wv-link" to="/docs/compare/specwithcode-vs-bridgemind/">SpecWithCode vs BridgeMind</Link>.</p>
+            <p>The optional SpecWeave CLI keeps acceptance criteria, task evidence and handoffs in your repository. Agents in SpecWithCode work against that record. <Link className="wv-link" to="/docs/compare/spec-as-code/">Compare spec as code, spec-driven and intent-first development</Link>, or <Link className="wv-link" to="/docs/compare/spec-driven-development-tools/">compare the planning tools</Link>. See also <Link className="wv-link" to="/docs/compare/specwithcode-vs-opencode-t3-code/">SpecWithCode vs OpenCode and other agent apps</Link> and <Link className="wv-link" to="/docs/compare/specwithcode-vs-bridgemind/">SpecWithCode vs BridgeMind</Link>.</p>
           </div>
           <div className={styles.specsFiles}><Tokens items={['spec.md', 'ledger.jsonl', 'reports/']} mono /></div>
         </div>

@@ -7,21 +7,21 @@ import styles from './Harness.module.css';
 /*
   Illustration for /code#harnesses: SpecWithCode is the interface, the vendors' own
   harnesses do the work underneath, and each harness talks to its own model provider.
-  The harness list is a selection of the provider adapters named in docs/overview/studio.mdx
-  (Muse Code, Pi and Antigravity are left out for space); keep the integration labels in step.
+  The harness list is a selection of the adapters in docs/studio/harnesses.md
+  (Pi and Antigravity are left out for space); keep the integration labels in step.
 */
 
 type Harness = {name: string; how: string; logo?: string};
 
 export const HARNESSES: Harness[] = [
-  {name: 'Claude Code', how: 'Native CLI', logo: 'claude'},
-  {name: 'Codex', how: 'Native CLI', logo: 'openai'},
-  {name: 'GitHub Copilot', how: 'Copilot CLI over ACP'},
+  {name: 'Claude Code', how: 'Agent SDK', logo: 'claude'},
+  {name: 'Codex', how: 'Codex app-server', logo: 'openai'},
+  {name: 'GitHub Copilot', how: 'ACP Registry', logo: 'copilot'},
   {name: 'Cursor', how: 'Official SDK', logo: 'cursor'},
-  {name: 'Gemini CLI', how: 'ACP'},
-  {name: 'Grok Build', how: 'Native CLI'},
-  {name: 'OpenCode', how: 'Native CLI', logo: 'opencode'},
-  {name: 'ACP Registry', how: 'Any listed agent'},
+  {name: 'Gemini CLI', how: 'ACP Registry', logo: 'gemini'},
+  {name: 'Grok Build', how: 'ACP'},
+  {name: 'OpenCode', how: 'HTTP API', logo: 'opencode'},
+  {name: 'Other ACP agents', how: 'ACP Registry'},
 ];
 
 const LAYER: string[] = ['Coordinator', 'Worker threads', 'Usage limits', 'Machines', 'Browser and desktop', 'Specs in git'];
@@ -30,7 +30,7 @@ const LAYER: string[] = ['Coordinator', 'Worker threads', 'Usage limits', 'Machi
 function Logo({file, name}: {file?: string; name: string}) {
   const base = useBaseUrl('/img/studio/providers/');
   if (!file) return <span className={styles.mono} aria-hidden="true">{name[0]}</span>;
-  return <img className={clsx(styles.logo, (file === 'openai' || file === 'cursor') && styles.plate)} src={`${base}${file}.svg`} alt="" width="26" height="26" />;
+  return <img className={clsx(styles.logo, (file === 'openai' || file === 'cursor' || file === 'copilot') && styles.plate)} src={`${base}${file}.svg`} alt="" width="26" height="26" />;
 }
 
 /** Illustration: you, SpecWithCode as the interface, the native harnesses, then the model providers. */
