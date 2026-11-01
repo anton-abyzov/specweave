@@ -40,9 +40,9 @@ const THREADS: {name: string; detail: React.ReactNode}[] = [
 
 const HARNESS: {name: string; detail: React.ReactNode}[] = [
   {name: 'Each agent at full strength', detail: <>The vendor’s own harness runs every thread, so its tools, permission rules and instruction files come with it, and the vendor’s updates reach you through the agent itself.</>},
-  {name: 'Sign-ins stay with the vendor', detail: <>SpecWithCode starts the agent installed on your machine, which keeps its own sign-in and subscription. SpecWithCode never reads or relays those credentials.</>},
+  {name: 'Sign-ins stay with the vendor', detail: <>SpecWithCode starts the agent installed on your machine, which keeps its own sign-in and subscription. Your subscription is used through that agent, the way its vendor ships it.</>},
   {name: 'Skills follow you across harnesses', detail: <>Skills and plugins belong to each harness, so a skill set up for Claude Code is not there when a thread runs on Codex. The <a href="https://verified-skill.com">Verified Skill</a> CLI installs the same skill into every agent you use.</>},
-  {name: 'One place above all of them', detail: <>A coordinator plans across harnesses, every thread looks and works the same whichever agent runs it, and a thread can move to another harness with its context when a provider runs out.</>},
+  {name: 'One place above all of them', detail: <>A coordinator plans across harnesses, every thread shares the same view whichever agent runs it, and a thread can move to another harness with its context when a provider runs out.</>},
 ];
 
 const LIMITS: {name: string; detail: React.ReactNode}[] = [

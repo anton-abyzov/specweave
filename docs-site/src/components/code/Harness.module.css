@@ -218,3 +218,9 @@
     gap: var(--wv-space-3);
   }
 }
+
+@media (max-width: 480px) {
+  .harnesses {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

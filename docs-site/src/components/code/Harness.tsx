@@ -7,8 +7,8 @@ import styles from './Harness.module.css';
 /*
   Illustration for /code#harnesses: SpecWithCode is the interface, the vendors' own
   harnesses do the work underneath, and each harness talks to its own model provider.
-  The harness list follows the provider adapters named in docs/overview/studio.mdx;
-  keep the two in step.
+  The harness list is a selection of the provider adapters named in docs/overview/studio.mdx
+  (Muse Code, Pi and Antigravity are left out for space); keep the integration labels in step.
 */
 
 type Harness = {name: string; how: string; logo?: string};
@@ -37,7 +37,7 @@ function Logo({file, name}: {file?: string; name: string}) {
 export default function HarnessStack() {
   return <figure className={styles.stack}>
     <ol className={styles.layers} aria-label="Illustration: you talk to SpecWithCode; SpecWithCode drives each vendor's own coding harness; each harness talks to its own model provider">
-      <li className={clsx(styles.layer, styles.you)}>
+      <li className={styles.layer}>
         <span className={styles.tier}>You</span>
         <p className={styles.layerBody}><User size={16} strokeWidth={1.75} aria-hidden="true" />Give the goal, answer decisions, review the result: from the desktop app, a browser or your phone.</p>
       </li>
