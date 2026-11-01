@@ -11,6 +11,8 @@ import { SPECWITHCODE_RELEASE as release } from '@site/src/data/specwithcodeRele
 
 [SpecWithCode](/code/) (pronounced **Spec with Code**) is one workspace for the agents that are otherwise spread across many products: projects like Claude Code Projects, a personal agent like OpenAI Dots or Hermes, and the coding agents from Anthropic, OpenAI, xAI, Google, GitHub, Cursor and Meta. It runs them as one project on your own machines and gives each job the model that fits it.
 
+SpecWithCode is an interface, not a harness. A harness is what a vendor builds around its model so it can write code: the agent loop, tools, permissions, context handling and sign-in. Claude Code, Codex and GitHub Copilot CLI are harnesses. SpecWithCode runs each vendor's own harness natively, so every agent keeps its tools, settings and sign-in, and adds the parts no single harness has: one coordinator across all of them, threads, usage limits, machines and handoffs. See [one interface, native harnesses underneath](/code/#harnesses).
+
 You give a project a goal; a coordinator splits it into tasks and hands them to workers. The coordinator and every worker can use a different coding agent and model: Claude Code, Codex, Cursor, Grok Build, Gemini CLI, GitHub Copilot, OpenCode, Muse Code, Pi, Antigravity, or any agent from the ACP Registry. They run on machines you own, next to your code, skills and accounts.
 
 Underneath, the open-source [SpecWeave CLI](/docs/getting-started/) keeps the spec, the task evidence and the handoff in git. That record is what lets any agent continue work that another one started.
