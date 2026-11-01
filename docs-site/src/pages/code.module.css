@@ -912,3 +912,8 @@
     animation: none !important;
   }
 }
+
+/* ---------- Harnesses: the interface over native agents ---------- */
+.harnessCards {
+  margin-top: var(--wv-space-6);
+}
