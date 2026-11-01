@@ -41,7 +41,7 @@ const THREADS: {name: string; detail: React.ReactNode}[] = [
 const HARNESS: {name: string; detail: React.ReactNode}[] = [
   {name: 'Each agent at full strength', detail: <>The vendor’s own harness runs every thread, so its tools, permission rules and instruction files come with it, and the vendor’s updates reach you through the agent itself.</>},
   {name: 'Sign-ins stay with the vendor', detail: <>SpecWithCode starts the agent installed on your machine, which keeps its own sign-in and subscription. Your subscription is used through that agent, the way its vendor ships it.</>},
-  {name: 'Skills follow you across harnesses', detail: <>Skills and plugins belong to each harness, so a skill set up for Claude Code is not there when a thread runs on Codex. The <a href="https://verified-skill.com">Verified Skill</a> CLI installs the same skill into every agent you use.</>},
+  {name: 'Skills follow you across harnesses', detail: <>Most harnesses read skills from their own folders, so a skill in <code>.claude/skills</code> is not there when a thread runs on Codex until you add it. The <a href="https://verified-skill.com">Verified Skill</a> CLI can install the same skill into each agent it finds.</>},
   {name: 'One place above all of them', detail: <>A coordinator plans across harnesses, every thread shares the same view whichever agent runs it, and a thread can move to another harness with its context when a provider runs out.</>},
 ];
 
@@ -75,7 +75,7 @@ const FINISH: {title: string; body: React.ReactNode}[] = [
 ];
 
 const REACH: {name: string; detail: React.ReactNode}[] = [
-  {name: 'Computer use', detail: <>Agents can see and control the Mac the app runs on: take screenshots, click, type and scroll in any native app. Every provider gets it. It is set per machine, and macOS asks once for Screen Recording and Accessibility.</>},
+  {name: 'Computer use', detail: <>Agents can see and control the Mac the app runs on: take screenshots, click, type and scroll in any native app. Every harness gets it. It is set per machine, and macOS asks once for Screen Recording and Accessibility.</>},
   {name: 'SpecWithCode Browser', detail: <>A Chrome extension that lets an agent open, read, click and screenshot pages in your own Chrome profile, inside a tab group you can see and close. Install it from the <a href="https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb">Chrome Web Store</a> and pair it in Settings › Chrome.</>},
   {name: 'Isolated agent tabs', detail: <>Agents open pages in the app’s browser signed out by default: an isolated session that keeps no logins and is cleared when the app closes. To let agents use saved logins, choose a SpecWithCode browser profile for them, for every project or per project.</>},
   {name: 'Voice calls with the coordinator', detail: <>Talk to the coordinator out loud. Speech recognition and speech run on your Mac; an ElevenLabs voice is optional and uses your own key.</>},
@@ -108,7 +108,7 @@ const FAQ_TEXT: {q: string; a: string}[] = [
 
 const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/`;
-const TITLE = 'SpecWithCode (Spec with Code): one interface for your coding agents on your own computers';
+const TITLE = 'SpecWithCode (Spec with Code): one interface for agents on your own computers';
 const DESCRIPTION = 'SpecWithCode (Spec with Code): one interface for Claude Code, Codex, Copilot and more, in their native harnesses. Free for macOS, Windows and Linux.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 /** The SpecWithCode explainer on the AI Power YouTube channel. */
@@ -397,7 +397,7 @@ export default function Code() {
             <div className={styles.chromeCopy}>
               <h3 id="chrome-title">{CHROME.name}</h3>
               <p>{CHROME.detail}</p>
-              <p className={styles.chromeWho}>For agents running in SpecWithCode, whichever provider: Claude Code, Codex, GitHub Copilot, Grok and others.</p>
+              <p className={styles.chromeWho}>For agents running in SpecWithCode, whichever harness: Claude Code, Codex, GitHub Copilot, Grok and others.</p>
               <a className="wv-btn wv-btn--secondary" href={CHROME_STORE_URL} data-track="chrome_extension_click" data-placement="reach">Get it from the Chrome Web Store<ArrowUpRight {...btnIcon} /></a>
             </div>
           </article>

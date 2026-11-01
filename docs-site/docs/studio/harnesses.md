@@ -20,7 +20,7 @@ The account or API key behind the harness decides which models you get and who b
 
 ## What stays with the harness
 
-Each harness keeps what it owns: its sign-in, its tools, its skills and plugins, and its session history. A skill you add to Claude Code is a Claude Code skill. Switching a thread to Codex does not carry it over; add it to Codex too, or install it once for every agent with `vskill install`.
+Each harness keeps what it owns: its sign-in, its tools, its skills and plugins, and its session history. Most harnesses read skills from their own folders: a skill in `.claude/skills` is not visible to Codex until you add it there too. `vskill install` can add the same skill to each agent it detects.
 
 ## What SpecWithCode adds
 
@@ -41,7 +41,8 @@ Each harness keeps what it owns: its sign-in, its tools, its skills and plugins,
 | Cursor | Cursor SDK |
 | OpenCode | OpenCode HTTP API |
 | Pi | Pi RPC |
-| Antigravity | Its own integration |
+| Antigravity | ACP |
+| Muse Code | Muse SDK (`muse serve`) |
 | Other ACP agents | ACP Registry |
 
 Install and sign in to each harness on the machine where it runs. An ACP Registry entry is a candidate, not proof: Providers settings shows whether the agent is installed, signed in and ready on that machine.
