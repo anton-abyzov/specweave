@@ -13,7 +13,7 @@ Everything a team needs to run coding agents on its own machines is free: the Sp
 
 | | Free | Founders | Pro (waitlist) | Team contract |
 |---|---|---|---|---|
-| Price | $0 forever | $0, first 1,000 accounts | $20 a month per account | Annual, scoped with you |
+| Price | $0 forever | $0, first 300 accounts | $20 a month per account | Annual, scoped with you |
 | SpecWithCode app and SpecWeave CLI | Yes | Yes | Yes | Yes |
 | Every agent, auto-handoff, specs and ledger in git | Yes | Yes | Yes | Yes |
 | [Connect](/docs/studio/connect) machines, reached from anywhere and from your phone | 3 | 10 | Unlimited | Scoped in contract |
@@ -23,7 +23,7 @@ Everything a team needs to run coding agents on its own machines is free: the Sp
 | Audit export, security review pack, invoice billing | | | | Yes |
 | SSO, provider and model policy | | | | Scoped in contract |
 
-**Founders.** The first 1,000 accounts to link a machine through Connect get a founder number and 10 Connect machines. The seat is granted on that link, with no form or card, and stays with the account. [Pricing](/pricing) shows how many seats are left, live. A founder who needs more than 10 machines can ask, and we raise the limit for that account.
+**Founders.** The first 300 accounts to link a machine through Connect get a founder number and 10 Connect machines. The seat is granted on that link, with no form or card, and stays with the account. [Pricing](/pricing) shows how many seats are left, live. A founder who needs more than 10 machines can ask, and we raise the limit for that account.
 
 **Pro** is on a waitlist and charges nothing until it opens. It is for one account that runs many machines or shares private skills; it will be billed by card in your SpecWithCode account.
 

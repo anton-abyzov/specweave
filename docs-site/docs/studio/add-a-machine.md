@@ -27,7 +27,7 @@ On the worker, choose **Sign in to SpecWithCode Connect** at the bottom of the S
 
 Only the worker needs Connect. The main machine does not have to be signed in to Connect, or to the same account: the line works because the worker checks that the main machine's environment ID matches the one you enter in step 2. If the main machine cannot reach a machine, **Your private machines** shows a banner that says which machine is not linked yet.
 
-Connect includes 3 machines; the first 1,000 accounts get 10 as [founders](/pricing).
+Connect includes 3 machines; the first 300 accounts get 10 as [founders](/pricing).
 
 ## 2. Make the line on the worker
 

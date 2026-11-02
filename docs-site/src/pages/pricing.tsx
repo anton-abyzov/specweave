@@ -72,11 +72,11 @@ const PLANS: Plan[] = [
     featured: true,
   },
   {
-    tag: 'First 1,000',
+    tag: 'First 300',
     name: 'Founders',
     price: '$0',
     unit: 'a founder seat, kept with your account',
-    who: 'The first 1,000 accounts to link a machine through Connect. No form: the seat is granted on that link.',
+    who: 'The first 300 accounts to link a machine through Connect. No form: the seat is granted on that link.',
     features: [
       'Everything in Free',
       '10 Connect machines instead of 3',
@@ -124,7 +124,7 @@ const PILOT_STEPS = [
 const FAQ = [
   {q: 'Will it stay free?', a: <>Yes. The app, the CLI and running agents on your machines stay free, for one developer or a whole team. Paid plans only add what costs us to run (hosted relay capacity, hosted private skills) and support.</>},
   {q: 'How many machines can I connect?', a: <>Connect, the hosted relay that reaches your machines from anywhere and from your phone, includes 3 machines. Founders get 10, and Pro will lift the limit. Direct routes over your local network or SSH are never counted. <Link to="/docs/studio/connect">How Connect works</Link>.</>},
-  {q: 'How do I become a founder?', a: <>Sign in to Connect in SpecWithCode and link a machine. The first 1,000 accounts to do that get a founder number and 10 machines, granted on that link. The seat stays with your account and does not expire; Pro opening later does not take it away.</>},
+  {q: 'How do I become a founder?', a: <>Sign in to Connect in SpecWithCode and link a machine. The first 300 accounts to do that get a founder number and 10 machines, granted on that link. The seat stays with your account and does not expire; Pro opening later does not take it away.</>},
   {q: 'What do teams pay for?', a: <>Setup for your team of 2–10, support with response times, and controls like audit export or SSO. Pro covers hosted private skills and unlimited Connect machines for one account.</>},
   {q: 'Where does our code go?', a: <>Nowhere new. Specs and handoffs are files in your repo, and agents run on your machines with your subscriptions.</>},
   {q: 'How does auto-handoff work?', a: <><code>specweave auto-handoff on</code> hands off at 90 percent of a usage window, or a threshold you pick. The next tool runs <code>specweave pickup</code>. <Link to="/docs/guides/auto-handoff">Details</Link>.</>},
@@ -173,14 +173,14 @@ function WhyArt({index}: {index: number}) {
 
 function FoundersBand() {
   const f = useFounders();
-  const cap = f?.seatCap ?? 1000;
+  const cap = f?.seatCap ?? 300;
   const left = f ? Math.max(0, f.seatsLeft) : null;
   const taken = left === null ? 0 : cap - left;
   const open = f ? f.grantsOpen && left! > 0 : true;
   return <section className={`${p.founders} ${m.reveal}`} aria-labelledby="founders-title">
     <div className={p.foundersText}>
       <p className={p.kicker}><span className="wv-chip wv-chip--iris">Founders</span><span>{open ? 'Open now' : 'All seats taken'}</span></p>
-      <h2 id="founders-title">The first 1,000 accounts get 10 machines, free</h2>
+      <h2 id="founders-title">The first 300 accounts get 10 machines, free</h2>
       <p>Link a machine through Connect and your account takes the next founder seat: 10 machines from anywhere instead of 3, and a founder number. No form, no card, and the seat stays yours.</p>
       <Link className={styles.primary} to="/docs/studio/connect#link-a-machine">Link your first machine</Link>
     </div>
@@ -198,7 +198,7 @@ function FoundersBand() {
 export default function Pricing() {
   const glowWhy = useGlow<HTMLUListElement>();
   const glowPlans = useGlow<HTMLElement>();
-  return <Layout title="Pricing" description="SpecWithCode and the SpecWeave CLI are free for every developer and team, with no markup on your AI subscriptions. The first 1,000 Connect accounts get 10 machines free. Pro adds unlimited machines and private skills; teams can buy setup and support.">
+  return <Layout title="Pricing" description="SpecWithCode and the SpecWeave CLI are free for every developer and team, with no markup on your AI subscriptions. The first 300 Connect accounts get 10 machines free. Pro adds unlimited machines and private skills; teams can buy setup and support.">
     <main className={`${styles.page} ${p.page}`}>
       <header className={p.hero}>
         <div className={`${p.heroText} ${m.enter}`}>
