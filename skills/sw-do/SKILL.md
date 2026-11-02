@@ -64,14 +64,16 @@ merge and close; do not implement.
 
 1. Group tasks into 2 to 5 lanes whose `Files` do not overlap. Shared contracts
    (types, schema) go in an early task the others list under `**Dependencies**: T-01`.
-2. One worktree and branch per lane agent (your tool's or app's worktree feature, or
-   `git worktree add .worktrees/0042-api -b inc/0042-api`, never `../`), with `SPECWEAVE_AGENT=api` set.
+2. Lane agents share the existing checkout and branch, each with `SPECWEAVE_AGENT=api` set;
+   their disjoint `Files` keep them apart. Give a lane its own worktree only when the
+   user or the project's settings ask for worktrees (your tool's or app's worktree
+   feature, or `git worktree add .worktrees/0042-api -b inc/0042-api`, never `../`).
    Brief each one: its tasks, this loop, "edit only their Files", and on finish
    `specweave task release --all-mine` plus `specweave note "api: done" 0042`.
 3. Watch with `specweave task list 0042`; `blocked` rows are your queue. A claim older
    than 2 hours with no progress may be taken with `--force`.
-4. Merge the lane branches in dependency order (keep every `ledger.jsonl` line from both
-   sides), then close as below. Lane agents never run `specweave handoff`.
+4. If lanes had their own worktrees, merge their branches in dependency order (keep every
+   `ledger.jsonl` line from both sides) and remove the worktrees. Then close as below. Lane agents never run `specweave handoff`.
    `specweave team` opens agent panes for the same setup in tools that have them.
 
 ## Finish without asking
