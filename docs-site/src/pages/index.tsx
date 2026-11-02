@@ -256,7 +256,7 @@ export default function Home() {
           <div><dt>SpecWithCode app</dt><dd>Free</dd></div>
           <div><dt>SpecWeave CLI</dt><dd>Free, MIT licensed</dd></div>
           <div><dt>Seat fee</dt><dd>None</dd></div>
-          <div><dt>Connect machines</dt><dd>3 free, 10 for the first 1,000 founders, unlimited on Pro</dd></div>
+          <div><dt>Connect machines</dt><dd>3 free, 10 for the first 300 founders, unlimited on Pro</dd></div>
           <div><dt>Markup on your AI subscriptions</dt><dd>None</dd></div>
         </dl>
       </section>

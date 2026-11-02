@@ -60,7 +60,7 @@ When both devices are also on the same local network, SpecWithCode learns the ma
 | Plan | Connect machines |
 |---|---|
 | Free | 3 |
-| Founders (the first 1,000 accounts to link a machine) | 10 |
+| Founders (the first 300 accounts to link a machine) | 10 |
 | Pro (waitlist) | Unlimited |
 
 A founder seat is granted automatically on your first successful link, with no form or card, and stays with your account. [Pricing](/pricing) shows how many seats are left. A linked machine counts while it is linked; deregistering one frees its place.

@@ -101,7 +101,7 @@ specweave update
 
 SpecWeave is open source under the MIT license and free. You pay for the AI tool you already use. The core loop (`pickup`, `task`, `verify`, `complete`, `handoff`) makes no model calls. The exceptions are optional: the AI pass in `specweave qa` (skip it with `--no-ai`), and Jev, which is opt-in and runs under your own provider key (see [Jev](/docs/guides/jev-system-one)). For a local view of Claude Code token usage, open `specweave dashboard`; see [Usage and cost estimates](/docs/reference/cost-tracking) for what it can and cannot measure.
 
-The SpecWithCode app is free too, for every developer and team, with no markup on your AI subscriptions. Connect, the hosted relay for reaching machines from anywhere, includes 3 machines, and the first 1,000 accounts to link a machine get 10 as founders. Pro (waitlist) and team contracts are on [Pricing](/pricing).
+The SpecWithCode app is free too, for every developer and team, with no markup on your AI subscriptions. Connect, the hosted relay for reaching machines from anywhere, includes 3 machines, and the first 300 accounts to link a machine get 10 as founders. Pro (waitlist) and team contracts are on [Pricing](/pricing).
 
 ## How is it different from OpenSpec, Spec Kit or BMAD?
 
