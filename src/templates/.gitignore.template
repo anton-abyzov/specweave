@@ -23,13 +23,10 @@ plugins/
 # Work handoff (secret-scrubbed, never auto-committed)
 .handoff/
 
-# Binary evidence in reports/ (videos, screenshots, app bundles)
+# Binary evidence in reports/ (videos, screenshots)
 **/reports/*.mp4
 **/reports/*.png
 **/reports/*.jpg
-**/reports/*.aab
-**/reports/*.ipa
-**/reports/*.dSYM/
 
 # Dependencies (framework-agnostic)
 # JavaScript/TypeScript
