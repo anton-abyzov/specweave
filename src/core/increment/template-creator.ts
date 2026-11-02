@@ -340,7 +340,7 @@ export async function createIncrementTemplates(
           `Decide: ask the user only their critical decisions, one at a time with a recommended answer; record them under ## Decisions (sw-increment; sw-grill-me for a full interview)`,
           `Fill in spec.md — Problem, Scope, ACs (- [ ] AC-01 …), Approach and Tasks (### T-01 … + "- AC: … | Files: … | Test: …")`,
           ...(planned ? [`Start it: specweave start ${incrementId}`] : []),
-          `Work it: specweave task next → task claim T-01 → task done T-01 --run "<test>"`,
+          `Work it: specweave task next, do the task, commit as "${incrementId.match(/^\d{3,}[A-Za-z]?(?=-)/)?.[0] ?? incrementId}: what changed", then specweave task done T-01 --run "<its Test>" (it claims the task)`,
           `Close it: specweave verify ${incrementId} → specweave complete ${incrementId}`,
         ];
 
