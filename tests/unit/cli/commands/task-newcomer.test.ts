@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
-import { taskCommand, shellQuote, isTemplateTask, EXIT_TEMPLATE_TASK } from '../../../../src/cli/commands/task.js';
+import { taskCommand, shellQuote, isTemplateTask, isPlaceholderTest, EXIT_TEMPLATE_TASK } from '../../../../src/cli/commands/task.js';
 import { createIncrementTemplates } from '../../../../src/core/increment/template-creator.js';
 
 const QUOTED_TEST = `grep -c "it's ok" out.txt | grep -q 1`;
@@ -130,10 +130,48 @@ describe('placeholder tasks are refused', () => {
     expect(io.err()).toContain('Fill in spec.md ## Tasks first');
   });
 
-  it('a filled task is not a placeholder, and a `[ -f … ]` shell Test is real', () => {
-    expect(isTemplateTask({ title: '[First task]', test: 'npm test', filesAffected: ['src/a.ts'] })).toBe(true);
-    expect(isTemplateTask({ title: 'Form', test: '[command that checks AC-01 as a user would]', filesAffected: ['src/a.ts'] })).toBe(true);
-    expect(isTemplateTask({ title: 'Form', test: 'npm test', filesAffected: ['[src/file.ts', 'tests/e2e/file.test.ts]'] })).toBe(true);
-    expect(isTemplateTask({ title: 'Form', test: '[ -f dist/cli.js ]', filesAffected: ['app/[id]/page.tsx'] })).toBe(false);
+  it('done refuses a placeholder too, and never hands one out as Next', async () => {
+    const { root } = scaffold();
+    await createIncrementTemplates({ projectRoot: root, incrementId: '0001-login', title: 'Login', description: '', projectId: 'demo' });
+    let io = capture();
+    expect(await taskCommand('done', 'T-01', undefined, { cwd: root, agent: 'a@h', evidence: 'abc', commit: false })).toBe(EXIT_TEMPLATE_TASK);
+    expect(io.err()).toContain('still the create-increment placeholder');
+    vi.restoreAllMocks();
+
+    // Fill T-01 only: done T-01 must not name the unfilled T-02 as Next.
+    const spec = path.join(root, '.specweave', 'increments', '0001-login', 'spec.md');
+    fs.writeFileSync(spec, fs.readFileSync(spec, 'utf8').replace('### T-01 [First task]', '### T-01 Build the form'));
+    io = capture();
+    expect(await taskCommand('done', 'T-01', undefined, { cwd: root, agent: 'a@h', run: 'true', commit: false })).toBe(0);
+    expect(io.out()).not.toContain('Next: T-02');
+  });
+
+  it('next skips a placeholder when a real task follows it', async () => {
+    const { root } = mkProject(SPEC.replace('### T-01 Build the form', '### T-01 [First task]'));
+    const io = capture();
+    expect(await taskCommand('next', undefined, undefined, { cwd: root, agent: 'a@h' })).toBe(0);
+    expect(io.out()).toContain('T-02 Error message');
+  });
+
+  it('an imported task with a real title is claimable; its [command] Test is not run', async () => {
+    const { root } = mkProject(SPEC.replace('src/login.ts | Test: true', 'src/login.ts | Test: [command]'));
+    let io = capture();
+    expect(await taskCommand('claim', 'T-01', undefined, { cwd: root, agent: 'a@h', commit: false })).toBe(0);
+    expect(io.out()).toContain('--run "<command that checks the AC>"');
+    vi.restoreAllMocks();
+    io = capture();
+    expect(await taskCommand('done', 'T-01', undefined, { cwd: root, agent: 'a@h', commit: false })).toBe(2);
+    expect(io.err()).toContain('done needs evidence');
+  });
+
+  it('only the scaffold titles are placeholders; bracketed Tests are placeholders but `[ -f … ]` is real', () => {
+    expect(isTemplateTask({ title: '[First task]' })).toBe(true);
+    expect(isTemplateTask({ title: '[Second task]' })).toBe(true);
+    expect(isTemplateTask({ title: '[WIP] Login form' })).toBe(false);
+    expect(isTemplateTask({ title: 'Form shows email' })).toBe(false);
+    expect(isPlaceholderTest('[command that checks AC-01 as a user would]')).toBe(true);
+    expect(isPlaceholderTest('[command]')).toBe(true);
+    expect(isPlaceholderTest('[ -f dist/cli.js ]')).toBe(false);
+    expect(isPlaceholderTest('npm test')).toBe(false);
   });
 });

@@ -176,7 +176,14 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   }
 
   if (action === 'next') {
-    const t = nextTask(board, agent);
+    const t = nextTask(board, agent, isTemplateTask);
+    // Only unfilled placeholders are left to hand out: say so instead of "nothing to do".
+    const placeholder = t ? undefined : nextTask(board, agent);
+    if (placeholder) {
+      if (opts.json) out(JSON.stringify({ increment: inc.id, next: null, error: 'template-task', task: placeholder.id }));
+      else err(templateRefusal(placeholder, inc.id));
+      return EXIT_TEMPLATE_TASK;
+    }
     if (!t) {
       const c = board.counts;
       const finished = c.total > 0 && c.done + c.skipped === c.total;
@@ -186,11 +193,6 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
           ? `All tasks in ${inc.id} are done. ${closeNext(inc.id)}`
           : `No claimable task in ${inc.id} (${c.done}/${c.total} done, ${c.claimed} claimed, ${c.blocked} blocked). Run \`specweave verify ${inc.id}\` when everything is done.`);
       return 0;
-    }
-    if (isTemplateTask(t)) {
-      if (opts.json) out(JSON.stringify({ increment: inc.id, next: null, error: 'template-task', task: t.id }));
-      else err(templateRefusal(t, inc.id));
-      return EXIT_TEMPLATE_TASK;
     }
     out(opts.json ? JSON.stringify({ increment: inc.id, next: brief(t, acsOf()) }) : describeTask(t, inc.id, acsOf()));
     return 0;
@@ -253,10 +255,13 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
         err(`${taskId} was skipped by ${task.state.by}${task.state.note ? ` (${task.state.note})` : ''} — skip is terminal; add a new task to ${tasksFileName(inc.dir)} if the work is needed after all`);
         return 1;
       }
+      if (isTemplateTask(task)) { err(templateRefusal(task, inc.id)); return EXIT_TEMPLATE_TASK; }
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
 
       let evidence = (opts.evidence ?? '').trim();
-      const cmd = opts.run?.trim() || (!evidence && isShellCommand(task.test) ? task.test : undefined);
+      // A placeholder Test (`[command]`) is not run: the agent passes --run or --evidence.
+      const runnable = isShellCommand(task.test) && !isPlaceholderTest(task.test);
+      const cmd = opts.run?.trim() || (!evidence && runnable ? task.test : undefined);
       let logPath: string | undefined;
       if (cmd) {
         const result = await runShell(cmd, projectRoot);
@@ -300,7 +305,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       const allDone = c.done + c.skipped === c.total && c.total > 0;
       const committed = commitIncrement('done', [taskId]);
       // Not the last task: hand the agent the next one, so it needs no `task next`.
-      const following = allDone ? undefined : nextTask(board, agent);
+      const following = allDone ? undefined : nextTask(board, agent, isTemplateTask);
       out(opts.json ? JSON.stringify({ done: taskId, evidence, log: logPath ? rel(projectRoot, logPath) : undefined, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}), ...(following ? { next: brief(following, acsOf()) } : {}), ...commitJson(committed) }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
       reportCommit(committed);
       if (allDone) finishedAll(inc.id);
@@ -425,7 +430,7 @@ function describeTask(t: BoardTask, incId: string, acs: AcEntry[] = []): string 
     ...(criteria.length ? criteria.map((a) => `  ${a.id}: ${a.text || '(text not found in spec.md)'}`) : ['  AC: -']),
     `  Files: ${(t.filesAffected ?? []).join(', ') || '-'} | Test: ${t.test ?? '-'}`,
     `  state: ${describeState(t.state)}`,
-    `  when done: specweave task done ${t.id} ${incId}${t.test ? ` --run ${shellQuote(t.test)}` : ' --evidence "<sha / output>"'}`,
+    `  when done: specweave task done ${t.id} ${incId}${t.test && !isPlaceholderTest(t.test) ? ` --run ${shellQuote(t.test)}` : ' --run "<command that checks the AC>"'}`,
   ].join('\n');
 }
 
@@ -440,18 +445,23 @@ export function shellQuote(s: string): string {
 }
 
 /**
- * create-increment's scaffold placeholders: `[First task]`, `[command that checks …]`,
- * `[src/file.ts, …]`. A letter must follow the bracket, so a shell test such as
- * `[ -f dist/cli.js ]` is a real Test.
+ * create-increment's scaffold task titles. Only these mark a task as unfilled:
+ * imported increments keep real titles next to `[src/...]` and `[command]`, and
+ * a user's own `[WIP] …` title is a real task.
  */
-const BRACKETED = /^\[[A-Za-z][^\]]*\]$/;
+const SCAFFOLD_TITLES = new Set(['[First task]', '[Second task]']);
 
-/** A task whose title, Test or Files are still create-increment's bracketed placeholders. */
-export function isTemplateTask(t: Pick<BoardTask, 'title' | 'test' | 'filesAffected'>): boolean {
-  const files = (t.filesAffected ?? []).join(', ').trim();
-  return BRACKETED.test(t.title.trim())
-    || (t.test !== undefined && BRACKETED.test(t.test.trim()))
-    || BRACKETED.test(files);
+/** A task still titled as create-increment's scaffold. */
+export function isTemplateTask(t: Pick<BoardTask, 'title'>): boolean {
+  return SCAFFOLD_TITLES.has(t.title.trim());
+}
+
+/**
+ * A Test that is a bracketed placeholder (`[command]`, `[command that checks …]`).
+ * A letter must follow the bracket, so a shell test such as `[ -f dist/cli.js ]` is real.
+ */
+export function isPlaceholderTest(test: string | undefined): boolean {
+  return test !== undefined && /^\[[A-Za-z][^\]]*\]$/.test(test.trim());
 }
 
 function templateRefusal(t: BoardTask, incId: string): string {

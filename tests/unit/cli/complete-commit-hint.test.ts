@@ -22,16 +22,23 @@ function repo(config: Record<string, unknown>): string {
 }
 
 describe('complete: commit hint', () => {
-  it('names the folder and a NNNN: close commit when autoCommitIncrement is off', () => {
+  it('names the folder and a NNNN: close commit limited to that folder', () => {
     const root = repo({ version: '2.0' });
     expect(commitHint(root, '0001-login')).toBe(
-      'Commit it: git add .specweave/increments/0001-login && git commit -m "0001: close"',
+      'Commit it: git add .specweave/increments/0001-login && git commit -m "0001: close" -- .specweave/increments/0001-login',
     );
   });
 
-  it('says nothing when autoCommitIncrement is on', () => {
+  it('shows even with autoCommitIncrement on, since complete itself never commits', () => {
     const root = repo({ version: '2.0', git: { autoCommitIncrement: true } });
-    expect(commitHint(root, '0001-login')).toBeUndefined();
+    expect(commitHint(root, '0001-login')).toContain('git commit -m "0001: close"');
+  });
+
+  it('gives the path relative to the folder the user is in', () => {
+    const root = repo({ version: '2.0' });
+    const sub = path.join(root, 'src');
+    fs.mkdirSync(sub);
+    expect(commitHint(root, '0001-login', sub)).toContain('git add ../.specweave/increments/0001-login');
   });
 
   it('says nothing when the folder is already committed, or outside git', () => {
