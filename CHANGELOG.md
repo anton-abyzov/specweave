@@ -1,3 +1,17 @@
+## [3.1.17] - 2026-11-02
+
+### Changed
+
+- sw-do: parallel lanes share the checkout; worktrees only when asked (#2219)
+- Newcomer path: init, help, templates and task output follow the loop (#2218)
+- docs: founders offer is the first 300 accounts, not 1,000 (#2217)
+- Homepage promo v2: problem-led, coordinator and threads (#2216)
+- Homepage promo: threads concept and the real Chrome extension
+- docs(site): cover the Android app in the privacy policy (#2214)
+- docs(code): harnesses doc, Copilot and Gemini marks, exact connection labels (#2213)
+- docs(code): position SpecWithCode as one interface over native harnesses (#2212)
+- docs(connect): add an iPhone, or a second one, with Connect (#2211)
+
 ## [3.1.16] - 2026-10-31
 
 ### Changed
