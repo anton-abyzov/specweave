@@ -23,7 +23,7 @@ const program = new Command();
 
 program
   .name('specweave')
-  .description('Spec-Driven Development framework with AI-powered autonomous agents')
+  .description('Spec-driven increments for AI coding agents: plan in spec.md, do each task, verify, close, hand off')
   .version(packageJson.version)
   .option('--workspace <root>', 'Select the planning workspace explicitly');
 
@@ -256,7 +256,7 @@ program
 // Create Increment command - Create template files for a new increment
 program
   .command('create-increment [title]')
-  .description('Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment "Add login form"')
+  .description('Create an increment: metadata.json and spec.md (Problem, Scope, ACs, Approach, Tasks). Short form: specweave create-increment "Add login form"')
   .option('--id <increment-id>', 'Increment ID (e.g., "0042-my-feature")')
   .option('--auto-id', 'Auto-generate next available increment ID (default when --id is absent)')
   .option('--name <name>', 'Increment name suffix (defaults to a slug of the title)')
@@ -382,7 +382,7 @@ program
   });
 
 program
-  .command('statusline')
+  .command('statusline', { hidden: true })
   .description('Claude Code status line that records usage for auto-handoff')
   .option('--wrap <command>', 'Print this status line command\'s output instead of the built-in line')
   .action(async (options) => {
@@ -391,7 +391,7 @@ program
   });
 
 program
-  .command('usage-guard')
+  .command('usage-guard', { hidden: true })
   .description('Stop hook: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once')
   .option('--limit-hit', 'StopFailure hook: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)')
   .action(async (options) => {
@@ -401,7 +401,7 @@ program
 
 // Auto-compact window for Claude Code (400K keeps 1M-context turns small)
 program
-  .command('autocompact [action]')
+  .command('autocompact [action]', { hidden: true })
   .description('on | off | status: where Claude Code summarizes a long session (default 400k)')
   .option('--at <tokens>', 'Window for `on`, 100k to 1M (default 400k)')
   .option('--project', 'Write .claude/settings.json in this project instead of ~/.claude/settings.json')
@@ -457,7 +457,7 @@ program
 
 // Next ID command - Return the next available increment number
 program
-  .command('next-id')
+  .command('next-id', { hidden: true })
   .description('Return the next available increment number. Prefer: create-increment --auto-id')
   .option('--project <project-id>', 'Project ID for per-project collision prevention')
   .option('--project-root <path>', 'Override project root directory')
@@ -512,7 +512,7 @@ program
 
 // Save command - Smart save with auto-sync
 program
-  .command('save [message]')
+  .command('save [message]', { hidden: true })
   .description('Smart save - auto-generate commit message, sync with remote, commit and push')
   .option('-i, --interactive', 'Interactive mode - ask before each step')
   .option('--dry-run', 'Preview without executing')
@@ -559,7 +559,7 @@ program
 // Auto mode commands - Autonomous execution with stop hook feedback loop (v3.0)
 // No session files. No complex state. Just: "Are there active increments?"
 program
-  .command('auto [incrementIds...]')
+  .command('auto [incrementIds...]', { hidden: true })
   .description('Start autonomous execution (stop hook feedback loop)')
   .option('--dry-run', 'Preview without activating')
   .option('--all-backlog', 'Activate all backlog items')
@@ -588,7 +588,7 @@ program
   });
 
 program
-  .command('auto-status')
+  .command('auto-status', { hidden: true })
   .description('Check auto session status and progress')
   .option('--verbose', 'Show detailed information')
   .option('--json', 'Output as JSON')
@@ -602,7 +602,7 @@ program
   });
 
 program
-  .command('cancel-auto')
+  .command('cancel-auto', { hidden: true })
   .description('Cancel running auto session')
   .option('--force', 'Force cancel without confirmation')
   .action(async (options) => {
@@ -615,7 +615,7 @@ program
 
 // Team command - Launch Claude Code with native agent teams
 program
-  .command('team [description]')
+  .command('team [description]', { hidden: true })
   .description('Launch Claude Code with agent teams (tmux/iTerm2 split panes)')
   .option('--mode <mode>', 'Display mode: tmux (default) or in-process', 'tmux')
   .option('--no-increment', 'Launch without requiring a SpecWeave increment (free-form agent swarm)')
@@ -632,7 +632,7 @@ program
 
 // Update instructions command - Smart merge CLAUDE.md/AGENTS.md
 program
-  .command('update-instructions')
+  .command('update-instructions', { hidden: true })
   .description('Update CLAUDE.md and AGENTS.md with smart merge (preserves user content)')
   .option('--dry-run', 'Preview changes without writing')
   .option('-v, --verbose', 'Show detailed merge information')
@@ -661,7 +661,7 @@ program
 
 // Check discipline command - Validate increment discipline
 program
-  .command('check-discipline')
+  .command('check-discipline', { hidden: true })
   .description('Report increment status counts, advisory WIP note and metadata consistency')
   .option('-v, --verbose', 'Show detailed increment information')
   .option('--json', 'Output results as JSON')
@@ -677,7 +677,7 @@ program
 
 // GC command - purge junk from .specweave/state (dry-run by default)
 program
-  .command('gc')
+  .command('gc', { hidden: true })
   .description('Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs, expire session checkpoints older than 7 days')
   .option('-y, --yes', 'Actually delete (default is dry-run)')
   .option('--json', 'Output as JSON')
@@ -689,7 +689,7 @@ program
 
 // QA command - Quality assessment
 program
-  .command('qa <increment-id>')
+  .command('qa <increment-id>', { hidden: true })
   .description('Run quality assessment on an increment')
   .option('--quick', 'Quick mode (default)')
   .option('--pre', 'Pre-implementation check')
@@ -708,7 +708,7 @@ program
 
 // Link PR - Link pull requests to external tickets (JIRA remote links, ADO hyperlinks)
 program
-  .command('link-pr')
+  .command('link-pr', { hidden: true })
   .description('Link a pull request to external tickets (JIRA, ADO)')
   .requiredOption('--increment <id>', 'Increment ID')
   .requiredOption('--pr-url <url>', 'Pull request URL')
@@ -721,7 +721,7 @@ program
 
 // Branch-name command - Compute branch name with optional external ticket key
 program
-  .command('branch-name <increment-id>')
+  .command('branch-name <increment-id>', { hidden: true })
   .description('Output the computed branch name for an increment (with optional JIRA/ADO ticket key)')
   .action(async (incrementId) => {
     const { branchNameCommand } = await import('../dist/src/cli/commands/branch-name.js');
@@ -737,7 +737,7 @@ async function runLspCommand(args) {
 
 // LSP command - Code intelligence operations
 const lspCmd = program
-  .command('lsp')
+  .command('lsp', { hidden: true })
   .description('LSP code intelligence (refs, def, hover, symbols, search)');
 
 lspCmd
@@ -865,7 +865,7 @@ syncCmd
 
 // Refresh plugins command - Copy first-party plugins to ~/.claude/commands/
 program
-  .command('refresh-plugins')
+  .command('refresh-plugins', { hidden: true })
   .description('Refresh SpecWeave plugins (core only by default, use --all for everything)')
   .option('--all', 'Install ALL plugins (not just core sw)')
   .option('--plugin <name>', 'Install a specific plugin by name')
