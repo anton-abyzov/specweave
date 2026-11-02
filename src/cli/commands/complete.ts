@@ -1,4 +1,6 @@
 import * as path from 'path';
+import { spawnSync } from 'child_process';
+import { readAutoCommitConfig } from '../../core/increment/auto-commit.js';
 import { detectSessionId } from '../../core/tasks/ledger.js';
 import { recordIncrementWork } from '../../core/tasks/work-session.js';
 import { completeIncrement } from '../../core/increment/status-commands.js';
@@ -98,6 +100,8 @@ export async function completeCommand(
 
     if (success) {
       recordIncrementWork(path.join(projectRoot, '.specweave', 'increments', resolved), { e: 'complete' }, { sessionId: detectSessionId() });
+      const hint = options.silent ? undefined : commitHint(projectRoot, resolved);
+      if (hint) console.log(hint);
     }
     results.push({ id, resolved, success });
   }
@@ -119,4 +123,18 @@ export async function completeCommand(
   if (anyFailed) {
     process.exit(1);
   }
+}
+
+/**
+ * With `git.autoCommitIncrement` off nothing commits the closed increment, so
+ * say how. Only inside a git work tree, and only when the folder has
+ * uncommitted changes.
+ */
+export function commitHint(projectRoot: string, incrementId: string): string | undefined {
+  if (readAutoCommitConfig(projectRoot).commit) return undefined;
+  const rel = `.specweave/increments/${incrementId}`;
+  const status = spawnSync('git', ['status', '--porcelain', '--', rel], { cwd: projectRoot, encoding: 'utf-8' });
+  if (status.status !== 0 || !status.stdout.trim()) return undefined;
+  const num = incrementId.match(/^\d{3,}[A-Za-z]?(?=-)/)?.[0] ?? incrementId;
+  return `Commit it: git add ${rel} && git commit -m "${num}: close"`;
 }
