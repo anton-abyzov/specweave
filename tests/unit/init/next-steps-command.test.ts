@@ -29,14 +29,14 @@ describe('init next-steps guided command', () => {
 
   it('never suggests the non-existent `specweave increment "..."` command', () => {
     showNextSteps('my-project', 'claude', 'en', false, true);
-    expect(output).not.toContain('increment "');
+    expect(output).not.toMatch(/specweave increment "/);
   });
 
   it('holds across adapters (generic, codex)', () => {
     for (const adapter of ['generic', 'codex']) {
       output = '';
       showNextSteps('my-project', adapter, 'en', false, true);
-      expect(output).not.toContain('increment "');
+      expect(output).not.toMatch(/specweave increment "/);
     }
   });
 });

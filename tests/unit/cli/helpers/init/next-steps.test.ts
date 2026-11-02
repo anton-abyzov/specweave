@@ -67,7 +67,33 @@ describe('showNextSteps', () => {
     showNextSteps('test-project', 'claude', 'en', true, { pluginAutoInstalled: true });
     const lines = getOutput().split('\n');
     expect(lines.find((l) => l.includes('All plugins ready'))).not.toMatch(/\d\./);
-    expect(lines.find((l) => l.includes('specweave sync setup'))).toMatch(/^ {3}1\. /);
+    expect(lines.find((l) => l.includes('specweave create-increment'))).toMatch(/^ {3}1\. /);
+  });
+
+  it.each(['claude', 'generic', 'cursor', 'codex'])('%s: step 1 is create-increment, at most 3 steps, no made-up commands', async (adapter) => {
+    const { showNextSteps } = await import(
+      '../../../../../src/cli/helpers/init/next-steps.js'
+    );
+    showNextSteps('test-project', adapter, 'en', true, { pluginAutoInstalled: false });
+    const out = getOutput();
+    const steps = out.split('\n').filter((l) => /^ {3}\d+\. /.test(l));
+    expect(steps[0]).toMatch(/^ {3}1\. specweave create-increment "/);
+    expect(steps.length).toBeLessThanOrEqual(3);
+    expect(steps.map((l) => l.match(/^ {3}(\d+)\./)![1])).toEqual(steps.map((_, i) => String(i + 1)));
+    expect(steps[1]).toContain('specweave task done T-01 --run');
+    expect(out).not.toContain('specweave validate');
+    expect(out).not.toContain('specweave config');
+    // Tracker setup and `get` come after the loop, unnumbered.
+    expect(out.indexOf('specweave sync setup')).toBeGreaterThan(out.indexOf('specweave create-increment'));
+  });
+
+  it('a new subdirectory adds the cd step before the loop', async () => {
+    const { showNextSteps } = await import(
+      '../../../../../src/cli/helpers/init/next-steps.js'
+    );
+    showNextSteps('test-project', 'generic', 'en', false);
+    const steps = getOutput().split('\n').filter((l) => /^ {3}\d+\. /.test(l));
+    expect(steps[1]).toMatch(/^ {3}2\. specweave create-increment "/);
   });
 
   it('does not show AutoVerify tip for non-Claude adapters', async () => {

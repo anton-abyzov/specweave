@@ -4,7 +4,9 @@
  *   task whoami                         print the agent id
  *   task list [inc] [--json]            table: task, status, by, evidence
  *   task next [inc] [--json]            first open task with deps met + no Files overlap
- *   task claim T-01 [inc] [--force]     append a claim (exit 3 lost race, 4 Files overlap)
+ *                                       (exit 7 while it is still a template placeholder)
+ *   task claim T-01 [inc] [--force]     append a claim (exit 3 lost race, 4 Files overlap,
+ *                                       7 unfilled template placeholder)
  *   task done T-01 [inc] --evidence "…" | --run "<cmd>"   (exit 5 when the command fails;
  *                                       auto-claims when nobody holds a live claim)
  *   task release T-01 [inc] | --all-mine
@@ -78,6 +80,8 @@ export const EXIT_LOST_RACE = 3;
 export const EXIT_FILES_OVERLAP = 4;
 export const EXIT_RUN_FAILED = 5;
 export const EXIT_DEPS_UNMET = 6;
+/** `next` / `claim` on a task still holding create-increment's bracketed placeholders. */
+export const EXIT_TEMPLATE_TASK = 7;
 
 const ACTIONS = new Set(['whoami', 'list', 'next', 'claim', 'done', 'release', 'block', 'skip', 'render']);
 
@@ -172,7 +176,14 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   }
 
   if (action === 'next') {
-    const t = nextTask(board, agent);
+    const t = nextTask(board, agent, isTemplateTask);
+    // Only unfilled placeholders are left to hand out: say so instead of "nothing to do".
+    const placeholder = t ? undefined : nextTask(board, agent);
+    if (placeholder) {
+      if (opts.json) out(JSON.stringify({ increment: inc.id, next: null, error: 'template-task', task: placeholder.id }));
+      else err(templateRefusal(placeholder, inc.id));
+      return EXIT_TEMPLATE_TASK;
+    }
     if (!t) {
       const c = board.counts;
       const finished = c.total > 0 && c.done + c.skipped === c.total;
@@ -215,6 +226,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   switch (action) {
     case 'claim': {
       if (task.state.status === 'done' || task.state.status === 'skipped') { err(`${taskId} is already ${task.state.status}`); return 1; }
+      if (isTemplateTask(task)) { err(templateRefusal(task, inc.id)); return EXIT_TEMPLATE_TASK; }
       // Claiming a task starts the increment (planned → active). This is the
       // CLI transition the skills point at; nobody hand-edits metadata.json.
       const started = ensureIncrementStarted(inc.dir);
@@ -243,10 +255,13 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
         err(`${taskId} was skipped by ${task.state.by}${task.state.note ? ` (${task.state.note})` : ''} — skip is terminal; add a new task to ${tasksFileName(inc.dir)} if the work is needed after all`);
         return 1;
       }
+      if (isTemplateTask(task)) { err(templateRefusal(task, inc.id)); return EXIT_TEMPLATE_TASK; }
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
 
       let evidence = (opts.evidence ?? '').trim();
-      const cmd = opts.run?.trim() || (!evidence && isShellCommand(task.test) ? task.test : undefined);
+      // A placeholder Test (`[command]`) is not run: the agent passes --run or --evidence.
+      const runnable = isShellCommand(task.test) && !isPlaceholderTest(task.test);
+      const cmd = opts.run?.trim() || (!evidence && runnable ? task.test : undefined);
       let logPath: string | undefined;
       if (cmd) {
         const result = await runShell(cmd, projectRoot);
@@ -289,9 +304,12 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       const c = board.counts;
       const allDone = c.done + c.skipped === c.total && c.total > 0;
       const committed = commitIncrement('done', [taskId]);
-      out(opts.json ? JSON.stringify({ done: taskId, evidence, log: logPath ? rel(projectRoot, logPath) : undefined, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}), ...commitJson(committed) }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
+      // Not the last task: hand the agent the next one, so it needs no `task next`.
+      const following = allDone ? undefined : nextTask(board, agent, isTemplateTask);
+      out(opts.json ? JSON.stringify({ done: taskId, evidence, log: logPath ? rel(projectRoot, logPath) : undefined, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}), ...(following ? { next: brief(following, acsOf()) } : {}), ...commitJson(committed) }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
       reportCommit(committed);
       if (allDone) finishedAll(inc.id);
+      else if (following && !opts.json) out(`\nNext: ${describeTask(following, inc.id, acsOf())}`);
       return 0;
     }
     case 'release': {
@@ -412,6 +430,40 @@ function describeTask(t: BoardTask, incId: string, acs: AcEntry[] = []): string 
     ...(criteria.length ? criteria.map((a) => `  ${a.id}: ${a.text || '(text not found in spec.md)'}`) : ['  AC: -']),
     `  Files: ${(t.filesAffected ?? []).join(', ') || '-'} | Test: ${t.test ?? '-'}`,
     `  state: ${describeState(t.state)}`,
-    `  when done: specweave task done ${t.id} ${incId}${t.test ? ` --run "${t.test}"` : ' --evidence "<sha / output>"'}`,
+    `  when done: specweave task done ${t.id} ${incId}${t.test && !isPlaceholderTest(t.test) ? ` --run ${shellQuote(t.test)}` : ' --run "<command that checks the AC>"'}`,
   ].join('\n');
+}
+
+/**
+ * Quote a Test so the printed `--run` argument pastes as one shell word. Plain
+ * text stays in double quotes (works in every shell); anything a shell would
+ * expand or that would end the double quotes goes in POSIX single quotes.
+ */
+export function shellQuote(s: string): string {
+  if (!/["$`\\!]/.test(s)) return `"${s}"`;
+  return `'${s.replace(/'/g, `'\\''`)}'`;
+}
+
+/**
+ * create-increment's scaffold task titles. Only these mark a task as unfilled:
+ * imported increments keep real titles next to `[src/...]` and `[command]`, and
+ * a user's own `[WIP] …` title is a real task.
+ */
+const SCAFFOLD_TITLES = new Set(['[First task]', '[Second task]']);
+
+/** A task still titled as create-increment's scaffold. */
+export function isTemplateTask(t: Pick<BoardTask, 'title'>): boolean {
+  return SCAFFOLD_TITLES.has(t.title.trim());
+}
+
+/**
+ * A Test that is a bracketed placeholder (`[command]`, `[command that checks …]`).
+ * A letter must follow the bracket, so a shell test such as `[ -f dist/cli.js ]` is real.
+ */
+export function isPlaceholderTest(test: string | undefined): boolean {
+  return test !== undefined && /^\[[A-Za-z][^\]]*\]$/.test(test.trim());
+}
+
+function templateRefusal(t: BoardTask, incId: string): string {
+  return `refused: ${t.id} in ${incId} is still the create-increment placeholder ("${t.title}"). Fill in spec.md ## Tasks first: a real title, then "- AC: AC-01 | Files: <paths> | Test: <command that checks the AC>".`;
 }
