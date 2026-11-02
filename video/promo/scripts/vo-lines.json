@@ -1,16 +1,56 @@
 {
   "voiceId": "0Ki1af67ybTaTu4TNmO8",
   "modelId": "eleven_v4",
-  "voiceSettings": {"stability": 0.5, "similarity_boost": 0.75, "use_speaker_boost": true, "speed": 1.0},
+  "voiceSettings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "use_speaker_boost": true,
+    "speed": 1.0
+  },
   "lines": [
-    {"id": "01-goal", "spoken": "Give SpecWithCode one goal."},
-    {"id": "02-threads", "spoken": "Its coordinator hands each piece of work to a thread."},
-    {"id": "03-reuse", "spoken": "A thread keeps its context, so a follow-up goes back to the thread that already knows the work."},
-    {"id": "04-parallel", "spoken": "Claude Code, Codex and other agents work in parallel, on your own machines."},
-    {"id": "05-review", "spoken": "Then you review one result."},
-    {"id": "06-limit", "spoken": "When one agent hits a usage limit, the same thread continues on another."},
-    {"id": "07-chrome", "spoken": "Agents can even use your own Chrome, with the SpecWithCode Browser extension."},
-    {"id": "08-download", "spoken": "SpecWithCode is a free download for macOS, Windows and Linux."},
-    {"id": "09-url", "spoken": "At spec-weave dot com slash code."}
+    {
+      "id": "01-apps",
+      "spoken": "Every AI lab ships its own agent, in its own app."
+    },
+    {
+      "id": "02-limit",
+      "spoken": "Then one hits its usage limit, and your work just waits."
+    },
+    {
+      "id": "03-one-machine",
+      "spoken": "And it is all stuck on one machine."
+    },
+    {
+      "id": "04-one-window",
+      "spoken": "SpecWithCode puts Claude Code, Codex, Copilot, Gemini and more in one window."
+    },
+    {
+      "id": "05-coordinator",
+      "spoken": "Tell the coordinator what you want. It plans, briefs and routes. Threads do the work."
+    },
+    {
+      "id": "06-threads",
+      "spoken": "Each thread owns its job and keeps its context, so a follow-up goes to the thread that owns it."
+    },
+    {
+      "id": "07-limit",
+      "spoken": "Hit a usage limit, and the work continues on another provider, with its context."
+    },
+    {
+      "id": "08-machines",
+      "spoken": "Connect your Mac, Linux and Windows machines, with no port forwarding. The coordinator starts threads on the ones you allow."
+    },
+    {
+      "id": "09-chrome",
+      "spoken": "And one Chrome extension serves every agent, in your real Chrome profile."
+    },
+    {
+      "id": "10-why-b",
+      "spoken": "Klawd Code alone runs Klawd. T3 Code pauses until the reset, or until you switch by hand. SpecWithCode switches for you, and keeps your whole team working."
+    },
+    {
+      "id": "11-end-b",
+      "spoken": "Free for Apple silicon Macs, Windows and Linux. At specwithcode dot com."
+    }
   ]
 }
