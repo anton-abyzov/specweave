@@ -129,8 +129,9 @@ export type { NextStepsContext };
 /**
  * Show next steps after initialization.
  *
- * Displays plugin status (Claude only) followed by contextual guided follow-up commands.
- * Always shows `specweave get` — every workspace uses repositories/ structure.
+ * Displays plugin or skill status (not numbered), then the loop as numbered
+ * steps: create-increment, task done --run, verify + complete. Tracker setup
+ * and `specweave get` follow on one unnumbered "Later" line.
  */
 export function showNextSteps(
   projectName: string,
@@ -151,6 +152,10 @@ export function showNextSteps(
   console.log('');
 
   let stepNumber = 1;
+  const step = (cmd: string, hint: string): void => {
+    console.log(`   ${stepNumber}. ${chalk.white(cmd.padEnd(46))} ${chalk.gray(hint)}`);
+    stepNumber++;
+  };
 
   // Only show "cd" step if we created a subdirectory
   if (!usedDotNotation) {
@@ -159,51 +164,32 @@ export function showNextSteps(
     stepNumber++;
   }
 
-  // Plugin status (Claude only). A ✔ status is not a step, so only the
-  // warning (which asks for a command) takes a number.
+  // Status lines (plugins, skills) are not steps: they take no number, so the
+  // loop always starts the numbered list.
   if (adapterName === 'claude') {
     if (opts.marketplaceOnly) {
       console.log(`   ${chalk.green('✔')} ${chalk.white(strings.marketplaceReady)}`);
     } else if (!opts.pluginAutoInstalled) {
-      console.log(`   ${stepNumber}. ${chalk.yellow.bold('⚠️  ' + strings.pluginWarning)}`);
-      stepNumber++;
+      console.log(`   ${chalk.yellow.bold('⚠️  ' + strings.pluginWarning)}`);
     } else {
       console.log(`   ${chalk.green('✔')} ${chalk.white(strings.pluginsReady)}`);
     }
     console.log('');
   } else if (isSkillBasedAdapter(adapterName)) {
-    // Skills-aware messaging for non-Claude tools that support skills
-    const displayName = getAdapterDisplayName(adapterName);
-    console.log(`   ${chalk.green('✔')} ${chalk.white(`Skills installed for ${displayName}!`)}`);
+    console.log(`   ${chalk.green('✔')} ${chalk.white(`Skills installed for ${getAdapterDisplayName(adapterName)}`)}`);
     console.log('');
-    console.log(`   ${chalk.white('Your AI tool can now discover SpecWeave workflows automatically.')}`);
-    console.log('');
-    console.log(`   ${chalk.cyan('Quick start:')}`);
-    console.log(`     1. Open your project in ${chalk.white(displayName)}`);
-    console.log(`     2. Ask: ${chalk.gray('"Create an increment for [your feature]"')}`);
-    console.log(`     3. The AI will use specweave CLI commands`);
-    console.log('');
-    console.log(`   ${chalk.cyan('Available CLI commands:')}`);
-    console.log(`     ${chalk.white('specweave create-increment')}  ${chalk.gray('Create a new feature increment')}`);
-    console.log(`     ${chalk.white('specweave status')}            ${chalk.gray('Check current progress')}`);
-    console.log(`     ${chalk.white('specweave validate')}          ${chalk.gray('Run quality checks')}`);
-    console.log(`     ${chalk.white('specweave complete')}          ${chalk.gray('Close an increment')}`);
-    console.log('');
-    stepNumber++;
   } else if (adapterName === 'generic') {
-    // Generic adapter: mention skills in .agents/skills/ plus existing AGENTS.md messaging
     console.log(`   ${chalk.green('✔')} ${chalk.white('Skills installed in .agents/skills/')}`);
     console.log('');
-    stepNumber++;
   }
 
-  // Guided follow-up commands
-  console.log(`   ${stepNumber}. ${chalk.white('specweave sync setup')}          ${chalk.gray(strings.syncSetup)}`);
-  console.log(`   ${stepNumber + 1}. ${chalk.white('specweave create-increment')}     ${chalk.gray(strings.firstIncrement)}`);
-
-  // Always show specweave get -- every workspace uses repositories/ structure
-  console.log(`   ${stepNumber + 2}. ${chalk.white('specweave get owner/repo')}        ${chalk.gray('Add a repository to your workspace')}`);
-  console.log(`      ${chalk.white('specweave get "org/*"')}          ${chalk.gray('Add all repos from an org')}`);
+  // The loop, and nothing before it: plan, do each task, close.
+  step('specweave create-increment "Add login form"', `${strings.firstIncrement} (fill spec.md: Problem, ACs, Tasks)`);
+  step('specweave task done T-01 --run "<its Test>"', 'After each task\'s commit: run its Test, record the result');
+  step('specweave verify, then specweave complete', 'Close the increment when every task is done');
+  console.log('');
+  console.log(`   ${chalk.gray('Or ask your AI tool: "Create an increment for <your feature>", and it runs these.')}`);
+  console.log(`   ${chalk.gray(`Later: specweave sync setup (${strings.syncSetup}) · specweave get owner/repo (add a repository)`)}`);
 
   // AutoVerify tip: only when init runs inside Claude Code Desktop
   if (adapterName === 'claude' && process.env.CLAUDE_CODE_ENTRYPOINT === 'claude-desktop') {
