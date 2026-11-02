@@ -101,6 +101,20 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     expect(agents).not.toMatch(/Files: src\/a\.ts, src\/a\.test\.ts/);
   });
 
+  it('step 3 of the loop is work, commit, `task done` (which claims); claim only for parallel agents', () => {
+    const step3 = agents.split('\n').find((l) => l.startsWith('3. ')) ?? '';
+    expect(step3).toMatch(/^3\. Work the task.*commit as `NNNN: what changed`, then `specweave task done T-NN --run "<its Test>"`/);
+    expect(step3).not.toMatch(/^3\. `specweave task claim/);
+    expect(step3).toContain('Parallel agents run `specweave task claim T-NN` first');
+    expect(readme).not.toContain('`specweave task claim T-NN` → implement');
+  });
+
+  it.each(shipped)('%s carries no repo-owner policy (browser, worktree, licensing, product caveats)', (_name, content) => {
+    expect(content).not.toMatch(/headless|PLAYWRIGHT_HTML_OPEN|PWDEBUG/);
+    expect(content).not.toContain('git worktree add');
+    expect(content).not.toMatch(/identity and licensing|provenance|SpecWithCode/);
+  });
+
   it.each([
     ['CLAUDE.md.template', claude],
     ['AGENTS.md.template', agents],
