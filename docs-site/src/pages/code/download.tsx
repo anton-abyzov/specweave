@@ -12,7 +12,7 @@ import styles from '../code.module.css';
 /*
   The page people land on when they search "specwithcode download" or "SpecWithCode for Mac".
   Install facts come from the app's docs/user/install.md (anton-abyzov/specwithcode-dev, main,
-  19 October 2026) and the v1.0.132 release assets (30 October 2026).
+  19 October 2026) and the v1.0.152 release assets (2 November 2026).
 */
 
 const icon = {size: 20, strokeWidth: 1.5, 'aria-hidden': true} as const;
