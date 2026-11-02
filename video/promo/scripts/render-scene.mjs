@@ -4,7 +4,7 @@ const [scene, dur, out, extra = ''] = process.argv.slice(2);
 const stills = process.env.STILLS?.split(',').map(Number);
 const b = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM, args: ['--allow-file-access-from-files'] });
 const p = await b.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
-await p.goto(`file://${new URL('../scene/index.html', import.meta.url).pathname}?scene=${scene}${extra}`);
+await p.goto(`file://${new URL(`../scene/${process.env.PAGE ?? 'v2.html'}`, import.meta.url).pathname}?scene=${scene}${extra}`);
 await p.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {}))); });
 if (stills) {
   for (const t of stills) { await p.evaluate(t => seek(t), t); await p.screenshot({ path: `${out}-${t}.png` }); }
