@@ -4,7 +4,9 @@
  *   task whoami                         print the agent id
  *   task list [inc] [--json]            table: task, status, by, evidence
  *   task next [inc] [--json]            first open task with deps met + no Files overlap
- *   task claim T-01 [inc] [--force]     append a claim (exit 3 lost race, 4 Files overlap)
+ *                                       (exit 7 while it is still a template placeholder)
+ *   task claim T-01 [inc] [--force]     append a claim (exit 3 lost race, 4 Files overlap,
+ *                                       7 unfilled template placeholder)
  *   task done T-01 [inc] --evidence "…" | --run "<cmd>"   (exit 5 when the command fails;
  *                                       auto-claims when nobody holds a live claim)
  *   task release T-01 [inc] | --all-mine
@@ -78,6 +80,8 @@ export const EXIT_LOST_RACE = 3;
 export const EXIT_FILES_OVERLAP = 4;
 export const EXIT_RUN_FAILED = 5;
 export const EXIT_DEPS_UNMET = 6;
+/** `next` / `claim` on a task still holding create-increment's bracketed placeholders. */
+export const EXIT_TEMPLATE_TASK = 7;
 
 const ACTIONS = new Set(['whoami', 'list', 'next', 'claim', 'done', 'release', 'block', 'skip', 'render']);
 
@@ -183,6 +187,11 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
           : `No claimable task in ${inc.id} (${c.done}/${c.total} done, ${c.claimed} claimed, ${c.blocked} blocked). Run \`specweave verify ${inc.id}\` when everything is done.`);
       return 0;
     }
+    if (isTemplateTask(t)) {
+      if (opts.json) out(JSON.stringify({ increment: inc.id, next: null, error: 'template-task', task: t.id }));
+      else err(templateRefusal(t, inc.id));
+      return EXIT_TEMPLATE_TASK;
+    }
     out(opts.json ? JSON.stringify({ increment: inc.id, next: brief(t, acsOf()) }) : describeTask(t, inc.id, acsOf()));
     return 0;
   }
@@ -215,6 +224,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   switch (action) {
     case 'claim': {
       if (task.state.status === 'done' || task.state.status === 'skipped') { err(`${taskId} is already ${task.state.status}`); return 1; }
+      if (isTemplateTask(task)) { err(templateRefusal(task, inc.id)); return EXIT_TEMPLATE_TASK; }
       // Claiming a task starts the increment (planned → active). This is the
       // CLI transition the skills point at; nobody hand-edits metadata.json.
       const started = ensureIncrementStarted(inc.dir);
@@ -289,9 +299,12 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       const c = board.counts;
       const allDone = c.done + c.skipped === c.total && c.total > 0;
       const committed = commitIncrement('done', [taskId]);
-      out(opts.json ? JSON.stringify({ done: taskId, evidence, log: logPath ? rel(projectRoot, logPath) : undefined, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}), ...commitJson(committed) }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
+      // Not the last task: hand the agent the next one, so it needs no `task next`.
+      const following = allDone ? undefined : nextTask(board, agent);
+      out(opts.json ? JSON.stringify({ done: taskId, evidence, log: logPath ? rel(projectRoot, logPath) : undefined, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}), ...(following ? { next: brief(following, acsOf()) } : {}), ...commitJson(committed) }) : `Done ${taskId} (${c.done}/${c.total}) — evidence: ${firstLine(evidence)}`);
       reportCommit(committed);
       if (allDone) finishedAll(inc.id);
+      else if (following && !opts.json) out(`\nNext: ${describeTask(following, inc.id, acsOf())}`);
       return 0;
     }
     case 'release': {
@@ -412,6 +425,35 @@ function describeTask(t: BoardTask, incId: string, acs: AcEntry[] = []): string 
     ...(criteria.length ? criteria.map((a) => `  ${a.id}: ${a.text || '(text not found in spec.md)'}`) : ['  AC: -']),
     `  Files: ${(t.filesAffected ?? []).join(', ') || '-'} | Test: ${t.test ?? '-'}`,
     `  state: ${describeState(t.state)}`,
-    `  when done: specweave task done ${t.id} ${incId}${t.test ? ` --run "${t.test}"` : ' --evidence "<sha / output>"'}`,
+    `  when done: specweave task done ${t.id} ${incId}${t.test ? ` --run ${shellQuote(t.test)}` : ' --evidence "<sha / output>"'}`,
   ].join('\n');
+}
+
+/**
+ * Quote a Test so the printed `--run` argument pastes as one shell word. Plain
+ * text stays in double quotes (works in every shell); anything a shell would
+ * expand or that would end the double quotes goes in POSIX single quotes.
+ */
+export function shellQuote(s: string): string {
+  if (!/["$`\\!]/.test(s)) return `"${s}"`;
+  return `'${s.replace(/'/g, `'\\''`)}'`;
+}
+
+/**
+ * create-increment's scaffold placeholders: `[First task]`, `[command that checks …]`,
+ * `[src/file.ts, …]`. A letter must follow the bracket, so a shell test such as
+ * `[ -f dist/cli.js ]` is a real Test.
+ */
+const BRACKETED = /^\[[A-Za-z][^\]]*\]$/;
+
+/** A task whose title, Test or Files are still create-increment's bracketed placeholders. */
+export function isTemplateTask(t: Pick<BoardTask, 'title' | 'test' | 'filesAffected'>): boolean {
+  const files = (t.filesAffected ?? []).join(', ').trim();
+  return BRACKETED.test(t.title.trim())
+    || (t.test !== undefined && BRACKETED.test(t.test.trim()))
+    || BRACKETED.test(files);
+}
+
+function templateRefusal(t: BoardTask, incId: string): string {
+  return `refused: ${t.id} in ${incId} is still the create-increment placeholder ("${t.title}"). Fill in spec.md ## Tasks first: a real title, then "- AC: AC-01 | Files: <paths> | Test: <command that checks the AC>".`;
 }
