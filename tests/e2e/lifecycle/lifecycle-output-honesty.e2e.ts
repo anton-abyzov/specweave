@@ -78,6 +78,7 @@ beforeEach(() => {
   // This disposable project intentionally lives under the guarded system temp directory.
   expect(sw('init', '--quick', '--force').code).toBe(0);
   expect(sw('create-increment', 'output honesty').code).toBe(0);
+  fillScaffold(INC);
 });
 
 afterEach(() => {
@@ -86,6 +87,12 @@ afterEach(() => {
 });
 
 const INC = '0001-output-honesty';
+
+/** Give create-increment's scaffold tasks real titles: `task done` refuses unfilled placeholders. */
+function fillScaffold(incId: string): void {
+  const spec = path.join(workDir, '.specweave', 'increments', incId, 'spec.md');
+  fs.writeFileSync(spec, fs.readFileSync(spec, 'utf8').replace('### T-01 [First task]', '### T-01 First task').replace('### T-02 [Second task]', '### T-02 Second task'));
+}
 
 describe('e2e: lifecycle commands only advertise commands that exist', () => {
   it('pause / resume / abandon never name a slash command with no skill', () => {
