@@ -145,11 +145,15 @@ export function unmetDeps(board: TaskBoard, task: BoardTask): string[] {
   });
 }
 
-/** First open task (T-id order) with all deps met and no Files overlap with live claims. */
-export function nextTask(board: TaskBoard, agent?: string): BoardTask | undefined {
+/**
+ * First open task (T-id order) with all deps met and no Files overlap with live
+ * claims. `skip` passes over tasks the caller cannot hand out (unfilled placeholders).
+ */
+export function nextTask(board: TaskBoard, agent?: string, skip?: (t: BoardTask) => boolean): BoardTask | undefined {
   return board.tasks.find(
     (t) =>
       (t.state.status === 'open' || t.state.status === 'stale') &&
+      !skip?.(t) &&
       unmetDeps(board, t).length === 0 &&
       fileOverlaps(board, t, agent).length === 0,
   );

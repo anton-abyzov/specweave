@@ -4,7 +4,7 @@
 # Installation: cp specweave.fish ~/.config/fish/completions/specweave.fish
 #
 
-set -l commands init uninstall pause start resume reopen abandon complete task ac card cards verify review skills glossary create-increment handoff pickup report note auto-handoff statusline usage-guard autocompact require-increment small-fix jev next-id archive save status auto auto-status cancel-auto team update-instructions update check-discipline gc qa link-pr branch-name lsp sync refresh-plugins doctor generate-rubric dashboard hooks context get
+set -l commands init uninstall pause start resume reopen abandon complete task ac card cards verify review skills glossary create-increment handoff pickup report note auto-handoff require-increment small-fix jev archive status update sync doctor generate-rubric dashboard hooks context get
 
 # Disable file completion for specweave
 complete -c specweave -f
@@ -25,36 +25,19 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a verify -
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a review -d "Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a skills -d "List the project's SpecWeave skills, or enable/disable optional ones (glossary, sync, project, jev)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a glossary -d "Check GLOSSARY.md against the code (avoided words used as identifiers, Data/Code names that no longer exist); list prints the terms"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create increment template files (metadata.json, spec.md, tasks.md). Short form: specweave create-increment \"Add login form\""
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a create-increment -d "Create an increment: metadata.json and spec.md (Problem, Scope, ACs, Approach, Tasks). Short form: specweave create-increment \"Add login form\""
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a handoff -d "Hand off your work: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pickup -d "Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria. Name one handoff by its id (`specweave handoff list`), increment or title words; with none named, the newest"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a report -d "Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a note -d "Append a note to an increment's ledger; `specweave pickup` shows it to the next agent"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-handoff -d "on | off | status: near the usage limit, suggest a handoff (default) or hand off by itself, and save local checkpoints"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a statusline -d "Claude Code status line that records usage for auto-handoff"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a usage-guard -d "Stop hook: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a autocompact -d "on | off | status: where Claude Code summarizes a long session (default 400k)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a require-increment -d "Show or set the increment nudge for code changes: off | remind (recommend) | enforce (opt-in block)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a small-fix -d "Declare this session's change too small for an increment (logged; satisfies require-increment)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a jev -d "Jev (System One): doctor | setup | ask | route | task | guard | screen | failure | browse | usage"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a next-id -d "Return the next available increment number. Prefer: create-increment --auto-id"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a archive -d "Archive completed increments and sync living docs (project-specific folders)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a save -d "Smart save - auto-generate commit message, sync with remote, commit and push"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a status -d "Show increment status overview (alias: progress)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto -d "Start autonomous execution (stop hook feedback loop)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a auto-status -d "Check auto session status and progress"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a cancel-auto -d "Cancel running auto session"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a team -d "Launch Claude Code with agent teams (tmux/iTerm2 split panes)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a update-instructions -d "Update CLAUDE.md and AGENTS.md with smart merge (preserves user content)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a update -d "Update SpecWeave: CLI, instructions, config, AND plugins (default)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a check-discipline -d "Report increment status counts, advisory WIP note and metadata consistency"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a gc -d "Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs, expire session checkpoints older than 7 days"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a qa -d "Run quality assessment on an increment"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a link-pr -d "Link a pull request to external tickets (JIRA, ADO)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a branch-name -d "Output the computed branch name for an increment (with optional JIRA/ADO ticket key)"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a lsp -d "LSP code intelligence (refs, def, hover, symbols, search)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a sync -d "Sync increments with GitHub, Jira or Azure DevOps: push | pull | status | setup"
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a refresh-plugins -d "Refresh SpecWeave plugins (core only by default, use --all for everything)"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a doctor -d "Run comprehensive health check on SpecWeave project"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a generate-rubric -d "Generate or refresh the AC-tied rubric.md quality contract at the increment root"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a dashboard -d "Launch real-time observability dashboard in browser"
@@ -235,19 +218,6 @@ complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l checkpoin
 complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l handoff -d "Same as --mode enforce"
 complete -c specweave -n "__fish_seen_subcommand_from auto-handoff" -l workspace -d "Select the planning workspace explicitly"
 
-# statusline
-complete -c specweave -n "__fish_seen_subcommand_from statusline" -l wrap -d "Print this status line command's output instead of the built-in line"
-complete -c specweave -n "__fish_seen_subcommand_from statusline" -l workspace -d "Select the planning workspace explicitly"
-
-# usage-guard
-complete -c specweave -n "__fish_seen_subcommand_from usage-guard" -l limit-hit -d "StopFailure hook: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)"
-complete -c specweave -n "__fish_seen_subcommand_from usage-guard" -l workspace -d "Select the planning workspace explicitly"
-
-# autocompact
-complete -c specweave -n "__fish_seen_subcommand_from autocompact" -l at -d "Window for `on`, 100k to 1M (default 400k)"
-complete -c specweave -n "__fish_seen_subcommand_from autocompact" -l project -d "Write .claude/settings.json in this project instead of ~/.claude/settings.json"
-complete -c specweave -n "__fish_seen_subcommand_from autocompact" -l workspace -d "Select the planning workspace explicitly"
-
 # require-increment
 complete -c specweave -n "__fish_seen_subcommand_from require-increment" -l workspace -d "Select the planning workspace explicitly"
 
@@ -276,12 +246,6 @@ complete -c specweave -n "__fish_seen_subcommand_from jev" -l screenshot-dir -d 
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l allow-sensitive -d "browse: allow clicking sensitive controls"
 complete -c specweave -n "__fish_seen_subcommand_from jev" -l workspace -d "Select the planning workspace explicitly"
 
-# next-id
-complete -c specweave -n "__fish_seen_subcommand_from next-id" -l project -d "Project ID for per-project collision prevention"
-complete -c specweave -n "__fish_seen_subcommand_from next-id" -l project-root -d "Override project root directory"
-complete -c specweave -n "__fish_seen_subcommand_from next-id" -l name -d "Increment name to generate full ID (e.g., \"my-feature\" → \"0042-my-feature\")"
-complete -c specweave -n "__fish_seen_subcommand_from next-id" -l workspace -d "Select the planning workspace explicitly"
-
 # archive
 complete -c specweave -n "__fish_seen_subcommand_from archive" -l keep-last -d "Keep last N increments, archive the rest"
 complete -c specweave -n "__fish_seen_subcommand_from archive" -l last -d "STRICT: Keep exactly last N increments by number, ignoring all protections"
@@ -293,48 +257,10 @@ complete -c specweave -n "__fish_seen_subcommand_from archive" -l external -d "A
 complete -c specweave -n "__fish_seen_subcommand_from archive" -l dry-run -d "Preview what would be archived without moving files"
 complete -c specweave -n "__fish_seen_subcommand_from archive" -l workspace -d "Select the planning workspace explicitly"
 
-# save
-complete -c specweave -n "__fish_seen_subcommand_from save" -l interactive -s i -d "Interactive mode - ask before each step"
-complete -c specweave -n "__fish_seen_subcommand_from save" -l dry-run -d "Preview without executing"
-complete -c specweave -n "__fish_seen_subcommand_from save" -l sync -d "Sync strategy (rebase, merge, none)"
-complete -c specweave -n "__fish_seen_subcommand_from save" -l no-stash -d "Skip auto-stash"
-complete -c specweave -n "__fish_seen_subcommand_from save" -l repos -d "Only save specific repos (comma-separated)"
-complete -c specweave -n "__fish_seen_subcommand_from save" -l skip-no-remote -d "Skip repos without remotes"
-complete -c specweave -n "__fish_seen_subcommand_from save" -l all -d "Include all repos (even outside umbrella config)"
-complete -c specweave -n "__fish_seen_subcommand_from save" -l no-push -d "Commit but don't push"
-complete -c specweave -n "__fish_seen_subcommand_from save" -l force -d "Force push (requires confirmation)"
-complete -c specweave -n "__fish_seen_subcommand_from save" -l branch -d "Create new branch instead of force pushing"
-complete -c specweave -n "__fish_seen_subcommand_from save" -l workspace -d "Select the planning workspace explicitly"
-
 # status
 complete -c specweave -n "__fish_seen_subcommand_from status" -l verbose -s v -d "Show detailed information"
 complete -c specweave -n "__fish_seen_subcommand_from status" -l type -s t -d "Filter by increment type (feature, hotfix, bug, etc.)"
 complete -c specweave -n "__fish_seen_subcommand_from status" -l workspace -d "Select the planning workspace explicitly"
-
-# auto
-complete -c specweave -n "__fish_seen_subcommand_from auto" -l dry-run -d "Preview without activating"
-complete -c specweave -n "__fish_seen_subcommand_from auto" -l all-backlog -d "Activate all backlog items"
-complete -c specweave -n "__fish_seen_subcommand_from auto" -l reset -d "Clean up any stale state files"
-complete -c specweave -n "__fish_seen_subcommand_from auto" -l workspace -d "Select the planning workspace explicitly"
-
-# auto-status
-complete -c specweave -n "__fish_seen_subcommand_from auto-status" -l verbose -d "Show detailed information"
-complete -c specweave -n "__fish_seen_subcommand_from auto-status" -l json -d "Output as JSON"
-complete -c specweave -n "__fish_seen_subcommand_from auto-status" -l workspace -d "Select the planning workspace explicitly"
-
-# cancel-auto
-complete -c specweave -n "__fish_seen_subcommand_from cancel-auto" -l force -d "Force cancel without confirmation"
-complete -c specweave -n "__fish_seen_subcommand_from cancel-auto" -l workspace -d "Select the planning workspace explicitly"
-
-# team
-complete -c specweave -n "__fish_seen_subcommand_from team" -l mode -d "Display mode: tmux (default) or in-process"
-complete -c specweave -n "__fish_seen_subcommand_from team" -l no-increment -d "Launch without requiring a SpecWeave increment (free-form agent swarm)"
-complete -c specweave -n "__fish_seen_subcommand_from team" -l workspace -d "Select the planning workspace explicitly"
-
-# update-instructions
-complete -c specweave -n "__fish_seen_subcommand_from update-instructions" -l dry-run -d "Preview changes without writing"
-complete -c specweave -n "__fish_seen_subcommand_from update-instructions" -l verbose -s v -d "Show detailed merge information"
-complete -c specweave -n "__fish_seen_subcommand_from update-instructions" -l workspace -d "Select the planning workspace explicitly"
 
 # update
 complete -c specweave -n "__fish_seen_subcommand_from update" -l no-self -d "Skip CLI self-update via npm"
@@ -347,53 +273,9 @@ complete -c specweave -n "__fish_seen_subcommand_from update" -l verbose -s v -d
 complete -c specweave -n "__fish_seen_subcommand_from update" -l force -s f -d "Force refresh even if up to date"
 complete -c specweave -n "__fish_seen_subcommand_from update" -l workspace -d "Select the planning workspace explicitly"
 
-# check-discipline
-complete -c specweave -n "__fish_seen_subcommand_from check-discipline" -l verbose -s v -d "Show detailed increment information"
-complete -c specweave -n "__fish_seen_subcommand_from check-discipline" -l json -d "Output results as JSON"
-complete -c specweave -n "__fish_seen_subcommand_from check-discipline" -l project-root -d "Project root directory"
-complete -c specweave -n "__fish_seen_subcommand_from check-discipline" -l workspace -d "Select the planning workspace explicitly"
-
-# gc
-complete -c specweave -n "__fish_seen_subcommand_from gc" -l yes -s y -d "Actually delete (default is dry-run)"
-complete -c specweave -n "__fish_seen_subcommand_from gc" -l json -d "Output as JSON"
-complete -c specweave -n "__fish_seen_subcommand_from gc" -l project-root -d "Project root directory"
-complete -c specweave -n "__fish_seen_subcommand_from gc" -l workspace -d "Select the planning workspace explicitly"
-
-# qa
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l quick -d "Quick mode (default)"
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l pre -d "Pre-implementation check"
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l gate -d "Quality gate check (comprehensive)"
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l full -d "Full multi-agent mode (Phase 3)"
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l ci -d "CI mode (exit 1 on FAIL)"
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l no-ai -d "Skip AI assessment (rule-based only)"
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l silent -d "Minimal output"
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l export -d "Export blockers/concerns to tasks.md"
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l force -s f -d "Force run even if rule-based fails"
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l verbose -s v -d "Show recommendations"
-complete -c specweave -n "__fish_seen_subcommand_from qa" -l workspace -d "Select the planning workspace explicitly"
-
-# link-pr
-complete -c specweave -n "__fish_seen_subcommand_from link-pr" -l branch -d "Branch name"
-complete -c specweave -n "__fish_seen_subcommand_from link-pr" -l workspace -d "Select the planning workspace explicitly"
-
-# branch-name
-complete -c specweave -n "__fish_seen_subcommand_from branch-name" -l workspace -d "Select the planning workspace explicitly"
-
-# lsp
-complete -c specweave -n "__fish_seen_subcommand_from lsp" -a "refs def hover symbols search warmup status setup" -d "lsp subcommand"
-complete -c specweave -n "__fish_seen_subcommand_from lsp" -l workspace -d "Select the planning workspace explicitly"
-
 # sync
 complete -c specweave -n "__fish_seen_subcommand_from sync" -a "push pull status setup" -d "sync subcommand"
 complete -c specweave -n "__fish_seen_subcommand_from sync" -l workspace -d "Select the planning workspace explicitly"
-
-# refresh-plugins
-complete -c specweave -n "__fish_seen_subcommand_from refresh-plugins" -l all -d "Install ALL plugins (not just core sw)"
-complete -c specweave -n "__fish_seen_subcommand_from refresh-plugins" -l plugin -d "Install a specific plugin by name"
-complete -c specweave -n "__fish_seen_subcommand_from refresh-plugins" -l quiet -s q -d "Suppress output (for use by hooks)"
-complete -c specweave -n "__fish_seen_subcommand_from refresh-plugins" -l force -s f -d "Force reinstall (skip hash check)"
-complete -c specweave -n "__fish_seen_subcommand_from refresh-plugins" -l verbose -s v -d "Show skipped plugins"
-complete -c specweave -n "__fish_seen_subcommand_from refresh-plugins" -l workspace -d "Select the planning workspace explicitly"
 
 # doctor
 complete -c specweave -n "__fish_seen_subcommand_from doctor" -l verbose -d "Show detailed output for each check"

@@ -112,8 +112,8 @@ export function formatSummaryBanner(options: SummaryBannerOptions): string {
   // Quick reference
   lines.push(chalk.cyan('  Quick reference:'));
   lines.push(`    specweave help              Full command reference`);
+  lines.push(`    specweave status            Increments and their progress`);
   lines.push(`    specweave doctor            Verify project health`);
-  lines.push(`    specweave config <section>  Customize settings`);
 
   lines.push('');
 

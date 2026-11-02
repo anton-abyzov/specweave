@@ -61,51 +61,11 @@ export class GenericAdapter extends AdapterBase {
    * Get usage instructions for Generic adapter
    */
   getInstructions(): string {
+    // Short on purpose: init's "Next steps" prints the loop right after this.
     return `
-================================================================
-        Generic Adapter - Universal Compatibility
-================================================================
-
-Your project is now configured for ANY AI tool!
-
-WHAT THIS PROVIDES:
-
-- AGENTS.md (Universal Standard)
-  - Works with: GitHub Copilot, ChatGPT, Gemini, Claude web, etc.
-  - Contains all workflow instructions and project structure
-  - Following agents.md standard (https://agents.md/)
-
-HOW TO USE AGENTS.MD:
-
-Method 1: Auto-Discovery (Copilot - Recommended)
-  AI reads AGENTS.md → Ask "create increment for payments" → Done!
-
-Method 2: Copy-Paste (ChatGPT, Claude web, etc.)
-  Open AGENTS.md → Copy workflow section → Paste to AI → Save output
-
-Method 3: File System Access (AI with file access)
-  AI reads AGENTS.md automatically → Ask "Create increment" → Files created
-
-QUICK START:
-
-1. Open AGENTS.md - read "Common Workflows" section
-2. Use your AI tool: ChatGPT, Claude web, Gemini, Copilot, etc.
-3. Ask AI to follow the workflow instructions
-4. Save generated files to .specweave/increments/
-
-AVAILABLE COMMANDS (the CLI works in any tool):
-specweave create-increment "feature"   Plan the work (spec.md + tasks.md)
-specweave task next | task claim T-01 | task done T-01 --run "<test>"
-specweave verify <id>                  Run the checks, write reports/verify.json
-specweave complete <id>                Close the increment
-specweave handoff [id]                 Write handoff.md before you stop
-
-DOCUMENTATION:
-- AGENTS.md - Workflow instructions (works with any AI!)
-- .specweave/docs/ - Project documentation
-
-Ready to build with SpecWeave using ANY AI tool!
-    `;
+AGENTS.md now holds the workflow for any AI tool (Copilot, Gemini, ChatGPT and others).
+Open the project in your tool and ask: "Create an increment for <your feature>".
+`;
   }
 
   /**

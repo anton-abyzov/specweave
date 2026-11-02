@@ -84,12 +84,29 @@ describe('gitignore-generator', () => {
         '**/reports/*.mp4',
         '**/reports/*.png',
         '**/reports/*.jpg',
-        '**/reports/*.aab',
-        '**/reports/*.ipa',
-        '**/reports/*.dSYM/',
       ]) {
         expect(result).toContain(entry);
       }
+    });
+
+    it('ships no app-bundle patterns and writes each rule once', () => {
+      const categories = new Map<any, string[]>();
+      categories.set('language', ['javascript', 'typescript']);
+      categories.set('framework', ['react']);
+      const detection: TechStackDetection = { detected: [], primary: null, categories };
+      const lines = generateGitignore(detection).split('\n');
+      for (const gone of ['**/reports/*.aab', '**/reports/*.ipa', '**/reports/*.dSYM/']) {
+        expect(lines).not.toContain(gone);
+      }
+      const rules = lines.map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
+      expect(rules.filter((l) => l === 'node_modules/')).toHaveLength(1);
+      expect(rules.length).toBe(new Set(rules).size);
+      // A header whose rules were all duplicates is dropped, not left dangling.
+      const headers = lines.map((l, i) => [l, lines[i + 1] ?? ''] as const).filter(([l]) => l.startsWith('#'));
+      expect(headers.filter(([, next]) => next.trim() === '')).toEqual([]);
+      // The framework dirs SpecWeave installs stay ignored.
+      expect(lines).toContain('plugins/');
+      expect(lines).toContain('.claude-plugin/');
     });
 
     it('should exclude common when includeCommon=false', () => {
@@ -185,6 +202,12 @@ describe('gitignore-generator', () => {
       expect(offenders).toEqual([]);
     });
 
+    it('ships no app-bundle patterns and lists node_modules/ once', () => {
+      const lines = readFileSync(templatePath, 'utf-8').split('\n').map((l) => l.trim());
+      for (const gone of ['**/reports/*.aab', '**/reports/*.ipa', '**/reports/*.dSYM/']) expect(lines).not.toContain(gone);
+      expect(lines.filter((l) => l === 'node_modules/')).toHaveLength(1);
+    });
+
     it('ignores the 2.0 runtime state dirs and binary report evidence', () => {
       const content = readFileSync(templatePath, 'utf-8');
       for (const entry of [
@@ -196,9 +219,6 @@ describe('gitignore-generator', () => {
         '**/reports/*.mp4',
         '**/reports/*.png',
         '**/reports/*.jpg',
-        '**/reports/*.aab',
-        '**/reports/*.ipa',
-        '**/reports/*.dSYM/',
       ]) {
         expect(content.split('\n')).toContain(entry);
       }

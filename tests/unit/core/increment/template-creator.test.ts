@@ -261,6 +261,9 @@ describe('template-creator', () => {
       expect(result.nextSteps[1]).toContain('spec.md');
       expect(result.nextSteps[1]).toContain('Tasks');
       expect(result.nextSteps[2]).toContain('specweave task next');
+      // `task done` claims the task itself; a single agent never needs `task claim`.
+      expect(result.nextSteps[2]).toContain('specweave task done T-01 --run');
+      expect(result.nextSteps[2]).not.toContain('task claim');
       expect(result.nextSteps[3]).toContain('specweave complete');
     });
 

@@ -24,36 +24,19 @@ commands=(
     'review:Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md'
     'skills:List the project'\''s SpecWeave skills, or enable/disable optional ones (glossary, sync, project, jev)'
     'glossary:Check GLOSSARY.md against the code (avoided words used as identifiers, Data/Code names that no longer exist); list prints the terms'
-    'create-increment:Create increment template files (metadata.json, spec.md, tasks.md). Short form\: specweave create-increment "Add login form"'
+    'create-increment:Create an increment\: metadata.json and spec.md (Problem, Scope, ACs, Approach, Tasks). Short form\: specweave create-increment "Add login form"'
     'handoff:Hand off your work\: release your claims, record why, and push it so `specweave pickup` continues it in any tool or account. `specweave handoff list` shows the pending handoffs'
     'pickup:Pick up handed-off work (from any tool, machine or account) and print the next task with its acceptance criteria. Name one handoff by its id (`specweave handoff list`), increment or title words; with none named, the newest'
     'report:Write an HTML report of who did what on an increment (tools, sessions, handoffs, pickups, evidence)'
     'note:Append a note to an increment'\''s ledger; `specweave pickup` shows it to the next agent'
     'auto-handoff:on | off | status\: near the usage limit, suggest a handoff (default) or hand off by itself, and save local checkpoints'
-    'statusline:Claude Code status line that records usage for auto-handoff'
-    'usage-guard:Stop hook\: save a local checkpoint; at the auto-handoff threshold, suggest or ask for a handoff once'
-    'autocompact:on | off | status\: where Claude Code summarizes a long session (default 400k)'
     'require-increment:Show or set the increment nudge for code changes\: off | remind (recommend) | enforce (opt-in block)'
     'small-fix:Declare this session'\''s change too small for an increment (logged; satisfies require-increment)'
     'jev:Jev (System One)\: doctor | setup | ask | route | task | guard | screen | failure | browse | usage'
-    'next-id:Return the next available increment number. Prefer\: create-increment --auto-id'
     'archive:Archive completed increments and sync living docs (project-specific folders)'
-    'save:Smart save - auto-generate commit message, sync with remote, commit and push'
     'status:Show increment status overview (alias\: progress)'
-    'auto:Start autonomous execution (stop hook feedback loop)'
-    'auto-status:Check auto session status and progress'
-    'cancel-auto:Cancel running auto session'
-    'team:Launch Claude Code with agent teams (tmux/iTerm2 split panes)'
-    'update-instructions:Update CLAUDE.md and AGENTS.md with smart merge (preserves user content)'
     'update:Update SpecWeave\: CLI, instructions, config, AND plugins (default)'
-    'check-discipline:Report increment status counts, advisory WIP note and metadata consistency'
-    'gc:Purge stale .specweave/state files (dry-run; --yes to delete), report .worktrees size and nested .specweave dirs, expire session checkpoints older than 7 days'
-    'qa:Run quality assessment on an increment'
-    'link-pr:Link a pull request to external tickets (JIRA, ADO)'
-    'branch-name:Output the computed branch name for an increment (with optional JIRA/ADO ticket key)'
-    'lsp:LSP code intelligence (refs, def, hover, symbols, search)'
     'sync:Sync increments with GitHub, Jira or Azure DevOps\: push | pull | status | setup'
-    'refresh-plugins:Refresh SpecWeave plugins (core only by default, use --all for everything)'
     'doctor:Run comprehensive health check on SpecWeave project'
     'generate-rubric:Generate or refresh the AC-tied rubric.md quality contract at the increment root'
     'dashboard:Launch real-time observability dashboard in browser'
@@ -290,25 +273,6 @@ _specweave() {
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
-                statusline)
-                    _arguments \
-                        '--wrap[Print this status line command'\''s output instead of the built-in line]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                usage-guard)
-                    _arguments \
-                        '--limit-hit[StopFailure hook\: the turn hit the rate limit, so hand off now (or only save, in checkpoint-only mode)]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                autocompact)
-                    _arguments \
-                        '--at[Window for `on`, 100k to 1M (default 400k)]' \
-                        '--project[Write .claude/settings.json in this project instead of ~/.claude/settings.json]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
                 require-increment)
                     _arguments \
                         '--workspace[Select the planning workspace explicitly]' \
@@ -343,14 +307,6 @@ _specweave() {
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
-                next-id)
-                    _arguments \
-                        '--project[Project ID for per-project collision prevention]' \
-                        '--project-root[Override project root directory]' \
-                        '--name[Increment name to generate full ID (e.g., "my-feature" → "0042-my-feature")]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
                 archive)
                     _arguments \
                         '--keep-last[Keep last N increments, archive the rest]' \
@@ -364,60 +320,10 @@ _specweave() {
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
-                save)
-                    _arguments \
-                        '--interactive[Interactive mode - ask before each step]' \
-                        '--dry-run[Preview without executing]' \
-                        '--sync[Sync strategy (rebase, merge, none)]' \
-                        '--no-stash[Skip auto-stash]' \
-                        '--repos[Only save specific repos (comma-separated)]' \
-                        '--skip-no-remote[Skip repos without remotes]' \
-                        '--all[Include all repos (even outside umbrella config)]' \
-                        '--no-push[Commit but don'\''t push]' \
-                        '--force[Force push (requires confirmation)]' \
-                        '--branch[Create new branch instead of force pushing]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
                 status)
                     _arguments \
                         '--verbose[Show detailed information]' \
                         '--type[Filter by increment type (feature, hotfix, bug, etc.)]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                auto)
-                    _arguments \
-                        '--dry-run[Preview without activating]' \
-                        '--all-backlog[Activate all backlog items]' \
-                        '--reset[Clean up any stale state files]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                auto-status)
-                    _arguments \
-                        '--verbose[Show detailed information]' \
-                        '--json[Output as JSON]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                cancel-auto)
-                    _arguments \
-                        '--force[Force cancel without confirmation]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                team)
-                    _arguments \
-                        '--mode[Display mode\: tmux (default) or in-process]' \
-                        '--no-increment[Launch without requiring a SpecWeave increment (free-form agent swarm)]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                update-instructions)
-                    _arguments \
-                        '--dry-run[Preview changes without writing]' \
-                        '--verbose[Show detailed merge information]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
@@ -434,67 +340,9 @@ _specweave() {
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
-                check-discipline)
-                    _arguments \
-                        '--verbose[Show detailed increment information]' \
-                        '--json[Output results as JSON]' \
-                        '--project-root[Project root directory]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                gc)
-                    _arguments \
-                        '--yes[Actually delete (default is dry-run)]' \
-                        '--json[Output as JSON]' \
-                        '--project-root[Project root directory]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                qa)
-                    _arguments \
-                        '--quick[Quick mode (default)]' \
-                        '--pre[Pre-implementation check]' \
-                        '--gate[Quality gate check (comprehensive)]' \
-                        '--full[Full multi-agent mode (Phase 3)]' \
-                        '--ci[CI mode (exit 1 on FAIL)]' \
-                        '--no-ai[Skip AI assessment (rule-based only)]' \
-                        '--silent[Minimal output]' \
-                        '--export[Export blockers/concerns to tasks.md]' \
-                        '--force[Force run even if rule-based fails]' \
-                        '--verbose[Show recommendations]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                link-pr)
-                    _arguments \
-                        '--branch[Branch name]' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                branch-name)
-                    _arguments \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                lsp)
-                    _arguments \
-                        '1:subcommand:(refs def hover symbols search warmup status setup)' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
                 sync)
                     _arguments \
                         '1:subcommand:(push pull status setup)' \
-                        '--workspace[Select the planning workspace explicitly]' \
-                        '--help[Show help]'
-                    ;;
-                refresh-plugins)
-                    _arguments \
-                        '--all[Install ALL plugins (not just core sw)]' \
-                        '--plugin[Install a specific plugin by name]' \
-                        '--quiet[Suppress output (for use by hooks)]' \
-                        '--force[Force reinstall (skip hash check)]' \
-                        '--verbose[Show skipped plugins]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;

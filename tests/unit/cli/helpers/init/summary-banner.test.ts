@@ -115,9 +115,10 @@ describe('summary-banner', () => {
 
     // ─── Customize instruction ────────────────────────────────
 
-    it('should contain specweave config instruction', () => {
+    it('never advertises a command the CLI does not have', () => {
       const output = strip(formatSummaryBanner(makeOptions()));
-      expect(output).toContain('specweave config');
+      expect(output).not.toContain('specweave config');
+      expect(output).not.toContain('specweave validate');
     });
 
     // ─── Adapter info ──────────────────────────────────────────

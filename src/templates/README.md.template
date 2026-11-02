@@ -8,7 +8,7 @@ A [SpecWeave](https://spec-weave.com) project: work happens in increments under 
 |---|---|
 | Start or continue | `specweave pickup` |
 | Plan a feature | `specweave create-increment "title"` (skill: `sw-increment`) |
-| Work the tasks | `specweave task next` → `specweave task claim T-NN` → implement → `specweave task done T-NN --run "<test cmd>"` |
+| Work the tasks | `specweave task next` → implement and commit → `specweave task done T-NN --run "<test cmd>"` |
 | Verify and close | `specweave verify`, then `specweave complete NNNN` |
 | Switch tool or account | `specweave handoff`, then say "pick up" in the other tool |
 

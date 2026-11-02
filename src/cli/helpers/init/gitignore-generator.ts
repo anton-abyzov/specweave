@@ -430,13 +430,10 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '.specweave/increments/**/reports/artifacts/',
     '.claude/worktrees/',
     '.worktrees/',
-    '# Binary evidence in reports/ (videos, screenshots, app bundles)',
+    '# Binary evidence in reports/ (videos, screenshots)',
     '**/reports/*.mp4',
     '**/reports/*.png',
     '**/reports/*.jpg',
-    '**/reports/*.aab',
-    '**/reports/*.ipa',
-    '**/reports/*.dSYM/',
   ],
 };
 
@@ -655,6 +652,29 @@ export function generateGitignore(
   const { includeSpecweave = true, includeCommon = true, customEntries = [] } = options || {};
 
   const sections: string[] = [];
+  // A rule already written by an earlier block (`node_modules/` from JavaScript
+  // and from Dependencies, `build/` from TypeScript and React) is written once.
+  const seenRules = new Set<string>();
+  const pushBlock = (lines: string[]): void => {
+    // Blank lines split an entry list into blocks (`common` holds several).
+    const blocks: string[][] = [[]];
+    for (const l of lines) {
+      if (l.trim() === '') blocks.push([]);
+      else blocks[blocks.length - 1].push(l);
+    }
+    for (const block of blocks) {
+      const kept = block.filter((l) => {
+        const rule = l.trim();
+        if (rule.startsWith('#')) return true;
+        if (seenRules.has(rule)) return false;
+        seenRules.add(rule);
+        return true;
+      });
+      // A block whose every rule was a duplicate would leave only its comment.
+      if (!kept.some((l) => !l.trim().startsWith('#'))) continue;
+      sections.push(...kept, '');
+    }
+  };
 
   // Add detected tech entries (deduplicated)
   const addedTechs = new Set<string>();
@@ -674,7 +694,7 @@ export function generateGitignore(
     const techs = detection.categories.get(category) || [];
     for (const tech of techs) {
       if (!addedTechs.has(tech) && GITIGNORE_ENTRIES[tech]) {
-        sections.push(...GITIGNORE_ENTRIES[tech]);
+        pushBlock(GITIGNORE_ENTRIES[tech]);
         sections.push('');
         addedTechs.add(tech);
       }
@@ -683,13 +703,13 @@ export function generateGitignore(
 
   // Add common entries
   if (includeCommon && GITIGNORE_ENTRIES.common) {
-    sections.push(...GITIGNORE_ENTRIES.common);
+    pushBlock(GITIGNORE_ENTRIES.common);
     sections.push('');
   }
 
   // Add SpecWeave entries
   if (includeSpecweave && GITIGNORE_ENTRIES.specweave) {
-    sections.push(...GITIGNORE_ENTRIES.specweave);
+    pushBlock(GITIGNORE_ENTRIES.specweave);
     sections.push('');
   }
 
