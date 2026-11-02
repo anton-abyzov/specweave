@@ -5,11 +5,11 @@ WEBVTT
 Every AI lab ships its own agent, in its own app.
 
 2
-00:00:04.340 --> 00:00:07.868
+00:00:04.340 --> 00:00:08.113
 Then one hits its usage limit, and your work just waits.
 
 3
-00:00:08.208 --> 00:00:10.226
+00:00:08.255 --> 00:00:10.660
 And it is all stuck on one machine.
 
 4
@@ -17,7 +17,7 @@ And it is all stuck on one machine.
 SpecWithCode puts Claude Code, Codex, Copilot, Gemini and more in one window.
 
 5
-00:00:17.358 --> 00:00:18.868
+00:00:17.358 --> 00:00:19.198
 Tell the coordinator what you want.
 
 6
@@ -49,17 +49,17 @@ The coordinator starts threads on the ones you allow.
 And one Chrome extension serves every agent, in your real Chrome profile.
 
 13
-00:00:47.075 --> 00:00:48.679
+00:00:47.075 --> 00:00:49.245
 Claude Code alone runs Claude.
 
 14
-00:00:49.434 --> 00:00:50.943
-T3 Code waits for the reset.
+00:00:49.575 --> 00:00:53.208
+T3 Code pauses until the reset, or until you switch by hand.
 
 15
-00:00:51.981 --> 00:00:54.302
-SpecWithCode keeps your whole team working.
+00:00:53.868 --> 00:00:57.311
+SpecWithCode switches for you, and keeps your whole team working.
 
 16
-00:00:55.283 --> 00:00:59.585
-Free for Mac, Windows and Linux. At specwithcode.com.
+00:00:57.925 --> 00:01:02.972
+Free for Apple silicon Macs, Windows and Linux. At specwithcode.com.

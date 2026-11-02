@@ -1,6 +1,6 @@
 <!doctype html>
 <html><head><meta charset="utf-8">
-<!-- Homepage promo v2: one continuous 64.5 s timeline. seek(t) poses every animation at t seconds. -->
+<!-- Homepage promo v2: one continuous 68 s timeline. seek(t) poses every animation at t seconds. -->
 <style>
 @font-face{font-family:SG;src:url(../../../docs-site/static/fonts/schibsted-grotesk-latin.woff2);font-weight:400 900}
 @font-face{font-family:JM;src:url(../../../docs-site/static/fonts/jetbrains-mono-latin.woff2)}
@@ -68,7 +68,7 @@ th.sw{color:var(--v)}
   <div class="h">Your work waits for a reset.<div class="strike" id="s02x"></div></div>
   <div class="view" id="s02v" style="left:440px;top:330px;width:1040px;height:520px;background:#fff">
     <div class="cam" id="s02c"><img src="b/usage.webp" width="1040" height="520">
-      <div class="ring" id="s02r" style="left:66px;top:206px;width:470px;height:94px;border-color:var(--red);border-radius:14px"></div></div>
+      <div class="ring" id="s02r" style="left:66px;top:206px;width:600px;height:94px;border-color:var(--red);border-radius:14px"></div></div>
   </div>
 </section>
 
@@ -92,33 +92,34 @@ th.sw{color:var(--v)}
 <!-- s04-s06 11.6-31.2: the app window; one camera -->
 <section id="s04">
   <div class="kick" id="s04k">THE FIX</div>
-  <div class="h" id="s04h">One window for <em>every agent.</em></div>
+  <div class="h" id="s04h">The agents you pay for. <em>One window.</em></div>
   <div class="view" id="s04v" style="left:340px;top:290px;width:1240px;height:775px">
     <div class="cam" id="s04c"><img src="b/window-dark.webp" width="2400" height="1500">
       <div class="dim" id="dimL" style="left:0;top:0;width:384px;height:1500px"></div>
       <div class="dim" id="dimR" style="left:1709px;top:0;width:691px;height:1500px"></div>
-      <div class="dim" id="dimC" style="left:384px;top:0;width:1325px;height:1500px"></div>
+      <div class="dim" id="dimC" style="left:384px;top:0;width:1325px;height:1500px;background:rgba(8,6,14,.86)"></div>
       <div class="ring" id="rCo" style="left:396px;top:12px;width:1302px;height:1476px;border-color:var(--ind);border-width:7px;border-radius:24px"></div>
       <div class="ring" id="rTh" style="left:1722px;top:246px;width:668px;height:252px;border-color:var(--teal);border-width:6px"></div>
-      <div class="ring" id="rRow" style="left:1736px;top:418px;width:640px;height:62px;border-color:var(--teal);border-width:4px;border-radius:12px"></div>
+      <div class="ring" id="rRow" style="left:1736px;top:404px;width:640px;height:80px;border-color:var(--teal);border-width:4px;border-radius:12px"></div>
     </div>
   </div>
+  <div id="hcBar" style="position:absolute;left:388px;top:948px;width:1090px;height:84px;background:rgba(20,16,31,.94);border-radius:20px"></div>
   <div class="chip" id="hc1" style="left:400px;top:960px">Claude Code</div>
-  <div class="chip" id="hc2" style="left:640px;top:960px">Codex</div>
-  <div class="chip" id="hc3" style="left:800px;top:960px">Copilot</div>
-  <div class="chip" id="hc4" style="left:975px;top:960px">Gemini</div>
-  <div class="chip" id="hc5" style="left:1150px;top:960px">Cursor</div>
-  <div class="chip" id="hc6" style="left:1310px;top:960px;color:var(--v)">and more</div>
+  <div class="chip" id="hc2" style="left:645px;top:960px">Codex</div>
+  <div class="chip" id="hc3" style="left:799px;top:960px">Copilot</div>
+  <div class="chip" id="hc4" style="left:963px;top:960px">Gemini</div>
+  <div class="chip" id="hc5" style="left:1125px;top:960px">Cursor</div>
+  <div class="chip" id="hc6" style="left:1285px;top:960px;color:var(--v)">and more</div>
 
   <div class="tag" id="tCo" style="left:240px;top:60px;background:var(--ind);font-size:30px">COORDINATOR</div>
   <div class="bubble" id="bAsk" style="left:430px;top:840px;font-size:28px">Add a --people option and a JSON output</div>
-  <div class="chip" id="cRoute" style="left:1270px;top:190px;font-size:28px">Plans · briefs · routes</div>
+  <div class="chip" id="cRoute" style="left:1060px;top:92px;font-size:28px;color:#c9c0ff;border-color:var(--ind)">Plans · briefs · routes</div>
   <div class="chip" id="cWork" style="left:1270px;top:280px;font-size:28px;color:var(--teal)">Threads do the work →</div>
 
   <div class="tag" id="tTh" style="left:60px;top:250px;background:#0f9f8c;font-size:30px">THREADS</div>
   <div class="chip" id="cOwn" style="left:60px;top:330px;font-size:28px;white-space:normal;width:390px;line-height:1.3">Each owns its job, keeps its context</div>
   <div class="bubble" id="bFu" style="left:120px;top:600px">Also handle negative amounts.</div>
-  <div class="tag" id="tSame" style="left:760px;top:668px;background:#0f9f8c">Follow-up → the thread that owns it</div>
+  <div class="tag" id="tSame" style="left:60px;top:600px;width:380px;white-space:normal;line-height:1.3;background:#0f9f8c">Follow-up → the thread that owns it</div>
 </section>
 
 <!-- s07 31.2-36.4: limit fallback -->
@@ -129,16 +130,16 @@ th.sw{color:var(--v)}
     <div class="ring" id="rMeant" style="left:12px;top:126px;width:1096px;height:48px;border-color:var(--amber);border-radius:12px"></div>
     <div class="ring" id="rNow" style="left:12px;top:78px;width:1096px;height:48px;border-color:var(--green);border-radius:12px"></div>
   </div>
-  <div class="cap" id="s07cap" style="top:760px;left:400px">Same thread, same context, now on another provider.<br><span style="color:var(--mut);font-size:28px">It goes back on its own after the reset.</span></div>
+  <div class="cap" id="s07cap" style="top:760px;left:400px">Same thread, now on another provider, with its context.<br><span style="color:var(--mut);font-size:28px">It goes back on its own after the reset.</span></div>
 </section>
 
 <!-- s08 36.4-44.6: many machines -->
 <section id="s08">
   <div class="kick">MANY <b>MACHINES</b></div>
-  <div class="h">All your machines. <em>One team.</em></div>
+  <div class="h">Mac, Linux, Windows. <em>One team.</em></div>
   <svg width="1920" height="1080" style="position:absolute;inset:0">
     <path id="l1" d="M 450 470 C 450 560, 280 580, 280 650" stroke="#2dd4bf" stroke-width="4" stroke-dasharray="10 10" fill="none"/>
-    <path id="l2" d="M 450 470 L 450 650" stroke="#2dd4bf" stroke-width="4" stroke-dasharray="10 10" fill="none"/>
+    <path id="l2" d="M 450 470 L 450 800" stroke="#2dd4bf" stroke-width="4" stroke-dasharray="10 10" fill="none"/>
     <path id="l3" d="M 450 470 C 450 560, 620 580, 620 650" stroke="#2dd4bf" stroke-width="4" stroke-dasharray="10 10" fill="none"/>
   </svg>
   <div class="node c" id="nC" style="left:300px;top:350px"><b>This Mac</b><small>COORDINATOR</small></div>
@@ -148,6 +149,7 @@ th.sw{color:var(--v)}
   <div class="pill" id="pCon" style="left:150px;top:960px"><i>●</i> SpecWithCode Connect · no port forwarding</div>
   <div class="view" id="s08v" style="left:900px;top:330px;width:900px;height:553px;background:#fff">
     <div class="cam" id="s08c"><img src="b/ministorm.webp" width="1238" height="760">
+      <div style="position:absolute;left:0;top:0;width:230px;height:760px;background:#fff"></div>
       <div class="ring" id="rM4" style="left:232px;top:0px;width:530px;height:162px;border-color:var(--ind);border-width:6px"></div>
       <div class="ring" id="rLx" style="left:794px;top:112px;width:428px;height:162px;border-color:var(--teal);border-width:6px"></div>
     </div>
@@ -163,8 +165,8 @@ th.sw{color:var(--v)}
   <div class="h">One Chrome extension. <em>Every agent.</em></div>
   <div class="view" id="s09v" style="left:150px;top:300px;width:1000px;height:634px;background:#fff">
     <div class="cam" id="s09c"><img src="b/store.png" width="1120" height="710">
-      <div class="ring" id="rName" style="left:12px;top:6px;width:500px;height:100px;border-radius:16px"></div>
-      <div class="ring" id="rRate" style="left:12px;top:92px;width:156px;height:50px;border-radius:12px"></div>
+      <div class="ring" id="rName" style="left:12px;top:6px;width:500px;height:84px;border-radius:16px"></div>
+      <div class="ring" id="rRate" style="left:12px;top:96px;width:166px;height:44px;border-radius:12px"></div>
       <div class="ring" id="rUsers" style="left:244px;top:146px;width:83px;height:46px;border-radius:12px"></div>
     </div>
   </div>
@@ -188,11 +190,11 @@ th.sw{color:var(--v)}
 <!-- s10 49.6-58.4: why -->
 <section id="s10">
   <div class="kick">WHY <b>SPECWITHCODE</b></div>
-  <div class="h" style="font-size:72px">Not one agent. <em>A team.</em></div>
+  <div class="h" style="font-size:72px">One coordinator. <em>A team of threads.</em></div>
   <table>
     <tr><th></th><th class="c1 hd" id="h1">CLAUDE CODE ALONE</th><th class="c2 hd" id="h2">T3 CODE</th><th class="sw" id="h3">SPECWITHCODE</th></tr>
     <tr><td class="l">Agents</td><td class="c1">Claude models</td><td class="c2">Many providers</td><td class="sw"><span class="ok">✓</span>Claude Code, Codex, Copilot, Gemini, Cursor and more</td></tr>
-    <tr><td class="l">At a usage limit</td><td class="c1">Buy more usage or wait</td><td class="c2">Resume after the reset</td><td class="sw"><span class="ok">✓</span>Continues on another provider</td></tr>
+    <tr><td class="l">At a usage limit</td><td class="c1">Buy more usage or wait</td><td class="c2">Resume at reset, or switch by hand</td><td class="sw"><span class="ok">✓</span>Switches provider for you, with context</td></tr>
     <tr><td class="l">Browser for agents</td><td class="c1">Claude in Chrome, Claude only</td><td class="c2">Built-in preview browser</td><td class="sw"><span class="ok">✓</span>Your real Chrome profile, every agent</td></tr>
     <tr><td class="l">Who does the work</td><td class="c1">Claude sessions and subagents</td><td class="c2">Agents delegate tasks</td><td class="sw"><span class="ok">✓</span>One coordinator per project; threads do the work</td></tr>
   </table>
@@ -230,7 +232,7 @@ A('#w1', [{ translate: '0 0' }, { translate: '-40px 10px' }], 1.6, 2.6, { f: 'fo
 STRIKE('#s01x', 3.65);
 // s02 (VO 4.6)
 SCENE('s02', 4.4, 4.2); IN('#s02 .kick', 4.45); IN('#s02 .h', 4.55); IN('#s02v', 4.7);
-CAM('#s02c', [[0, 0, 0, 1], [5.6, 520 - 1.6 * 300, 260 - 1.6 * 253, 1.6, 1.2]]); RING('#s02r', 6.0);
+CAM('#s02c', [[0, 0, 0, 1], [5.6, 520 - 1.6 * 330, 260 - 1.6 * 293, 1.6, 1.2]]); RING('#s02r', 6.0);
 A('#s02r', [{ opacity: 1 }, { opacity: .35 }, { opacity: 1 }], 6.6, .9, { f: 'forwards' }); STRIKE('#s02x', 7.95);
 // s03 (VO speech 8.7)
 SCENE('s03', 8.6, 3.0); IN('#s03 .kick', 8.65); IN('#s03 .h', 8.75); POP('#lap', 9.0, .6); A('#lock', [{ opacity: 0, translate: '0 -60px' }, { opacity: 1, translate: '0 0' }], 9.75, .45, { e: 'cubic-bezier(.3,1.6,.5,1)' });
@@ -239,22 +241,23 @@ STRIKE('#s03x', 10.85);
 SCENE('s04', 11.6, 19.6);
 IN('#s04k', 11.65); IN('#s04h', 11.75);
 A('#s04v', [{ opacity: 0, transform: 'perspective(1800px) rotateX(10deg) scale(1.1)' }, { opacity: 1, transform: 'none' }], 11.8, 1.5);
+FADE('#hcBar', 12.9, .4); OUT('#hcBar', 18.0, .35);
 ['#hc1', '#hc2', '#hc3', '#hc4', '#hc5', '#hc6'].forEach((c, i) => POP(c, [13.0, 14.4, 15.0, 15.8, 16.3, 16.45][i]));
 const W0 = 1240 / 2400;
 ['#dimL', '#dimR', '#dimC', '#rCo', '#rTh', '#rRow'].forEach(s => A(s, [{ opacity: 0 }, { opacity: 0 }], 0, .01));
 // s05: drop the headline and chips, grow the view to full frame, zoom on the coordinator pane
 OUT('#s04k', 18.1); OUT('#s04h', 18.1); OUT('#hc1,#hc2,#hc3,#hc4,#hc5,#hc6', 18.0, .35);
 A('#s04v', [{ left: '340px', top: '290px', width: '1240px', height: '775px', borderRadius: '22px' }, { left: '0px', top: '0px', width: '1920px', height: '1080px', borderRadius: '0px' }], 18.2, 1.0, { e: 'cubic-bezier(.65,0,.35,1)', f: 'forwards' });
-CAM('#s04c', [[0, 0, 0, W0], [18.2, 0, 0, 1920 / 2400, 1.0], [18.6, 960 - .78 * 1046, 560 - .78 * 720, .78, 1.1], [24.6, 960 - 1.45 * 2055, 540 - 1.45 * 400, 1.45, 1.3]]);
+CAM('#s04c', [[0, 0, 0, W0], [18.2, 0, 0, 1920 / 2400, 1.0], [18.6, 960 - .78 * 1046, 560 - .78 * 720, .78, 1.1], [24.6, 960 - 1.45 * 2055, 580 - 1.45 * 400, 1.45, 1.3]]);
 FADE('#dimL,#dimR', 18.8, .5); OUT('#dimL,#dimR', 24.6, .5);
 RING('#rCo', 19.2); POP('#tCo', 19.35); OUT('#rCo,#tCo', 24.5, .35);
 IN('#bAsk', 19.4); OUT('#bAsk', 21.0, .3);
 INR('#cRoute', 20.7); INR('#cWork', 23.3); OUT('#cRoute,#cWork', 24.4, .3);
 // s06: thread panel
 FADE('#dimC', 24.7, .5); RING('#rTh', 25.4); POP('#tTh', 25.5); INR('#cOwn', 25.9);
-A('#bFu', [{ opacity: 0, translate: '0 30px' }, { opacity: 1, translate: '0 0' }], 27.6, .4);
-A('#bFu', [{ translate: '0 0', scale: 1 }, { translate: '560px -10px', scale: .85 }], 28.4, 1.0, { e: 'cubic-bezier(.5,0,.3,1)', f: 'forwards' });
-OUT('#bFu', 29.4, .3); RING('#rRow', 29.35); POP('#tSame', 29.6);
+A('#bFu', [{ opacity: 0, translate: '0 30px' }, { opacity: 1, translate: '0 0' }], 28.3, .4);
+A('#bFu', [{ translate: '0 0', scale: 1 }, { translate: '560px -10px', scale: .85 }], 28.9, 1.0, { e: 'cubic-bezier(.5,0,.3,1)', f: 'forwards' });
+OUT('#bFu', 29.9, .3); A('#rRow', [{ opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1 }], 29.85, .45, { e: 'cubic-bezier(.3,1.4,.5,1)' }); POP('#tSame', 30.05);
 // s07 (VO 31.4)
 SCENE('s07', 31.2, 5.2); IN('#s07 .kick', 31.25); IN('#s07 .h', 31.35); IN('#s07card', 31.55, .7);
 RING('#rMeant', 32.1); RING('#rNow', 33.6); IN('#s07cap', 34.3);
@@ -263,23 +266,23 @@ SCENE('s08', 36.4, 8.2); IN('#s08 .kick', 36.45); IN('#s08 .h', 36.55);
 POP('#nC', 36.75); POP('#nM', 37.1); DRAW('#l1', 37.1, .5); POP('#nL', 37.75); DRAW('#l2', 37.75, .5); POP('#nW', 38.5); DRAW('#l3', 38.5, .5);
 A('#l1,#l2,#l3', [{ strokeDashoffset: 0 }, { strokeDashoffset: -200 }], 39.1, 5.5, { e: 'linear', f: 'forwards' });
 IN('#pCon', 39.9);
-INR('#s08v', 40.6, .8); CAM('#s08c', [[0, 0, 0, 900 / 1238], [41.6, 900 / 2 - 1.0 * 620, 553 / 2 - 1.0 * 150, 1.0, 1.0], [43.3, 0, 0, 900 / 1238, .9]]);
+INR('#s08v', 40.6, .8); CAM('#s08c', [[0, 0, 0, 900 / 1238], [41.6, -190, 0, .88, 1.0], [43.3, 0, 0, 900 / 1238, .9]]);
 RING('#rM4', 41.9); POP('#tM4', 42.0); RING('#rLx', 42.7); POP('#tLx', 42.8); IN('#s08cap', 43.2);
 // s09 (VO 44.8)
 SCENE('s09', 44.6, 5.0); IN('#s09 .kick', 44.65); IN('#s09 .h', 44.75); IN('#s09v', 44.9, .7);
-CAM('#s09c', [[0, 0, 0, 1000 / 1120], [45.9, 30, 30, 1.55, 1.1]]);
+CAM('#s09c', [[0, 0, 0, 1000 / 1120], [45.9, 30, 30, 1.4, 1.1]]);
 RING('#rName', 46.6); RING('#rRate', 47.0); RING('#rUsers', 47.3); IN('#pStore', 46.4);
 ['#kc1', '#kc2', '#kc3', '#kc4', '#kc5'].forEach((c, i) => INR(c, 45.9 + i * .18, .5));
 ['#k1', '#k2', '#k3', '#k4', '#k5'].forEach((c, i) => DRAW(c, 46.4 + i * .1, .6)); POP('#kIcon', 46.9); IN('#kOne', 47.3);
 // s10 (VO 49.9)
-SCENE('s10', 49.6, 8.8); IN('#s10 .kick', 49.65); IN('#s10 .h', 49.75);
+SCENE('s10', 49.6, 11.6); IN('#s10 .kick', 49.65); IN('#s10 .h', 49.75);
 IN('#s10 td.l', 49.9, .5, 12);
-FADE('#s10 .c1', 50.2, .5); FADE('#s10 .c2', 52.4, .5); A('#s10 .sw', [{ opacity: 0, translate: '0 16px' }, { opacity: 1, translate: '0 0' }], 55.0, .55);
-A('#s10 .c1, #s10 .c2', [{ opacity: 1 }, { opacity: .5 }], 56.2, .6, { f: 'forwards' }); FADE('#s10f', 55.6);
+FADE('#s10 .c1', 50.2, .5); FADE('#s10 .c2', 52.5, .5); A('#s10 .sw', [{ opacity: 0, translate: '0 16px' }, { opacity: 1, translate: '0 0' }], 57.1, .55);
+A('#s10 .c1, #s10 .c2', [{ opacity: 1 }, { opacity: .5 }], 58.3, .6, { f: 'forwards' }); FADE('#s10f', 57.8);
 // s11 (VO 58.6)
-SCENE('s11', 58.4, 6.1); A('#eIcon', [{ opacity: 0, scale: .85 }, { opacity: 1, scale: 1 }], 58.55, .6, { e: 'cubic-bezier(.3,1.5,.5,1)' });
-A('#eUrl', [{ opacity: 0, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0% 0 0)' }], 60.8, .8, { e: 'ease-out' }); IN('#eSub', 59.0);
-A('#s11', [{ opacity: 1 }, { opacity: 1 }], 64.15, .35, { f: 'forwards' });
+SCENE('s11', 61.2, 6.8); A('#eIcon', [{ opacity: 0, scale: .85 }, { opacity: 1, scale: 1 }], 61.35, .6, { e: 'cubic-bezier(.3,1.5,.5,1)' });
+A('#eUrl', [{ opacity: 0, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0% 0 0)' }], 62.6, .8, { e: 'ease-out' }); IN('#eSub', 61.8);
+A('#s11', [{ opacity: 1 }, { opacity: 1 }], 67.65, .35, { f: 'forwards' });
 
 window.seek = t => { for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; } };
 window.seek(0);
