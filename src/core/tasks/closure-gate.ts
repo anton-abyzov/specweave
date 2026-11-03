@@ -1,18 +1,18 @@
 /**
  * Closure gate for `specweave complete` (2.0).
  *
- * The ONLY blocking check: `reports/verify.json` must exist with `ok: true`,
- * unless the caller supplies `--reason` (stored as metadata.closeReason).
- * Grill / code-review / judge-llm / rubric reports are optional evidence and
- * never block. A missing review, or a `fix first` verdict in the newest one,
- * produces a one-line notice.
+ * By default, verify.json is required unless the caller supplies --reason.
+ * With testing.strictClose, terminal tasks, scoped checks and review are
+ * required, and --reason cannot override them.
  *
  * @module core/tasks/closure-gate
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { readVerifyReport, describeUncheckedAcs, specDeclaresAcs } from './verify-runner.js';
+import { readVerifyReport, describeUncheckedAcs, specDeclaresAcs, deriveAcStatus, readSpecAcs, detectVerifyCommands } from './verify-runner.js';
+import { readStrictClose, resolveOwnerChecks } from './strict-close.js';
+import { deriveAcAcceptance, acCloses } from './accepted-skip.js';
 import { loadTaskBoard } from './task-board.js';
 import { parseVerdict } from '../review/reviewer.js';
 
@@ -35,11 +35,14 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
   const notices: string[] = [];
   const info: string[] = [];
   const verify = readVerifyReport(incrementDir);
-  const reason = opts.reason?.trim();
+  const root = path.resolve(incrementDir, '..', '..', '..');
+  const strict = readStrictClose(root);
+  const reason = strict ? undefined : opts.reason?.trim();
+  if (strict && opts.reason?.trim()) errors.push('testing.strictClose does not allow --reason to bypass closure checks');
 
   if (!verify) {
     if (!reason) {
-      errors.push(`reports/verify.json missing — run \`specweave verify ${incrementId}\` first, or pass --reason "<why closing without it>"`);
+      errors.push(`reports/verify.json missing — run \`specweave verify ${incrementId}\` first${strict ? '' : ', or pass --reason "<why closing without it>"'}`);
     } else {
       notices.push(`closing without verify.json — reason: ${reason}`);
     }
@@ -54,7 +57,7 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
     if (unchecked) parts.push(unchecked);
     const why = parts.join('; ') || 'failed';
     if (!reason) {
-      errors.push(`verify.json is not ok (${why}) — fix and re-run \`specweave verify ${incrementId}\`, or pass --reason`);
+      errors.push(`verify.json is not ok (${why}) — fix and re-run \`specweave verify ${incrementId}\`${strict ? '' : ', or pass --reason'}`);
     } else {
       notices.push(`closing with failed verify (${why}) — reason: ${reason}`);
     }
@@ -74,7 +77,8 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
   // 0933: an increment with no acceptance criteria has no definition of done.
   if (fs.existsSync(path.join(incrementDir, 'spec.md')) && !specDeclaresAcs(incrementDir)) {
     if (!reason) {
-      errors.push('spec.md declares no acceptance criteria — add `- [ ] AC-01: …` lines, or pass --reason "<why closing without them>"');
+      errors.push('spec.md declares no acceptance criteria — add `- [ ] AC-01: …` lines' +
+        (strict ? '' : ', or pass --reason "<why closing without them>"'));
     } else {
       notices.push(`spec.md declares no acceptance criteria — closing anyway, reason: ${reason}`);
     }
@@ -83,12 +87,30 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
   try {
     const board = loadTaskBoard(incrementDir);
     const open = board.tasks.filter((t) => t.state.status !== 'done' && t.state.status !== 'skipped');
-    if (open.length) notices.push(`${open.length} task(s) not done: ${open.map((t) => `${t.id} (${t.state.status})`).join(', ')}`);
+    if (open.length) (strict ? errors : notices).push(`${open.length} task(s) not done: ${open.map((t) => `${t.id} (${t.state.status})`).join(', ')}`);
+    if (strict) {
+      if (board.fold.malformed) errors.push('Fix malformed task ledger entries before closing');
+      if (!deriveAcAcceptance(deriveAcStatus(readSpecAcs(incrementDir), board), board).every(acCloses)) {
+        errors.push('Current acceptance criteria are not met');
+      }
+      const owners = resolveOwnerChecks(root, board, strict);
+      errors.push(...owners.errors);
+      if (verify?.increment !== incrementId || !verify.strictClose || !Number.isFinite(Date.parse(verify.ranAt))) {
+        errors.push('Run strict verification for this increment before closing');
+      } else {
+        const detected = detectVerifyCommands(root);
+        const required = [...owners.checks, ...detected.commands.map((cmd) => ({ cmd, cwd: '.', source: detected.source }))];
+        if (required.length === 0 || required.some(({ cmd, cwd, source }) =>
+          !verify.commands.some((check) => check.cmd === cmd && check.cwd === cwd && check.source === source && check.exit === 0))) {
+          errors.push('Required project or owning product verification is missing or has changed — re-run verify');
+        }
+      }
+    }
   } catch {
-    // tasks.md unreadable → nothing to add
+    if (strict) errors.push('Unable to read the task board for strict closure');
   }
 
-  notices.push(...reviewNotices(incrementDir));
+  (strict ? errors : notices).push(...reviewNotices(incrementDir, strict ? verify?.ranAt ?? '' : undefined));
 
   return { ok: errors.length === 0, errors, notices, info };
 }
@@ -97,7 +119,7 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
  * Review notices: none on file, a `fix first` verdict in the newest
  * `reports/review*.md`, or no cross-model review while `review.crossModel` is on.
  */
-function reviewNotices(incrementDir: string): string[] {
+function reviewNotices(incrementDir: string, verifiedAt?: string): string[] {
   const reportsDir = path.join(incrementDir, 'reports');
   const reviews = fs.existsSync(reportsDir)
     ? fs.readdirSync(reportsDir)
@@ -108,9 +130,19 @@ function reviewNotices(incrementDir: string): string[] {
   if (!reviews.length) return ['no reports/review.md or review-<reviewer>.md — run sw-review (or `specweave review` for another model) before shipping user-facing work'];
   const notices: string[] = [];
   const newest = fs.readFileSync(path.join(reportsDir, reviews[0].f), 'utf8');
+  if (verifiedAt !== undefined && (!Number.isFinite(Date.parse(verifiedAt)) || reviews[0].mtime < Date.parse(verifiedAt))) {
+    notices.push('The newest review predates verification — review again after verify');
+  }
+  if (verifiedAt !== undefined && !parseVerdict(newest)) notices.push('The newest review needs an explicit Verdict: ship');
   if (parseVerdict(newest) === 'fix first') notices.push(`reports/${reviews[0].f} says fix first — fix its critical and high findings and review again`);
-  if (crossModelRequired(incrementDir) && !reviews.some((r) => r.f.startsWith('review-'))) {
-    notices.push('review.crossModel is on but no cross-model review is on file — run `specweave review`');
+  if (crossModelRequired(incrementDir)) {
+    const crossModel = reviews.find((r) => r.f.startsWith('review-'));
+    if (!crossModel) {
+      notices.push('review.crossModel is on but no cross-model review is on file — run `specweave review`');
+    } else if (verifiedAt !== undefined && (crossModel.mtime < Date.parse(verifiedAt) ||
+      parseVerdict(fs.readFileSync(path.join(reportsDir, crossModel.f), 'utf8')) !== 'ship')) {
+      notices.push('The latest cross-model review must say ship and follow verification — run `specweave review`');
+    }
   }
   return notices;
 }

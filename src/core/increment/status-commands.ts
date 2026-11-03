@@ -13,6 +13,7 @@ import { MetadataManager } from './metadata-manager.js';
 import { IncrementStatus, IncrementType, computeTransitionPath, countsTowardWipLimit } from '../types/increment-metadata.js';
 import { DisciplineChecker, buildWipNote } from './discipline-checker.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { readStrictClose } from '../tasks/strict-close.js';
 import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
 
 /**
@@ -332,8 +333,8 @@ async function runCompleteIncrement(options: CompleteOptions): Promise<boolean> 
       return false;
     }
 
-    // Run quality gate validation unless skipped
-    if (!skipValidation) {
+    // Strict policy applies even if the legacy skip flag is supplied.
+    if (!skipValidation || readStrictClose(resolveEffectiveRoot())) {
       // Dynamic import to avoid circular dependency
       const { IncrementCompletionValidator } = await import('./completion-validator.js');
       const validation = await IncrementCompletionValidator.validateCompletion(incrementId, { reason: closeReason });
