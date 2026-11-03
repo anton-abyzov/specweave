@@ -30,6 +30,17 @@ env:
 # and fetch-depth 2 gives the gate HEAD^1.
 
 jobs:
+  windows-commit-hints:
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-and-build
+        with:
+          skip-build: 'true'
+      - run: npx vitest run tests/unit/cli/complete-commit-hint.test.ts
+
   smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 10
