@@ -1,3 +1,9 @@
+## [3.1.20] - 2026-11-03
+
+### Changed
+
+- Fix commit hints for Windows workspace paths (#2228)
+
 ## [3.1.19] - 2026-11-03
 
 ### Fixed
