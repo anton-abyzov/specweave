@@ -11,7 +11,7 @@ This policy covers the SpecWeave command-line tool, the SpecWithCode desktop app
 
 ## Where your data lives
 
-SpecWeave and SpecWithCode run on machines you own. Your projects, specs, prompts, agent conversations, settings and sign-ins stay on those machines. We do not run a server that receives them, and we do not see them. We do not offer a hosted service for SpecWithCode today; if we offer one later, this policy will be updated before it launches.
+SpecWeave and SpecWithCode run on machines you own. Your projects, specs, prompts, agent conversations and settings stay on those machines. We do not run a server that receives them, and we do not see them. The optional hosted SpecWithCode Connect service helps your devices find and open your computers, as described below.
 
 When you use a coding agent or AI provider, such as Claude Code, Codex or another tool you configure, SpecWithCode sends your prompts, files and related content to that provider at your direction, under your own account with that provider. Each provider handles that data under its own terms and privacy policy.
 
@@ -41,7 +41,13 @@ The SpecWithCode Browser extension for Chrome has its own policy: [SpecWithCode 
 
 ## SpecWithCode for iPhone
 
-The SpecWithCode iPhone app connects only to the computers you pair it with: the addresses in the pairing links you use, and other addresses those computers report for reaching them. It has no account with us, no analytics, no advertising and no tracking, and it sends nothing to us. If you turn on sharing with app developers in your iPhone's analytics settings, Apple may share crash reports with us.
+The SpecWithCode iPhone app reaches your computers through SpecWithCode Connect or direct pairing.
+
+**SpecWithCode Connect (optional).** Clerk handles sign-in and stores your email address, your name and the sign-in method you chose. The app asks the SpecWithCode relay for the computers linked to your account, their status and a one-time credential when you open one. Your computer handles messages, replies and files through its own connection. See [how to delete your Connect account](/delete-account).
+
+**Direct pairing.** You pair with a link or QR code from your computer. This route requires no Connect account and uses the addresses in the pairing link or reported by that computer.
+
+The iPhone app has no analytics, advertising or tracking. If you turn on sharing with app developers in your iPhone's analytics settings, Apple may share crash reports with us.
 
 The app sends your messages only to your own computers, and replies come back only from them. SpecWithCode on the computer passes your messages to the coding agent or AI provider you set up there, as described above. On a local network the connection can be unencrypted HTTP; on a network you don't trust, pair using a secure (HTTPS) address instead.
 
@@ -55,7 +61,7 @@ Removing a computer in the app deletes its addresses and tokens from the phone, 
 
 The SpecWithCode Android app controls SpecWithCode on computers you own. It reaches them in one of two ways.
 
-**SpecWithCode Connect (optional).** You sign in with a SpecWithCode account. Sign-in is handled by Clerk, our authentication provider, which stores your email address, your name and the sign-in method you chose (for example Google or GitHub). The app then asks the SpecWithCode relay (relay.spec-weave.com) for the computers linked to your account and for a one-time credential to open one of them. After that, the app talks to your computer directly through that computer's own tunnel address. The relay does not carry your messages, replies or files. To delete your account and the data Clerk holds for it, email us from the address you signed in with.
+**SpecWithCode Connect (optional).** You sign in with a SpecWithCode account. Sign-in is handled by Clerk, our authentication provider, which stores your email address, your name and the sign-in method you chose (for example Google or GitHub). The app then asks the SpecWithCode relay (relay.spec-weave.com) for the computers linked to your account and for a one-time credential to open one of them. After that, the app talks to your computer directly through that computer's own tunnel address. The relay does not carry your messages, replies or files. See [how to delete your Connect account](/delete-account).
 
 **Direct pairing.** You pair with a link or QR code from SpecWithCode on your computer. No account is needed, and nothing goes through our relay.
 

@@ -136,6 +136,16 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   /** A live claim held by somebody else (stale claims are takeable). */
   const heldByOther = (t: BoardTask): boolean =>
     (t.state.status === 'claimed' || t.state.status === 'blocked') && t.state.by !== agent;
+  const heldByMe = (task: BoardTask): boolean =>
+    (task.state.status === 'claimed' || task.state.status === 'blocked') && task.state.by === agent;
+  const claimConflict = (task: BoardTask): number | undefined => {
+    if (opts.force) return undefined;
+    const deps = unmetDeps(board, task);
+    if (deps.length) { err(`${task.id} depends on ${deps.join(', ')} (not done). Use --force to override.`); return EXIT_DEPS_UNMET; }
+    const overlap = fileOverlaps(board, task, agent);
+    if (overlap.length) { err(`${task.id} shares Files with live claim(s) ${overlap.join(', ')}. Pick another task or --force.`); return EXIT_FILES_OVERLAP; }
+    return undefined;
+  };
   /**
    * The last task just turned done or skipped: say how to close, and leave a
    * marker so the Stop hook reminds this session to close before it ends.
@@ -232,10 +242,8 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       const started = ensureIncrementStarted(inc.dir);
       if (started && !opts.json) out(started);
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
-      const deps = unmetDeps(board, task);
-      if (deps.length && !opts.force) { err(`${taskId} depends on ${deps.join(', ')} (not done). Use --force to override.`); return EXIT_DEPS_UNMET; }
-      const overlap = fileOverlaps(board, task, agent);
-      if (overlap.length && !opts.force) { err(`${taskId} shares Files with live claim(s) ${overlap.join(', ')}. Pick another task or --force.`); return EXIT_FILES_OVERLAP; }
+      const conflict = claimConflict(task);
+      if (conflict) return conflict;
       recordSessionOnce(ledger, agent);
       append('claim', taskId, { ...(note ? { note } : {}), ...card });
       // Re-read: the earliest live claim wins; confirm we own it.
@@ -257,6 +265,11 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       }
       if (isTemplateTask(task)) { err(templateRefusal(task, inc.id)); return EXIT_TEMPLATE_TASK; }
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
+
+      if (!heldByMe(task)) {
+        const conflict = claimConflict(task);
+        if (conflict) return conflict;
+      }
 
       let evidence = (opts.evidence ?? '').trim();
       // A placeholder Test (`[command]`) is not run: the agent passes --run or --evidence.
@@ -284,8 +297,15 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       }
 
       // Auto-claim: a single agent needs one command, not claim+done.
-      const heldByMe = (task.state.status === 'claimed' || task.state.status === 'blocked') && task.state.by === agent;
-      if (!heldByMe) {
+      board = load();
+      const current = board.tasks.find((candidate) => candidate.id === taskId);
+      if (!current) { err(`${taskId} was removed while the Test was running`); return 1; }
+      if (current.state.status === 'done') { out(`${taskId} already done by ${current.state.by}`); return 0; }
+      if (current.state.status === 'skipped') { err(`${taskId} was skipped while the Test was running`); return 1; }
+      if (heldByOther(current) && !opts.force) { err(refusal(current, taskId, leaseHours)); return EXIT_LOST_RACE; }
+      if (!heldByMe(current)) {
+        const conflict = claimConflict(current);
+        if (conflict) return conflict;
         // Same rule as `claim`: an auto-claim is still a claim, so it starts
         // the increment. Without this, `task done` (the one-command path the
         // docs recommend) recorded work against a still-`planned` increment.
@@ -430,18 +450,8 @@ function describeTask(t: BoardTask, incId: string, acs: AcEntry[] = []): string 
     ...(criteria.length ? criteria.map((a) => `  ${a.id}: ${a.text || '(text not found in spec.md)'}`) : ['  AC: -']),
     `  Files: ${(t.filesAffected ?? []).join(', ') || '-'} | Test: ${t.test ?? '-'}`,
     `  state: ${describeState(t.state)}`,
-    `  when done: specweave task done ${t.id} ${incId}${t.test && !isPlaceholderTest(t.test) ? ` --run ${shellQuote(t.test)}` : ' --run "<command that checks the AC>"'}`,
+    `  when done: specweave task done ${t.id} ${incId}${isShellCommand(t.test) && !isPlaceholderTest(t.test) ? '' : ' --run "<command that checks the AC>"'}`,
   ].join('\n');
-}
-
-/**
- * Quote a Test so the printed `--run` argument pastes as one shell word. Plain
- * text stays in double quotes (works in every shell); anything a shell would
- * expand or that would end the double quotes goes in POSIX single quotes.
- */
-export function shellQuote(s: string): string {
-  if (!/["$`\\!]/.test(s)) return `"${s}"`;
-  return `'${s.replace(/'/g, `'\\''`)}'`;
 }
 
 /**

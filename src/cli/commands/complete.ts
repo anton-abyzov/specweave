@@ -127,13 +127,20 @@ export async function completeCommand(
 /**
  * `complete` never commits, so say how when the closed increment has
  * uncommitted changes. Only inside a git work tree. The pathspec keeps other
- * staged work out of the commit; the path is relative to where the user is.
+ * staged work out of the commit; run Git in the increment project when invoked elsewhere.
  */
 export function commitHint(projectRoot: string, incrementId: string, cwd = projectRoot): string | undefined {
   const folder = path.join(projectRoot, '.specweave', 'increments', incrementId);
   const status = spawnSync('git', ['status', '--porcelain', '--', folder], { cwd: projectRoot, encoding: 'utf-8' });
   if (status.status !== 0 || !status.stdout.trim()) return undefined;
-  const rel = path.relative(cwd, folder).split(path.sep).join('/') || '.';
+  const quote = (value: string): string => {
+    if (/^[\w./:-]+$/.test(value)) return value;
+    if (!/["$%`!\\]/.test(value)) return `"${value}"`;
+    return "'" + value.replace(/'/g, "'\\''") + "'";
+  };
+  const rootFromCwd = path.relative(cwd, projectRoot).split(path.sep).join('/');
+  const git = rootFromCwd ? `git -C ${quote(rootFromCwd)}` : 'git';
+  const rel = quote(path.relative(projectRoot, folder).split(path.sep).join('/'));
   const num = incrementId.match(/^\d{3,}[A-Za-z]?(?=-)/)?.[0] ?? incrementId;
-  return `Commit it: git add ${rel} && git commit -m "${num}: close" -- ${rel}`;
+  return `Commit it: ${git} add -- ${rel} && ${git} commit -m ${quote(`${num}: close`)} -- ${rel}`;
 }

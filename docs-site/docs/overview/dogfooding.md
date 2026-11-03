@@ -13,7 +13,7 @@ We use SpecWeave in our own product development: defining changes, recording tas
 | Project | Product context |
 |---|---|
 | [EasyChamp](https://easychamp.com) | Sports leagues, club tools, and related web and mobile applications. EasyChamp predates SpecWeave; we use the workflow for ongoing changes to the platform. |
-| [JobWeave](https://jobweave.ai) | Job search, tailored resumes, recruiter context, and interview preparation. |
+| JobWeave | Job search, tailored resumes, recruiter context, and interview preparation. |
 | [Verified Skills](https://verified-skill.com) | A skill registry with source and security evidence, accompanied by [vskill](https://github.com/anton-abyzov/vskill) and [Skill Studio](https://verified-skill.com/studio) for local skill development and evaluation. |
 | [SpecWeave](https://github.com/anton-abyzov/specweave) | The CLI, dashboard, documentation, and workflow itself. We use the same specifications and task records while improving SpecWeave. |
 
@@ -23,7 +23,7 @@ The project showcase also includes mobile apps, learning tools, and games:
 
 - [Football 2026 / WC26](https://wc-26.net/): a World Cup travel companion.
 - [Lulla](https://lulla-app.pages.dev/): baby audio classification and soothing tools.
-- [SkillUp Football](https://skillup-football.com/): football coaching and training.
+- SkillUp Football: football coaching and training.
 - [BizZone](https://apps.apple.com/us/app/business-zone/id6756091030): business and student events.
 - [SketchMate](https://sketchmate.net/): a drawing game with AI judging.
 - [EduFeed](https://edufeed-jet.vercel.app/): AI-assisted learning.

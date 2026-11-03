@@ -23,11 +23,10 @@ const PAGE_URL = `${SITE}/code/download/`;
 const TITLE = 'Download SpecWithCode for Mac, Windows and Linux (free)';
 const DESCRIPTION = 'Download SpecWithCode (Spec with Code), the free AI coding agent workspace, for Apple silicon Macs, Windows 10 and 11, and Linux.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
-const SHA_URL = `${release.repoUrl}/releases/download/v${release.version}/SHA256SUMS`;
 const CHROME_URL = 'https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb';
 
 const STEPS: {title: string; body: React.ReactNode}[] = [
-  {title: 'Download the .dmg', body: <>Click Download for Mac. You get <code>SpecWithCode-arm64.dmg</code>, the newest release, straight from GitHub.</>},
+  {title: 'Download the .dmg', body: <>Click Download for Mac. You get <code>SpecWithCode-arm64.dmg</code>, from the release listed on this page.</>},
   {title: 'Drag SpecWithCode to Applications', body: <>Open the .dmg and drag the app into Applications. It is signed with an Apple Developer ID and notarized, so it opens without a security override.</>},
   {title: 'Open it and add a provider', body: <>The app starts its local service for you. Sign in to a coding agent you already use, such as Claude Code or Codex, and start your first thread.</>},
 ];
@@ -49,11 +48,11 @@ const NEXT: {name: string; detail: React.ReactNode}[] = [
 ];
 
 const FAQ_TEXT: {q: string; a: string}[] = [
-  {q: 'Is SpecWithCode free?', a: 'Yes. SpecWithCode is free, with no account. You bring your own provider subscriptions or API keys and pay any provider charges directly.'},
+  {q: 'Is SpecWithCode free?', a: 'Yes. SpecWithCode is free. Local use does not require a SpecWithCode account. You bring your own provider subscriptions or API keys and pay any provider charges directly.'},
   {q: 'Which Macs does SpecWithCode run on?', a: 'Apple silicon Macs (M1 or later) with macOS 13 or later. Intel Macs are not supported.'},
-  {q: 'Is there a Windows or Linux download?', a: `Yes. SpecWithCode ${desktop.version} has Windows installers for Windows 10 and 11 on x64 and arm64, and a Linux AppImage and .deb for x64 and arm64 on glibc-based distributions. The Windows installers are is not code-signed yet, so Windows asks you to confirm the first run. Computer use is macOS only.`},
+  {q: 'Is there a Windows or Linux download?', a: `Yes. SpecWithCode ${desktop.version} has Windows installers for Windows 10 and 11 on x64 and arm64, and a Linux AppImage and .deb for x64 and arm64 on glibc-based distributions. The Windows installers are not code-signed yet, so Windows asks you to confirm the first run. Computer use is macOS only.`},
   {q: 'Is the download safe?', a: 'Every release is built in GitHub Actions. The Mac app is signed with an Apple Developer ID and notarized by Apple. The Windows installer and the Linux AppImage and .deb are not code-signed yet; check them against the SHA256SUMS-windows-linux file published with each release. The Mac download has its own SHA256SUMS file.'},
-  {q: 'How do I update SpecWithCode?', a: 'Download the newest .dmg from this page and replace the app in Applications. When a machine runs an older server than your app, SpecWithCode shows an update notice in the conversation and in Settings › Connections.'},
+  {q: 'How do I update SpecWithCode?', a: 'Download the newest .dmg from the SpecWithCode GitHub releases and replace the app in Applications. When a machine runs an older server than your app, SpecWithCode shows an update notice in the conversation and in Settings › Connections.'},
 ];
 
 const DOWNLOAD_LD = {
@@ -98,7 +97,7 @@ const DOWNLOAD_LD = {
       '@id': `${PAGE_URL}#install`,
       name: 'Install SpecWithCode on a Mac',
       step: [
-        {'@type': 'HowToStep', position: 1, name: 'Download the .dmg', text: 'Download SpecWithCode-arm64.dmg, the newest release, from spec-weave.com/code/download.', url: release.dmgUrl},
+        {'@type': 'HowToStep', position: 1, name: 'Download the .dmg', text: 'Download SpecWithCode-arm64.dmg from spec-weave.com/code/download.', url: release.dmgUrl},
         {'@type': 'HowToStep', position: 2, name: 'Drag SpecWithCode to Applications', text: 'Open the .dmg and drag SpecWithCode into Applications. It is signed and notarized, so it opens without a security override.'},
         {'@type': 'HowToStep', position: 3, name: 'Open it and add a provider', text: 'Open SpecWithCode, sign in to a coding agent you already use, such as Claude Code or Codex, and start a thread.'},
       ],
@@ -129,7 +128,7 @@ function HeroDownload() {
     <p className={styles.requirements} data-testid="download-requirements">
       SpecWithCode {installer.version}, <code>{installer.file}</code>, {installer.size}. {isMac ? 'Apple silicon, macOS 13 or later.' : `${installer.platformName}.`}
       {detected && !unsupported && <> Picked for your computer{archGuessed ? '; on an Arm machine choose arm64 below' : ''}. <a className="wv-link" href={ALL_DOWNLOADS_ANCHOR}>Other platforms</a>.</>}
-      {' '}<a className="wv-link" href={isMac ? release.notesUrl : desktop.notesUrl}>Release notes</a> · <a className="wv-link" href={isMac ? SHA_URL : desktop.sumsUrl}>SHA256SUMS</a>
+      {' '}<a className="wv-link" href={isMac ? release.notesUrl : desktop.notesUrl}>Release notes</a> · <a className="wv-link" href={isMac ? release.sumsUrl : desktop.sumsUrl}>SHA256SUMS</a>
     </p>
     {unsupported === 'intel-mac' && <div className={clsx('wv-note', styles.qualification)} role="note">
       <Info {...icon} />

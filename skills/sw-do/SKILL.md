@@ -64,8 +64,10 @@ merge and close; do not implement.
 
 1. Group tasks into 2 to 5 lanes whose `Files` do not overlap. Shared contracts
    (types, schema) go in an early task the others list under `**Dependencies**: T-01`.
-2. Lane agents share the existing checkout and branch, each with `SPECWEAVE_AGENT=api` set;
-   their disjoint `Files` keep them apart. Give a lane its own worktree only when the
+2. Lane agents share the existing checkout and branch, each with a unique `SPECWEAVE_AGENT` (such as `api` or `web`);
+   stage only your lane's files and commit with an explicit path list, for example
+   `git add -- src/api.ts && git commit -m "0042: build API" -- src/api.ts`.
+   Use the same unique identity for every task command in the lane. Give a lane its own worktree only when the
    user or the project's settings ask for worktrees (your tool's or app's worktree
    feature, or `git worktree add .worktrees/0042-api -b inc/0042-api`, never `../`).
    Brief each one: its tasks, this loop, "edit only their Files", and on finish

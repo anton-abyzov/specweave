@@ -1,17 +1,17 @@
 /**
  * The newcomer path through `specweave task`: `done` hands over the next task,
- * the printed `--run` survives a Test with quotes and a pipe, and `next` /
+ * the printed command runs the stored Test, and `next` /
  * `claim` refuse create-increment's unfilled placeholder tasks.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { spawnSync } from 'child_process';
-import { taskCommand, shellQuote, isTemplateTask, isPlaceholderTest, EXIT_TEMPLATE_TASK } from '../../../../src/cli/commands/task.js';
+import { taskCommand, EXIT_DEPS_UNMET, EXIT_FILES_OVERLAP, isTemplateTask, isPlaceholderTest, EXIT_TEMPLATE_TASK } from '../../../../src/cli/commands/task.js';
+import * as shell from '../../../../src/core/tasks/run-shell.js';
 import { createIncrementTemplates } from '../../../../src/core/increment/template-creator.js';
 
-const QUOTED_TEST = `grep -c "it's ok" out.txt | grep -q 1`;
+const QUOTED_TEST = `node -e "process.stdout.write('ok')" | node -e "process.exit(require('fs').readFileSync(0, 'utf8') === 'ok' ? 0 : 1)"`;
 
 const SPEC = `# Login form
 
@@ -63,7 +63,7 @@ function capture(): { out: () => string; err: () => string } {
 }
 
 describe('task done prints the next task', () => {
-  it('after a non-final task, prints the next task brief with its ACs and --run line', async () => {
+  it('after a non-final task, prints the next task brief with its ACs and runnable completion command', async () => {
     const { root } = mkProject();
     const io = capture();
     const code = await taskCommand('done', 'T-01', undefined, { cwd: root, agent: 'a@h', run: 'true', commit: false });
@@ -72,7 +72,8 @@ describe('task done prints the next task', () => {
     expect(out).toContain('Done T-01 (1/2)');
     expect(out).toContain('Next: T-02 Error message');
     expect(out).toContain('AC-02: Wrong password shows an error');
-    expect(out).toContain(`when done: specweave task done T-02 0001-login --run ${shellQuote(QUOTED_TEST)}`);
+    expect(out).toContain('when done: specweave task done T-02 0001-login\n');
+    expect(await taskCommand('done', 'T-02', '0001-login', { cwd: root, agent: 'a@h', commit: false })).toBe(0);
   });
 
   it('after the last task, prints the close chain and no next task', async () => {
@@ -95,17 +96,27 @@ describe('task done prints the next task', () => {
   });
 });
 
-describe('shellQuote', () => {
-  it('keeps plain Tests in double quotes', () => {
-    expect(shellQuote('npm test -- e2e/login')).toBe('"npm test -- e2e/login"');
+it('refuses completion before the Test runs when a dependency is still open', async () => {
+  const { root } = mkProject(SPEC + '- **Dependencies**: T-01\n');
+  capture();
+  const code = await taskCommand('done', 'T-02', '0001-login', {
+    cwd: root, agent: 'a@h', commit: false, run: 'exit 42',
   });
+  expect(code).toBe(EXIT_DEPS_UNMET);
+});
 
-  it('a Test with quotes and a pipe round-trips through the shell as one argument', () => {
-    if (process.platform === 'win32') return;
-    const quoted = shellQuote(QUOTED_TEST);
-    const r = spawnSync('/bin/sh', ['-c', `printf '%s' ${quoted}`], { encoding: 'utf8' });
-    expect(r.stdout).toBe(QUOTED_TEST);
+it('rechecks file ownership after a Test that outlasts its claim', async () => {
+  const { root } = mkProject(SPEC.replace('Files: src/error.ts', 'Files: src/login.ts'));
+  capture();
+  const laneA = { cwd: root, agent: 'a@h', commit: false };
+  const laneB = { ...laneA, agent: 'b@h' };
+  expect(await taskCommand('claim', 'T-01', '0001-login', laneA)).toBe(0);
+  vi.spyOn(shell, 'runShell').mockImplementationOnce(async () => {
+    expect(await taskCommand('release', 'T-01', '0001-login', laneA)).toBe(0);
+    expect(await taskCommand('claim', 'T-02', '0001-login', laneB)).toBe(0);
+    return { code: 0, output: '', tail: '' };
   });
+  expect(await taskCommand('done', 'T-01', '0001-login', laneA)).toBe(EXIT_FILES_OVERLAP);
 });
 
 describe('placeholder tasks are refused', () => {
