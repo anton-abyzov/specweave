@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, execSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -71,14 +71,17 @@ function smoke(shell, scenario) {
     const lines = output.split(/\r?\n/);
     const hint = lines.indexOf('Run one line at a time. Continue only if the first succeeds.');
     assert.ok(hint >= 0, 'Expected the Windows Git instructions');
-    const destination = lines[hint - 1]?.startsWith('Open a shell in the project folder: ');
+    const folderPrefix = 'Open a shell in the project folder: ';
+    const folderLine = lines[hint - 1];
+    const destination = folderLine?.startsWith(folderPrefix) ? folderLine.slice(folderPrefix.length) : null;
     assert.equal(Boolean(destination), sensitive);
-    if (destination) assert.equal(lines[hint - 1], `Open a shell in the project folder: ${root}`);
+    // The runner's TEMP can use an 8.3 alias while Git reports the long path.
+    if (destination) assert.equal(realpathSync.native(destination), realpathSync.native(root));
     const commands = lines.slice(hint + 1, hint + 3);
     assert.equal(commands.length, 2);
     for (const command of commands) {
       assert.match(command, /^git /);
-      run(shell, destination ? root : cwd, command);
+      run(shell, destination ?? cwd, command);
     }
     const committed = git(root, 'show', '--format=', '--name-only', 'HEAD').split(/\r?\n/);
     assert.ok(committed.includes(`${relativeIncrement}/metadata.json`));
