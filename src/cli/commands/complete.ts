@@ -3,6 +3,7 @@ import { spawnSync } from 'child_process';
 import { detectSessionId } from '../../core/tasks/ledger.js';
 import { recordIncrementWork } from '../../core/tasks/work-session.js';
 import { completeIncrement } from '../../core/increment/status-commands.js';
+import { parseIncrementId } from '../../utils/increment-id-validator.js';
 import { resolveIncrementId } from '../../utils/resolve-increment-id.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { listTaskCompleteIncrementIds, readLeaseHours } from '../../core/tasks/resolve-increment.js';
@@ -130,6 +131,7 @@ export async function completeCommand(
  * staged work out of the commit; run Git in the increment project when invoked elsewhere.
  */
 export function commitHint(projectRoot: string, incrementId: string, cwd = projectRoot): string | undefined {
+  if (process.platform === 'win32' && !parseIncrementId(incrementId, { allowLegacy: true })) return undefined;
   const folder = path.join(projectRoot, '.specweave', 'increments', incrementId);
   const status = spawnSync('git', ['status', '--porcelain', '--', folder], { cwd: projectRoot, encoding: 'utf-8' });
   if (status.status !== 0 || !status.stdout.trim()) return undefined;
@@ -139,8 +141,19 @@ export function commitHint(projectRoot: string, incrementId: string, cwd = proje
     return "'" + value.replace(/'/g, "'\\''") + "'";
   };
   const rootFromCwd = path.relative(cwd, projectRoot).split(path.sep).join('/');
-  const git = rootFromCwd ? `git -C ${quote(rootFromCwd)}` : 'git';
+  // CMD expands percent variables even inside double quotes, while PowerShell
+  // expands dollars and backticks there. Keep those paths out of pasted commands.
+  const openProjectRoot = process.platform === 'win32' && /["$%`!\\]/.test(rootFromCwd);
+  const git = rootFromCwd && !openProjectRoot ? `git -C ${quote(rootFromCwd)}` : 'git';
   const rel = quote(path.relative(projectRoot, folder).split(path.sep).join('/'));
   const num = incrementId.match(/^\d{3,}[A-Za-z]?(?=-)/)?.[0] ?? incrementId;
-  return `Commit it: ${git} add -- ${rel} && ${git} commit -m ${quote(`${num}: close`)} -- ${rel}`;
+  const add = `${git} add -- ${rel}`;
+  const commit = `${git} commit -m ${quote(`${num}: close`)} -- ${rel}`;
+  if (process.platform === 'win32') {
+    // Windows PowerShell 5.1 has no && operator.
+    const instructions = 'Run one line at a time. Continue only if the first succeeds.';
+    return [openProjectRoot ? `Open a shell in the project folder: ${projectRoot}` : '', instructions, add, commit]
+      .filter(Boolean).join('\n');
+  }
+  return `Commit it: ${add} && ${commit}`;
 }
