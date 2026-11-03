@@ -40,6 +40,15 @@ jobs:
         with:
           skip-build: 'true'
       - run: npx vitest run tests/unit/cli/complete-commit-hint.test.ts
+      - name: Install the published SpecWeave package
+        shell: pwsh
+        run: |
+          $install = Join-Path $env:RUNNER_TEMP 'specweave-published'
+          npm install --prefix $install --ignore-scripts --no-audit --no-fund --registry https://registry.npmjs.org specweave@3.1.20
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          (Join-Path $install 'node_modules/.bin') >> $env:GITHUB_PATH
+      - name: Smoke test the published complete command in Windows shells
+        run: node scripts/ci/windows-published-complete.mjs 3.1.20
 
   smoke:
     runs-on: ubuntu-latest
