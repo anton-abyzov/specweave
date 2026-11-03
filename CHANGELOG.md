@@ -1,3 +1,10 @@
+## [3.1.21] - 2026-11-03
+
+### Changed
+
+- Enforce opt-in strict increment closure (#2231)
+- Smoke test published SpecWeave complete on Windows (#2230)
+
 ## [3.1.20] - 2026-11-03
 
 ### Changed
