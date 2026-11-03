@@ -1,3 +1,10 @@
+## [Unreleased]
+
+### Fixed
+
+- Close hints target the owning Git project from nested repositories. Task completion checks dependencies and conflicting claims before automatically claiming a task.
+- Mac downloads, release notes and checksums now identify the same release. The mobile privacy policy describes optional iPhone Connect sign-in and links account deletion.
+
 ## [3.1.17] - 2026-11-02
 
 ### Changed

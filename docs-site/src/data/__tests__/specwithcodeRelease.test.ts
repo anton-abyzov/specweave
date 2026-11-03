@@ -5,9 +5,10 @@ const REPO = 'https://github.com/anton-abyzov/specwithcode';
 const ALL = [desktop.exe, desktop.exeArm64, desktop.appImage, desktop.appImageArm64, desktop.deb, desktop.debArm64];
 
 describe('SpecWithCode download constant', () => {
-  it('links the stable Latest installer and the release notes of the recorded version', () => {
+  it('links the installer, notes and checksums of the recorded version', () => {
     expect(release.version).toMatch(/^\d+\.\d+\.\d+$/);
-    expect(release.dmgUrl).toBe(`${REPO}/releases/latest/download/SpecWithCode-arm64.dmg`);
+    expect(release.dmgUrl).toBe(`${REPO}/releases/download/v${release.version}/SpecWithCode-arm64.dmg`);
+    expect(release.sumsUrl).toBe(`${REPO}/releases/download/v${release.version}/SHA256SUMS`);
     expect(release.notesUrl).toBe(`${REPO}/releases/tag/v${release.version}`);
     expect(release.releasesUrl).toBe(`${REPO}/releases`);
   });
@@ -19,10 +20,13 @@ describe('SpecWithCode download constant', () => {
   });
 
   // Opt-in network check: CHECK_RELEASE_LINKS=1 npx vitest run specwithcodeRelease
-  it.skipIf(!process.env.CHECK_RELEASE_LINKS)('the DMG exists on GitHub with the recorded size', async () => {
+  it.skipIf(!process.env.CHECK_RELEASE_LINKS)('the DMG and checksum exist on GitHub and the size matches', async () => {
     const res = await fetch(release.dmgUrl, {method: 'HEAD', redirect: 'follow'});
     expect(res.status).toBe(200);
     expect(Number(res.headers.get('content-length'))).toBe(release.dmgBytes);
+    const sums = await fetch(release.sumsUrl);
+    expect(sums.status).toBe(200);
+    expect(await sums.text()).toMatch(/^[a-f0-9]{64}\s+\*?SpecWithCode-arm64\.dmg$/m);
   }, 30_000);
 
   it('pins the Windows and Linux installers to one release', () => {
