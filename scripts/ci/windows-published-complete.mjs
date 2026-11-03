@@ -40,7 +40,11 @@ function smoke(shell, scenario) {
 
     assert.equal(run(shell, root, 'specweave.cmd --version'), version);
     run(shell, root, 'specweave.cmd create-increment "Close smoke" --no-commit');
-    writeFileSync(join(root, relativeIncrement, 'spec.md'), '# Close smoke\n');
+    writeFileSync(join(root, relativeIncrement, 'spec.md'), [
+      '# Close smoke', '', '## Acceptance Criteria', '- [ ] AC-01: Fixture is ready to close.',
+      '', '## Tasks', '### T-01 Check fixture', '- AC: AC-01 | Files: none | Test: echo ok', '',
+    ].join('\n'));
+    run(shell, root, `specweave.cmd task done T-01 ${inc} --no-commit`);
     run(shell, root, `specweave.cmd verify ${inc} --cmd "echo ok"`);
     // Leave the workspace config only in the main checkout. The linked checkout
     // must discover it through the normal Git worktree fallback.
