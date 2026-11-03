@@ -37,6 +37,8 @@ it('requires real owning product checks and a fresh ship review only under stric
 `;
     configure(true);
     expect(run('create-increment', 'Fixture', '--id', id, '--no-commit')).toMatchObject({ code: 0 });
+    fs.writeFileSync(path.join(inc, 'spec.md'), spec.replace('### T-01 Verify and close', '### T-01'));
+    expect(run('verify', id)).toMatchObject({ code: 1 });
     fs.writeFileSync(path.join(inc, 'spec.md'), spec);
     expect(run('verify', id)).toMatchObject({ code: 1, text: expect.stringContaining('No testing.ownerCommands') });
     expect(run('complete', id, '--reason', 'skip')).toMatchObject({ code: 1 });

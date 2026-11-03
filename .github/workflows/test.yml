@@ -99,6 +99,9 @@ jobs:
       - name: Run unit tests
         if: steps.gate.outputs.skip != 'true'
         run: npm run test:unit
+      - name: Exercise strict closure through the CLI
+        if: steps.gate.outputs.skip != 'true'
+        run: npx vitest run tests/integration/strict-close.test.ts
 
   e2e:
     runs-on: ubuntu-latest
