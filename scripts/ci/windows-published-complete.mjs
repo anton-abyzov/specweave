@@ -42,8 +42,11 @@ function smoke(shell, scenario) {
     run(shell, root, 'specweave.cmd create-increment "Close smoke" --no-commit');
     writeFileSync(join(root, relativeIncrement, 'spec.md'), '# Close smoke\n');
     run(shell, root, `specweave.cmd verify ${inc} --cmd "echo ok"`);
-    git(root, 'add', '--', '.specweave');
-    git(root, 'commit', '-qm', 'Seed the increment');
+    // Leave the workspace config only in the main checkout. The linked checkout
+    // must discover it through the normal Git worktree fallback.
+    writeFileSync(join(root, 'README.md'), '# Smoke fixture\n');
+    git(root, 'add', '--', 'README.md');
+    git(root, 'commit', '-qm', 'Seed the repository');
 
     const cwd = scenario === 'nested' ? join(root, 'nested') : join(fixture, 'linked');
     if (scenario === 'nested') {
