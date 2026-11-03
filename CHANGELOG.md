@@ -1,3 +1,11 @@
+## [3.1.18] - 2026-11-03
+
+### Changed
+
+- Privacy policy: disclose files agents attach to pages (#2223)
+- Suggest an increment once work grows past a small fix (#2224)
+- Point SpecWithCode downloads at 1.0.152 (#2222)
+
 ## [3.1.17] - 2026-11-02
 
 ### Changed
