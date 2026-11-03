@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 function repo(config: Record<string, unknown>): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'complete-hint-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'complete hint-'));
   tmp.push(root);
   execFileSync('git', ['init', '-q'], { cwd: root });
   const inc = path.join(root, '.specweave', 'increments', '0001-login');
@@ -25,7 +25,7 @@ describe('complete: commit hint', () => {
   it('names the folder and a NNNN: close commit limited to that folder', () => {
     const root = repo({ version: '2.0' });
     expect(commitHint(root, '0001-login')).toBe(
-      'Commit it: git add .specweave/increments/0001-login && git commit -m "0001: close" -- .specweave/increments/0001-login',
+      'Commit it: git add -- .specweave/increments/0001-login && git commit -m "0001: close" -- .specweave/increments/0001-login',
     );
   });
 
@@ -34,11 +34,24 @@ describe('complete: commit hint', () => {
     expect(commitHint(root, '0001-login')).toContain('git commit -m "0001: close"');
   });
 
-  it('gives the path relative to the folder the user is in', () => {
+  it('commits the umbrella increment when invoked in a nested Git repository', () => {
     const root = repo({ version: '2.0' });
     const sub = path.join(root, 'src');
     fs.mkdirSync(sub);
-    expect(commitHint(root, '0001-login', sub)).toContain('git add ../.specweave/increments/0001-login');
+    execFileSync('git', ['init', '-q'], { cwd: sub });
+    fs.writeFileSync(path.join(root, 'unrelated.txt'), 'staged work');
+    execFileSync('git', ['add', '--', 'unrelated.txt'], { cwd: root });
+    execFileSync('git', ['config', 'core.hooksPath', path.join(root, 'no-hooks')], { cwd: root });
+    const hint = commitHint(root, '0001-login', sub)!;
+    execFileSync(hint.slice('Commit it: '.length), {
+      cwd: sub,
+      shell: true,
+      env: { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t' },
+    });
+    expect(execFileSync('git', ['show', '--format=', '--name-only', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim())
+      .toBe('.specweave/increments/0001-login/metadata.json');
+    expect(execFileSync('git', ['diff', '--cached', '--name-only'], { cwd: root, encoding: 'utf8' }).trim())
+      .toBe('unrelated.txt');
   });
 
   it('says nothing when the folder is already committed, or outside git', () => {
