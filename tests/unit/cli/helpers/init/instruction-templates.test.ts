@@ -147,7 +147,7 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     const rendered = [...unconditional.map(s => s.content), t.tail].join('\n\n');
     // About 940 tokens for AGENTS.md (it was 1,860 in 2.x); the Decide line added ~40,
     // the close trigger in steps 2 and 4 (verify and complete when the last task is done) ~185,
-    // and the features-get-an-increment rule with `specweave small-fix` ~60.
+    // and the increment sizing rule with `specweave small-fix` ~95.
     expect(rendered.length).toBeLessThanOrEqual(3860);
     expect(t.tail).toContain('## Project notes');
     expect(t.sections.map(s => s.content).join('\n')).not.toContain('## Commands');
