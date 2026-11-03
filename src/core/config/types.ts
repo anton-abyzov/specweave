@@ -563,6 +563,10 @@ export interface PlaywrightConfig {
 export interface TestingConfig {
   mode?: TestMode;
   commands?: string[];
+  /** Require terminal tasks, a passing review after verify, and configured checks for nested owners. */
+  strictClose?: boolean;
+  /** Strict verification commands, keyed by repositories/<organization>/<repository>. */
+  ownerCommands?: Record<string, string[]>;
   coverage?: CoverageTargets;
 }
 

@@ -57,9 +57,26 @@ The single most useful edit is filling in `testing.commands`.
 | Field | Default | Notes |
 |-------|---------|-------|
 | `commands` | `[]` | The commands `specweave verify` runs, in order. Empty means auto-detect: `package.json` scripts `test`, `lint`, `build`, then Cargo, pytest or Go. |
+| `strictClose` | `false` | Require terminal tasks, current acceptance criteria, strict verification and a passing review written after verification. Closure overrides do not bypass these checks. |
+| `ownerCommands` | not set | Map `repositories/<organization>/<repository>` to arrays of verification commands. With strict closure enabled, every such repository referenced by a task's `Files` needs a mapping. |
 | `mode` | not set | Optional: `TDD`, `test-after`, `manual` or `none`. Unset means no test-order rule; TDD is never assumed. `TDD` adds "all tests must pass" to `specweave auto`, and `none` skips the coverage check. `init` writes it only when you choose one. |
 | `coverage.unit`, `coverage.integration` | not set | Line coverage targets in percent. Unset means no coverage check at close and no coverage criterion in `generate-rubric`. Below target is a warning, not a block. Written only when you set a target. |
 | `coverage.e2e` | not set | Share of written end-to-end tests that must pass. Not line coverage. |
+
+Owner commands run in their repository directories in addition to the project checks. For example:
+
+```json
+{
+  "testing": {
+    "strictClose": true,
+    "ownerCommands": {
+      "repositories/my-org/my-app": ["npm test", "npm run lint", "npm run build"]
+    }
+  }
+}
+```
+
+Use project-relative paths in task `Files`, including the owning repository prefix in an umbrella. Verify records each command's working directory and source. Under strict closure, `verify --cmd` adds checks and keeps the configured checks in place. The project defines which checks exercise its products. Run verify, finish any final verification task, record a review with `Verdict: ship`, then run complete.
 
 ### `tasks`
 

@@ -6,6 +6,7 @@ import type { Logger } from '../../utils/logger.js';
 import { consoleLogger } from '../../utils/logger.js';
 import { ExternalToolDriftDetector } from '../../utils/external-tool-drift-detector.js';
 import { validateCoverage, type TestMode } from '../qa/coverage-validator.js';
+import { readStrictClose } from '../tasks/strict-close.js';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 
 /**
@@ -71,7 +72,9 @@ export class IncrementCompletionValidator {
     const info: string[] = [];
     // With --reason, incomplete work is recorded, not blocked.
     const blocking = (msg: string) => (reason ? warnings.push(`${msg} (closing anyway — reason: ${reason})`) : errors.push(msg));
-    const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
+    const projectRoot = resolveEffectiveRoot();
+    const strict = readStrictClose(projectRoot);
+    const incrementPath = path.join(projectRoot, '.specweave', 'increments', incrementId);
 
     // Check that required files exist
     const specPath = path.join(incrementPath, 'spec.md');
@@ -183,10 +186,8 @@ export class IncrementCompletionValidator {
       warnings.push('External tool drift detection skipped due to error');
     }
 
-    // 2.0 closure gate: reports/verify.json (written by `specweave verify`) is
-    // the ONLY hard gate. Grill / judge-llm / code-review / rubric reports are
-    // optional evidence and never block. `--reason` downgrades every blocking
-    // finding to a warning (the reason is stored as metadata.closeReason).
+    // The default gate accepts a reasoned override; strict closure also checks
+    // current task state, owning product verification and review evidence.
     try {
       const { checkClosureGate } = await import('../tasks/closure-gate.js');
       const gate = checkClosureGate(incrementPath, incrementId, { reason: options.reason });
@@ -195,7 +196,8 @@ export class IncrementCompletionValidator {
       info.push(...gate.info);
     } catch (error) {
       logger.warn(`Closure gate check failed: ${error instanceof Error ? error.message : String(error)}`);
-      warnings.push('Closure gate check skipped due to error');
+      if (strict) errors.push('Unable to read strict closure evidence');
+      else warnings.push('Closure gate check skipped due to error');
     }
 
     // Optional evidence: a code-review report still feeds skill-refinement
@@ -515,7 +517,9 @@ export class IncrementCompletionValidator {
    * @returns Number of open ACs
    */
   static async countOpenACs(incrementId: string): Promise<number> {
-    const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
+    const projectRoot = resolveEffectiveRoot();
+    const strict = readStrictClose(projectRoot);
+    const incrementPath = path.join(projectRoot, '.specweave', 'increments', incrementId);
     const { loadTaskBoard } = await import('../tasks/task-board.js');
     const { readSpecAcs, deriveAcStatus } = await import('../tasks/verify-runner.js');
     const { acsLeftToClose, deriveAcAcceptance } = await import('../tasks/accepted-skip.js');
@@ -542,7 +546,9 @@ export class IncrementCompletionValidator {
    * @returns Number of pending tasks
    */
   static async countPendingTasks(incrementId: string): Promise<number> {
-    const incrementPath = path.join(resolveEffectiveRoot(), '.specweave', 'increments', incrementId);
+    const projectRoot = resolveEffectiveRoot();
+    const strict = readStrictClose(projectRoot);
+    const incrementPath = path.join(projectRoot, '.specweave', 'increments', incrementId);
     const { loadTaskBoard } = await import('../tasks/task-board.js');
     const board = loadTaskBoard(incrementPath);
     return board.counts.total - board.counts.done - board.counts.skipped;

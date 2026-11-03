@@ -15,10 +15,13 @@ import * as path from 'path';
 import { runShell } from './run-shell.js';
 import { loadTaskBoard, renderBoardTable, type TaskBoard } from './task-board.js';
 import { acCloses, deriveAcAcceptance, type AcAcceptance, type AcAcceptanceEntry, type AcWaiver } from './accepted-skip.js';
+import { readStrictClose, resolveOwnerChecks, type ScopedCheck } from './strict-close.js';
 import type { AcceptedSkip } from './ledger.js';
 
 export interface VerifyCommandResult {
   cmd: string;
+  cwd?: string;
+  source?: string;
   exit: number;
   tail: string;
   ms: number;
@@ -32,7 +35,8 @@ export interface VerifyReport {
   ok: boolean;
   ranAt: string;
   increment: string;
-  commands: Array<{ cmd: string; exit: number }>;
+  commands: Array<{ cmd: string; exit: number; cwd?: string; source?: string }>;
+  strictClose?: { errors: string[] };
   /**
    * `done` counts met ACs (mixed ones included, since their tasks met them);
    * accepted skips never add to it. `skippedAccepted` counts ACs closed only
@@ -190,13 +194,18 @@ export interface RunVerifyResult {
 }
 
 export async function runVerify(projectRoot: string, incrementId: string, incrementDir: string, opts: RunVerifyOptions = {}): Promise<RunVerifyResult> {
-  const detected = opts.commands ? { commands: opts.commands, source: 'explicit' } : detectVerifyCommands(projectRoot);
+  const strict = readStrictClose(projectRoot);
+  const detected = !strict && opts.commands ? { commands: opts.commands, source: 'explicit' } : detectVerifyCommands(projectRoot);
+  const owners = strict ? resolveOwnerChecks(projectRoot, loadTaskBoard(incrementDir), strict) : undefined;
+  const checks: ScopedCheck[] = detected.commands.map((cmd) => ({ cmd, cwd: '.', source: detected.source }));
+  checks.push(...(owners?.checks ?? []));
+  if (strict) checks.push(...(opts.commands ?? []).map((cmd) => ({ cmd, cwd: '.', source: 'explicit' })));
   const results: VerifyCommandResult[] = [];
-  for (const cmd of detected.commands) {
+  for (const { cmd, cwd, source } of checks) {
     opts.onCommand?.(cmd);
     const started = Date.now();
-    const r = await runShell(cmd, projectRoot, opts.timeoutMs);
-    results.push({ cmd, exit: r.code, tail: r.tail, ms: Date.now() - started });
+    const r = await runShell(cmd, path.resolve(projectRoot, cwd), opts.timeoutMs);
+    results.push({ cmd, ...(strict ? { cwd, source } : {}), exit: r.code, tail: r.tail, ms: Date.now() - started });
   }
 
   const board = loadTaskBoard(incrementDir, { leaseHours: opts.leaseHours });
@@ -212,14 +221,18 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
   // An empty command list verifies nothing, so it fails unless a reason is
   // recorded (`specweave verify --reason "<why>"`).
   const reason = opts.reason?.trim() || undefined;
-  const commandsOk = results.length > 0 ? results.every((r) => r.exit === 0) : reason !== undefined;
+  const commandsOk = results.length > 0 ? results.every((r) => r.exit === 0) : !strict && reason !== undefined;
+  if (owners && detected.commands.length === 0 && owners.checks.length === 0) {
+    owners.errors.push('Strict verification requires project or owning product checks configured in the project');
+  }
   const acsOk = acs.length === 0 || acs.every(acCloses);
 
   const report: VerifyReport = {
-    ok: commandsOk && acsOk,
+    ok: commandsOk && acsOk && !owners?.errors.length,
+    ...(owners ? { strictClose: { errors: owners.errors } } : {}),
     ranAt: new Date().toISOString(),
     increment: incrementId,
-    commands: results.map((r) => ({ cmd: r.cmd, exit: r.exit })),
+    commands: results.map(({ cmd, exit, cwd, source }) => ({ cmd, exit, ...(strict ? { cwd, source } : {}) })),
     acs: {
       total: acs.length,
       done: acs.filter((a) => a.done).length,
@@ -258,7 +271,9 @@ export function renderVerifyMd(report: VerifyReport, results: VerifyCommandResul
     L.push(`_${NO_COMMANDS_MESSAGE}. Set \`testing.commands\` in .specweave/config.json._`);
     if (report.reason) L.push('', `Accepted without commands — reason: ${report.reason}`);
   }
+  for (const error of report.strictClose?.errors ?? []) L.push(`- FAIL: ${error}`);
   for (const r of results) {
+    if (r.cwd) L.push(`- Working directory: ${r.cwd} (${r.source})`);
     L.push(`### \`${r.cmd}\` → exit ${r.exit} (${Math.round(r.ms / 1000)}s)`);
     L.push('');
     L.push('```');

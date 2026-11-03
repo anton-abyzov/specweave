@@ -54,6 +54,7 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
     for (const r of result.results) out(`${r.exit === 0 ? 'ok  ' : 'FAIL'} ${r.cmd} (exit ${r.exit})`);
     if (result.results.length === 0 && result.report.reason) out(`No verification commands (${result.source}); accepted — reason: ${result.report.reason}`);
     const { report } = result;
+    for (const error of report.strictClose?.errors ?? []) err(error);
     const accepted = report.acs.skippedAccepted ? ` + ${report.acs.skippedAccepted} skipped (accepted)` : '';
     out(`ACs ${report.acs.done}/${report.acs.total}${accepted} · tasks ${report.tasks.done}/${report.tasks.total} done (${report.tasks.skipped} skipped)`);
     const unchecked = describeUncheckedAcs(report.acs);
