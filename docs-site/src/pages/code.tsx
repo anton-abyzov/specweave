@@ -56,8 +56,8 @@ const LIMITS: {name: string; detail: React.ReactNode}[] = [
 const MACHINE_STEPS: {title: string; body: React.ReactNode}[] = [
   {title: 'Link SpecWithCode Connect', body: <>On the new machine, open Settings &gt; Machines, sign in to SpecWithCode Connect and turn on Enable SpecWithCode Connect. Only the worker needs it. On a server, run <code>specwithcode connect</code>. It works on any network, with nothing to change on your router.</>},
   {title: 'Join a main machine', body: <>On it, open Settings &gt; Machines &gt; Join a main machine and choose Make a join line, or run the command below. You get one line that starts with <code>swc-machine-</code>. A Connect line works once, within an hour.</>},
-  {title: 'Add it on your main machine', body: <>Paste the line into Settings &gt; Machines &gt; Your private machines &gt; Add a machine. It checks that the address answers as that machine before saving it.</>},
-  {title: 'Allow workers', body: <>Choose Allow workers on the machine’s card. This lets the main machine’s coordinators start threads there. Reverse-direction access is a separate grant.</>},
+  {title: 'Add it on your main machine', body: <>Paste the line into Settings &gt; Machines &gt; Add a machine. It checks that the address answers as that machine before saving it.</>},
+  {title: 'Allow workers', body: <>Expand Access, routes and worker permissions, then choose Allow workers on the machine’s card. This lets the main machine’s coordinators start threads there. Reverse-direction access is a separate grant.</>},
 ];
 
 const CAPACITY: {name: string; detail: React.ReactNode}[] = [
