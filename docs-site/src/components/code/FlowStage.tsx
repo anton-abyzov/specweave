@@ -209,9 +209,9 @@ export default function FlowStage({flow, onFlow}: {flow: Flow; onFlow: (f: Flow)
     <div ref={ref} className={styles.stage}>
       <div className={styles.controls}>
         <div className={styles.steps} role="tablist" aria-label="Choose a flow">
-          <button type="button" role="tab" aria-selected={flow === 'free'} className={clsx(flow === 'free' && styles.stepOn)} onClick={() => pick('free')}><span className={styles.stepNo}>1</span>Start free <span className={styles.tag}>$0</span></button>
+          <button type="button" role="tab" aria-selected={flow === 'free'} className={clsx(flow === 'free' && styles.stepOn)} onClick={() => pick('free')}><span className={styles.stepNo}>1</span>Free ChatGPT account <span className={styles.tag}>$0</span></button>
           <ArrowRight className={styles.stepArrow} size={14} strokeWidth={2} aria-hidden="true" />
-          <button type="button" role="tab" aria-selected={flow === 'subs'} className={clsx(flow === 'subs' && styles.stepOn)} onClick={() => pick('subs')}><span className={styles.stepNo}>2</span>Add your plans</button>
+          <button type="button" role="tab" aria-selected={flow === 'subs'} className={clsx(flow === 'subs' && styles.stepOn)} onClick={() => pick('subs')}><span className={styles.stepNo}>2</span>Plans you already pay for</button>
         </div>
         <div className={styles.threshold} role="radiogroup" aria-label="Hand off at">
           <span>Hand off at</span>
@@ -258,6 +258,7 @@ export default function FlowStage({flow, onFlow}: {flow: Flow; onFlow: (f: Flow)
           </motion.ul>
         </motion.div>
       </LayoutGroup>
+      <p className={styles.note}>SpecWithCode itself is free in both. The second view just adds subscriptions you already have.</p>
     </div>
   </MotionConfig>;
 }

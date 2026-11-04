@@ -88,3 +88,4 @@
 .chat .paneTitle small { flex-basis: 100%; }
 .chat .paneTitle small::before { content: none; }
 @media (min-width: 701px) { .body { min-height: 340px; } }
+.note { margin: 10px 2px 0 !important; color: #4b4150; font-size: 13px; line-height: 18px; }

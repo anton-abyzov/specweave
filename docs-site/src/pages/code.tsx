@@ -214,7 +214,7 @@ export default function Code() {
               </>
               : <>
                 <h1>Your AI plans. <em>Used to the last token.</em></h1>
-                <p className={styles.lead}>Claude Code, Codex and GitHub Copilot work side by side on your Mac, Windows PC and Linux server, all from one chat. When a plan nears 98%, the next task goes to one with room.</p>
+                <p className={styles.lead}>Already pay for Claude Max, ChatGPT Pro or Copilot? SpecWithCode stays free and runs them side by side on your Mac, Windows PC and Linux server, from one chat. When a plan nears 98%, the next task goes to one with room.</p>
               </>}
             <HeroDownload />
           </div>
