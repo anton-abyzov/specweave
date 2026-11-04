@@ -54,7 +54,7 @@ SpecWithCode needs no account and has no cloud service that stores your code or 
 
 ## Specs and increments
 
-SpecWithCode works without any CLI. If the project uses [SpecWeave](/docs/getting-started), you can link a thread to an increment; its plan card then shows the spec and task progress read from `spec.md` and `ledger.jsonl`. The link is read-only: the app never rewrites your spec or ledger. The app does not create increments for each thread on its own.
+SpecWithCode works without any CLI. If the project uses [SpecWeave](/docs/getting-started), you can link a thread to an increment; its plan card then shows the spec and task progress read from `spec.md` and `ledger.jsonl`. The link is read-only: the app never rewrites your spec or ledger. The app does not create increments for each thread on its own. When the project has one, a thread can work from the increment's tasks and acceptance criteria rather than only from the chat prompt; see [Tasks and acceptance criteria](../studio/tasks-and-acceptance-criteria.md).
 
 ## Pick OpenCode
 
