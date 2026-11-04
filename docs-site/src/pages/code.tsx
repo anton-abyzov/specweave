@@ -96,7 +96,7 @@ function HeroDownload() {
 const SUBS: {icon: typeof Layers; title: string; body: React.ReactNode}[] = [
   {icon: Users, title: 'Every plan working at once', body: <>A coordinator splits one goal into threads and runs them on Claude Code, Codex and others in parallel, each on its own plan.</>},
   {icon: Network, title: 'Every machine you own', body: <>Each Mac, Windows PC or Linux server adds the limits of the plans signed in on it. One account per provider on each machine.</>},
-  {icon: Gauge, title: 'Hand off at 98%, or where you choose', body: <>Set the point from 50% to 100% per project. The thread moves on with its context before the provider refuses work.</>},
+  {icon: Gauge, title: 'Hand off at 98%, or where you choose', body: <>Set the point from 50% to 100% per project. Work moves to a plan with room before the provider refuses it.</>},
   {icon: GitMerge, title: 'Usage for every account', body: <>Usage › Limits shows each account, the machine it is signed in on, and what is left in every session and weekly window.</>},
 ];
 
@@ -214,7 +214,7 @@ export default function Code() {
               </>
               : <>
                 <h1>Your AI plans. <em>Used to the last token.</em></h1>
-                <p className={styles.lead}>Claude Max, ChatGPT Pro and the rest work side by side on your Mac, PC and Linux machines. At 98% a thread hands off with its context instead of stopping.</p>
+                <p className={styles.lead}>Claude Code, Codex and GitHub Copilot work side by side on your Mac, Windows PC and Linux server, all from one chat. When a plan nears 98%, the next task goes to one with room.</p>
               </>}
             <HeroDownload />
           </div>
@@ -227,6 +227,11 @@ export default function Code() {
       {/* ---------- Why this beats free-token APIs ---------- */}
       <section className={clsx(styles.shell, styles.vsSection)} aria-labelledby="vs-title">
         <h2 id="vs-title">Free AI tokens went viral. <em>This goes further.</em></h2>
+        <ul className={styles.stats}>
+          <li><strong>5M+</strong><span>people use Codex every week</span><a href="https://www.constellationr.com/insights/news/openai-touts-broadening-codex-usage-5-million-weekly-active-users" rel="noopener">OpenAI, June 2026</a></li>
+          <li><strong>$0</strong><span>Codex on a free ChatGPT account</span><a href="https://openai.com/index/introducing-the-codex-app/" rel="noopener">OpenAI, for a limited time</a></li>
+          <li><strong>7.4B</strong><span>free tokens a month, stacked from 34 providers</span><a href="https://github.com/tashfeenahmed/freellmapi" rel="noopener">freellmapi's estimate</a></li>
+        </ul>
         <table className={styles.vs}>
           <thead>
             <tr><th scope="col"><span className={styles.srOnly}>Feature</span></th><th scope="col">Free-token APIs</th><th scope="col">SpecWithCode</th></tr>
@@ -256,7 +261,6 @@ export default function Code() {
           <li><img src={marks.claude} alt="" width="20" height="20" />Claude Max and Pro</li>
           <li><img className={styles.darkPlate} src={marks.openai} alt="" width="20" height="20" />ChatGPT Pro and Plus</li>
           <li><img className={styles.darkPlate} src={marks.copilot} alt="" width="20" height="20" />GitHub Copilot</li>
-          <li><img src={marks.deepseek} alt="" width="20" height="20" />DeepSeek as the fallback</li>
         </ul>
       </section>
 

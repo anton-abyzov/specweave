@@ -1,8 +1,8 @@
-/* Hero diagram for /code. A light panel on the warm hero; Weave tokens inside. */
+/* Hero diagram for /code: one SpecWithCode window on the warm hero. */
 .stage {
   position: relative;
   min-width: 0;
-  padding: 18px;
+  padding: 16px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.94);
   color: #241523;
@@ -12,62 +12,79 @@
 }
 
 .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
-.tabs, .threshold { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; background: #efedf2; }
-.tabs button, .threshold button {
+.steps, .threshold { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; background: #efedf2; }
+.steps button, .threshold button {
+  display: inline-flex; align-items: center; gap: 6px;
   border: 0; border-radius: 999px; background: transparent; color: #675d69;
-  font: 600 14px/20px var(--wv-font-sans); padding: 6px 14px; cursor: pointer;
+  font: 600 14px/20px var(--wv-font-sans); padding: 6px 12px; cursor: pointer;
   transition: background .2s, color .2s;
 }
-.tabs button.tabOn { background: #241523; color: #fff; }
-.tabTag { margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #ffe600; color: #241523; font-size: 12px; }
+.steps button.stepOn { background: #241523; color: #fff; }
+.stepNo { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: rgba(36, 21, 35, .1); font-size: 11px; line-height: 1; }
+.stepOn .stepNo { background: #ffe600; color: #241523; }
+.tag { padding: 0 6px; border-radius: 999px; background: #ffe600; color: #241523; font-size: 12px; }
+.stepArrow { color: #8c8399; flex: none; }
 .threshold > span { padding: 0 6px 0 10px; color: #675d69; font-size: 13px; }
 .threshold button { padding: 4px 10px; font-size: 13px; }
 .threshold button.thOn { background: #fff; color: #241523; box-shadow: 0 1px 2px rgba(36, 21, 35, .15); }
-.tabs button:focus-visible, .threshold button:focus-visible { outline: 2px solid #6d4fb5; outline-offset: 2px; }
+.steps button:focus-visible, .threshold button:focus-visible { outline: 2px solid #6d4fb5; outline-offset: 2px; }
 
-.coordinator { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; padding: 8px 12px; border-radius: 10px; background: #ece6f8; color: #4a3678; font-weight: 600; font-size: 13px; }
+/* The app window */
+.window { margin-top: 14px; border: 1px solid #dedae5; border-radius: 14px; background: #fff; overflow: hidden; }
+.titlebar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid #ece9f0; background: #f7f5f9; font-size: 12px; }
+.titlebar > span { width: 10px; height: 10px; border-radius: 50%; background: #dcd7e2; }
+.titlebar b { margin-left: 8px; font-weight: 700; }
+.titlebar em { color: #8c8399; font-style: normal; }
+.titlebar em::before { content: "· "; }
 
-.machines { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 14px; }
-.machines.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); min-height: 300px; }
+.chat { min-width: 0; padding: 12px; border-right: 1px solid #ece9f0; background: #fbfaff; }
+.threads { min-width: 0; padding: 12px; }
+.paneTitle { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 !important; font-weight: 700; font-size: 13px; }
+.paneTitle small { color: #675d69; font-weight: 500; font-size: 12px; }
+.paneTitle small::before { content: "· "; }
+.oneWindow { display: inline-block; margin: 6px 0 0 !important; padding: 1px 8px; border-radius: 999px; background: #ece6f8; color: #4a3678; font-size: 11px; font-weight: 700; letter-spacing: .02em; }
 
-.machine { min-width: 0; padding: 12px; border: 1px solid #dedae5; border-radius: 14px; background: #fff; }
-.machineHead { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font-weight: 700; font-size: 13px; }
-.task { margin-left: auto; padding: 1px 8px; border-radius: 999px; background: #f4f2f6; color: #675d69; font-weight: 500; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.messages, .threadList, .machines { margin: 0; padding: 0; list-style: none; }
+.messages { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.msg { max-width: 92%; padding: 6px 10px; border-radius: 12px; font-size: 13px; line-height: 18px; }
+.msg svg { vertical-align: -2px; }
+.you { align-self: flex-end; background: #241523; color: #fff; border-bottom-right-radius: 4px; }
+.coord { align-self: flex-start; background: #fff; border: 1px solid #e4dfec; border-bottom-left-radius: 4px; }
 
-.lane { padding: 10px; border-radius: 10px; border: 1px solid transparent; transition: background .3s, border-color .3s, opacity .3s; }
-.lane.working { background: #faf8fd; border-color: #d9cff2; }
-.lane.done { opacity: .62; }
-.lane.idle { opacity: .45; }
-.laneHead { display: flex; align-items: center; gap: 8px; }
-.mark { flex: none; width: 22px; height: 22px; padding: 3px; border-radius: 6px; background: #f4f2f6; box-sizing: content-box; }
+.threadList { display: grid; gap: 8px; margin-top: 10px; }
+.thread { position: relative; padding: 9px 10px; border: 1px solid #e4dfec; border-radius: 10px; background: #faf8fd; }
+.threadDone .pct { color: #b4232c; }
+.threadHead { display: flex; align-items: center; gap: 8px; }
+.mark { flex: none; width: 20px; height: 20px; padding: 3px; border-radius: 6px; background: #f4f2f6; box-sizing: content-box; }
+.paneTitle .mark { width: 16px; height: 16px; padding: 2px; }
 .darkPlate { background: #241523; }
-.laneName { display: flex; flex-direction: column; font-weight: 700; line-height: 18px; min-width: 0; }
-.laneName small { font-weight: 500; color: #675d69; font-size: 12px; line-height: 16px; }
-.pct { margin-left: auto; font: 700 15px/1 var(--wv-font-mono); font-variant-numeric: tabular-nums; }
-.done .pct { color: #b4232c; }
-.meter { height: 6px; margin-top: 8px; border-radius: 999px; background: #ebe8ef; overflow: hidden; }
-.meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6d4fb5, #d0461f); }
-.idle .meter span, .working:not(.done) .meter span { transition: width .12s linear; }
+.threadTitle { display: flex; flex-direction: column; min-width: 0; font-weight: 700; font-size: 13px; line-height: 17px; }
+.threadTitle small { color: #675d69; font-weight: 500; font-size: 12px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pct { margin-left: auto; font: 700 14px/1 var(--wv-font-mono); font-variant-numeric: tabular-nums; }
+.meter { height: 5px; margin-top: 7px; border-radius: 999px; background: #ebe8ef; overflow: hidden; }
+.meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6d4fb5, #d0461f); transition: width .12s linear; }
+.threadFoot { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; line-height: 16px; min-width: 0; }
+.machineChip { display: inline-flex; align-items: center; gap: 4px; flex: none; padding: 0 7px; border-radius: 999px; background: #f0edf4; color: #4b4150; font-weight: 600; }
+.step { min-width: 0; color: #675d69; font-family: var(--wv-font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.step::before { content: "› "; }
+.routed { position: absolute; top: -9px; right: 10px; display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; background: #ffe600; color: #241523; font-size: 11px; font-weight: 700; box-shadow: 0 2px 6px rgba(36, 21, 35, .18); }
 
-.steps { display: grid; gap: 2px; margin: 8px 0 0; padding: 0; list-style: none; font: 12px/18px var(--wv-font-mono); color: #8c8399; }
-.steps li { opacity: .25; transform: translateY(3px); transition: opacity .35s, transform .35s; }
-.steps li::before { content: "› "; }
-.steps li.stepOn { opacity: 1; transform: none; color: #241523; }
-
-.handoff { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; }
-.handoffLine { position: relative; width: 2px; height: 22px; background: repeating-linear-gradient(#cfc8da 0 4px, transparent 4px 8px); }
-.packet { position: absolute; left: 0; top: 0; width: 10px; height: 10px; margin-left: -4px; border-radius: 50%; background: #ffe600; box-shadow: 0 0 0 3px rgba(255, 230, 0, .35); transition: opacity .2s; }
-.handoffLabel { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: #f4f2f6; color: #675d69; font-size: 12px; font-weight: 600; transition: background .3s, color .3s; }
-.handoffOn .handoffLabel { background: #241523; color: #ffe600; }
-
-.caption { margin: 14px 2px 2px !important; color: #4b4150; font-size: 14px; line-height: 21px; }
-.caption strong { color: #241523; }
+.machines { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-top: 1px solid #ece9f0; background: #f7f5f9; }
+.machine { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid #dedae5; border-radius: 999px; background: #fff; color: #4b4150; font-size: 12px; font-weight: 600; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #cfc8da; transition: background .3s; }
+.machineBusy { border-color: #c9bdf0; }
+.machineBusy .dot { background: #2f9e5a; box-shadow: 0 0 0 3px rgba(47, 158, 90, .18); }
 
 @media (max-width: 700px) {
-  .machines.two { grid-template-columns: minmax(0, 1fr); }
   .stage { padding: 12px; }
   .controls { justify-content: flex-start; }
+  .body { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .chat { border-right: 0; border-bottom: 1px solid #ece9f0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .steps li, .lane, .meter span, .packet { transition: none; }
+  .meter span, .dot { transition: none; }
 }
+.chat .paneTitle small { flex-basis: 100%; }
+.chat .paneTitle small::before { content: none; }
+@media (min-width: 701px) { .body { min-height: 340px; } }
