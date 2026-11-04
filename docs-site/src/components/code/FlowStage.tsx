@@ -12,8 +12,10 @@ import styles from './FlowStage.module.css';
 
   Two scenes play in a loop, Free then With subscriptions, so the page shows the step from one
   to the other. Picking a scene stops the loop on it.
-  - Free: Codex on a free ChatGPT account; at the handoff point the same thread continues on
-    DeepSeek (your own API key) with its context. Tested on 4 November 2026.
+  - Free: three machines. On the Mac a Claude Code thread reaches the handoff point and Codex on a
+    free ChatGPT account continues the same thread with its history (tested on 1.0.191 on
+    4 November 2026, Claude limit triggered by the test switch). DeepSeek (your own API key) runs
+    other threads on the Windows PC and the Linux server. One free Codex account, no rotation.
   - With subscriptions: the coordinator runs Claude Code, Codex and GitHub Copilot threads on your
     Mac, Windows PC and Linux server in parallel, and gives the next task to a plan with room
     when one nears its limit. No thread is handed from Claude Code to Codex (not retested), and
@@ -51,6 +53,8 @@ type Thread = {
   steps: string[];
   /** label once it reaches the handoff point */
   atLimit?: string;
+  /** the agent that continues this same thread at the handoff point */
+  then?: {mark: string; dark?: boolean; agent: string; plan: string; rest: number; steps: string[]};
 };
 
 type Message = {at: number; from: 'you' | 'coordinator'; text: (t: Threshold) => React.ReactNode};
@@ -67,20 +71,23 @@ type Scene = {
 
 const SCENES: Record<Flow, Scene> = {
   free: {
-    length: 12000,
+    length: 13000,
     coordinator: {mark: 'openai', dark: true, label: 'Codex · free ChatGPT account'},
-    machines: ['laptop'],
+    machines: ['mac', 'windows', 'linux'],
     threads: [
-      {id: 'codex', task: 'Signup page', mark: 'openai', dark: true, agent: 'Codex', plan: 'Free ChatGPT account', machine: 'laptop', start: 1200, fill: 4800,
-        steps: ['Read 14 files', 'Wrote SignupForm.tsx', 'Tests: 18 passed'], atLimit: 'Handed off · context kept'},
-      {id: 'deepseek', task: 'Signup page', mark: 'deepseek', agent: 'DeepSeek', plan: 'Your API key', machine: 'laptop', start: 6200, rest: 34,
-        steps: ['Picked up with full context', 'Added email validation', 'Tests: 24 passed']},
+      {id: 'signup', task: 'Signup page', mark: 'claude', agent: 'Claude Code', plan: 'Your Claude plan', machine: 'mac', start: 1200, fill: 4800,
+        steps: ['Read 14 files', 'Wrote SignupForm.tsx', 'Tests: 18 passed'], atLimit: 'History kept',
+        then: {mark: 'openai', dark: true, agent: 'Codex', plan: 'Free ChatGPT account', rest: 36, steps: ['Picked up with full history', 'Added email validation', 'Tests: 24 passed']}},
+      {id: 'emails', task: 'Email templates', mark: 'deepseek', agent: 'DeepSeek', plan: 'Your API key', machine: 'windows', start: 1600, rest: 58,
+        steps: ['Read 6 templates', 'Wrote welcome.mjml', 'Previews rendered']},
+      {id: 'tests', task: 'Tests and CI', mark: 'deepseek', agent: 'DeepSeek', plan: 'Your API key', machine: 'linux', start: 2000, rest: 44,
+        steps: ['Added 30 tests', 'Fixed flaky e2e', 'CI green']},
     ],
     messages: [
-      {at: 0, from: 'you', text: () => 'Build the signup page'},
-      {at: 700, from: 'coordinator', text: () => 'On it. Working on Codex.'},
-      {at: 6400, from: 'coordinator', text: t => <>Codex reached {t}%. DeepSeek picked up the same thread, context kept.</>},
-      {at: 10400, from: 'coordinator', text: () => <>Signup page is done. <Check size={13} strokeWidth={2.5} aria-hidden="true" /> 24 tests pass.</>},
+      {at: 0, from: 'you', text: () => 'Build the signup flow'},
+      {at: 700, from: 'coordinator', text: () => 'Split into 3 threads on your machines.'},
+      {at: 6300, from: 'coordinator', text: t => <>Claude reached {t}%. Codex on your free ChatGPT account picked up the same thread, history kept.</>},
+      {at: 11200, from: 'coordinator', text: () => <>Signup flow is done. <Check size={13} strokeWidth={2.5} aria-hidden="true" /> 24 tests pass.</>},
     ],
   },
   subs: {
@@ -156,29 +163,42 @@ function usage(th: Thread, t: number, threshold: Threshold): number {
 }
 
 function ThreadCard({th, t, threshold, base, routed}: {th: Thread; t: number; threshold: Threshold; base: string; routed?: string}) {
-  const u = usage(th, t, threshold);
   const atLimit = !!th.fill && t - th.start >= th.fill;
-  const progress = th.fill ? Math.min(1, (t - th.start) / th.fill) : Math.min(1, (t - th.start) / 6500);
-  const shown = Math.ceil(progress * th.steps.length - 0.01);
+  // At the handoff point the same card continues on the next agent: same thread, new agent.
+  const next = atLimit && th.then ? th.then : undefined;
+  const since = th.fill ? t - th.start - th.fill : 0;
+  const u = next ? ease(since / 5000) * next.rest : usage(th, t, threshold);
+  const steps = next ? next.steps : th.steps;
+  const progress = next ? Math.min(1, since / 5000) : th.fill ? Math.min(1, (t - th.start) / th.fill) : Math.min(1, (t - th.start) / 6500);
+  const shown = Math.ceil(progress * steps.length - 0.01);
+  const who = next ?? th;
   const M = MACHINES[th.machine];
   return <motion.li
     layout
     initial={{opacity: 0, y: 14, scale: 0.98}}
-    animate={{opacity: atLimit ? 0.66 : 1, y: 0, scale: 1}}
+    animate={{opacity: atLimit && !next ? 0.66 : 1, y: 0, scale: 1}}
     exit={{opacity: 0}}
     transition={{type: 'spring', stiffness: 260, damping: 26}}
-    className={clsx(styles.thread, atLimit && styles.threadDone)}
+    className={clsx(styles.thread, atLimit && !next && styles.threadDone, next && styles.threadHanded)}
   >
     <div className={styles.threadHead}>
-      <img className={clsx(styles.mark, th.dark && styles.darkPlate)} src={`${base}${th.mark}.svg`} alt="" width="20" height="20" />
-      <span className={styles.threadTitle}>{th.task}<small>{th.agent} · {th.plan}</small></span>
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.img key={who.mark} className={clsx(styles.mark, who.dark && styles.darkPlate)} src={`${base}${who.mark}.svg`} alt="" width="20" height="20"
+          initial={{opacity: 0, rotateY: 90}} animate={{opacity: 1, rotateY: 0}} exit={{opacity: 0, rotateY: -90}} transition={{duration: 0.35}} />
+      </AnimatePresence>
+      <span className={styles.threadTitle}>{th.task}<small>{next ? <><s>{th.agent}</s> → {next.agent} · {next.plan}</> : <>{th.agent} · {th.plan}</>}</small></span>
       <span className={styles.pct}>{Math.round(u)}%</span>
     </div>
     <div className={styles.meter} aria-hidden="true"><span style={{width: `${u}%`}} /></div>
     <div className={styles.threadFoot}>
       <span className={styles.machineChip}><M.icon size={12} strokeWidth={2} aria-hidden="true" />{M.name}</span>
-      <span className={styles.step}>{atLimit && th.atLimit ? th.atLimit : th.steps[Math.max(0, shown - 1)]}</span>
+      <span className={styles.step}>{atLimit && th.atLimit && (!next || since < 900) ? th.atLimit : steps[Math.max(0, shown - 1)]}</span>
     </div>
+    <AnimatePresence>
+      {next && since < 2600 && <motion.span key="handed" className={styles.handed} initial={{opacity: 0, y: 6}} animate={{opacity: 1, y: 0}} exit={{opacity: 0}}>
+        Handed off at {threshold}%
+      </motion.span>}
+    </AnimatePresence>
     <AnimatePresence>
       {routed && <motion.span key="routed" className={styles.routed} initial={{opacity: 0, x: -40, scale: 0.8}} animate={{opacity: 1, x: 0, scale: 1}} transition={{type: 'spring', stiffness: 220, damping: 20}}>
         <ArrowRight size={12} strokeWidth={2.5} aria-hidden="true" />Next: {routed}
@@ -239,7 +259,7 @@ export default function FlowStage({flow, onFlow}: {flow: Flow; onFlow: (f: Flow)
               </ul>
             </section>
             <section className={styles.threads} aria-label="Worker threads">
-              <p className={styles.paneTitle}>Threads<small>{threads.length} started by the coordinator</small></p>
+              <p className={styles.paneTitle}>Threads<small>{threads.length ? `${threads.length} started by the coordinator` : 'Starting…'}</small></p>
               <ul className={styles.threadList}>
                 <AnimatePresence initial={false}>
                   {threads.map(th => <ThreadCard key={flow + th.id} th={th} t={t} threshold={threshold} base={base} routed={routed?.to === th.id ? routed.task : undefined} />)}

@@ -6,9 +6,9 @@
  * No release script writes this file; bump it by hand in a docs-site PR.
  * After editing, run `CHECK_RELEASE_LINKS=1 npx vitest run specwithcodeRelease` to confirm the DMG exists.
  */
-const VERSION = '1.0.190';
+const VERSION = '1.0.191';
 const DMG_NAME = 'SpecWithCode-arm64.dmg';
-const DMG_BYTES = 161_968_263;
+const DMG_BYTES = 162_072_825;
 
 const REPO = 'https://github.com/anton-abyzov/specwithcode';
 
@@ -39,13 +39,13 @@ export const SPECWITHCODE_OPERATING_SYSTEMS =
  * and the byte sizes from
  * `gh release view vX.Y.Z -R anton-abyzov/specwithcode --json assets`.
  */
-const DESKTOP_VERSION = '1.0.152';
-const EXE_X64_BYTES = 152_056_608;
-const EXE_ARM64_BYTES = 142_518_780;
-const APPIMAGE_X64_BYTES = 166_729_252;
-const APPIMAGE_ARM64_BYTES = 165_433_570;
-const DEB_X64_BYTES = 141_021_500;
-const DEB_ARM64_BYTES = 133_629_180;
+const DESKTOP_VERSION = '1.0.191';
+const EXE_X64_BYTES = 152_335_141;
+const EXE_ARM64_BYTES = 142_795_276;
+const APPIMAGE_X64_BYTES = 168_717_465;
+const APPIMAGE_ARM64_BYTES = 167_316_142;
+const DEB_X64_BYTES = 142_054_756;
+const DEB_ARM64_BYTES = 135_348_576;
 
 const desktopAsset = (name: string, bytes: number) => ({
   name,

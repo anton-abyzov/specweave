@@ -130,29 +130,19 @@
   .section { padding-top: var(--wv-space-16); }
 }
 
-/* ---------- Campaign hero (v2): loud, warm, never black ---------- */
-.hero {
-  color: #fff;
-  background:
-    radial-gradient(70% 80% at 100% 0%, rgba(255, 170, 60, .95), transparent 60%),
-    radial-gradient(70% 90% at 0% 100%, rgba(200, 60, 210, .9), transparent 65%),
-    linear-gradient(160deg, #c2531f 0%, #b9406e 55%, #a63aa8 100%);
-  border-bottom: 0;
-}
-.hero .productName, .hero h1 { color: #fff; }
-.hero h1 { font-size: clamp(48px, 7vw, 96px); line-height: .98; font-weight: 850; letter-spacing: -0.05em; text-shadow: 0 3px 0 #2a0f3d; }
-.hero h1 em { color: #ffe600; }
-.h1Top { display: inline-flex; align-items: center; gap: .18em; }
-.page img.h1Mark { width: .62em; height: .62em; padding: .1em; border-radius: .16em; background: #241523; box-sizing: content-box; }
-.hero .lead { color: rgba(255,255,255,.92); max-width: 30em; font-size: 21px; line-height: 32px; }
-.hero .badge { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.35); color: #fff; }
+/* ---------- Hero on Weave: tint field, ink type, iris as the one accent ---------- */
+.hero { background: linear-gradient(180deg, var(--wv-iris-tint), var(--wv-canvas)); }
+.hero h1 { font-size: clamp(44px, 6vw, 72px); line-height: 1.02; font-weight: 750; letter-spacing: -0.045em; }
+.hero h1 em { color: var(--wv-iris); }
+.h1Top { display: inline-flex; align-items: center; gap: .2em; }
+.page img.h1Mark { width: .56em; height: .56em; padding: .1em; border-radius: .16em; background: #241523; box-sizing: content-box; }
+.hero .lead { max-width: 30em; font-size: 21px; line-height: 32px; }
 .heroMedia { position: relative; min-width: 0; }
 .heroDownload { margin-top: var(--wv-space-8); }
-.page a.bigButton { min-height: 64px; gap: 14px; padding-inline: 24px 30px; background: #ffe600; color: #2a0f3d; border: 0; box-shadow: 0 6px 0 #2a0f3d; font-size: 18px; }
-.page a.bigButton:hover { background: #fff27a; color: #2a0f3d; }
-.bigButton .osText { font-size: 19px; font-weight: 750; }
-.heroNote { margin-top: var(--wv-space-4) !important; font-size: 14px; line-height: 22px; color: rgba(255,255,255,.9); }
-.heroNote a { color: #fff; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.page a.bigButton { min-height: 60px; gap: 14px; padding-inline: 22px 28px; box-shadow: var(--wv-shadow-overlay); }
+.bigButton .osText { font-size: 18px; font-weight: 700; }
+.heroNote { margin-top: var(--wv-space-4) !important; font-size: 14px; line-height: 22px; color: var(--wv-muted); }
+.heroNote a { color: var(--wv-iris-strong); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- Versus strip ---------- */
 .vsSection { padding-top: var(--wv-space-16); }
@@ -168,16 +158,8 @@
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 
-@media (max-width: 1000px) {
-}
 @media (max-width: 600px) {
   .page a.bigButton { width: 100%; }
 }
 
-/* Subscriptions flow: a cooler field, still never black. */
-.heroSubs {
-  background:
-    radial-gradient(70% 80% at 100% 0%, rgba(120, 150, 255, .9), transparent 60%),
-    radial-gradient(70% 90% at 0% 100%, rgba(200, 60, 210, .85), transparent 65%),
-    linear-gradient(160deg, #4a3678 0%, #6d4fb5 55%, #a63aa8 100%);
-}
+
