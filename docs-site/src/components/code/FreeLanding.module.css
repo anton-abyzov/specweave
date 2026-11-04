@@ -120,6 +120,7 @@
   .more { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
+  .stats { grid-template-columns: minmax(0, 1fr); }
   .shell { padding-inline: var(--wv-space-4); }
   .hero { padding-top: 40px; }
   .lead { font-size: 18px; line-height: 28px; }
@@ -167,6 +168,11 @@
 .vs tbody th { font-weight: 650; color: var(--wv-ink); width: 22%; }
 .vs tbody td:nth-child(2) { color: var(--wv-muted); }
 .vs tbody td:last-child { color: #d0461f; font-weight: 700; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--wv-space-4); margin: var(--wv-space-6) 0 0; padding: 0; list-style: none; }
+.stats li { display: flex; flex-direction: column; gap: 2px; padding: 16px 20px; border: 1px solid var(--wv-line); border-radius: var(--wv-radius-lg); background: var(--wv-panel); }
+.stats strong { font-size: clamp(28px, 3.2vw, 38px); line-height: 1.1; font-weight: 800; letter-spacing: -0.03em; color: var(--wv-ink); }
+.stats span { color: var(--wv-ink); font-weight: 600; }
+.stats a { margin-top: 4px; color: var(--wv-muted); font-size: 13px; text-decoration: underline; text-underline-offset: 2px; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 

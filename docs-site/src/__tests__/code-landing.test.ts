@@ -60,9 +60,14 @@ describe('SpecWithCode landing page', () => {
   it('draws only tested handoffs in the hero diagram', () => {
     const stage = read('components/code/FlowStage.tsx');
     const scenes = stage.slice(stage.indexOf('const SCENES'), stage.indexOf('const ease'));
-    // Every handoff target is DeepSeek; no lane hands Claude Code to Codex.
-    expect(scenes.match(/next: DEEPSEEK\(/g)?.length).toBe(scenes.match(/first: \{/g)?.length);
-    expect(scenes).not.toMatch(/next: \{mark: 'openai'/);
+    // The only handoff is Codex Free to DeepSeek; subscriptions route new tasks, never hand Claude Code to Codex.
+    const free = scenes.slice(scenes.indexOf('free:'), scenes.indexOf('subs:'));
+    const subs = scenes.slice(scenes.indexOf('subs:'));
+    expect(free.match(/atLimit:/g)?.length).toBe(1);
+    expect(free).toMatch(/id: 'deepseek'/);
+    expect(subs).not.toMatch(/deepseek|DeepSeek/);
+    expect(subs).not.toMatch(/handed off|picked up/i);
+    expect(subs).toMatch(/routed: \{task: '[^']+', to: 'copilot'/);
     // No dated "real run" labels on an illustration.
     expect(stage.slice(stage.indexOf('export type Flow'))).not.toMatch(/real (run|capture)/i);
   });

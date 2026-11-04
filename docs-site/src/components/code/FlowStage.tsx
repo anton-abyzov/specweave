@@ -1,100 +1,138 @@
 import React, {useEffect, useRef, useState} from 'react';
 import clsx from 'clsx';
 import useBaseUrl from '@docusaurus/useBaseUrl';
-import {ArrowRight, Laptop, Server, Sparkles} from 'lucide-react';
+import {AnimatePresence, LayoutGroup, motion, MotionConfig} from 'motion/react';
+import {ArrowRight, Check, Laptop, Monitor, Server} from 'lucide-react';
 import styles from './FlowStage.module.css';
 
 /*
-  The /code hero diagram: how SpecWithCode keeps a thread going, in two flows.
+  The /code hero: one SpecWithCode window, the way the app is organised.
+  Left: the coordinator chat, the one window you talk to. Right: the worker threads it starts,
+  each on an agent, a plan and a machine. Bottom: your machines.
 
-  Free: one free ChatGPT account on Codex works until the handoff point, then the same
-  thread continues on DeepSeek (your own API key) with its context.
-  Subscriptions: a coordinator runs workers on the paid plans you already have, in parallel
-  on your own machines, and each thread hands off at the handoff point instead of stopping.
-
-  Only tested handoffs are drawn: Codex to DeepSeek and Claude Code to DeepSeek.
-  Never draw Claude Code to Codex (not retested), several accounts of one provider, or one
-  free account per machine. The task text is illustrative, so no dates or "real run" labels.
-
-  The animation is a 10-second loop driven by requestAnimationFrame. With reduced motion,
-  and in the server render, it rests on the finished state.
+  Two scenes play in a loop, Free then With subscriptions, so the page shows the step from one
+  to the other. Picking a scene stops the loop on it.
+  - Free: Codex on a free ChatGPT account; at the handoff point the same thread continues on
+    DeepSeek (your own API key) with its context. Tested on 4 November 2026.
+  - With subscriptions: the coordinator runs Claude Code, Codex and GitHub Copilot threads on your
+    Mac, Windows PC and Linux server in parallel, and gives the next task to a plan with room
+    when one nears its limit. No thread is handed from Claude Code to Codex (not retested), and
+    no provider has more than one account.
+  Task text is illustrative; there are no dated "real run" labels on this drawing.
+  Server render and reduced motion show each scene's finished state, without the loop.
 */
 
 export type Flow = 'free' | 'subs';
 const THRESHOLDS = [98, 99, 100] as const;
 type Threshold = (typeof THRESHOLDS)[number];
+type MachineId = 'laptop' | 'mac' | 'windows' | 'linux';
 
-const LOOP_MS = 10000;
-/** Share of the loop spent filling the first provider to the handoff point. */
-const FILL_END = 0.48;
-const HANDOFF_END = 0.6;
-
-type Lane = {
-  mark: string;
-  name: string;
-  plan: string;
-  dark?: boolean;
-  steps: string[];
+const MACHINES: Record<MachineId, {name: string; icon: typeof Laptop}> = {
+  laptop: {name: 'Your laptop', icon: Laptop},
+  mac: {name: 'Mac', icon: Laptop},
+  windows: {name: 'Windows PC', icon: Monitor},
+  linux: {name: 'Linux server', icon: Server},
 };
 
-type Machine = {icon: typeof Laptop; name: string; task: string; first: Lane; next: Lane; offset: number};
+type Thread = {
+  id: string;
+  task: string;
+  mark: string;
+  dark?: boolean;
+  agent: string;
+  plan: string;
+  machine: MachineId;
+  /** ms into the scene when the thread starts */
+  start: number;
+  /** ms to fill to the handoff point; undefined = never reaches it in this scene */
+  fill?: number;
+  /** usage it rests at when it never reaches the handoff point */
+  rest?: number;
+  steps: string[];
+  /** label once it reaches the handoff point */
+  atLimit?: string;
+};
 
-const DEEPSEEK = (steps: string[]): Lane => ({mark: 'deepseek', name: 'DeepSeek', plan: 'Your API key', steps});
+type Message = {at: number; from: 'you' | 'coordinator'; text: (t: Threshold) => React.ReactNode};
 
-const SCENES: Record<Flow, {machines: Machine[]; caption: (t: number) => React.ReactNode}> = {
+type Scene = {
+  length: number;
+  coordinator: {mark: string; dark?: boolean; label: string};
+  machines: MachineId[];
+  threads: Thread[];
+  messages: Message[];
+  /** a task chip that moves into a thread when the first thread reaches the handoff point */
+  routed?: {task: string; to: string; at: number};
+};
+
+const SCENES: Record<Flow, Scene> = {
   free: {
-    machines: [{
-      icon: Laptop,
-      name: 'Your laptop',
-      task: 'Build the signup page',
-      offset: 0,
-      first: {mark: 'openai', name: 'Codex', plan: 'Free ChatGPT account', dark: true, steps: ['Read 14 files', 'Wrote SignupForm.tsx', 'Tests: 18 passed']},
-      next: DEEPSEEK(['Picked up with full context', 'Added email validation', 'Tests: 24 passed']),
-    }],
-    caption: t => <>Codex works until <strong>{t}%</strong> of its limit, then the same thread continues on DeepSeek. Nothing to re-explain.</>,
+    length: 12000,
+    coordinator: {mark: 'openai', dark: true, label: 'Codex · free ChatGPT account'},
+    machines: ['laptop'],
+    threads: [
+      {id: 'codex', task: 'Signup page', mark: 'openai', dark: true, agent: 'Codex', plan: 'Free ChatGPT account', machine: 'laptop', start: 1200, fill: 4800,
+        steps: ['Read 14 files', 'Wrote SignupForm.tsx', 'Tests: 18 passed'], atLimit: 'Handed off · context kept'},
+      {id: 'deepseek', task: 'Signup page', mark: 'deepseek', agent: 'DeepSeek', plan: 'Your API key', machine: 'laptop', start: 6200, rest: 34,
+        steps: ['Picked up with full context', 'Added email validation', 'Tests: 24 passed']},
+    ],
+    messages: [
+      {at: 0, from: 'you', text: () => 'Build the signup page'},
+      {at: 700, from: 'coordinator', text: () => 'On it. Working on Codex.'},
+      {at: 6400, from: 'coordinator', text: t => <>Codex reached {t}%. DeepSeek picked up the same thread, context kept.</>},
+      {at: 10400, from: 'coordinator', text: () => <>Signup page is done. <Check size={13} strokeWidth={2.5} aria-hidden="true" /> 24 tests pass.</>},
+    ],
   },
   subs: {
-    machines: [
-      {
-        icon: Laptop,
-        name: 'Your Mac',
-        task: 'Payments API',
-        offset: 0,
-        first: {mark: 'claude', name: 'Claude Code', plan: 'Claude Max', steps: ['Planned 6 tasks', 'Wrote charge.ts', 'Tests: 31 passed']},
-        next: DEEPSEEK(['Picked up with full context', 'Added refunds', 'Tests: 37 passed']),
-      },
-      {
-        icon: Server,
-        name: 'Your server',
-        task: 'Mobile checkout screen',
-        offset: 0.08,
-        first: {mark: 'openai', name: 'Codex', plan: 'ChatGPT Pro', dark: true, steps: ['Read 22 files', 'Wrote Checkout.tsx', 'Tests: 12 passed']},
-        next: DEEPSEEK(['Picked up with full context', 'Fixed Android layout', 'Tests: 15 passed']),
-      },
+    length: 14000,
+    coordinator: {mark: 'claude', label: 'Claude Code · Claude Max'},
+    machines: ['mac', 'windows', 'linux'],
+    threads: [
+      {id: 'claude', task: 'Payments API', mark: 'claude', agent: 'Claude Code', plan: 'Claude Max', machine: 'mac', start: 1400, fill: 5600,
+        steps: ['Planned 6 tasks', 'Wrote charge.ts', 'Tests: 31 passed'], atLimit: 'Done · next task routed'},
+      {id: 'codex', task: 'Checkout screen', mark: 'openai', dark: true, agent: 'Codex', plan: 'ChatGPT Pro', machine: 'windows', start: 1700, rest: 71,
+        steps: ['Read 22 files', 'Wrote Checkout.tsx', 'Tests: 12 passed']},
+      {id: 'copilot', task: 'Tests and CI', mark: 'copilot', dark: true, agent: 'GitHub Copilot', plan: 'Copilot Pro+', machine: 'linux', start: 2000, rest: 46,
+        steps: ['Added 40 tests', 'Fixed flaky e2e', 'CI green']},
     ],
-    caption: t => <>A coordinator runs your paid plans side by side on your own machines. Each thread uses its plan up to <strong>{t}%</strong>, then hands off instead of stopping.</>,
+    messages: [
+      {at: 0, from: 'you', text: () => 'Ship checkout v2'},
+      {at: 700, from: 'coordinator', text: () => 'Split into 3 threads on your machines.'},
+      {at: 7300, from: 'coordinator', text: t => <>Claude Max is at {t}%. The next task, Refunds, goes to Copilot, which has room.</>},
+      {at: 12200, from: 'coordinator', text: () => <>All threads finished. <Check size={13} strokeWidth={2.5} aria-hidden="true" /> 3 pull requests to review.</>},
+    ],
+    routed: {task: 'Refunds', to: 'copilot', at: 7300},
   },
 };
 
 const ease = (x: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 
-function useLoop(active: boolean): number {
-  // Server render and reduced motion rest on the finished state.
-  const [p, setP] = useState(1);
+function prefersReduced() {
+  return typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
+/** Scene clock. Returns ms into the current scene; the server render rests on the end. */
+function useSceneClock(flow: Flow, playing: boolean, run: number, onEnd: () => void): number {
+  const [t, setT] = useState(SCENES[flow].length);
+  const endRef = useRef(onEnd);
+  endRef.current = onEnd;
   useEffect(() => {
-    if (!active || typeof window === 'undefined') return;
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { setP(1); return; }
+    if (!playing || prefersReduced()) { setT(SCENES[flow].length); return; }
+    const len = SCENES[flow].length;
     let raf = 0;
     let last = 0;
     const start = performance.now();
+    setT(0);
     const tick = (now: number) => {
-      if (now - last > 33) { last = now; setP(((now - start) % LOOP_MS) / LOOP_MS); }
+      const e = now - start;
+      if (e >= len + 1600) { endRef.current(); return; }
+      if (now - last > 40) { last = now; setT(Math.min(e, len)); }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [active]);
-  return p;
+  }, [flow, playing, run]);
+  return t;
 }
 
 function useOnScreen<T extends Element>(): [React.RefObject<T>, boolean] {
@@ -103,67 +141,123 @@ function useOnScreen<T extends Element>(): [React.RefObject<T>, boolean] {
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === 'undefined') { setOn(true); return; }
-    const io = new IntersectionObserver(([e]) => setOn(e.isIntersecting), {threshold: 0.2});
+    const io = new IntersectionObserver(([e]) => setOn(e.isIntersecting), {threshold: 0.25});
     io.observe(el);
     return () => io.disconnect();
   }, []);
   return [ref, on];
 }
 
-function LaneRow({lane, usage, state, shown, base}: {lane: Lane; usage: number; state: 'idle' | 'working' | 'done'; shown: number; base: string}) {
-  return <div className={clsx(styles.lane, styles[state])}>
-    <div className={styles.laneHead}>
-      <img className={clsx(styles.mark, lane.dark && styles.darkPlate)} src={`${base}${lane.mark}.svg`} alt="" width="22" height="22" />
-      <span className={styles.laneName}>{lane.name}<small>{lane.plan}</small></span>
-      <span className={styles.pct} aria-hidden="true">{Math.round(usage)}%</span>
-    </div>
-    <div className={styles.meter} aria-hidden="true"><span style={{width: `${usage}%`}} /></div>
-    <ul className={styles.steps}>
-      {lane.steps.map((s, i) => <li key={s} className={i < shown ? styles.stepOn : undefined}>{s}</li>)}
-    </ul>
-  </div>;
+function usage(th: Thread, t: number, threshold: Threshold): number {
+  const e = t - th.start;
+  if (e <= 0) return 0;
+  if (th.fill) return ease(e / th.fill) * threshold;
+  return ease(e / 6500) * (th.rest ?? 50);
 }
 
-function MachineCard({m, p, threshold, base}: {m: Machine; p: number; threshold: Threshold; base: string}) {
-  const q = Math.min(1, Math.max(0, p - m.offset) / (1 - m.offset));
-  const fill = ease(q / FILL_END);
-  const firstUsage = fill * threshold;
-  const handed = q >= FILL_END;
-  const flight = handed ? ease((q - FILL_END) / (HANDOFF_END - FILL_END)) : 0;
-  const after = q >= HANDOFF_END ? ease((q - HANDOFF_END) / (1 - HANDOFF_END)) : 0;
-  const Icon = m.icon;
-  return <div className={styles.machine}>
-    <div className={styles.machineHead}><Icon size={16} strokeWidth={1.75} aria-hidden="true" /><span>{m.name}</span><span className={styles.task}>{m.task}</span></div>
-    <LaneRow lane={m.first} base={base} usage={firstUsage} state={handed ? 'done' : 'working'} shown={Math.ceil(fill * m.first.steps.length - 0.01)} />
-    <div className={clsx(styles.handoff, handed && styles.handoffOn)} aria-hidden="true">
-      <span className={styles.handoffLine}><span className={styles.packet} style={{top: `${flight * 100}%`, opacity: handed && flight < 1 ? 1 : 0}} /></span>
-      <span className={styles.handoffLabel}><ArrowRight size={13} strokeWidth={2} />Hand off at {threshold}% · context kept</span>
+function ThreadCard({th, t, threshold, base, routed}: {th: Thread; t: number; threshold: Threshold; base: string; routed?: string}) {
+  const u = usage(th, t, threshold);
+  const atLimit = !!th.fill && t - th.start >= th.fill;
+  const progress = th.fill ? Math.min(1, (t - th.start) / th.fill) : Math.min(1, (t - th.start) / 6500);
+  const shown = Math.ceil(progress * th.steps.length - 0.01);
+  const M = MACHINES[th.machine];
+  return <motion.li
+    layout
+    initial={{opacity: 0, y: 14, scale: 0.98}}
+    animate={{opacity: atLimit ? 0.66 : 1, y: 0, scale: 1}}
+    exit={{opacity: 0}}
+    transition={{type: 'spring', stiffness: 260, damping: 26}}
+    className={clsx(styles.thread, atLimit && styles.threadDone)}
+  >
+    <div className={styles.threadHead}>
+      <img className={clsx(styles.mark, th.dark && styles.darkPlate)} src={`${base}${th.mark}.svg`} alt="" width="20" height="20" />
+      <span className={styles.threadTitle}>{th.task}<small>{th.agent} · {th.plan}</small></span>
+      <span className={styles.pct}>{Math.round(u)}%</span>
     </div>
-    <LaneRow lane={m.next} base={base} usage={after * 34} state={q >= HANDOFF_END ? 'working' : 'idle'} shown={Math.ceil(after * m.next.steps.length - 0.01)} />
-  </div>;
+    <div className={styles.meter} aria-hidden="true"><span style={{width: `${u}%`}} /></div>
+    <div className={styles.threadFoot}>
+      <span className={styles.machineChip}><M.icon size={12} strokeWidth={2} aria-hidden="true" />{M.name}</span>
+      <span className={styles.step}>{atLimit && th.atLimit ? th.atLimit : th.steps[Math.max(0, shown - 1)]}</span>
+    </div>
+    <AnimatePresence>
+      {routed && <motion.span key="routed" className={styles.routed} initial={{opacity: 0, x: -40, scale: 0.8}} animate={{opacity: 1, x: 0, scale: 1}} transition={{type: 'spring', stiffness: 220, damping: 20}}>
+        <ArrowRight size={12} strokeWidth={2.5} aria-hidden="true" />Next: {routed}
+      </motion.span>}
+    </AnimatePresence>
+  </motion.li>;
 }
 
 export default function FlowStage({flow, onFlow}: {flow: Flow; onFlow: (f: Flow) => void}) {
   const base = useBaseUrl('/img/studio/providers/');
   const [threshold, setThreshold] = useState<Threshold>(98);
+  const [auto, setAuto] = useState(true);
   const [ref, onScreen] = useOnScreen<HTMLDivElement>();
-  const p = useLoop(onScreen);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const [run, setRun] = useState(0);
+  const t = useSceneClock(flow, mounted && onScreen, run, () => {
+    if (auto) onFlow(flow === 'free' ? 'subs' : 'free');
+    else setRun(r => r + 1); // replay the chosen scene
+  });
   const scene = SCENES[flow];
-  return <div ref={ref} className={styles.stage}>
-    <div className={styles.controls}>
-      <div className={styles.tabs} role="tablist" aria-label="Choose a flow">
-        <button type="button" role="tab" aria-selected={flow === 'free'} className={clsx(flow === 'free' && styles.tabOn)} onClick={() => onFlow('free')}>Free <span className={styles.tabTag}>$0</span></button>
-        <button type="button" role="tab" aria-selected={flow === 'subs'} className={clsx(flow === 'subs' && styles.tabOn)} onClick={() => onFlow('subs')}>With subscriptions</button>
+  const threads = scene.threads.filter(th => t >= th.start);
+  const messages = scene.messages.filter(m => t >= m.at);
+  const routed = scene.routed && t >= scene.routed.at ? scene.routed : undefined;
+  const pick = (f: Flow) => { setAuto(false); setRun(r => r + 1); onFlow(f); };
+
+  return <MotionConfig reducedMotion="user">
+    <div ref={ref} className={styles.stage}>
+      <div className={styles.controls}>
+        <div className={styles.steps} role="tablist" aria-label="Choose a flow">
+          <button type="button" role="tab" aria-selected={flow === 'free'} className={clsx(flow === 'free' && styles.stepOn)} onClick={() => pick('free')}><span className={styles.stepNo}>1</span>Start free <span className={styles.tag}>$0</span></button>
+          <ArrowRight className={styles.stepArrow} size={14} strokeWidth={2} aria-hidden="true" />
+          <button type="button" role="tab" aria-selected={flow === 'subs'} className={clsx(flow === 'subs' && styles.stepOn)} onClick={() => pick('subs')}><span className={styles.stepNo}>2</span>Add your plans</button>
+        </div>
+        <div className={styles.threshold} role="radiogroup" aria-label="Hand off at">
+          <span>Hand off at</span>
+          {THRESHOLDS.map(v => <button key={v} type="button" role="radio" aria-checked={threshold === v} className={clsx(threshold === v && styles.thOn)} onClick={() => setThreshold(v)}>{v}%</button>)}
+        </div>
       </div>
-      <div className={styles.threshold} role="radiogroup" aria-label="Hand off at">
-        <span>Hand off at</span>
-        {THRESHOLDS.map(t => <button key={t} type="button" role="radio" aria-checked={threshold === t} className={clsx(threshold === t && styles.thOn)} onClick={() => setThreshold(t)}>{t}%</button>)}
-      </div>
+
+      <LayoutGroup>
+        <motion.div layout className={styles.window} transition={{type: 'spring', stiffness: 200, damping: 28}}>
+          <div className={styles.titlebar} aria-hidden="true"><span /><span /><span /><b>SpecWithCode</b><em>Checkout project</em></div>
+          <div className={styles.body}>
+            <section className={styles.chat} aria-label="Coordinator chat">
+              <p className={styles.paneTitle}>
+                <img className={clsx(styles.mark, scene.coordinator.dark && styles.darkPlate)} src={`${base}${scene.coordinator.mark}.svg`} alt="" width="16" height="16" />
+                Coordinator<small>{scene.coordinator.label}</small>
+              </p>
+              <p className={styles.oneWindow}>The one window you talk to</p>
+              <ul className={styles.messages}>
+                <AnimatePresence initial={false}>
+                  {messages.map(m => <motion.li key={flow + m.at} layout className={clsx(styles.msg, m.from === 'you' ? styles.you : styles.coord)}
+                    initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0}} transition={{duration: 0.35}}>
+                    {m.text(threshold)}
+                  </motion.li>)}
+                </AnimatePresence>
+              </ul>
+            </section>
+            <section className={styles.threads} aria-label="Worker threads">
+              <p className={styles.paneTitle}>Threads<small>{threads.length} started by the coordinator</small></p>
+              <ul className={styles.threadList}>
+                <AnimatePresence initial={false}>
+                  {threads.map(th => <ThreadCard key={flow + th.id} th={th} t={t} threshold={threshold} base={base} routed={routed?.to === th.id ? routed.task : undefined} />)}
+                </AnimatePresence>
+              </ul>
+            </section>
+          </div>
+          <motion.ul layout className={styles.machines} aria-label="Your machines">
+            {scene.machines.map(id => {
+              const M = MACHINES[id];
+              const busy = threads.some(th => th.machine === id);
+              return <motion.li key={id} layout initial={{opacity: 0, scale: 0.9}} animate={{opacity: 1, scale: 1}} className={clsx(styles.machine, busy && styles.machineBusy)}>
+                <M.icon size={14} strokeWidth={2} aria-hidden="true" />{M.name}<span className={styles.dot} aria-hidden="true" />
+              </motion.li>;
+            })}
+          </motion.ul>
+        </motion.div>
+      </LayoutGroup>
     </div>
-    {flow === 'subs' && <div className={styles.coordinator}><Sparkles size={14} strokeWidth={2} aria-hidden="true" />Coordinator splits one goal into threads on your machines</div>}
-    <div className={clsx(styles.machines, flow === 'subs' && styles.two)}>
-      {scene.machines.map(m => <MachineCard key={m.name + flow} m={m} p={p} threshold={threshold} base={base} />)}
-    </div>
-    <p className={styles.caption} aria-live="polite">{scene.caption(threshold)}</p>
-  </div>;
+  </MotionConfig>;
 }
