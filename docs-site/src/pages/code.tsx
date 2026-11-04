@@ -112,7 +112,7 @@ const BRAND_FAQ = {q: 'Is Spec with Code the same as SpecWithCode?', a: 'Yes. Sp
 /** Shown on the page and, as plain text, in the FAQPage structured data. */
 const FAQ: {q: string; a: string}[] = [
   {q: 'Is SpecWithCode really free?', a: 'Yes. SpecWithCode is free, with source available, on Mac, Windows and Linux. It never resells tokens or adds a markup: you sign in with your own accounts. Codex works on a free ChatGPT account within that plan\'s usage limits. DeepSeek uses your own DeepSeek API key, and DeepSeek bills that usage directly.'},
-  {q: 'What happens when Claude Code hits its usage limit?', a: 'The chat continues on the next agent you set up, such as DeepSeek, in the same thread and with its context. In our test on 4 November 2026, with the limit triggered by a test switch, DeepSeek still knew a code word given to Claude before the switch. For each project you choose whether SpecWithCode switches automatically, offers the switch, or waits for the limit to reset.'},
+  {q: 'What happens when Claude Code hits its usage limit?', a: 'The chat continues on the next agent you set up, such as Codex on a free ChatGPT account or DeepSeek, in the same thread and with its history. In our tests on 4 November 2026, with the Claude limit triggered by a test switch, Codex (SpecWithCode 1.0.191) and DeepSeek each still knew a code word given to Claude before the switch. For each project you choose whether SpecWithCode switches automatically, offers the switch, or waits for the limit to reset.'},
   {q: 'Do I need a paid Claude or ChatGPT plan?', a: 'No. You can start with Codex on a free ChatGPT account and add DeepSeek as the fallback. If you already pay for Claude Code or ChatGPT, sign in to those too and keep DeepSeek as the fallback.'},
   {q: 'Does everything stay on my machine?', a: 'No. Agent processes and project files live on your machine, but cloud models receive prompts and relevant context, which can include code and file contents, through the provider you chose.'},
   {q: 'Should one machine switch between accounts of the same provider?', a: 'No. Keep each machine signed in to one account per provider. For more capacity, add a machine with its own accounts instead of switching accounts by hand, and follow each provider\'s terms.'},
@@ -199,7 +199,7 @@ export default function Code() {
     <main className={clsx('wv-root', styles.page)}>
 
       {/* ---------- Hero: two flows, one download ---------- */}
-      <header className={clsx(styles.hero, flow === 'subs' && styles.heroSubs)}>
+      <header className={styles.hero}>
         <div className={clsx(styles.shell, styles.heroGrid)}>
           <div className={styles.heroCopy}>
             <p className={styles.product}>
@@ -210,7 +210,7 @@ export default function Code() {
             {flow === 'free'
               ? <>
                 <h1><span className={styles.h1Top}><img className={styles.h1Mark} src={marks.openai} alt="" width="48" height="48" />OpenAI Codex.</span> <em>Free.</em></h1>
-                <p className={styles.lead}>Sign in with a free ChatGPT account: no card, no Codex API key. When it nears its limit, DeepSeek picks up the same thread and keeps coding.</p>
+                <p className={styles.lead}>Sign in with a free ChatGPT account: no card, no Codex API key. When Claude Code nears its limit, Codex picks up the same thread with its history, and DeepSeek takes more threads on your other machines.</p>
               </>
               : <>
                 <h1>Your AI plans. <em>Used to the last token.</em></h1>
@@ -289,7 +289,7 @@ export default function Code() {
       <section id="download" className={clsx(styles.shell, styles.section)} aria-labelledby="download-title">
         <div className={styles.downloadPanel}>
           <h2 id="download-title">Get SpecWithCode</h2>
-          <p>Mac {release.version}, Windows and Linux {desktop.version}. The Mac app is signed and notarized; the Windows and Linux installers are not code-signed yet.</p>
+          <p>{release.version === desktop.version ? <>Version {release.version} for Mac, Windows and Linux.</> : <>Mac {release.version}, Windows and Linux {desktop.version}.</>} The Mac app is signed and notarized; the Windows and Linux installers are not code-signed yet.</p>
           <Downloads placement="download" />
         </div>
       </section>

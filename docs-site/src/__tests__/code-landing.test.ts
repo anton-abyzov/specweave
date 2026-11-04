@@ -40,8 +40,10 @@ describe('SpecWithCode landing page', () => {
     expect(copy).not.toMatch(/free Claude( Code)?\b/i);
   });
 
-  it('does not claim a Claude Code to Codex handoff, which is not yet retested', () => {
-    expect(copy).not.toMatch(/Claude( Code)?[^.]{0,60}(continues|moves|hands?)[^.]{0,20}(on|to) Codex/i);
+  it('names the test switch and version wherever it claims a Claude Code to Codex handoff', () => {
+    // Retested on 1.0.191 on 4 November 2026, with the Claude limit simulated by the test switch.
+    expect(copy).toMatch(/Claude Code nears its limit, Codex picks up the same thread/);
+    expect(copy).toMatch(/Codex \(SpecWithCode 1\.0\.191\)[^']*test switch|test switch[^']*Codex \(SpecWithCode 1\.0\.191\)/);
     expect(copy).not.toMatch(/uses them first/);
   });
 
@@ -60,14 +62,16 @@ describe('SpecWithCode landing page', () => {
   it('draws only tested handoffs in the hero diagram', () => {
     const stage = read('components/code/FlowStage.tsx');
     const scenes = stage.slice(stage.indexOf('const SCENES'), stage.indexOf('const ease'));
-    // The only handoff is Codex Free to DeepSeek; subscriptions route new tasks, never hand Claude Code to Codex.
+    // Handoffs: Claude Code to Codex Free in the free scene only; subscriptions route new tasks.
     const free = scenes.slice(scenes.indexOf('free:'), scenes.indexOf('subs:'));
     const subs = scenes.slice(scenes.indexOf('subs:'));
-    expect(free.match(/atLimit:/g)?.length).toBe(1);
-    expect(free).toMatch(/id: 'deepseek'/);
+    expect(free.match(/then: \{/g)?.length).toBe(1);
+    expect(free).toMatch(/mark: 'claude'[^\n]*\n[^\n]*\n\s*then: \{mark: 'openai'[^}]*plan: 'Free ChatGPT account'/);
+    expect(subs).not.toMatch(/then: \{/);
     expect(subs).not.toMatch(/deepseek|DeepSeek/);
-    expect(subs).not.toMatch(/handed off|picked up/i);
     expect(subs).toMatch(/routed: \{task: '[^']+', to: 'copilot'/);
+    // One free Codex account: no thread starts on a second free account.
+    expect(free.match(/plan: 'Free ChatGPT account'/g)?.length).toBe(1);
     // No dated "real run" labels on an illustration.
     expect(stage.slice(stage.indexOf('export type Flow'))).not.toMatch(/real (run|capture)/i);
   });
