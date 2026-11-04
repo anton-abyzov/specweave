@@ -2,7 +2,7 @@
 title: "Tasks and acceptance criteria in SpecWithCode threads"
 sidebar_label: Tasks and acceptance criteria
 description: "How a SpecWithCode thread works from a SpecWeave increment's tasks and acceptance criteria instead of a loose chat prompt: the plan card, how a thread binds to an increment, what counts as done, and a five-minute tutorial."
-keywords: [acceptance criteria, ai coding agent tasks, spec driven development, specweave, specwithcode, plan card, t3 code alternative]
+keywords: [acceptance criteria, ai coding agent tasks, spec driven development, specweave, specwithcode, plan card]
 ---
 
 # Tasks and acceptance criteria in threads
@@ -20,9 +20,9 @@ The **plan card** sits at the top of the thread, collapsed to one line:
 `Increment 0930 · Wire the plan card · Next: Compact progress in lists · 2/5 · AC 1/4`
 
 - **2/5** is tasks done out of tasks in the increment, folded from the ledger.
-- **AC 1/4** is acceptance criteria verified out of the total, green once all are. A criterion counts only when every task citing it is done with evidence and a `specweave verify` run passed after the last of them. A ticked box in the spec is a declaration, not proof, and a task done without a later passing verify is evidence, not verification, so neither counts here. (The CLI's own `specweave ac list` reports an AC as met or open; "verified" is SpecWithCode's stricter reading of the same ledger.)
+- **AC 1/4** is acceptance criteria verified out of the total, green once all are. A criterion counts only when every task citing it is done with evidence and a `specweave verify` run passed after the last of them. A ticked box in the spec is a declaration, not proof, and a task done without a later passing verify is evidence, not verification, so neither counts here. (The CLI's own `specweave ac list` reports an AC as met, mixed, skipped-accepted or open; "verified" is SpecWithCode's stricter reading of the same ledger.)
 
-Expand the card to see every task (done, current, open, blocked, skipped), with the thread's own task marked **this thread** and the agent's live todo list nested under it. The **Acceptance criteria** list below it is open by default and shows each AC, how far it is proven (verified, evidence not verified, declared only, open, no task), the tasks that cover it and its user story. **Open spec** opens `spec.md` in the app's viewer.
+Expand the card to see every task (done, current, open, blocked, skipped), with the thread's own task marked **this thread** and the agent's live todo list nested under it. The **Acceptance criteria** list below it is open by default and shows each AC, how far it is proven (verified, evidence not verified, declared only, open, no task, or skipped; an AC with an accepted skip reads **Skipped (accepted)** or **Mixed acceptance** and never counts as verified), the tasks that cover it and its user story. **Open spec** opens `spec.md` in the app's viewer.
 
 In lists, the same state reads as `0930 · 2/5`; the AC count is on the card only. A thread that changed code with no increment is marked in the Threads pane so you can link one or say none is needed.
 
@@ -32,15 +32,16 @@ You rarely link by hand. Strongest first:
 
 1. **Linked in SpecWithCode.** **Link increment** on the plan card, or "Link SpecWeave increment to thread" in the command palette.
 2. **Claim.** The agent ran a SpecWeave command that writes the ledger, such as `specweave task claim`, `task done` or `pickup`, from that thread. SpecWithCode starts every turn with the thread's id, so the CLI records which thread touched which increment. A worker the coordinator launched on an increment counts here from its first moment (see below).
-3. **Checkpoint.** SpecWeave's session checkpoint for the thread names the increment.
-4. **Name.** The increment's number or folder is in the thread's title or branch, such as `feat/0930-plan-card`.
+3. **Increment branch.** The thread's worktree is on an increment branch such as `inc/0930-plan-card`.
+4. **Checkpoint.** SpecWeave's session checkpoint for the thread names the increment.
+5. **Name.** The increment's number or folder is in the thread's title or branch, such as `feat/0930-plan-card`.
 
-When the coordinator launches a worker on an increment, SpecWithCode binds the new thread to it right away and tells the worker to run `specweave pickup <id>` first. The worker's first claim then marks the task it holds.
+When the coordinator launches a worker on an increment, SpecWithCode binds the new thread to it right away, and the worker's brief asks it to run `specweave pickup <id>` first. SpecWithCode does not run the CLI itself; the worker does. Its first claim then marks the task it holds.
 
 ## Why the ledger and not the chat
 
-- **Done means evidence.** `specweave task done` needs evidence: a passing `--run "<command>"` or `--evidence "<commit or output>"`. A skip needs a reason. The app never ticks a task from a todo event.
-- **No two agents take the same task.** A claim leases a task for two hours by default, and only the agent holding it releases it early.
+- **Done means evidence.** `specweave task done` needs evidence: a passing `--run "<command>"`, `--evidence "<commit or output>"`, or, with neither, a passing run of the task's own `Test:` command from the spec. A skip needs a reason. The app never ticks a task from a todo event.
+- **No two agents take the same task.** A claim leases a task for two hours by default (`tasks.leaseHours` in `.specweave/config.json`). Another agent is refused until the lease runs out, unless someone deliberately overrides it with `--force`.
 - **The record outlives the thread.** The spec and ledger live in git, so every tool, machine and teammate sees the same state, and a new thread picks up where the last one stopped.
 - **The app only reads.** SpecWithCode never writes your spec, checkboxes or ledger. Claiming and finishing stay with the agent and the CLI.
 
