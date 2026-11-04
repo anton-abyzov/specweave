@@ -98,7 +98,7 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
 .hub-name { margin-top: 12px; font: 600 34px/1.1 var(--sans); }
 .hub-sub { margin-top: 10px; font: 400 21px/1 var(--sans); color: #d7d3c6; }
 .usage { position: absolute; width: 460px; box-sizing: border-box; padding: 28px 30px; background: var(--cream); border: 1.5px solid var(--line); border-radius: 24px; box-shadow: 0 34px 80px #22241e1f; }
-.urow { margin-top: 22px; display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: center; font: 500 22px/1 var(--sans); }
+.urow { margin-top: 22px; display: grid; grid-template-columns: 160px 1fr; gap: 16px; align-items: center; font: 500 22px/1 var(--sans); }
 .bar { height: 16px; border-radius: 8px; background: #22241e12; overflow: hidden; }
 .bar i { display: block; height: 100%; background: var(--ink); border-radius: 8px; transform-origin: 0 50%; transform: scaleX(0); }
 .ufoot { margin-top: 26px; font: 500 16px/1.3 var(--sans); color: var(--muted); }
@@ -217,3 +217,9 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
 .vcard.withmedia { padding-top: 0; overflow: hidden; }
 .vmedia { position: relative; height: 200px; margin: 0 -36px 26px; background: #22241e; overflow: hidden; }
 .vmedia video { left: 0; top: 0; width: 480px; height: 200px; object-fit: cover; }
+
+/* Provider logo badge: official mark on a dark rounded tile */
+.plogo { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; border-radius: 26%; background: #141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align: middle; }
+.plogo img { width: 64%; height: 64%; object-fit: contain; display: block; }
+.urow .ulab { display: flex; align-items: center; gap: 10px; }
+.tag.model { display: inline-flex; align-items: center; gap: 7px; padding-left: 6px; }
