@@ -15,7 +15,13 @@ and one PR.
 
 ## Before writing
 
-- A small self-contained fix needs no increment. Just do it.
+- Skip the increment for one PR under about 300 changed lines, a follow-up fix to a
+  merged PR, a UI tweak or an investigation: run `specweave small-fix "<why>"` and ship.
+  Plan one for multi-day work, cross-platform changes, auth, payments, migrations, and
+  anything another tool or machine will pick up; these win over size. Work bigger than
+  one PR gets one increment per PR. In our own 1,476 PRs, small changes looked about
+  the same either way, while threads that shipped one PR over 1,000 lines took about twice
+  the messages and output tokens with an increment (17 against 11 threads) (https://spec-weave.com/docs/guides/when-to-plan-an-increment).
 - An open increment already owns the files this touches (`specweave task list`)? Add
   ACs and tasks to its spec.md instead of opening another.
 - Read the code the change touches before writing Approach. If `GLOSSARY.md` exists,

@@ -245,7 +245,8 @@ describe('require-increment wording', () => {
   it('remind recommends an increment and never asks to retry a blocked edit', () => {
     const remind = requireIncrementMessage('remind');
     expect(remind).toMatch(/^Recommended, not required/);
-    expect(remind).toMatch(/does not need one, carry on/);
+    expect(remind).toMatch(/under about 300 changed lines, a follow-up fix, a UI tweak or an investigation: carry on/);
+    expect(remind).toMatch(/Plan multi-day work, cross-platform changes, auth, payments, migrations and work another tool or machine will pick up; these win over size\./);
     expect(remind).not.toMatch(/retry the edit/);
     expect(requireIncrementMessage('enforce')).toMatch(/requires an increment.*Then retry the edit\.$/);
   });

@@ -1,0 +1,117 @@
+/* "Plan when it pays off" on the home page. Weave tokens only, violet accent on the Plan column. */
+.band {
+  scroll-margin-top: 80px;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--wv-space-12);
+  align-items: start;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-4);
+  min-width: 0;
+}
+
+.copy h2 { margin: 0; }
+
+.kicker {
+  margin: 0;
+  font: 500 12px/16px var(--wv-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wv-iris-strong);
+}
+
+.lead {
+  margin: 0;
+  color: var(--wv-muted);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--wv-space-6) var(--wv-space-8);
+  margin: var(--wv-space-2) 0 0;
+}
+
+.stats > div {
+  padding-top: var(--wv-space-4);
+  border-top: 1px solid var(--wv-line);
+}
+
+.stats dt {
+  font: 600 30px/34px var(--wv-font-sans);
+  letter-spacing: -0.02em;
+  color: var(--wv-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats dd {
+  margin: var(--wv-space-2) 0 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--wv-muted);
+}
+
+.rule {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wv-space-4);
+  min-width: 0;
+}
+
+.col {
+  padding: var(--wv-space-6);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-lg);
+  background: var(--wv-panel);
+}
+
+.plan {
+  border-color: color-mix(in srgb, var(--wv-iris) 40%, var(--wv-line));
+  background:
+    radial-gradient(600px circle at 0% 0%, color-mix(in srgb, var(--wv-iris) 10%, transparent), transparent 60%),
+    var(--wv-panel);
+}
+
+.col h3 {
+  margin: 0 0 var(--wv-space-3);
+  font-size: 17px;
+  line-height: 24px;
+}
+
+.col ul {
+  margin: 0 0 var(--wv-space-3);
+  padding-left: var(--wv-space-6);
+  font-size: 15px;
+  line-height: 23px;
+  color: var(--wv-ink);
+}
+
+.col p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--wv-muted);
+}
+
+.col code { overflow-wrap: anywhere; }
+
+.source {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--wv-muted);
+}
+
+.link { white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .band { grid-template-columns: minmax(0, 1fr); gap: var(--wv-space-8); }
+}
+
+@media (max-width: 560px) {
+  .stats { grid-template-columns: minmax(0, 1fr); }
+}
