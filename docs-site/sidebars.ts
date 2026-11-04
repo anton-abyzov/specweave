@@ -32,6 +32,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'studio/projects', label: 'Projects and threads'},
         {type: 'doc', id: 'studio/memory-and-usage', label: 'Memory and usage'},
         {type: 'doc', id: 'studio/plans-and-routines', label: 'Plans and routines'},
+        {type: 'doc', id: 'studio/tasks-and-acceptance-criteria', label: 'Tasks and acceptance criteria'},
         {type: 'doc', id: 'studio/finish-a-thread', label: 'Finish a thread'},
         {type: 'doc', id: 'studio/connect', label: 'Connect'},
         {type: 'doc', id: 'studio/add-a-machine', label: 'Add a machine'},
