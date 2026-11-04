@@ -27,7 +27,6 @@ describe('SpecWithCode landing page', () => {
 
   it('uses only published, real captures for screenshots', () => {
     const imgs = [...copy.matchAll(/\/img\/studio\/([\w.-]+\.(?:webp|png))/g)].map(m => m[1]);
-    expect(imgs.length).toBeGreaterThanOrEqual(2);
     for (const img of imgs) expect(fs.existsSync(path.resolve(__dirname, '../../static/img/studio', img))).toBe(true);
   });
 
@@ -56,6 +55,16 @@ describe('SpecWithCode landing page', () => {
       expect(fs.existsSync(path.resolve(__dirname, '../../static/img/studio/providers', `${mark}.svg`))).toBe(true);
       expect(copy).toMatch(new RegExp(`marks\\.${mark}`));
     }
+  });
+
+  it('draws only tested handoffs in the hero diagram', () => {
+    const stage = read('components/code/FlowStage.tsx');
+    const scenes = stage.slice(stage.indexOf('const SCENES'), stage.indexOf('const ease'));
+    // Every handoff target is DeepSeek; no lane hands Claude Code to Codex.
+    expect(scenes.match(/next: DEEPSEEK\(/g)?.length).toBe(scenes.match(/first: \{/g)?.length);
+    expect(scenes).not.toMatch(/next: \{mark: 'openai'/);
+    // No dated "real run" labels on an illustration.
+    expect(stage.slice(stage.indexOf('export type Flow'))).not.toMatch(/real (run|capture)/i);
   });
 
   it('never compares SpecWithCode with T3 Code or calls it a fork', () => {

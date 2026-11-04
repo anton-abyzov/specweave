@@ -1,28 +1,26 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
-import {ArrowRight, ArrowUpRight, Check, ChevronDown, GitMerge, Info, Layers, Network, Users} from 'lucide-react';
+import {ArrowRight, ArrowUpRight, ChevronDown, Gauge, GitMerge, Info, Layers, Network, Users} from 'lucide-react';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
 import {useSpecWithCodeInstaller} from '../data/specwithcodeInstaller';
+import FlowStage, {type Flow} from '../components/code/FlowStage';
 import styles from '../components/code/FreeLanding.module.css';
 
 /*
-  /code (specwithcode.com) for the free campaign that starts 4 November 2026.
+  /code (specwithcode.com): two flows for the free campaign that starts 4 November 2026.
 
-  One promise, one piece of evidence, three steps, a download for each system.
-  Every claim on this page was tested on 4 November 2026 on the maintainer's M4 Mac:
-  - Codex signed in with a free ChatGPT account (GPT-6 Luna) created a file in SpecWithCode.
-  - A Claude Code usage limit (triggered with the app's test switch, not a real limit) moved the
-    same chat to DeepSeek Harness, which still knew the code word given to Claude before the switch.
-    The handoff and the context are real; never say Claude really hit its limit in this capture.
-  - Codex Free also handed off to DeepSeek.
-  Do not add a Claude Code to Codex handoff claim until that path is fixed and retested.
-  The captures are crops of the original screenshots (handoff-thread.png, codexfree-thread.png);
-  nothing in them is staged or redrawn.
+  Free: Codex on a free ChatGPT account, then DeepSeek (your own API key) at the handoff point.
+  Subscriptions: the paid plans you already have, in parallel on your own machines.
+  Both were tested on 4 November 2026 on the maintainer's M4 Mac: Codex on a free account ran,
+  and Claude Code and Codex threads continued on DeepSeek with their context. The Claude limit in
+  that handoff test was triggered with the app's test switch.
+  Never claim a Claude Code to Codex handoff (not retested), several accounts of one provider,
+  or one free account per machine. The hero diagram (FlowStage) is an illustration, not a capture.
 */
 
 const SITE = 'https://spec-weave.com';
@@ -30,19 +28,6 @@ const PAGE_URL = `${SITE}/code/`;
 const TITLE = 'OpenAI Codex, free: SpecWithCode (Spec with Code) on your own computers, never stuck on a limit';
 const DESCRIPTION = 'SpecWithCode (Spec with Code): Codex on a free ChatGPT account. At a limit, DeepSeek picks up the same chat. Free, source available. macOS, Windows, Linux.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
-
-const HANDOFF = {
-  src: '/img/studio/handoff-claude-deepseek-20261104.webp',
-  w: 752,
-  h: 562,
-  alt: 'Actual SpecWithCode chat: "Claude Code limit reached, continued on DeepSeek Harness". Asked for the code word given before the switch, DeepSeek answers PELICAN-42.',
-};
-const CODEX_FREE = {
-  src: '/img/studio/codex-free-chatgpt-20261104.webp',
-  w: 752,
-  h: 278,
-  alt: 'Actual SpecWithCode chat on GPT-6 Luna through Codex signed in with a free ChatGPT account: it created hello.txt, one changed file.',
-};
 
 type Os = 'mac' | 'windows' | 'linux';
 const DOWNLOADS: {os: Os; label: string; note: string; url: string}[] = [
@@ -108,16 +93,12 @@ function HeroDownload() {
   </div>;
 }
 
-function Capture({shot, caption, className, eager}: {shot: typeof HANDOFF; caption: React.ReactNode; className?: string; eager?: boolean}) {
-  const src = useBaseUrl(shot.src);
-  return <figure className={clsx(styles.capture, className)}>
-    <div className={styles.window}>
-      <div className={styles.windowBar} aria-hidden="true"><span /><span /><span /></div>
-      <img src={src} width={shot.w} height={shot.h} alt={shot.alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
-    </div>
-    <figcaption>{caption}</figcaption>
-  </figure>;
-}
+const SUBS: {icon: typeof Layers; title: string; body: React.ReactNode}[] = [
+  {icon: Users, title: 'Every plan working at once', body: <>A coordinator splits one goal into threads and runs them on Claude Code, Codex and others in parallel, each on its own plan.</>},
+  {icon: Network, title: 'Every machine you own', body: <>Each Mac, Windows PC or Linux server adds the limits of the plans signed in on it. One account per provider on each machine.</>},
+  {icon: Gauge, title: 'Hand off at 98%, or where you choose', body: <>Set the point from 50% to 100% per project. The thread moves on with its context before the provider refuses work.</>},
+  {icon: GitMerge, title: 'Usage for every account', body: <>Usage › Limits shows each account, the machine it is signed in on, and what is left in every session and weekly window.</>},
+];
 
 const MORE: {id: string; icon: typeof Layers; title: string; body: React.ReactNode; to: string; link: string}[] = [
   {id: 'harnesses', icon: Layers, title: 'Each agent in its own harness', body: <>Claude Code, Codex, GitHub Copilot, Cursor, OpenCode and more run the way their vendors ship them, on your own sign-ins.</>, to: '/docs/studio/harnesses/', link: 'Harnesses and models'},
@@ -169,8 +150,7 @@ const SPECWITHCODE_LD = {
       codeRepository: release.repoUrl,
       sameAs: [release.repoUrl],
       isAccessibleForFree: true,
-      image: `${SITE}${HANDOFF.src}`,
-      screenshot: `${SITE}${HANDOFF.src}`,
+      image: OG_IMAGE,
       offers: {'@type': 'Offer', price: '0', priceCurrency: 'USD'},
       author: {
         '@type': 'Person',
@@ -189,6 +169,8 @@ const SPECWITHCODE_LD = {
 };
 
 export default function Code() {
+  const [flow, setFlow] = useState<Flow>('free');
+  useEffect(() => { if (window.location.hash === '#subscriptions') setFlow('subs'); }, []);
   const icon28 = useBaseUrl('/img/studio/specwithcode-icon.png');
   const providerBase = useBaseUrl('/img/studio/providers/');
   const logo = (file: string) => `${providerBase}${file}.svg`;
@@ -198,6 +180,7 @@ export default function Code() {
   for (const m of MORE) brokenLinks.collectAnchor(m.id);
   brokenLinks.collectAnchor('start');
   brokenLinks.collectAnchor('questions');
+  brokenLinks.collectAnchor('subscriptions');
 
   return <Layout title={TITLE} description={DESCRIPTION}>
     <Head>
@@ -215,8 +198,8 @@ export default function Code() {
     </Head>
     <main className={clsx('wv-root', styles.page)}>
 
-      {/* ---------- Hero: the hook, the proof, one download ---------- */}
-      <header className={styles.hero}>
+      {/* ---------- Hero: two flows, one download ---------- */}
+      <header className={clsx(styles.hero, flow === 'subs' && styles.heroSubs)}>
         <div className={clsx(styles.shell, styles.heroGrid)}>
           <div className={styles.heroCopy}>
             <p className={styles.product}>
@@ -224,18 +207,19 @@ export default function Code() {
               <span className={styles.productName}>SpecWithCode</span>
               <span className={styles.badge}>Free · source available</span>
             </p>
-            <h1><span className={styles.h1Top}><img className={styles.h1Mark} src={marks.openai} alt="" width="48" height="48" />OpenAI Codex.</span> <em>Free.</em></h1>
-            <p className={styles.lead}>Sign in with a free ChatGPT account: no card, no Codex API key. When it hits a limit, DeepSeek picks up the same chat and keeps coding.</p>
+            {flow === 'free'
+              ? <>
+                <h1><span className={styles.h1Top}><img className={styles.h1Mark} src={marks.openai} alt="" width="48" height="48" />OpenAI Codex.</span> <em>Free.</em></h1>
+                <p className={styles.lead}>Sign in with a free ChatGPT account: no card, no Codex API key. When it nears its limit, DeepSeek picks up the same thread and keeps coding.</p>
+              </>
+              : <>
+                <h1>Your AI plans. <em>Used to the last token.</em></h1>
+                <p className={styles.lead}>Claude Max, ChatGPT Pro and the rest work side by side on your Mac, PC and Linux machines. At 98% a thread hands off with its context instead of stopping.</p>
+              </>}
             <HeroDownload />
           </div>
           <div className={styles.heroMedia}>
-            <span className={styles.zero} aria-hidden="true">$0</span>
-            <Capture
-              shot={CODEX_FREE}
-              eager
-              className={styles.heroShot}
-              caption={<><strong>Real run, 4 November 2026:</strong> GPT-6 Luna on a free ChatGPT account created a file in 8.6 seconds.</>}
-            />
+            <FlowStage flow={flow} onFlow={setFlow} />
           </div>
         </div>
       </header>
@@ -255,22 +239,25 @@ export default function Code() {
         </table>
       </section>
 
-      {/* ---------- The handoff, shown ---------- */}
-      <section id="handoff" className={clsx(styles.shell, styles.section, styles.handoff)} aria-labelledby="handoff-title">
-        <div className={styles.handoffCopy}>
-          <h2 id="handoff-title"><img src={marks.claude} alt="" width="28" height="28" />Limit hit. <img src={marks.deepseek} alt="" width="28" height="28" />DeepSeek takes over.</h2>
-          <p>Same chat, same context. Asked for the code word given before the switch, DeepSeek still knew it.</p>
-          <ul className={styles.proof}>
-            <li><Check size={16} strokeWidth={2} aria-hidden="true" />Works on a free ChatGPT account</li>
-            <li><Check size={16} strokeWidth={2} aria-hidden="true" />Keeps the context when it switches</li>
-            <li><Check size={16} strokeWidth={2} aria-hidden="true" />Mac, Windows and Linux</li>
-          </ul>
+      {/* ---------- For people on paid plans ---------- */}
+      <section id="subscriptions" className={clsx(styles.shell, styles.section)} aria-labelledby="subs-title">
+        <div className={styles.sectionHead}>
+          <h2 id="subs-title">Paying $200 a month? Use all of it.</h2>
+          <p>SpecWithCode runs each agent on the plan you already pay for, across every machine you sign in, and keeps going when one plan runs low.</p>
         </div>
-        <Capture
-          shot={HANDOFF}
-          className={styles.handoffShot}
-          caption={<><strong>Real capture, 4 November 2026.</strong> The Claude limit here was triggered with a test switch; the handoff and the remembered context are real.</>}
-        />
+        <ul className={styles.more}>
+          {SUBS.map(({icon: Icon, title, body}) => <li key={title} className={styles.moreCard}>
+            <Icon size={20} strokeWidth={1.5} aria-hidden="true" />
+            <h3>{title}</h3>
+            <p>{body}</p>
+          </li>)}
+        </ul>
+        <ul className={styles.alsoMarks} aria-label="Plans shown here">
+          <li><img src={marks.claude} alt="" width="20" height="20" />Claude Max and Pro</li>
+          <li><img className={styles.darkPlate} src={marks.openai} alt="" width="20" height="20" />ChatGPT Pro and Plus</li>
+          <li><img className={styles.darkPlate} src={marks.copilot} alt="" width="20" height="20" />GitHub Copilot</li>
+          <li><img src={marks.deepseek} alt="" width="20" height="20" />DeepSeek as the fallback</li>
+        </ul>
       </section>
 
       {/* ---------- Three steps ---------- */}

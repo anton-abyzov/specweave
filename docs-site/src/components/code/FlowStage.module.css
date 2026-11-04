@@ -1,0 +1,73 @@
+/* Hero diagram for /code. A light panel on the warm hero; Weave tokens inside. */
+.stage {
+  position: relative;
+  min-width: 0;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #241523;
+  box-shadow: 0 30px 60px -30px rgba(42, 15, 61, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.tabs, .threshold { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; background: #efedf2; }
+.tabs button, .threshold button {
+  border: 0; border-radius: 999px; background: transparent; color: #675d69;
+  font: 600 14px/20px var(--wv-font-sans); padding: 6px 14px; cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.tabs button.tabOn { background: #241523; color: #fff; }
+.tabTag { margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #ffe600; color: #241523; font-size: 12px; }
+.threshold > span { padding: 0 6px 0 10px; color: #675d69; font-size: 13px; }
+.threshold button { padding: 4px 10px; font-size: 13px; }
+.threshold button.thOn { background: #fff; color: #241523; box-shadow: 0 1px 2px rgba(36, 21, 35, .15); }
+.tabs button:focus-visible, .threshold button:focus-visible { outline: 2px solid #6d4fb5; outline-offset: 2px; }
+
+.coordinator { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; padding: 8px 12px; border-radius: 10px; background: #ece6f8; color: #4a3678; font-weight: 600; font-size: 13px; }
+
+.machines { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 14px; }
+.machines.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.machine { min-width: 0; padding: 12px; border: 1px solid #dedae5; border-radius: 14px; background: #fff; }
+.machineHead { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font-weight: 700; font-size: 13px; }
+.task { margin-left: auto; padding: 1px 8px; border-radius: 999px; background: #f4f2f6; color: #675d69; font-weight: 500; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+.lane { padding: 10px; border-radius: 10px; border: 1px solid transparent; transition: background .3s, border-color .3s, opacity .3s; }
+.lane.working { background: #faf8fd; border-color: #d9cff2; }
+.lane.done { opacity: .62; }
+.lane.idle { opacity: .45; }
+.laneHead { display: flex; align-items: center; gap: 8px; }
+.mark { flex: none; width: 22px; height: 22px; padding: 3px; border-radius: 6px; background: #f4f2f6; box-sizing: content-box; }
+.darkPlate { background: #241523; }
+.laneName { display: flex; flex-direction: column; font-weight: 700; line-height: 18px; min-width: 0; }
+.laneName small { font-weight: 500; color: #675d69; font-size: 12px; line-height: 16px; }
+.pct { margin-left: auto; font: 700 15px/1 var(--wv-font-mono); font-variant-numeric: tabular-nums; }
+.done .pct { color: #b4232c; }
+.meter { height: 6px; margin-top: 8px; border-radius: 999px; background: #ebe8ef; overflow: hidden; }
+.meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6d4fb5, #d0461f); }
+.idle .meter span, .working:not(.done) .meter span { transition: width .12s linear; }
+
+.steps { display: grid; gap: 2px; margin: 8px 0 0; padding: 0; list-style: none; font: 12px/18px var(--wv-font-mono); color: #8c8399; }
+.steps li { opacity: .25; transform: translateY(3px); transition: opacity .35s, transform .35s; }
+.steps li::before { content: "› "; }
+.steps li.stepOn { opacity: 1; transform: none; color: #241523; }
+
+.handoff { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; }
+.handoffLine { position: relative; width: 2px; height: 22px; background: repeating-linear-gradient(#cfc8da 0 4px, transparent 4px 8px); }
+.packet { position: absolute; left: 0; top: 0; width: 10px; height: 10px; margin-left: -4px; border-radius: 50%; background: #ffe600; box-shadow: 0 0 0 3px rgba(255, 230, 0, .35); transition: opacity .2s; }
+.handoffLabel { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: #f4f2f6; color: #675d69; font-size: 12px; font-weight: 600; transition: background .3s, color .3s; }
+.handoffOn .handoffLabel { background: #241523; color: #ffe600; }
+
+.caption { margin: 14px 2px 2px !important; color: #4b4150; font-size: 14px; line-height: 21px; }
+.caption strong { color: #241523; }
+
+@media (max-width: 700px) {
+  .machines.two { grid-template-columns: minmax(0, 1fr); }
+  .stage { padding: 12px; }
+  .controls { justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .steps li, .lane, .meter span, .packet { transition: none; }
+}
