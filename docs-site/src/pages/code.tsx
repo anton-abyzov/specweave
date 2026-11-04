@@ -9,6 +9,7 @@ import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
 import {useSpecWithCodeInstaller} from '../data/specwithcodeInstaller';
 import FlowStage, {type Flow} from '../components/code/FlowStage';
+import {AnimatePresence, motion} from 'motion/react';
 import styles from '../components/code/FreeLanding.module.css';
 
 /*
@@ -207,7 +208,9 @@ export default function Code() {
               <span className={styles.productName}>SpecWithCode</span>
               <span className={styles.badge}>Free · source available</span>
             </p>
-            {flow === 'free'
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div key={flow} initial={{opacity: 0, y: 16}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -16}} transition={{duration: 0.3, ease: 'easeOut'}}>
+              {flow === 'free'
               ? <>
                 <h1><span className={styles.h1Top}><img className={styles.h1Mark} src={marks.openai} alt="" width="48" height="48" />OpenAI Codex.</span> <em>Free.</em></h1>
                 <p className={styles.lead}>Sign in with a free ChatGPT account: no card, no Codex API key. When Claude Code nears its limit, Codex picks up the same thread with its history, and DeepSeek takes more threads on your other machines.</p>
@@ -216,6 +219,8 @@ export default function Code() {
                 <h1>Your AI plans. <em>Used to the last token.</em></h1>
                 <p className={styles.lead}>Already pay for Claude Max, ChatGPT Pro or Copilot? SpecWithCode stays free and runs them side by side on your Mac, Windows PC and Linux server, from one chat. When a plan nears 98%, the next task goes to one with room.</p>
               </>}
+              </motion.div>
+            </AnimatePresence>
             <HeroDownload />
           </div>
           <div className={styles.heroMedia}>

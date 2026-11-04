@@ -119,27 +119,30 @@ function prefersReduced() {
 }
 
 /** Scene clock. Returns ms into the current scene; the server render rests on the end. */
-function useSceneClock(flow: Flow, playing: boolean, run: number, onEnd: () => void): number {
-  const [t, setT] = useState(SCENES[flow].length);
+const HOLD = 1800;
+
+/** Scene clock: ms into the scene, and ms including the hold before the next one. */
+function useSceneClock(flow: Flow, playing: boolean, run: number, onEnd: () => void): [number, number] {
+  const [[t, el], setT] = useState<[number, number]>([SCENES[flow].length, 0]);
   const endRef = useRef(onEnd);
   endRef.current = onEnd;
   useEffect(() => {
-    if (!playing || prefersReduced()) { setT(SCENES[flow].length); return; }
+    if (!playing || prefersReduced()) { setT([SCENES[flow].length, 0]); return; }
     const len = SCENES[flow].length;
     let raf = 0;
     let last = 0;
     const start = performance.now();
-    setT(0);
+    setT([0, 0]);
     const tick = (now: number) => {
       const e = now - start;
-      if (e >= len + 1600) { endRef.current(); return; }
-      if (now - last > 40) { last = now; setT(Math.min(e, len)); }
+      if (e >= len + HOLD) { endRef.current(); return; }
+      if (now - last > 40) { last = now; setT([Math.min(e, len), e]); }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [flow, playing, run]);
-  return t;
+  return [t, el];
 }
 
 function useOnScreen<T extends Element>(): [React.RefObject<T>, boolean] {
@@ -162,7 +165,8 @@ function usage(th: Thread, t: number, threshold: Threshold): number {
   return ease(e / 6500) * (th.rest ?? 50);
 }
 
-function ThreadCard({th, t, threshold, base, routed}: {th: Thread; t: number; threshold: Threshold; base: string; routed?: string}) {
+function ThreadCard({flow, th, t, threshold, base, routed}: {flow: Flow; th: Thread; t: number; threshold: Threshold; base: string; routed?: string}) {
+  const queued = t < th.start;
   const atLimit = !!th.fill && t - th.start >= th.fill;
   // At the handoff point the same card continues on the next agent: same thread, new agent.
   const next = atLimit && th.then ? th.then : undefined;
@@ -176,7 +180,7 @@ function ThreadCard({th, t, threshold, base, routed}: {th: Thread; t: number; th
   return <motion.li
     layout
     initial={{opacity: 0, y: 14, scale: 0.98}}
-    animate={{opacity: atLimit && !next ? 0.66 : 1, y: 0, scale: 1}}
+    animate={{opacity: queued ? 0.5 : atLimit && !next ? 0.66 : 1, y: 0, scale: 1}}
     exit={{opacity: 0}}
     transition={{type: 'spring', stiffness: 260, damping: 26}}
     className={clsx(styles.thread, atLimit && !next && styles.threadDone, next && styles.threadHanded)}
@@ -186,13 +190,13 @@ function ThreadCard({th, t, threshold, base, routed}: {th: Thread; t: number; th
         <motion.img key={who.mark} className={clsx(styles.mark, who.dark && styles.darkPlate)} src={`${base}${who.mark}.svg`} alt="" width="20" height="20"
           initial={{opacity: 0, rotateY: 90}} animate={{opacity: 1, rotateY: 0}} exit={{opacity: 0, rotateY: -90}} transition={{duration: 0.35}} />
       </AnimatePresence>
-      <span className={styles.threadTitle}>{th.task}<small>{next ? <><s>{th.agent}</s> → {next.agent} · {next.plan}</> : <>{th.agent} · {th.plan}</>}</small></span>
+      <motion.span key={flow + th.id} className={styles.threadTitle} initial={{opacity: 0, x: 12}} animate={{opacity: 1, x: 0}} transition={{type: 'spring', stiffness: 300, damping: 30}}>{th.task}<small>{next ? <><s>{th.agent}</s> → {next.agent} · {next.plan}</> : <>{th.agent} · {th.plan}</>}</small></motion.span>
       <span className={styles.pct}>{Math.round(u)}%</span>
     </div>
     <div className={styles.meter} aria-hidden="true"><span style={{width: `${u}%`}} /></div>
     <div className={styles.threadFoot}>
       <span className={styles.machineChip}><M.icon size={12} strokeWidth={2} aria-hidden="true" />{M.name}</span>
-      <span className={styles.step}>{atLimit && th.atLimit && (!next || since < 900) ? th.atLimit : steps[Math.max(0, shown - 1)]}</span>
+      <span className={styles.step}>{queued ? 'Queued' : atLimit && th.atLimit && (!next || since < 900) ? th.atLimit : steps[Math.max(0, shown - 1)]}</span>
     </div>
     <AnimatePresence>
       {next && since < 2600 && <motion.span key="handed" className={styles.handed} initial={{opacity: 0, y: 6}} animate={{opacity: 1, y: 0}} exit={{opacity: 0}}>
@@ -215,12 +219,14 @@ export default function FlowStage({flow, onFlow}: {flow: Flow; onFlow: (f: Flow)
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const [run, setRun] = useState(0);
-  const t = useSceneClock(flow, mounted && onScreen, run, () => {
+  const [t, elapsed] = useSceneClock(flow, mounted && onScreen, run, () => {
     if (auto) onFlow(flow === 'free' ? 'subs' : 'free');
     else setRun(r => r + 1); // replay the chosen scene
   });
   const scene = SCENES[flow];
   const threads = scene.threads.filter(th => t >= th.start);
+  const live = mounted && onScreen && !prefersReduced();
+  const sceneProgress = live ? Math.min(1, elapsed / (scene.length + HOLD)) : 1;
   const messages = scene.messages.filter(m => t >= m.at);
   const routed = scene.routed && t >= scene.routed.at ? scene.routed : undefined;
   const pick = (f: Flow) => { setAuto(false); setRun(r => r + 1); onFlow(f); };
@@ -229,9 +235,9 @@ export default function FlowStage({flow, onFlow}: {flow: Flow; onFlow: (f: Flow)
     <div ref={ref} className={styles.stage}>
       <div className={styles.controls}>
         <div className={styles.steps} role="tablist" aria-label="Choose a flow">
-          <button type="button" role="tab" aria-selected={flow === 'free'} className={clsx(flow === 'free' && styles.stepOn)} onClick={() => pick('free')}><span className={styles.stepNo}>1</span>Free ChatGPT account <span className={styles.tag}>$0</span></button>
+          <button type="button" role="tab" aria-selected={flow === 'free'} className={clsx(flow === 'free' && styles.stepOn)} onClick={() => pick('free')}><span className={styles.stepNo}>1</span>Free ChatGPT account <span className={styles.tag}>$0</span>{flow === 'free' && <span className={styles.tabProgress} style={{transform: `scaleX(${sceneProgress})`}} aria-hidden="true" />}</button>
           <ArrowRight className={styles.stepArrow} size={14} strokeWidth={2} aria-hidden="true" />
-          <button type="button" role="tab" aria-selected={flow === 'subs'} className={clsx(flow === 'subs' && styles.stepOn)} onClick={() => pick('subs')}><span className={styles.stepNo}>2</span>Plans you already pay for</button>
+          <button type="button" role="tab" aria-selected={flow === 'subs'} className={clsx(flow === 'subs' && styles.stepOn)} onClick={() => pick('subs')}><span className={styles.stepNo}>2</span>Plans you already pay for{flow === 'subs' && <span className={styles.tabProgress} style={{transform: `scaleX(${sceneProgress})`}} aria-hidden="true" />}</button>
         </div>
         <div className={styles.threshold} role="radiogroup" aria-label="Hand off at">
           <span>Hand off at</span>
@@ -245,24 +251,24 @@ export default function FlowStage({flow, onFlow}: {flow: Flow; onFlow: (f: Flow)
           <div className={styles.body}>
             <section className={styles.chat} aria-label="Coordinator chat">
               <p className={styles.paneTitle}>
-                <img className={clsx(styles.mark, scene.coordinator.dark && styles.darkPlate)} src={`${base}${scene.coordinator.mark}.svg`} alt="" width="16" height="16" />
-                Coordinator<small>{scene.coordinator.label}</small>
+                <AnimatePresence mode="popLayout" initial={false}><motion.img key={scene.coordinator.mark} className={clsx(styles.mark, scene.coordinator.dark && styles.darkPlate)} src={`${base}${scene.coordinator.mark}.svg`} alt="" width="16" height="16" initial={{opacity: 0, rotateY: 90}} animate={{opacity: 1, rotateY: 0}} exit={{opacity: 0, rotateY: -90}} transition={{duration: 0.35}} /></AnimatePresence>
+                Coordinator<AnimatePresence mode="popLayout" initial={false}><motion.small key={scene.coordinator.label} initial={{opacity: 0, y: 6}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -6}}>{scene.coordinator.label}</motion.small></AnimatePresence>
               </p>
               <p className={styles.oneWindow}>The one window you talk to</p>
               <ul className={styles.messages}>
-                <AnimatePresence initial={false}>
+                <AnimatePresence initial={false} mode="popLayout">
                   {messages.map(m => <motion.li key={flow + m.at} layout className={clsx(styles.msg, m.from === 'you' ? styles.you : styles.coord)}
-                    initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0}} transition={{duration: 0.35}}>
+                    initial={{opacity: 0, y: 10, scale: 0.96}} animate={{opacity: 1, y: 0, scale: 1}} exit={{opacity: 0, x: -24, transition: {duration: 0.25}}} transition={{type: 'spring', stiffness: 320, damping: 28}}>
                     {m.text(threshold)}
                   </motion.li>)}
                 </AnimatePresence>
               </ul>
             </section>
             <section className={styles.threads} aria-label="Worker threads">
-              <p className={styles.paneTitle}>Threads<small>{threads.length ? `${threads.length} started by the coordinator` : 'Starting…'}</small></p>
+              <p className={styles.paneTitle}>Threads<small>{`${threads.length} of ${scene.threads.length} running`}</small></p>
               <ul className={styles.threadList}>
                 <AnimatePresence initial={false}>
-                  {threads.map(th => <ThreadCard key={flow + th.id} th={th} t={t} threshold={threshold} base={base} routed={routed?.to === th.id ? routed.task : undefined} />)}
+                  {scene.threads.map((th, i) => <ThreadCard key={`slot${i}`} flow={flow} th={th} t={t} threshold={threshold} base={base} routed={routed?.to === th.id ? routed.task : undefined} />)}
                 </AnimatePresence>
               </ul>
             </section>
