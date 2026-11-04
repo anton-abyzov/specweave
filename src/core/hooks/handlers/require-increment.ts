@@ -112,7 +112,9 @@ export function requireIncrementMessage(mode: RequireIncrementMode): string {
   return (
     'Recommended, not required: this project plans changes as increments ' +
     `(planning.requireIncrement = remind), and this session has none yet. ${plan} ` +
-    'If this change does not need one, carry on, or record it with `specweave small-fix "<why>"`.'
+    'Skip it for one PR under about 300 changed lines, a follow-up fix, a UI tweak or an investigation: ' +
+    'carry on, or record it with `specweave small-fix "<why>"`. Plan multi-day work, cross-platform changes, ' +
+    'auth, payments, migrations and work another tool or machine will pick up; these win over size.'
   );
 }
 

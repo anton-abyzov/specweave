@@ -11,6 +11,7 @@ import HomeHero from '../components/home/HomeHero';
 import FamilyCards from '../components/home/FamilyCards';
 import Crop, { type CropSpec } from '../components/home/Crop';
 import BuiltWithItself from '../components/code/BuiltWithItself';
+import MeasuredPlanning from '../components/home/MeasuredPlanning';
 import { SPECWITHCODE_RELEASE as release } from '../data/specwithcodeRelease';
 
 /*
@@ -174,6 +175,9 @@ export default function Home() {
           <p className={h.caption}>Behaviour of specweave {CLI_VERSION}, released {CLI_DATE}.</p>
         </div>
       </section>
+
+      {/* 4b. When a spec pays off, measured on our own pull requests */}
+      <div className={clsx(h.section, h.lazy)}><MeasuredPlanning /></div>
 
       {/* 5. The desktop app and your machines */}
       <section className={clsx(h.section, h.app, h.lazy)} id="app" aria-labelledby="app-title">
