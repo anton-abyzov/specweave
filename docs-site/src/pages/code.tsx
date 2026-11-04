@@ -224,24 +224,14 @@ export default function Code() {
         </div>
       </header>
 
-      {/* ---------- Why this beats free-token APIs ---------- */}
+      {/* ---------- Sourced numbers ---------- */}
       <section className={clsx(styles.shell, styles.vsSection)} aria-labelledby="vs-title">
-        <h2 id="vs-title">Free AI tokens went viral. <em>This goes further.</em></h2>
+        <h2 id="vs-title">The Codex millions use. <em>Free on your account.</em></h2>
         <ul className={styles.stats}>
           <li><strong>5M+</strong><span>people use Codex every week</span><a href="https://www.constellationr.com/insights/news/openai-touts-broadening-codex-usage-5-million-weekly-active-users" rel="noopener">OpenAI, June 2026</a></li>
           <li><strong>$0</strong><span>Codex on a free ChatGPT account</span><a href="https://openai.com/index/introducing-the-codex-app/" rel="noopener">OpenAI, for a limited time</a></li>
-          <li><strong>7.4B</strong><span>free tokens a month, stacked from 34 providers</span><a href="https://github.com/tashfeenahmed/freellmapi" rel="noopener">freellmapi's estimate</a></li>
+          <li><strong>98%</strong><span>where SpecWithCode hands off by default, before the limit stops you</span><small>You can set it from 50% to 100%</small></li>
         </ul>
-        <table className={styles.vs}>
-          <thead>
-            <tr><th scope="col"><span className={styles.srOnly}>Feature</span></th><th scope="col">Free-token APIs</th><th scope="col">SpecWithCode</th></tr>
-          </thead>
-          <tbody>
-            <tr><th scope="row">Limit check</th><td>After a 429 error</td><td>Before it: switches at 98% by default</td></tr>
-            <tr><th scope="row">Handoff</th><td>Swap the model, lose the thread</td><td>Hands the agent off with its context</td></tr>
-            <tr><th scope="row">Other machines</th><td>No</td><td>Continue on another of your machines</td></tr>
-          </tbody>
-        </table>
       </section>
 
       {/* ---------- For people on paid plans ---------- */}
