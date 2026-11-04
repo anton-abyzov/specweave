@@ -57,8 +57,24 @@ th.sw{color:var(--v)}
 td .plogo{margin-right:10px;position:relative;top:-2px}
 th .plogo{margin-right:10px;position:relative;top:-2px}
 .url{position:absolute;left:0;right:0;text-align:center;font-weight:800;letter-spacing:-.04em}
+/* B-roll: a licensed photo behind every scene (video/shared/broll), dimmed under a scrim so text stays legible */
+#broll{position:absolute;inset:0;overflow:hidden}
+#broll img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;filter:saturate(.9) brightness(.8)}
+.scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(16,13,23,.86) 0%,rgba(16,13,23,.62) 38%,rgba(16,13,23,.66) 70%,rgba(16,13,23,.86) 100%),linear-gradient(90deg,rgba(41,28,71,.35),rgba(16,13,23,0) 60%)}
 </style></head>
 <body>
+<div id="broll">
+  <img id="br01" src="../../shared/broll/dev-night-desk.jpg" alt="">
+  <img id="br02" src="../../shared/broll/hourglass-laptop.jpg" alt="">
+  <img id="br03" src="../../shared/broll/laptop-coffee.jpg" alt="">
+  <img id="br04" src="../../shared/broll/developer-monitor.jpg" alt="">
+  <img id="br07" src="../../shared/broll/typing-laptop.jpg" alt="">
+  <img id="br08" src="../../shared/broll/network-switch.jpg" alt="">
+  <img id="br09" src="../../shared/broll/code-terminal.jpg" alt="">
+  <img id="br10" src="../../shared/broll/pc-tower.jpg" alt="">
+  <img id="br11" src="../../shared/broll/dev-night-desk-2.jpg" alt="">
+</div>
+<div class="scrim"></div>
 <div class="glow"></div>
 
 <!-- s01 0.0-4.4: one app per lab -->
@@ -293,6 +309,12 @@ SCENE('s11', 61.2, 6.8); A('#eIcon', [{ opacity: 0, scale: .85 }, { opacity: 1, 
 A('#eUrl', [{ opacity: 0, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0% 0 0)' }], 62.6, .8, { e: 'ease-out' }); IN('#eSub', 61.8);
 A('#s11', [{ opacity: 1 }, { opacity: 1 }], 67.65, .35, { f: 'forwards' });
 
+// B-roll: each photo fades in with its scene and drifts slowly (Ken Burns)
+const BR = (id, t0, dur, from = 1.0, to = 1.08, dx = -24) => {
+  A('#' + id, [{ opacity: 0 }, { opacity: 1 }], t0, .5, { e: 'linear' }); A('#' + id, [{ opacity: 1 }, { opacity: 0 }], t0 + dur - .45, .45, { e: 'linear', f: 'forwards' });
+  A('#' + id, [{ transform: `scale(${from}) translateX(0px)` }, { transform: `scale(${to}) translateX(${dx}px)` }], t0, dur, { e: 'linear' }); };
+BR('br01', 0, 4.6); BR('br02', 4.3, 4.4, 1.08, 1.0, 20); BR('br03', 8.5, 3.2); BR('br04', 11.5, 7.3, 1.06, 1.0, 16);
+BR('br07', 31.1, 5.4); BR('br08', 36.3, 8.4, 1.08, 1.0, 20); BR('br09', 44.5, 5.2); BR('br10', 49.5, 11.8, 1.0, 1.06, -16); BR('br11', 61.1, 6.9);
 window.seek = t => { for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; } };
 window.seek(0);
 </script>
