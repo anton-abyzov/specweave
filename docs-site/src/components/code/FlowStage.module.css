@@ -101,3 +101,16 @@
 .machineBusy .dot { animation: wvPulse 1.6s ease-in-out infinite; }
 @keyframes wvPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: .7; } }
 @media (prefers-reduced-motion: reduce) { .machineBusy .dot { animation: none; } .tabProgress { display: none; } }
+.short { display: none; }
+@media (max-width: 700px) {
+  /* Stacked panes: reserve the chat's full height so the threads below never jump as messages arrive. */
+  .messages { min-height: 200px; }
+}
+@media (max-width: 480px) {
+  .long { display: none; }
+  .short { display: inline; }
+  .steps button { padding: 6px 10px; }
+  .titlebar em { display: none; }
+  .messages { min-height: 236px; }
+}
+@media (max-width: 360px) { .messages { min-height: 280px; } }
