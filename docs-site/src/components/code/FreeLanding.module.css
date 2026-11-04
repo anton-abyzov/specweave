@@ -162,7 +162,7 @@
 .hero .lead { color: rgba(255,255,255,.92); max-width: 30em; font-size: 21px; line-height: 32px; }
 .hero .badge { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.35); color: #fff; }
 .heroMedia { position: relative; min-width: 0; }
-.zero { position: absolute; z-index: 2; top: -36px; right: -14px; display: grid; place-items: center; width: 132px; height: 132px; border-radius: 50%; background: #ffe600; color: #2a0f3d; border: 5px solid #2a0f3d; font: 850 50px/1 var(--wv-font-sans); letter-spacing: -0.04em; transform: rotate(-10deg); box-shadow: 0 12px 30px -10px rgba(42,15,61,.6); }
+.zero { position: absolute; z-index: 2; top: -44px; left: -40px; display: grid; place-items: center; width: 132px; height: 132px; border-radius: 50%; background: #ffe600; color: #2a0f3d; border: 5px solid #2a0f3d; font: 850 50px/1 var(--wv-font-sans); letter-spacing: -0.04em; transform: rotate(-10deg); box-shadow: 0 12px 30px -10px rgba(42,15,61,.6); }
 .hero .heroShot { transform: rotate(-1.5deg); }
 .hero .capture figcaption { color: rgba(255,255,255,.88); }
 .hero .capture figcaption strong { color: #fff; }
@@ -196,7 +196,7 @@
 
 @media (max-width: 1000px) {
   .handoff { grid-template-columns: minmax(0, 1fr); }
-  .zero { width: 96px; height: 96px; font-size: 36px; top: -28px; right: 0; border-width: 4px; }
+  .zero { width: 96px; height: 96px; font-size: 36px; top: -28px; left: auto; right: 0; border-width: 4px; }
 }
 @media (max-width: 600px) {
   .page a.bigButton { width: 100%; }
@@ -208,3 +208,11 @@
   :root:not([data-theme="light"]) .vs tbody td:last-child { color: #ff8a5c; }
 }
 :root[data-theme="dark"] .vs tbody td:last-child { color: #ff8a5c; }
+
+/* Subscriptions flow: a cooler field, still never black. */
+.heroSubs {
+  background:
+    radial-gradient(70% 80% at 100% 0%, rgba(120, 150, 255, .9), transparent 60%),
+    radial-gradient(70% 90% at 0% 100%, rgba(200, 60, 210, .85), transparent 65%),
+    linear-gradient(160deg, #4a3678 0%, #6d4fb5 55%, #a63aa8 100%);
+}

@@ -49,7 +49,8 @@ test.describe('/code hero', () => {
     const downloads = page.locator('#download');
     for (const os of ['Mac', 'Windows', 'Linux']) await expect(downloads.getByRole('link', { name: new RegExp(`Download for ${os}`) })).toBeVisible();
     await expect(page.locator('#start ol > li')).toHaveCount(3);
-    await expect(page.locator('#handoff img[src*="handoff-claude-deepseek"]')).toBeVisible();
+    await page.getByRole('tab', { name: 'With subscriptions' }).click();
+    await expect(page.locator('h1')).toHaveText(/Used to the last token/);
   });
 
   test('never scrolls sideways on a phone', async ({ page }) => {
