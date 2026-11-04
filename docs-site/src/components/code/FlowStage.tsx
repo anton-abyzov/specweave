@@ -235,9 +235,9 @@ export default function FlowStage({flow, onFlow}: {flow: Flow; onFlow: (f: Flow)
     <div ref={ref} className={styles.stage}>
       <div className={styles.controls}>
         <div className={styles.steps} role="tablist" aria-label="Choose a flow">
-          <button type="button" role="tab" aria-selected={flow === 'free'} className={clsx(flow === 'free' && styles.stepOn)} onClick={() => pick('free')}><span className={styles.stepNo}>1</span>Free ChatGPT account <span className={styles.tag}>$0</span>{flow === 'free' && <span className={styles.tabProgress} style={{transform: `scaleX(${sceneProgress})`}} aria-hidden="true" />}</button>
+          <button type="button" role="tab" aria-selected={flow === 'free'} className={clsx(flow === 'free' && styles.stepOn)} onClick={() => pick('free')}><span className={styles.stepNo}>1</span><span className={styles.long}>Free ChatGPT account</span><span className={styles.short}>Free</span> <span className={styles.tag}>$0</span>{flow === 'free' && <span className={styles.tabProgress} style={{transform: `scaleX(${sceneProgress})`}} aria-hidden="true" />}</button>
           <ArrowRight className={styles.stepArrow} size={14} strokeWidth={2} aria-hidden="true" />
-          <button type="button" role="tab" aria-selected={flow === 'subs'} className={clsx(flow === 'subs' && styles.stepOn)} onClick={() => pick('subs')}><span className={styles.stepNo}>2</span>Plans you already pay for{flow === 'subs' && <span className={styles.tabProgress} style={{transform: `scaleX(${sceneProgress})`}} aria-hidden="true" />}</button>
+          <button type="button" role="tab" aria-selected={flow === 'subs'} className={clsx(flow === 'subs' && styles.stepOn)} onClick={() => pick('subs')}><span className={styles.stepNo}>2</span><span className={styles.long}>Plans you already pay for</span><span className={styles.short}>Plans you pay for</span>{flow === 'subs' && <span className={styles.tabProgress} style={{transform: `scaleX(${sceneProgress})`}} aria-hidden="true" />}</button>
         </div>
         <div className={styles.threshold} role="radiogroup" aria-label="Hand off at">
           <span>Hand off at</span>
