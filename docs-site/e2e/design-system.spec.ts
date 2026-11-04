@@ -41,15 +41,13 @@ for (const theme of ['light', 'dark'] as const) {
 }
 
 test.describe('/code hero', () => {
-  test('explains the run in four steps', async ({ page }) => {
+  test('leads with the promise, three steps and a download for each system', async ({ page }) => {
     await page.goto('/code/');
-    const flow = page.locator('figure[aria-labelledby="hero-flow-caption"]');
-    await expect(flow).toBeVisible();
-    for (const step of ['You give the goal', 'The coordinator splits it', 'Agents work in parallel', 'You review and merge']) {
-      await expect(flow.getByText(step)).toBeVisible();
-    }
-    await expect(flow.locator('a[href="#real-run"]')).toHaveCount(1);
-    await expect(page.locator('#real-run')).toHaveCount(1);
+    await expect(page.locator('h1')).toHaveText(/never stuck on a limit/);
+    const hero = page.locator('header').filter({ has: page.locator('h1') });
+    for (const os of ['Mac', 'Windows', 'Linux']) await expect(hero.getByRole('link', { name: new RegExp(`Download for ${os}`) })).toBeVisible();
+    await expect(page.locator('#start ol > li')).toHaveCount(3);
+    await expect(hero.locator('img[src*="handoff-claude-deepseek"]')).toBeVisible();
   });
 
   test('never scrolls sideways on a phone', async ({ page }) => {
