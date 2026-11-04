@@ -1,6 +1,6 @@
 ---
 title: "Compare AI coding tools and spec frameworks"
-description: "SpecWeave and SpecWithCode compared with OpenSpec, GitHub Spec Kit, the BMAD Method, Kiro, OpenCode, T3 Code and BridgeMind, plus Claude Code vs Codex."
+description: "SpecWeave and SpecWithCode compared with OpenSpec, GitHub Spec Kit, the BMAD Method, Kiro, OpenCode and BridgeMind, plus Claude Code vs Codex."
 slug: /compare/
 keywords: [spec-driven development tools, openspec alternative, github spec kit alternative, bmad method alternative, claude code vs codex, agents.md vs claude.md]
 ---
@@ -30,7 +30,7 @@ How the agents themselves differ, and how to use more than one.
 
 Apps that run several coding agents for you.
 
-- [SpecWithCode vs OpenCode, T3 Code and cloud agents](/docs/compare/specwithcode-vs-opencode-t3-code/): what runs the agent, where code runs, subscriptions and price.
+- [SpecWithCode vs OpenCode and cloud agents](/docs/compare/specwithcode-vs-opencode/): what runs the agent, where code runs, subscriptions and price.
 - [SpecWithCode vs BridgeMind](/docs/compare/specwithcode-vs-bridgemind/): price, platforms and where the record of the work is kept.
 
 ## Switching guides
