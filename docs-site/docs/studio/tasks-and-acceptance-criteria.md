@@ -62,4 +62,4 @@ To split the work, ask the project's coordinator to *"run increment 0930 across 
 
 - [Plans and project routines](./plans-and-routines.md)
 - [Finish a thread](./finish-a-thread.md): what happens to the branch when the tasks are done
-- [SpecWithCode vs T3 Code and OpenCode](/docs/compare/specwithcode-vs-opencode-t3-code)
+- [SpecWithCode vs OpenCode and cloud agents](/docs/compare/specwithcode-vs-opencode)

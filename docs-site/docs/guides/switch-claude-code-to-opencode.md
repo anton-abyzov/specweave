@@ -86,5 +86,5 @@ If your repository has only a `CLAUDE.md`, OpenCode reads it as a fallback, so y
 - [Switch from Claude Code to Codex mid-task](/docs/guides/switch-claude-code-to-codex/)
 - [Switch from Claude Code to Cursor mid-task](/docs/guides/switch-claude-code-to-cursor/)
 - [Claude Code handoff: continue in any agent](/docs/guides/cross-tool-handoff/)
-- [SpecWithCode vs OpenCode and T3 Code](/docs/compare/specwithcode-vs-opencode-t3-code/)
+- [SpecWithCode vs OpenCode](/docs/compare/specwithcode-vs-opencode/)
 - [Compare AI coding tools](/docs/compare/)

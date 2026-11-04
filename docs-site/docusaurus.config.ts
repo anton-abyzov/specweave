@@ -282,6 +282,7 @@ const config: Config = {
           {from: ['/docs/guides/analytics-dashboard', '/docs/guides/dashboard/activity', '/docs/guides/dashboard/agents', '/docs/guides/dashboard/config', '/docs/guides/dashboard/errors', '/docs/guides/dashboard/hooks', '/docs/guides/dashboard/marketplace', '/docs/guides/dashboard/notifications', '/docs/guides/dashboard/plugins', '/docs/guides/dashboard/services'], to: '/docs/guides/dashboard'},
           {from: ['/docs/glossary', '/docs/glossary/index-by-category', '/docs/glossary/terms/intelligent-model-selection', '/docs/glossary/terms/project-detection'], to: '/docs/glossary/overview'},
           {from: ['/docs/api'], to: '/docs/reference'},
+          {from: ['/docs/compare/specwithcode-vs-opencode-t3-code'], to: '/docs/compare/specwithcode-vs-opencode'},
           // 404s reported by Search Console (2026-10-26).
           {from: ['/docs/commands/auto', '/docs/commands/auto-status', '/docs/commands/cancel-auto'], to: '/docs/guides/autonomous-execution'},
           {from: ['/docs/commands/pause', '/docs/commands/resume', '/docs/commands/abandon', '/docs/commands/status-management'], to: '/docs/guides/increment-status-reference'},

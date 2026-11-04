@@ -89,7 +89,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/spec-as-code', label: 'Spec as code and intent-first'},
         {type: 'doc', id: 'guides/claude-code-vs-codex', label: 'Claude Code vs Codex'},
         {type: 'doc', id: 'guides/agents-md-vs-claude-md', label: 'AGENTS.md vs CLAUDE.md'},
-        {type: 'doc', id: 'guides/specwithcode-vs-opencode-t3-code', label: 'SpecWithCode vs OpenCode, T3 Code'},
+        {type: 'doc', id: 'guides/specwithcode-vs-opencode', label: 'SpecWithCode vs OpenCode'},
         {type: 'doc', id: 'guides/specwithcode-vs-bridgemind', label: 'SpecWithCode vs BridgeMind'},
       ],
     },
