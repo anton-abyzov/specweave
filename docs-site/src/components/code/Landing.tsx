@@ -90,40 +90,30 @@ export function PolicyPicker() {
   </figure>;
 }
 
-/** Illustration: machines linked through SpecWithCode Connect, providers outside it. */
+/** Illustrative operations, not native captures. */
 export function MachinesDiagram() {
   return <figure className={clsx(styles.diagram, styles.reveal)}>
-    <svg viewBox="0 0 560 300" role="img" aria-label="Illustration: a main Mac running the coordinator and two workers, a Mac and a Linux machine, linked through SpecWithCode Connect; each machine talks to its model providers directly, outside that link.">
-      <rect className={styles.dNet} x="12" y="18" width="372" height="264" rx="16" />
-      <text className={styles.dCaption} x="30" y="44">SpecWithCode Connect</text>
-      <path className={clsx(styles.dLink, styles.draw)} d="M118 150 C 180 150, 190 92, 262 92" />
-      <path className={clsx(styles.dLink, styles.draw)} d="M118 150 C 180 150, 190 214, 262 214" />
-      <g className={styles.dNode}>
-        <rect x="32" y="112" width="120" height="76" rx="10" />
-        <text className={styles.dTitle} x="46" y="142">Main Mac</text>
-        <text className={styles.dSub} x="46" y="164">Coordinator</text>
-      </g>
-      <g className={styles.dNode}>
-        <rect x="244" y="60" width="124" height="64" rx="10" />
-        <text className={styles.dTitle} x="258" y="88">Mac worker</text>
-        <text className={styles.dSub} x="258" y="108">Own sign-ins</text>
-      </g>
-      <g className={styles.dNode}>
-        <rect x="244" y="182" width="124" height="64" rx="10" />
-        <text className={styles.dTitle} x="258" y="210">Linux worker</text>
-        <text className={styles.dSub} x="258" y="230">x64 or arm64</text>
-      </g>
-      <g className={styles.dCloud}>
-        <rect x="430" y="104" width="118" height="92" rx="12" />
-        <text className={styles.dTitle} x="446" y="138">Model</text>
-        <text className={styles.dTitle} x="446" y="158">providers</text>
-        <text className={styles.dSub} x="446" y="180">Outside</text>
-      </g>
-      <path className={clsx(styles.dOut, styles.draw)} d="M368 92 C 400 92, 404 130, 430 130" />
-      <path className={clsx(styles.dOut, styles.draw)} d="M368 214 C 400 214, 404 172, 430 172" />
-      <path className={clsx(styles.dOut, styles.draw)} d="M92 188 C 92 270, 400 280, 489 196" />
-    </svg>
-    <figcaption><span className={styles.illo}>Illustration</span> Machines reach each other through SpecWithCode Connect. Each one talks to its providers directly.</figcaption>
+    <div className={styles.machineOperations}>
+      <div className={styles.machineOperation}>
+        <h3>Remote control · work stays here</h3>
+        <div className={styles.machineRoute}>
+          <div><strong>Travel laptop</strong><span>Controller</span></div>
+          <span aria-hidden="true">→</span>
+          <div><strong>Office Mac</strong><span>Host · Runs on Office Mac</span></div>
+        </div>
+        <p>Control SpecWithCode through Connect. Agents and terminals keep running on Office Mac.</p>
+      </div>
+      <div className={styles.machineOperation}>
+        <h3>Move thread · review first</h3>
+        <div className={styles.machineRoute}>
+          <div><strong>Office Mac</strong><span>Source</span></div>
+          <span aria-hidden="true">→</span>
+          <div><strong>Linux workstation</strong><span>Destination · review readiness</span></div>
+        </div>
+        <p>Review the project folder and supported context, then continue on the destination.</p>
+      </div>
+    </div>
+    <figcaption><span className={styles.illo}>Illustration</span> Example machine names. Each machine talks to its providers with its own sign-ins.</figcaption>
   </figure>;
 }
 

@@ -727,3 +727,13 @@
 @media (prefers-reduced-motion: reduce), print {
   .reveal, .draw, .pipeline li, .pipeline ol::before, .policyThumb, .handoffLine i, .agentCursor, .flash { animation: none !important; }
 }
+
+/* Machine operations stay readable independently at narrow widths. */
+.machineOperations { display: grid; gap: 20px; min-width: 0; }
+.machineOperation { border: 1px solid var(--wv-line, #777); border-radius: 12px; padding: 20px; min-width: 0; }
+.machineOperation h3 { font-size: 18px; line-height: 1.4; margin: 0 0 16px; }
+.machineOperation p { font-size: 14px; line-height: 1.6; margin: 16px 0 0; }
+.machineRoute { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.machineRoute > div { flex: 1 1 130px; min-width: 0; overflow-wrap: anywhere; }
+.machineRoute strong, .machineRoute div span { display: block; }
+.machineRoute div span { font-size: 13px; line-height: 1.5; margin-top: 5px; }
