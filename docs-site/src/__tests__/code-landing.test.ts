@@ -9,7 +9,12 @@ const read = (p: string) => fs.readFileSync(path.resolve(__dirname, '..', p), 'u
 describe('SpecWithCode landing page', () => {
   const page = read('pages/code.tsx');
   // Visible copy only: the header comment records test notes and is allowed to name what not to claim.
-  const copy = page.slice(page.indexOf('const SITE'));
+  const start = page.indexOf('const SITE');
+  const copy = page.slice(start);
+
+  it('finds the visible copy to check', () => {
+    expect(start).toBeGreaterThan(-1);
+  });
 
   it('never promises a fixed savings multiplier', () => {
     expect(copy).not.toMatch(/\b\d+\s*[x×]\s*(cheaper|less|savings?)/i);
@@ -38,6 +43,7 @@ describe('SpecWithCode landing page', () => {
 
   it('does not claim a Claude Code to Codex handoff, which is not yet retested', () => {
     expect(copy).not.toMatch(/Claude( Code)?[^.]{0,60}(continues|moves|hands?)[^.]{0,20}(on|to) Codex/i);
+    expect(copy).not.toMatch(/uses them first/);
   });
 
   it('marks the handoff capture as a test-switch limit, not a real one', () => {
