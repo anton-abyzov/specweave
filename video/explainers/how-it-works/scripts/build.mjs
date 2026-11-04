@@ -141,11 +141,11 @@ const icons = {
   stepChip("st2", a, b, "1", "Machines and subscriptions");
   const machines = [
     { id: "m4", name: "MacBook M4 Max", os: "macOS", vid: "px-macbook.mp4", x: 150,
-      keys: [{ p: "Claude", acct: "EasyChamp admin", c: "c-claude", n: 0 }, { p: "Codex", acct: "EasyChamp admin", c: "c-codex", n: 0 }] },
+      keys: [{ p: "Claude", acct: "EasyChamp admin", n: 0 }, { p: "Codex", acct: "EasyChamp admin", n: 0 }] },
     { id: "m1", name: "M1", os: "macOS", vid: "px-minipc.mp4", x: 760,
-      keys: [{ p: "Claude", acct: "Marketing", c: "c-claude", n: 1 }, { p: "Codex", acct: "Marketing", c: "c-codex", n: 1 }] },
+      keys: [{ p: "Claude", acct: "Marketing", n: 1 }, { p: "Codex", acct: "Marketing", n: 1 }] },
     { id: "lin", name: "Linux box", os: "Ubuntu", vid: "px-linux.mp4", x: 1370,
-      keys: [{ p: "Grok", acct: "", c: "c-grok" }, { p: "Copilot", acct: "", c: "c-copilot" }] },
+      keys: [{ p: "Grok", acct: "" }, { p: "Copilot", acct: "" }] },
   ];
   const TOP = 290;
   track++;

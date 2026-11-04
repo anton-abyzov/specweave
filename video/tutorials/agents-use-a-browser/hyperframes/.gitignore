@@ -5,5 +5,3 @@ snapshots/
 node_modules/
 AGENTS.md
 CLAUDE.md
-# Provider marks, copied from ../../shared/provider-logos by build-composition.mjs.
-assets/logos

@@ -291,5 +291,3 @@ docs-site/static/video/**/*.mp4
 docs-site/static/video/**/*.webm
 docs-site/static/video/**/*.mov
 
-# Provider logos copied in at build time from video/tutorials/shared/provider-logos
-/video/tutorials/*/hyperframes/assets/logos/
