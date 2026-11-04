@@ -17,6 +17,9 @@
       body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
       .clip { position: absolute; }
+      .plogo { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; border-radius: 26%; background: #141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align: middle; margin-right: 0.28em; }
+      .plogo img { width: 64%; height: 64%; object-fit: contain; display: block; }
+      .title .plogo { margin-right: 0.2em; vertical-align: -0.12em; }
       .footage { inset: 0; width: 100%; height: 100%; object-fit: cover; }
       .card, .termstage { inset: 0; background: var(--paper); }
       .card-inner { position: absolute; inset: 96px; }
@@ -60,10 +63,10 @@
       <section id="intro" class="clip card" data-start="0" data-duration="4" data-track-index="1">
         <div class="card-inner">
           <div class="eyebrow rise">SPECWITHCODE TUTORIAL 01</div>
-          <h1 class="title rise">Claude Code<span class="roman"> in SpecWithCode</span></h1>
+          <h1 class="title rise"><span class="plogo" style="width:110px;height:110px"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code<span class="roman"> in SpecWithCode</span></h1>
           <div class="thread" id="intro-thread"></div>
           <p class="subtitle rise">Plan, build and review one task. The plan stays in your repo.</p>
-          <div class="footer rise">spec-weave.com</div>
+          <div class="footer rise">specwithcode.com</div>
         </div>
       </section>
 
@@ -90,7 +93,7 @@
 
       <video id="v3" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="17.3" data-duration="4.7" data-media-start="8.89" data-playback-rate="0.75" data-track-index="0"></video>
 
-      <div id="chip-03-connect" class="clip chip step" data-start="10.5" data-duration="11.5" data-track-index="2"><span class="chip-inner" id="chipi-03-connect">Setup <span class="arrow">→</span> Continue <span class="arrow">→</span> Claude: Ready to code <span class="arrow">→</span> Continue</span></div>
+      <div id="chip-03-connect" class="clip chip step" data-start="10.5" data-duration="11.5" data-track-index="2"><span class="chip-inner" id="chipi-03-connect">Setup <span class="arrow">→</span> Continue <span class="arrow">→</span> <span class="plogo" style="width:32px;height:32px"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude: Ready to code <span class="arrow">→</span> Continue</span></div>
 
       <audio id="vo-03-connect" src="assets/media/03-connect.wav" data-start="10.7" data-duration="10.449" data-track-index="6" data-volume="1"></audio>
 
@@ -98,7 +101,7 @@
 
       <video id="v5" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="27.4" data-duration="5.6" data-media-start="19.44" data-playback-rate="1" data-track-index="0"></video>
 
-      <div id="chip-04-project-chat" class="clip chip step" data-start="22" data-duration="11" data-track-index="2"><span class="chip-inner" id="chipi-04-project-chat">+ <span class="arrow">→</span> Local folder <span class="arrow">→</span> <code>~/greet-app</code> · Claude Sonnet 5.5 · Full access</span></div>
+      <div id="chip-04-project-chat" class="clip chip step" data-start="22" data-duration="11" data-track-index="2"><span class="chip-inner" id="chipi-04-project-chat">+ <span class="arrow">→</span> Local folder <span class="arrow">→</span> <code>~/greet-app</code> · <span class="plogo" style="width:32px;height:32px"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude Sonnet 5.5 · Full access</span></div>
 
       <audio id="vo-04-project-chat" src="assets/media/04-project-chat.wav" data-start="22.2" data-duration="9.474" data-track-index="6" data-volume="1"></audio>
 
@@ -145,14 +148,14 @@
           <div class="eyebrow rise">SPECWITHCODE TUTORIAL 01</div>
           <div class="outro-l1 rise">Next: <code class="accent">$sw-done</code> · verify and close</div>
           <div class="thread" id="outro-thread"></div>
-          <div class="outro-l2 rise">SpecWithCode · free, early access · spec-weave.com/studio</div>
+          <div class="outro-l2 rise">SpecWithCode · free, early access · specwithcode.com</div>
           <div class="outro-l3 rise">All tutorials · spec-weave.com/tutorials</div>
         </div>
       </section>
 
       <audio id="vo-08-outro" src="assets/media/08-outro.wav" data-start="62.9" data-duration="2.926" data-track-index="6" data-volume="1"></audio>
 
-      <div id="cap-1" class="clip caption" data-start="0.2" data-duration="3.467" data-track-index="5"><span class="pill">Claude Code in SpecWithCode: plan, build, review.</span></div>
+      <div id="cap-1" class="clip caption" data-start="0.2" data-duration="3.467" data-track-index="5"><span class="pill"><span class="plogo" style="width:44px;height:44px"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code in SpecWithCode: plan, build, review.</span></div>
 
       <div id="cap-2" class="clip caption dark" data-start="4.2" data-duration="1.933" data-track-index="5"><span class="pill">In your repo, run <code>specweave init</code>.</span></div>
 
@@ -160,7 +163,7 @@
 
       <div id="cap-4" class="clip caption" data-start="10.7" data-duration="4.3" data-track-index="5"><span class="pill">Open SpecWithCode. In setup, keep this computer and click Continue.</span></div>
 
-      <div id="cap-5" class="clip caption" data-start="15" data-duration="2.367" data-track-index="5"><span class="pill">The Claude card should say Ready to code.</span></div>
+      <div id="cap-5" class="clip caption" data-start="15" data-duration="2.367" data-track-index="5"><span class="pill">The <span class="plogo" style="width:44px;height:44px"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude card should say Ready to code.</span></div>
 
       <div id="cap-6" class="clip caption" data-start="17.367" data-duration="3.9" data-track-index="5"><span class="pill">If it doesn't, run <code>claude auth login</code> in a terminal first.</span></div>
 
@@ -168,15 +171,15 @@
 
       <div id="cap-8" class="clip caption" data-start="26.433" data-duration="1.333" data-track-index="5"><span class="pill">A new chat opens.</span></div>
 
-      <div id="cap-9" class="clip caption" data-start="27.767" data-duration="4.133" data-track-index="5"><span class="pill">Pick Claude in the model picker, and set Full access for this demo.</span></div>
+      <div id="cap-9" class="clip caption" data-start="27.767" data-duration="4.133" data-track-index="5"><span class="pill">Pick <span class="plogo" style="width:44px;height:44px"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude in the model picker, and set Full access for this demo.</span></div>
 
       <div id="cap-10" class="clip caption" data-start="33.2" data-duration="4.167" data-track-index="5"><span class="pill">Type a dollar sign, pick <code>sw-increment</code>, and describe the change.</span></div>
 
-      <div id="cap-11" class="clip caption" data-start="37.367" data-duration="5.3" data-track-index="5"><span class="pill">Claude writes <code>spec.md</code>: acceptance criteria and a task with its files and test.</span></div>
+      <div id="cap-11" class="clip caption" data-start="37.367" data-duration="5.3" data-track-index="5"><span class="pill"><span class="plogo" style="width:44px;height:44px"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude writes <code>spec.md</code>: acceptance criteria and a task with its files and test.</span></div>
 
       <div id="cap-12" class="clip caption" data-start="44.2" data-duration="1.7" data-track-index="5" style="bottom:214px"><span class="pill">Then send <code>sw-do</code>.</span></div>
 
-      <div id="cap-13" class="clip caption" data-start="45.9" data-duration="3.933" data-track-index="5" style="bottom:214px"><span class="pill">Claude claims the task, changes the code, and runs the test.</span></div>
+      <div id="cap-13" class="clip caption" data-start="45.9" data-duration="3.933" data-track-index="5" style="bottom:214px"><span class="pill"><span class="plogo" style="width:44px;height:44px"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude claims the task, changes the code, and runs the test.</span></div>
 
       <div id="cap-14" class="clip caption" data-start="49.833" data-duration="3.3" data-track-index="5"><span class="pill">The task is marked done only when the test passes.</span></div>
 

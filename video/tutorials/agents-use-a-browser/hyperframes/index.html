@@ -58,6 +58,8 @@
       .caption { left: 0; right: 0; bottom: 30px; z-index: 20; text-align: center; }
       .caption .pill { display: inline-block; white-space: nowrap; background: rgba(255, 255, 255, 0.96); border: 1px solid var(--line); color: var(--ink);
         padding: 10px 26px; border-radius: 8px; font: 600 38px/1.28 var(--sans); }
+      .plogo { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; border-radius: 26%; background: #141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align: middle; }
+      .plogo img { width: 64%; height: 64%; object-fit: contain; display: block; }
       .caption code { font: 500 0.86em var(--mono); background: var(--sunken); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
     </style>
   </head>
@@ -120,7 +122,7 @@
           <div class="wordmark rise">SpecWithCode</div>
           <h1 class="title rise">Let agents use a browser</h1>
           <div class="thread" id="intro-thread"></div>
-          <p class="subtitle rise">A real run of SpecWithCode 1.0.47 with Codex in a sample repo.</p>
+          <p class="subtitle rise">A real run of SpecWithCode 1.0.47 with <span class="plogo" style="width:42px;height:42px;margin-right:12px"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex in a sample repo.</p>
           <div class="footer rise">spec-weave.com/tutorials</div>
         </div>
       </section>

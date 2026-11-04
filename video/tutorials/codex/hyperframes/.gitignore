@@ -5,3 +5,5 @@ snapshots/
 node_modules/
 AGENTS.md
 CLAUDE.md
+# Provider logos are copied from ../shared/provider-logos by scripts/build-composition.mjs.
+assets/logos/

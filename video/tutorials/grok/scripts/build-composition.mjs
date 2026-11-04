@@ -5,7 +5,7 @@
 //
 // Usage: node build-composition.mjs <episodeDir> <wordsDir> <outVttBase>
 //   writes <episodeDir>/hyperframes/index.html, <outVttBase>.en.vtt, <outVttBase>.chapters.vtt
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, cpSync } from "node:fs";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 
@@ -18,6 +18,19 @@ const r3 = (t) => Number(t.toFixed(3));
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const codeHtml = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
 const plain = (s) => s.replace(/`/g, "");
+
+// Official provider marks from ../../shared/provider-logos, each on a dark badge before the provider's
+// name in on-screen text (titles, eyebrows, chips, captions). HyperFrames serves only the project
+// folder, so the SVGs are copied into hyperframes/assets/logos at build time.
+const LOGO_FILE = { "Claude Code": "claude", Claude: "claude", Codex: "openai", ChatGPT: "openai", OpenAI: "openai", Copilot: "copilot",
+  "Gemini CLI": "gemini", Gemini: "gemini", Grok: "grok", Antigravity: "antigravity", OpenCode: "opencode", Cursor: "cursor" };
+const logoDir = join(epDir, "hyperframes", "assets", "logos");
+mkdirSync(logoDir, { recursive: true });
+for (const n of new Set(Object.values(LOGO_FILE))) cpSync(join(epDir, "..", "shared", "provider-logos", `${n}.svg`), join(logoDir, `${n}.svg`));
+const plogo = (name, size) => `<span class="plogo" style="width:${size}px;height:${size}px"><img src="assets/logos/${LOGO_FILE[name]}.svg" alt="${name}"></span>`;
+const PROVIDER_RE = /(?<![\w@./=-])(Claude Code|Claude|Codex|Copilot|Gemini CLI|Gemini|Grok|Antigravity|OpenCode|Cursor|ChatGPT|OpenAI)(?![\w@/=-])/g;
+// Takes escaped HTML; text inside <code> spans and inside tags (ids, attributes) is left alone.
+const withLogos = (h, size) => h.split(/(<code[^>]*>.*?<\/code>|<[^>]+>)/).map((part, i) => (i % 2 ? part : part.replace(PROVIDER_RE, (m) => plogo(m, size) + m))).join("");
 
 // ---- beat timing -------------------------------------------------------------
 let t = 0;
@@ -107,11 +120,11 @@ for (const b of beats) {
     html.push(`
       <section id="intro" class="clip card" data-start="${b.start}" data-duration="${b.dur}" data-track-index="1">
         <div class="card-inner">
-          <div class="eyebrow rise">${esc(s.card.eyebrow.toUpperCase())}</div>
-          <h1 class="title rise">${esc(s.card.title.replace(" in SpecWithCode", ""))}<span class="roman"> in SpecWithCode</span></h1>
+          <div class="eyebrow rise">${withLogos(esc(s.card.eyebrow), 28)}</div>
+          <h1 class="title rise">${withLogos(esc(s.card.title.replace(" in SpecWithCode", "")), 110)}<span class="roman"> in SpecWithCode</span></h1>
           <div class="thread" id="intro-thread"></div>
           <p class="subtitle rise">${esc(s.card.subtitle)}</p>
-          <div class="footer rise">spec-weave.com</div>
+          <div class="footer rise">specwithcode.com</div>
         </div>
       </section>`);
     tweens.push(`tl.fromTo("#intro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, ${b.start});`);
@@ -171,7 +184,7 @@ for (const b of beats) {
     const chip = s.stepChip.length > 64 ? "…" + s.stepChip.slice(-63) : s.stepChip;
     const chipHtml = esc(chip).replace(/→/g, '<span class="arrow">→</span>').replace(/(specweave init \. --quick --adapter generic|specweave init \. --quick|grok --trust|~\/greet-app|ledger\.jsonl|codex login|\$)/g, "<code>$1</code>");
     html.push(`
-      <div id="chip-${b.id}" class="clip chip step" data-start="${b.start}" data-duration="${b.dur}" data-track-index="2"><span class="chip-inner" id="chipi-${b.id}">${chipHtml}</span></div>`);
+      <div id="chip-${b.id}" class="clip chip step" data-start="${b.start}" data-duration="${b.dur}" data-track-index="2"><span class="chip-inner" id="chipi-${b.id}">${withLogos(chipHtml, 26)}</span></div>`);
     tweens.push(`tl.fromTo("#chipi-${b.id}", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${r3(b.start + 0.2)});`);
   }
   html.push(`
@@ -180,7 +193,7 @@ for (const b of beats) {
 cues.forEach((c, i) => {
   const dark = c.beat.shot.kind === "TERM";
   html.push(`
-      <div id="cap-${i + 1}" class="clip caption${dark ? " dark" : ""}" data-start="${r3(c.start)}" data-duration="${r3(c.end - c.start)}" data-track-index="5"${c.lift ? ` style="bottom:${64 + c.lift}px"` : ""}><span class="pill">${codeHtml(c.text)}</span></div>`);
+      <div id="cap-${i + 1}" class="clip caption${dark ? " dark" : ""}" data-start="${r3(c.start)}" data-duration="${r3(c.end - c.start)}" data-track-index="5"${c.lift ? ` style="bottom:${64 + c.lift}px"` : ""}><span class="pill">${withLogos(codeHtml(c.text), 42)}</span></div>`);
 });
 
 const doc = `<!doctype html>
@@ -205,7 +218,13 @@ const doc = `<!doctype html>
       .footage { inset: 0; width: 100%; height: 100%; object-fit: cover; }
       .card, .termstage { inset: 0; background: var(--paper); }
       .card-inner { position: absolute; inset: 96px; }
-      .eyebrow { font: 500 24px/1.2 var(--sans); letter-spacing: 0.12em; color: var(--muted); }
+      .eyebrow { font: 500 24px/1.2 var(--sans); letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
+      .plogo { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; border-radius: 26%; background: #141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align: middle; margin-right: 0.3em; }
+      .plogo img { width: 64%; height: 64%; object-fit: contain; display: block; }
+      .eyebrow .plogo { margin: -4px 0.45em 0 0.1em; }
+      .title .plogo { margin: -12px 0.22em 0 0; }
+      .caption .plogo { margin: -6px 0.24em 0 0; }
+      .chip .plogo { margin: -3px 0.3em 0 0; }
       .title { margin: 236px 0 0; font: 800 120px/1.02 var(--display); letter-spacing: -0.03em; color: var(--ink); }
       .title .roman { font-weight: 500; color: var(--accent); }
       .thread { height: 6px; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent), #a88cf6); margin-top: 36px; }

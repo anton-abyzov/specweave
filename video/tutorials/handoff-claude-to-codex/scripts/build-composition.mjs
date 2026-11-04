@@ -9,9 +9,10 @@
 //   with its content up to visibleRows, then scrolls by whole rows inside a clip box (no half rows);
 // - every on-screen event is anchored to a beat, a caption chunk or a spoken word, never to a fixed time;
 // - caption cues start at the nearest pause found by ffmpeg silencedetect (-40 dB, 0.18 s), clamped to ±0.4 s.
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, cpSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { basename, resolve } from "node:path";
+import { basename, resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const [ep, outDir, slugArg] = process.argv.slice(2);
 if (!ep || !outDir) { console.error("usage: build-composition.mjs <episodeDir> <outDir> [slug]"); process.exit(2); }
@@ -23,6 +24,21 @@ const r3 = (n) => Math.round(n * 1000) / 1000;
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const keepTogether = (s) => s.replace(/Claude Code/g, "Claude Code");
 const codeMarks = (s) => keepTogether(esc(s)).replace(/`([^`]+)`/g, "<code>$1</code>");
+// Official provider marks (../../shared/provider-logos) on a dark badge, before every provider name the video
+// shows in its own text: titles, chips, tool labels, outro and captions. Never inside <code> (commands, file names,
+// tool ids such as codex@demo), never in attribute values. Sizes are in em of the surrounding text.
+const LOGO_OF = { "Claude Code": "claude", Claude: "claude", Codex: "openai", OpenAI: "openai", ChatGPT: "openai", Copilot: "copilot",
+  "Gemini CLI": "gemini", Gemini: "gemini", Grok: "grok", Antigravity: "antigravity", OpenCode: "opencode", Cursor: "cursor" };
+const LOGO_RE = /(?<![\w@=/.-])(Claude[ \u00a0]Code|Gemini[ \u00a0]CLI|Claude|Codex|OpenAI|ChatGPT|Copilot|Gemini|Grok|Antigravity|OpenCode|Cursor)(?![\w@=/-])/g;
+const usedLogos = new Set();
+const plogo = (name) => {
+  const file = LOGO_OF[name.replace(/\u00a0/g, " ")];
+  usedLogos.add(file);
+  return `<span class="plogo"><img src="assets/logos/${file}.svg" alt="${name.replace(/\u00a0/g, " ")}"></span>`;
+};
+// Takes HTML made by esc()/codeMarks() and puts the badge before provider names in its text nodes only.
+const withLogos = (html) => html.split(/(<code>[\s\S]*?<\/code>|<[^>]+>)/).map((part, i) => (i % 2 ? part
+  : part.replace(LOGO_RE, (m) => `<span class="pname">${plogo(m)}${m}</span>`))).join("");
 const COLS = edit.termCols, VIS = edit.visibleRows, ROW = 42, PROMPT = "greet-app % ";
 
 // ── Beat times ─────────────────────────────────────────────────────────────
@@ -175,7 +191,7 @@ for (const [screenId, screen] of Object.entries(edit.screens)) {
 
   els.push(`
       <section id="scr-${screenId}" class="clip stage" data-start="${s0}" data-duration="${r3(s1 - s0)}" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>${toolLabel[screen.tool]}<code>SPECWEAVE_TOOL=${screen.tool}</code></div>
+        <div class="tool-label">${withLogos(esc(toolLabel[screen.tool]))}<code>SPECWEAVE_TOOL=${screen.tool}</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-${screenId}" data-layout-allow-overflow><div class="rows" id="rows-${screenId}" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
 ${rows.map((r) => `          <div class="row ${r.kind}" id="${r.id}">${r.html}</div>`).join("\n")}
         </div></div></div></div>
@@ -196,7 +212,7 @@ ${rows.map((r) => `          <div class="row ${r.kind}" id="${r.id}">${r.html}</
 for (const b of beats) {
   els.push(`      <audio id="vo-${b.id}" src="assets/media/${b.id}.wav" data-start="${r3(b.start + b.voOffset)}" data-duration="${vo[b.id].duration}" data-track-index="6" data-volume="1"></audio>`);
   if (b.stepChip) {
-    els.push(`      <div id="chip-${b.id}" class="clip chip" data-start="${b.start}" data-duration="${b.dur}" data-track-index="2"><span class="chip-inner" id="chipi-${b.id}">${codeMarks(b.stepChip)}</span></div>`);
+    els.push(`      <div id="chip-${b.id}" class="clip chip" data-start="${b.start}" data-duration="${b.dur}" data-track-index="2"><span class="chip-inner" id="chipi-${b.id}">${withLogos(codeMarks(b.stepChip))}</span></div>`);
     tl.push(`tl.fromTo("#chipi-${b.id}", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${r3(b.start + 0.1)});`);
   }
   if (b.diffPanel) {
@@ -204,7 +220,7 @@ for (const b of beats) {
     if (to - from > 2.5) throw new Error(`diff panel in ${b.id} is longer than 2.5 s`);
     const lines = session.offCameraDiff.split("\n").slice(4);
     const body = lines.map((l) => `<div class="dl ${l.startsWith("+") ? "add" : l.startsWith("-") ? "del" : ""}">${esc(l) || "&#8203;"}</div>`).join("");
-    els.push(`      <div id="diff-${b.id}" class="clip diffpanel" data-layout-allow-overlap data-start="${from}" data-duration="${r3(to - from)}" data-track-index="3"><div class="diff-inner" id="diffi-${b.id}" data-layout-allow-overlap><div class="diff-head">${codeMarks(b.diffPanel.head)}</div><div class="diff-body">${body}</div></div></div>`);
+    els.push(`      <div id="diff-${b.id}" class="clip diffpanel" data-layout-allow-overlap data-start="${from}" data-duration="${r3(to - from)}" data-track-index="3"><div class="diff-inner" id="diffi-${b.id}" data-layout-allow-overlap><div class="diff-head">${withLogos(codeMarks(b.diffPanel.head))}</div><div class="diff-body">${body}</div></div></div>`);
     tl.push(`tl.fromTo("#diffi-${b.id}", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${from});`);
     tl.push(`tl.to("#diffi-${b.id}", { opacity: 0, duration: 0.2, ease: "none" }, ${r3(to - 0.2)});`);
   }
@@ -216,9 +232,9 @@ els.push(`
       <section id="intro" class="clip card" data-start="${intro.start}" data-duration="${intro.dur}" data-track-index="1">
         <div class="card-inner">
           <div class="wordmark rise">SpecWeave</div>
-          <h1 class="title rise">${codeMarks(edit.title)}</h1>
+          <h1 class="title rise">${withLogos(codeMarks(edit.title))}</h1>
           <div class="thread" id="intro-thread"></div>
-          <p class="subtitle rise">${esc((edit.subtitle ?? "A real run of the SpecWeave {version} CLI in a sample repo.").replace("{version}", session.specweave))}</p>
+          <p class="subtitle rise">${withLogos(esc((edit.subtitle ?? "A real run of the SpecWeave {version} CLI in a sample repo.").replace("{version}", session.specweave)))}</p>
           <div class="footer rise">spec-weave.com/tutorials</div>
         </div>
       </section>`);
@@ -229,9 +245,9 @@ els.push(`
       <section id="outro" class="clip card" data-start="${outro.start}" data-duration="${outro.dur}" data-track-index="1">
         <div class="card-inner">
           <div class="wordmark rise">SpecWeave</div>
-          <div class="outro-l1 rise">${codeMarks(edit.outro.next)}</div>
+          <div class="outro-l1 rise">${withLogos(codeMarks(edit.outro.next))}</div>
           <div class="thread" id="outro-thread"></div>
-          <p class="outro-l2 rise">${esc(edit.outro.note)}</p>
+          <p class="outro-l2 rise">${withLogos(esc(edit.outro.note))}</p>
           <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
         </div>
       </section>`);
@@ -270,7 +286,7 @@ for (const c of caps) {
   if (plainLen > 84) console.warn(`cue longer than two 42-character lines: ${c.text}`);
 }
 caps.forEach((c, i) => {
-  els.push(`      <div id="cap-${i + 1}" class="clip caption" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="5"><span class="pill">${captionLines(c.text).map(codeMarks).join("<br>")}</span></div>`);
+  els.push(`      <div id="cap-${i + 1}" class="clip caption" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="5"><span class="pill">${captionLines(c.text).map((l) => withLogos(codeMarks(l))).join("<br>")}</span></div>`);
 });
 
 const html = `<!doctype html>
@@ -304,7 +320,10 @@ const html = `<!doctype html>
       .outro-l2 { margin: 44px 0 0; max-width: 1300px; font: 400 32px/1.45 var(--sans); color: var(--muted); }
       .tool-label { position: absolute; right: 140px; top: 60px; font: 600 28px/1.2 var(--sans); color: var(--ink); }
       .tool-label code { font: 400 22px var(--mono); color: var(--muted); background: var(--sunken); border-radius: 4px; padding: 3px 8px; margin-left: 14px; vertical-align: 2px; }
-      .tool-label .dot { display: inline-block; width: 12px; height: 12px; border-radius: 6px; background: var(--iris); margin-right: 12px; vertical-align: 3px; }
+      .plogo { display:inline-grid; place-items:center; flex:none; box-sizing:border-box; border-radius:26%; background:#141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align:middle; width:1.15em; height:1.15em; margin-right:0.28em; position:relative; top:-0.06em; }
+      .plogo img { width:64%; height:64%; object-fit:contain; display:block; }
+      .pname { white-space: nowrap; }
+      .title .plogo { width: 0.96em; height: 0.96em; margin-right: 0.2em; top: -0.04em; }
       .window { position: absolute; left: 140px; right: 140px; top: 136px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-window); padding: 18px; }
       .viewport { background: var(--sunken); border-radius: 8px; padding: 22px 30px; }
       .clipbox { height: ${ROW}px; overflow: hidden; margin: 0 -14px; padding: 0 14px; }
@@ -351,6 +370,10 @@ ${tl.map((l) => "      " + l).join("\n")}
 </html>
 `;
 writeFileSync(`${ep}/hyperframes/index.html`, html);
+// HyperFrames serves only the project folder, so the marks this video uses are copied in at build time.
+const logoSrc = resolve(dirname(fileURLToPath(import.meta.url)), "../../shared/provider-logos");
+mkdirSync(`${ep}/hyperframes/assets/logos`, { recursive: true });
+for (const f of usedLogos) cpSync(`${logoSrc}/${f}.svg`, `${ep}/hyperframes/assets/logos/${f}.svg`);
 
 // ── VTT files and timeline ───────────────────────────────────────────────
 mkdirSync(outDir, { recursive: true });

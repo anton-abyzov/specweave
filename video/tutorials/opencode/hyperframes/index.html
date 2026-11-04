@@ -17,6 +17,9 @@
       body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
       .clip { position: absolute; }
+      .plogo { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; border-radius: 26%; background: #141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align: middle; margin-right: 0.28em; }
+      .plogo img { width: 64%; height: 64%; object-fit: contain; display: block; }
+      .title .plogo { margin-right: 0.2em; vertical-align: -0.12em; }
       .footage { inset: 0; width: 100%; height: 100%; object-fit: cover; }
       .card, .termstage { inset: 0; background: var(--paper); }
       .card-inner { position: absolute; inset: 96px; }
@@ -61,10 +64,10 @@
       <section id="intro" class="clip card" data-start="0" data-duration="4" data-track-index="1">
         <div class="card-inner">
           <div class="eyebrow rise">SPECWITHCODE TUTORIAL 04</div>
-          <h1 class="title rise">OpenCode<span class="roman"> in SpecWithCode</span></h1>
+          <h1 class="title rise"><span class="plogo" style="width:110px;height:110px"><img src="assets/logos/opencode.svg" alt="OpenCode"></span>OpenCode<span class="roman"> in SpecWithCode</span></h1>
           <div class="thread" id="intro-thread"></div>
           <p class="subtitle rise">Plan, build and review one task. The plan stays in your repo.</p>
-          <div class="footer rise">spec-weave.com</div>
+          <div class="footer rise">specwithcode.com</div>
         </div>
       </section>
 
@@ -97,7 +100,7 @@
 
       <div id="blur-03-connect-0" class="clip blur-box" data-start="10.5" data-duration="5.4" data-track-index="7" style="left:500px;top:985px;width:1180px;height:95px"></div>
 
-      <div id="chip-03-connect" class="clip chip step" data-start="10.5" data-duration="15.7" data-track-index="2"><span class="chip-inner" id="chipi-03-connect">Settings <span class="arrow">→</span> Providers <span class="arrow">→</span> Add provider <span class="arrow">→</span> OpenCode <span class="arrow">→</span> Add instance</span></div>
+      <div id="chip-03-connect" class="clip chip step" data-start="10.5" data-duration="15.7" data-track-index="2"><span class="chip-inner" id="chipi-03-connect">Settings <span class="arrow">→</span> Providers <span class="arrow">→</span> Add provider <span class="arrow">→</span> <span class="plogo" style="width:32px;height:32px"><img src="assets/logos/opencode.svg" alt="OpenCode"></span>OpenCode <span class="arrow">→</span> Add instance</span></div>
 
       <audio id="vo-03-connect" src="assets/media/03-connect.wav" data-start="10.7" data-duration="14.071" data-track-index="6" data-volume="1"></audio>
 
@@ -154,40 +157,40 @@
           <div class="eyebrow rise">SPECWITHCODE TUTORIAL 04</div>
           <div class="outro-l1 rise">Next: <code class="accent">$sw-done</code> · verify and close</div>
           <div class="thread" id="outro-thread"></div>
-          <div class="outro-l2 rise">SpecWithCode · free, early access · spec-weave.com/studio</div>
+          <div class="outro-l2 rise">SpecWithCode · free, early access · specwithcode.com</div>
           <div class="outro-l3 rise">All tutorials · spec-weave.com/tutorials</div>
         </div>
       </section>
 
       <audio id="vo-08-outro" src="assets/media/08-outro.wav" data-start="67.1" data-duration="3.019" data-track-index="6" data-volume="1"></audio>
 
-      <div id="cap-1" class="clip caption" data-start="0.2" data-duration="2.867" data-track-index="5"><span class="pill">OpenCode in SpecWithCode: plan, build, review.</span></div>
+      <div id="cap-1" class="clip caption" data-start="0.2" data-duration="2.867" data-track-index="5"><span class="pill"><span class="plogo" style="width:44px;height:44px"><img src="assets/logos/opencode.svg" alt="OpenCode"></span>OpenCode in SpecWithCode: plan, build, review.</span></div>
 
       <div id="cap-2" class="clip caption dark" data-start="4.2" data-duration="1.667" data-track-index="5"><span class="pill">In your repo, run <code>specweave init</code>.</span></div>
 
       <div id="cap-3" class="clip caption dark" data-start="5.867" data-duration="4.167" data-track-index="5"><span class="pill">It adds <code>AGENTS.md</code> and eleven SpecWeave skills.</span></div>
 
-      <div id="cap-4" class="clip caption" data-start="10.7" data-duration="3.1" data-track-index="5"><span class="pill">Sign OpenCode in to a model provider first:</span></div>
+      <div id="cap-4" class="clip caption" data-start="10.7" data-duration="3.1" data-track-index="5"><span class="pill">Sign <span class="plogo" style="width:44px;height:44px"><img src="assets/logos/opencode.svg" alt="OpenCode"></span>OpenCode in to a model provider first:</span></div>
 
       <div id="cap-5" class="clip caption" data-start="13.8" data-duration="2.9" data-track-index="5"><span class="pill">run <code>opencode auth login</code> in a terminal.</span></div>
 
       <div id="cap-6" class="clip caption" data-start="16.7" data-duration="3.133" data-track-index="5"><span class="pill">Open SpecWithCode, then Settings, Providers.</span></div>
 
-      <div id="cap-7" class="clip caption" data-start="19.833" data-duration="5.033" data-track-index="5"><span class="pill">Click Add provider, pick OpenCode, click Next twice, then Add instance.</span></div>
+      <div id="cap-7" class="clip caption" data-start="19.833" data-duration="5.033" data-track-index="5"><span class="pill">Click Add provider, pick <span class="plogo" style="width:44px;height:44px"><img src="assets/logos/opencode.svg" alt="OpenCode"></span>OpenCode, click Next twice, then Add instance.</span></div>
 
       <div id="cap-8" class="clip caption" data-start="26.4" data-duration="4.667" data-track-index="5"><span class="pill">Add the repo: the plus next to Projects, Local folder, then its path.</span></div>
 
       <div id="cap-9" class="clip caption" data-start="31.067" data-duration="1.367" data-track-index="5"><span class="pill">A new chat opens.</span></div>
 
-      <div id="cap-10" class="clip caption" data-start="32.433" data-duration="4.133" data-track-index="5"><span class="pill">Pick OpenCode in the model picker, and set Full access for this demo.</span></div>
+      <div id="cap-10" class="clip caption" data-start="32.433" data-duration="4.133" data-track-index="5"><span class="pill">Pick <span class="plogo" style="width:44px;height:44px"><img src="assets/logos/opencode.svg" alt="OpenCode"></span>OpenCode in the model picker, and set Full access for this demo.</span></div>
 
       <div id="cap-11" class="clip caption" data-start="37.4" data-duration="4.1" data-track-index="5"><span class="pill">Type a dollar sign, pick <code>sw-increment</code>, and describe the change.</span></div>
 
-      <div id="cap-12" class="clip caption" data-start="41.5" data-duration="6" data-track-index="5"><span class="pill">OpenCode writes <code>spec.md</code>: acceptance criteria and a task with its files and test.</span></div>
+      <div id="cap-12" class="clip caption" data-start="41.5" data-duration="6" data-track-index="5"><span class="pill"><span class="plogo" style="width:44px;height:44px"><img src="assets/logos/opencode.svg" alt="OpenCode"></span>OpenCode writes <code>spec.md</code>: acceptance criteria and a task with its files and test.</span></div>
 
       <div id="cap-13" class="clip caption" data-start="48.4" data-duration="1.933" data-track-index="5" style="bottom:214px"><span class="pill">Then send <code>sw-do</code>.</span></div>
 
-      <div id="cap-14" class="clip caption" data-start="50.333" data-duration="3.7" data-track-index="5" style="bottom:214px"><span class="pill">OpenCode claims the task, changes the code, and runs the test.</span></div>
+      <div id="cap-14" class="clip caption" data-start="50.333" data-duration="3.7" data-track-index="5" style="bottom:214px"><span class="pill"><span class="plogo" style="width:44px;height:44px"><img src="assets/logos/opencode.svg" alt="OpenCode"></span>OpenCode claims the task, changes the code, and runs the test.</span></div>
 
       <div id="cap-15" class="clip caption" data-start="54.033" data-duration="3.5" data-track-index="5"><span class="pill">The task is marked done only when the test passes.</span></div>
 

@@ -16,7 +16,8 @@
 //   1.15x carry no badge; 1.15x–1.5x is refused as a hidden speed-up.
 // - `chip` on a shot sets the step label from that shot's first frame (or from `chipAt`, a source time).
 // - `note` on a shot ({text, from?, to?} in source seconds) shows a known-issue line under the window.
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, cpSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { basename, resolve } from "node:path";
 
@@ -28,6 +29,34 @@ const vo = Object.fromEntries(edit.beats.map((b) => [b.id, JSON.parse(readFileSy
 const r3 = (n) => Math.round(n * 1000) / 1000;
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const codeMarks = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+// Official provider marks (../../shared/provider-logos) on a dark badge before every provider name the composition
+// renders. Applied to finished HTML: only text outside tags and outside <code> spans changes, so ids, attributes,
+// file names and shell text (codex@demo, SPECWEAVE_TOOL=codex) stay as they are. Whole words, case-sensitive.
+const LOGO_OF = { "Claude Code": "claude", Claude: "claude", Codex: "openai", Copilot: "copilot", "Gemini CLI": "gemini", Gemini: "gemini", Grok: "grok", Antigravity: "antigravity", OpenCode: "opencode", Cursor: "cursor", ChatGPT: "openai", OpenAI: "openai" };
+const LOGO_RE = /\b(Claude[  ]Code|Claude|Codex|Copilot|Gemini[  ]CLI|Gemini|Grok|Antigravity|OpenCode|Cursor|ChatGPT|OpenAI)\b/g;
+const logosUsed = new Set();
+const logoBadge = (name, size) => {
+  const file = LOGO_OF[name.replace(/ /g, " ")];
+  logosUsed.add(file);
+  return `<span class="plogo" style="width:${size}px;height:${size}px"><img src="assets/logos/${file}.svg" alt="${name.replace(/ /g, " ")}"></span>`;
+};
+const logoize = (html, size) => {
+  let inCode = 0;
+  return html.split(/(<[^>]+>)/).map((part) => {
+    if (part.startsWith("<")) {
+      if (/^<code\b/i.test(part)) inCode++;
+      else if (/^<\/code>/i.test(part)) inCode = Math.max(0, inCode - 1);
+      return part;
+    }
+    if (inCode) return part;
+    return part.replace(LOGO_RE, (m) => `<span class="pname">${logoBadge(m, size)}${m}</span>`);
+  }).join("");
+};
+const copyLogos = (hfDir) => {
+  const src = fileURLToPath(new URL("../../shared/provider-logos/", import.meta.url));
+  mkdirSync(`${hfDir}/assets/logos`, { recursive: true });
+  for (const n of logosUsed) cpSync(`${src}${n}.svg`, `${hfDir}/assets/logos/${n}.svg`);
+};
 const W = 1920, H = 1080;
 const BOX = { w: 1280, h: 720, top: 112 };
 const BOX_LEFT = (W - BOX.w) / 2;
@@ -144,7 +173,7 @@ appBeats.forEach((b, bi) => {
       const ns = s.note.from !== undefined ? map(s.note.from) : shotStart;
       const ne = s.note.to !== undefined ? map(s.note.to) : r3(shotStart + shotDur);
       const nid = `note-${id}`;
-      els.push(`      <div id="${nid}" class="clip note" data-start="${ns}" data-duration="${r3(ne - ns)}" data-track-index="4"><span class="note-inner" id="${nid}-i"><b>Known issue in 1.0.45:</b> ${codeMarks(s.note.text)}</span></div>`);
+      els.push(`      <div id="${nid}" class="clip note" data-start="${ns}" data-duration="${r3(ne - ns)}" data-track-index="4"><span class="note-inner" id="${nid}-i"><b>Known issue in 1.0.45:</b> ${logoize(codeMarks(s.note.text), 30)}</span></div>`);
       tl.push(`tl.fromTo("#${nid}-i", { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25, ease: "power2.out" }, ${r3(ns + 0.05)});`);
     }
     timelineShots.push({ beat: b.id, shot: si, start: shotStart, dur: shotDur, window: { left: r3(left), top: r3(top), w: r3(ww), h: r3(wh) }, segments: s.segments });
@@ -152,7 +181,7 @@ appBeats.forEach((b, bi) => {
   if (chipText) chips.push({ text: chipText, start: chipStart, end: r3(b.start + b.dur) });
   chips.forEach((c, ci) => {
     const cid = `chip-${b.id}-${ci}`;
-    els.push(`      <div id="${cid}" class="clip chip" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="2"><span class="chip-inner" id="${cid}-i">${codeMarks(c.text)}</span></div>`);
+    els.push(`      <div id="${cid}" class="clip chip" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="2"><span class="chip-inner" id="${cid}-i">${logoize(codeMarks(c.text), 36)}</span></div>`);
     tl.push(`tl.fromTo("#${cid}-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${r3(c.start + 0.05)});`);
   });
   b.chips = chips;
@@ -174,10 +203,10 @@ els.push(`
       <section id="intro" class="clip card" data-start="${intro.start}" data-duration="${intro.dur}" data-track-index="1">
         <div class="card-inner">
           <div class="wordmark rise">SpecWithCode</div>
-          <h1 class="title rise">${codeMarks(edit.title)}</h1>
+          <h1 class="title rise">${logoize(codeMarks(edit.title), 104)}</h1>
           <div class="thread" id="intro-thread"></div>
-          <p class="subtitle rise">${esc(edit.subtitle)}</p>
-          <ol class="steps">${steps.map((s, i) => `<li class="step" id="step-${i}"><span class="num">${i + 1}</span>${codeMarks(s)}</li>`).join("")}</ol>
+          <p class="subtitle rise">${logoize(esc(edit.subtitle), 40)}</p>
+          <ol class="steps">${steps.map((s, i) => `<li class="step" id="step-${i}"><span class="num">${i + 1}</span>${logoize(codeMarks(s), 36)}</li>`).join("")}</ol>
           <div class="footer rise">spec-weave.com/tutorials</div>
         </div>
       </section>`);
@@ -191,9 +220,9 @@ els.push(`
       <section id="outro" class="clip card" data-start="${outro.start}" data-duration="${outro.dur}" data-track-index="1">
         <div class="card-inner">
           <div class="wordmark rise">SpecWithCode</div>
-          <div class="outro-l1 rise">${codeMarks(edit.outro.next)}</div>
+          <div class="outro-l1 rise">${logoize(codeMarks(edit.outro.next), 84)}</div>
           <div class="thread" id="outro-thread"></div>
-          <ul class="disclose">${notes.map((n, i) => `<li id="disc-${i}">${codeMarks(n)}</li>`).join("")}</ul>
+          <ul class="disclose">${notes.map((n, i) => `<li id="disc-${i}">${logoize(codeMarks(n), 36)}</li>`).join("")}</ul>
           <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
         </div>
       </section>`);
@@ -230,7 +259,7 @@ for (const c of caps) {
   if (d < 1 || d > 6) console.warn(`cue ${d.toFixed(2)} s outside 1–6 s: ${c.text}`);
 }
 caps.forEach((c, i) => {
-  els.push(`      <div id="cap-${i + 1}" class="clip caption" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="5"><span class="pill">${captionLines(c.text).map(codeMarks).join("<br>")}</span></div>`);
+  els.push(`      <div id="cap-${i + 1}" class="clip caption" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="5"><span class="pill">${captionLines(c.text).map((l) => logoize(codeMarks(l), 42)).join("<br>")}</span></div>`);
 });
 
 const html = `<!doctype html>
@@ -280,6 +309,9 @@ const html = `<!doctype html>
       .caption { left: 0; right: 0; bottom: 30px; z-index: 20; text-align: center; }
       .caption .pill { display: inline-block; white-space: nowrap; background: rgba(255, 255, 255, 0.96); border: 1px solid var(--line); color: var(--ink);
         padding: 10px 26px; border-radius: 8px; font: 600 38px/1.28 var(--sans); }
+      .plogo { display:inline-grid; place-items:center; flex:none; box-sizing:border-box; border-radius:26%; background:#141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align:middle; margin-right: 0.3em; }
+      .plogo img { width:64%; height:64%; object-fit:contain; display:block; }
+      .pname { white-space: nowrap; }
       .caption code { font: 500 0.86em var(--mono); background: var(--sunken); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
     </style>
   </head>
@@ -296,6 +328,7 @@ ${tl.map((l) => "      " + l).join("\n")}
 </html>
 `;
 writeFileSync(`${ep}/hyperframes/index.html`, html);
+copyLogos(`${ep}/hyperframes`);
 
 mkdirSync(outDir, { recursive: true });
 const ts = (s) => { const ms = Math.round(s * 1000); const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, sec = Math.floor(ms / 1000) % 60; return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}.${String(ms % 1000).padStart(3, "0")}`; };

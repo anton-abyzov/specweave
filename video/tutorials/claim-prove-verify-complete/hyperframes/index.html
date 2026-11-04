@@ -29,6 +29,9 @@
       .outro-l2 { margin: 44px 0 0; max-width: 1300px; font: 400 32px/1.45 var(--sans); color: var(--muted); }
       .tool-label { position: absolute; right: 140px; top: 60px; font: 600 28px/1.2 var(--sans); color: var(--ink); }
       .tool-label code { font: 400 22px var(--mono); color: var(--muted); background: var(--sunken); border-radius: 4px; padding: 3px 8px; margin-left: 14px; vertical-align: 2px; }
+      .plogo { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; width: 1.2em; height: 1.2em; border-radius: 26%; background: #141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align: middle; margin: -0.12em 0.3em -0.08em 0; }
+      .plogo img { width: 64%; height: 64%; object-fit: contain; display: block; }
+      .pname { white-space: nowrap; }
       .tool-label .dot { display: inline-block; width: 12px; height: 12px; border-radius: 6px; background: var(--iris); margin-right: 12px; vertical-align: 3px; }
       .window { position: absolute; left: 140px; right: 140px; top: 136px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-window); padding: 18px; }
       .viewport { background: var(--sunken); border-radius: 8px; padding: 22px 30px; }
@@ -57,7 +60,7 @@
     <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="90.14">
 
       <section id="scr-claim" class="clip stage" data-start="7.22" data-duration="24.02" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-claim" data-layout-allow-overflow><div class="rows" id="rows-claim" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r1"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row out" id="r2">Claimed T-01 as claude@demo</div>
@@ -74,7 +77,7 @@
       </section>
 
       <section id="scr-evidence" class="clip stage" data-start="31.24" data-duration="10.43" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-evidence" data-layout-allow-overflow><div class="rows" id="rows-evidence" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r12"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row out" id="r13">$ npm test</div>
@@ -93,7 +96,7 @@
       </section>
 
       <section id="scr-verify" class="clip stage" data-start="41.67" data-duration="24.46" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-verify" data-layout-allow-overflow><div class="rows" id="rows-verify" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r25"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row elide" id="r26">…</div>
@@ -112,7 +115,7 @@
       </section>
 
       <section id="scr-report" class="clip stage" data-start="66.13" data-duration="12.35" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-report" data-layout-allow-overflow><div class="rows" id="rows-report" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r38"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row out" id="r39"># Verify — 0001-personal-greeting</div>
@@ -136,7 +139,7 @@
       </section>
 
       <section id="scr-complete" class="clip stage" data-start="78.48" data-duration="5.95" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-complete" data-layout-allow-overflow><div class="rows" id="rows-complete" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r56"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row out" id="r57">&#8203;</div>
@@ -186,7 +189,7 @@
           <div class="wordmark rise">SpecWeave</div>
           <div class="outro-l1 rise">Next: hand off to another agent with <code>specweave handoff</code></div>
           <div class="thread" id="outro-thread"></div>
-          <p class="outro-l2 rise">Agent sessions are not shown. Each command ran in a terminal as Claude Code (SPECWEAVE_TOOL=claude), and every output is real. The change to src/greeting.js and its test were written off camera. The narration is an AI voice.</p>
+          <p class="outro-l2 rise">Agent sessions are not shown. Each command ran in a terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude Code</span> (SPECWEAVE_TOOL=claude), and every output is real. The change to src/greeting.js and its test were written off camera. The narration is an AI voice.</p>
           <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
         </div>
       </section>

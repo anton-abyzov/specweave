@@ -20,7 +20,13 @@
       .footage { inset: 0; width: 100%; height: 100%; object-fit: cover; }
       .card, .termstage { inset: 0; background: var(--paper); }
       .card-inner { position: absolute; inset: 96px; }
-      .eyebrow { font: 500 24px/1.2 var(--sans); letter-spacing: 0.12em; color: var(--muted); }
+      .eyebrow { font: 500 24px/1.2 var(--sans); letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
+      .plogo { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; border-radius: 26%; background: #141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align: middle; margin-right: 0.3em; }
+      .plogo img { width: 64%; height: 64%; object-fit: contain; display: block; }
+      .eyebrow .plogo { margin: -4px 0.45em 0 0.1em; }
+      .title .plogo { margin: -12px 0.22em 0 0; }
+      .caption .plogo { margin: -6px 0.24em 0 0; }
+      .chip .plogo { margin: -3px 0.3em 0 0; }
       .title { margin: 236px 0 0; font: 800 120px/1.02 var(--display); letter-spacing: -0.03em; color: var(--ink); }
       .title .roman { font-weight: 500; color: var(--accent); }
       .thread { height: 6px; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent), #a88cf6); margin-top: 36px; }
@@ -59,11 +65,11 @@
 
       <section id="intro" class="clip card" data-start="0" data-duration="6" data-track-index="1">
         <div class="card-inner">
-          <div class="eyebrow rise">SPECWITHCODE TUTORIAL · CODEX</div>
-          <h1 class="title rise">Codex<span class="roman"> in SpecWithCode</span></h1>
+          <div class="eyebrow rise">SpecWithCode tutorial · <span class="plogo" style="width:28px;height:28px"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</div>
+          <h1 class="title rise"><span class="plogo" style="width:110px;height:110px"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex<span class="roman"> in SpecWithCode</span></h1>
           <div class="thread" id="intro-thread"></div>
           <p class="subtitle rise">One task, planned, built and reviewed. The plan stays in your repo.</p>
-          <div class="footer rise">spec-weave.com</div>
+          <div class="footer rise">specwithcode.com</div>
         </div>
       </section>
 
@@ -92,7 +98,7 @@
 
       <video id="v4" class="clip footage" src="assets/media/take.mp4" muted playsinline data-start="26.5" data-duration="3.4" data-media-start="14.953" data-playback-rate="1" data-track-index="0"></video>
 
-      <div id="chip-03-connect-b" class="clip chip step" data-start="17.1" data-duration="12.8" data-track-index="2"><span class="chip-inner" id="chipi-03-connect-b">Main machine <span class="arrow">→</span> Continue <span class="arrow">→</span> Codex: Use existing CLI <span class="arrow">→</span> Ready</span></div>
+      <div id="chip-03-connect-b" class="clip chip step" data-start="17.1" data-duration="12.8" data-track-index="2"><span class="chip-inner" id="chipi-03-connect-b">Main machine <span class="arrow">→</span> Continue <span class="arrow">→</span> <span class="plogo" style="width:26px;height:26px"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex: Use existing CLI <span class="arrow">→</span> Ready</span></div>
 
       <audio id="vo-03-connect-b" src="assets/media/03-connect-b.wav" data-start="17.3" data-duration="12.24" data-track-index="6" data-volume="1"></audio>
 
@@ -151,14 +157,14 @@
           <div class="eyebrow rise">SPECWITHCODE TUTORIAL 02</div>
           <div class="outro-l1 rise">Increment <code class="accent">0001</code>: verified and closed</div>
           <div class="thread" id="outro-thread"></div>
-          <div class="outro-l2 rise">SpecWithCode · free, early access · spec-weave.com/code</div>
+          <div class="outro-l2 rise">SpecWithCode · free, early access · specwithcode.com</div>
           <div class="outro-l3 rise">All tutorials · spec-weave.com/tutorials</div>
         </div>
       </section>
 
       <audio id="vo-08-outro-b" src="assets/media/08-outro-b.wav" data-start="67.6" data-duration="6.24" data-track-index="6" data-volume="1"></audio>
 
-      <div id="cap-1" class="clip caption" data-start="0.2" data-duration="5.533" data-track-index="5"><span class="pill">Codex in SpecWithCode: one task, planned, built and reviewed.</span></div>
+      <div id="cap-1" class="clip caption" data-start="0.2" data-duration="5.533" data-track-index="5"><span class="pill"><span class="plogo" style="width:42px;height:42px"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex in SpecWithCode: one task, planned, built and reviewed.</span></div>
 
       <div id="cap-2" class="clip caption dark" data-start="6.2" data-duration="2.767" data-track-index="5"><span class="pill">In your repo, run <code>specweave init</code>.</span></div>
 
@@ -166,7 +172,7 @@
 
       <div id="cap-4" class="clip caption" data-start="17.3" data-duration="4.167" data-track-index="5"><span class="pill">Open SpecWithCode and set this Mac up as your main machine.</span></div>
 
-      <div id="cap-5" class="clip caption" data-start="21.467" data-duration="6" data-track-index="5"><span class="pill">On the Codex card, click Use existing CLI to reuse your Codex sign-in.</span></div>
+      <div id="cap-5" class="clip caption" data-start="21.467" data-duration="6" data-track-index="5"><span class="pill">On the <span class="plogo" style="width:42px;height:42px"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex card, click Use existing CLI to reuse your <span class="plogo" style="width:42px;height:42px"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex sign-in.</span></div>
 
       <div id="cap-6" class="clip caption" data-start="27.467" data-duration="2.167" data-track-index="5"><span class="pill">The card says Ready.</span></div>
 

@@ -7,3 +7,5 @@ AGENTS.md
 CLAUDE.md
 # Hold stills are re-extracted from the take by build-composition.mjs.
 assets/stills
+# Provider marks, copied from ../../shared/provider-logos by build-composition.mjs.
+assets/logos
