@@ -154,7 +154,7 @@ Total: 89 s.
 ### 09 Outro (1:25-1:29, MG)
 
 - **VO:** "Next, sw-done verifies and closes the increment."
-- **Card:** three lines: "Next: $sw-done · verify and close" / "SpecWithCode · spec-weave.com/studio" / "All tutorials · spec-weave.com/tutorials".
+- **Card:** three lines: "Next: $sw-done · verify and close" / "SpecWithCode · specwithcode.com" / "All tutorials · spec-weave.com/tutorials".
 - **Sources:**
   - `sw-done`: "every task done or skipped, specweave verify green, a fresh-context review, then specweave complete" (W:skills/sw-done/SKILL.md:2).
   - Free, early access; the public download opens with the first public release: W:docs-site/src/pages/studio.tsx:20,22,23.

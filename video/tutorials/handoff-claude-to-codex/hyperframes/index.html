@@ -29,7 +29,10 @@
       .outro-l2 { margin: 44px 0 0; max-width: 1300px; font: 400 32px/1.45 var(--sans); color: var(--muted); }
       .tool-label { position: absolute; right: 140px; top: 60px; font: 600 28px/1.2 var(--sans); color: var(--ink); }
       .tool-label code { font: 400 22px var(--mono); color: var(--muted); background: var(--sunken); border-radius: 4px; padding: 3px 8px; margin-left: 14px; vertical-align: 2px; }
-      .tool-label .dot { display: inline-block; width: 12px; height: 12px; border-radius: 6px; background: var(--iris); margin-right: 12px; vertical-align: 3px; }
+      .plogo { display:inline-grid; place-items:center; flex:none; box-sizing:border-box; border-radius:26%; background:#141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align:middle; width:1.15em; height:1.15em; margin-right:0.28em; position:relative; top:-0.06em; }
+      .plogo img { width:64%; height:64%; object-fit:contain; display:block; }
+      .pname { white-space: nowrap; }
+      .title .plogo { width: 0.96em; height: 0.96em; margin-right: 0.2em; top: -0.04em; }
       .window { position: absolute; left: 140px; right: 140px; top: 136px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-window); padding: 18px; }
       .viewport { background: var(--sunken); border-radius: 8px; padding: 22px 30px; }
       .clipbox { height: 42px; overflow: hidden; margin: 0 -14px; padding: 0 14px; }
@@ -57,7 +60,7 @@
     <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="78.18">
 
       <section id="scr-claude-1" class="clip stage" data-start="5.4" data-duration="23.98" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-1" data-layout-allow-overflow><div class="rows" id="rows-claude-1" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r1"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row out" id="r2">greet-app · Claude Opus 5.5 · 5-hour 95% · weekly 41% · handoff available</div>
@@ -75,7 +78,7 @@
       </section>
 
       <section id="scr-claude-2" class="clip stage" data-start="29.38" data-duration="11.15" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-2" data-layout-allow-overflow><div class="rows" id="rows-claude-2" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r13"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row out" id="r14"># Handoff — 0001-personal-greeting Personal greeting</div>
@@ -109,7 +112,7 @@
       </section>
 
       <section id="scr-codex" class="clip stage" data-start="40.53" data-duration="31.38" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Codex<code>SPECWEAVE_TOOL=codex</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</span><code>SPECWEAVE_TOOL=codex</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-codex" data-layout-allow-overflow><div class="rows" id="rows-codex" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r41"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row out" id="r42">Picking up handoff: 0001 Personal greeting · claude@demo · 1m ago · usage at 95% of the</div>
@@ -143,13 +146,13 @@
       </section>
       <audio id="vo-01-intro" src="assets/media/01-intro.wav" data-start="1.1" data-duration="4" data-track-index="6" data-volume="1"></audio>
       <audio id="vo-02-limit" src="assets/media/02-limit.wav" data-start="5.45" data-duration="13.68" data-track-index="6" data-volume="1"></audio>
-      <div id="chip-02-limit" class="clip chip" data-start="5.4" data-duration="13.83" data-track-index="2"><span class="chip-inner" id="chipi-02-limit">Claude Code at 95% of the 5-hour limit</span></div>
+      <div id="chip-02-limit" class="clip chip" data-start="5.4" data-duration="13.83" data-track-index="2"><span class="chip-inner" id="chipi-02-limit"><span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span> at 95% of the 5-hour limit</span></div>
       <audio id="vo-03-handoff" src="assets/media/03-handoff.wav" data-start="19.28" data-duration="10" data-track-index="6" data-volume="1"></audio>
       <div id="chip-03-handoff" class="clip chip" data-start="19.23" data-duration="10.15" data-track-index="2"><span class="chip-inner" id="chipi-03-handoff">Hand off: <code>specweave handoff --reason</code></span></div>
       <audio id="vo-04-doc" src="assets/media/04-doc.wav" data-start="29.43" data-duration="10.8" data-track-index="6" data-volume="1"></audio>
       <div id="chip-04-doc" class="clip chip" data-start="29.38" data-duration="11.15" data-track-index="2"><span class="chip-inner" id="chipi-04-doc">Read <code>handoff.md</code></span></div>
       <audio id="vo-05-pickup" src="assets/media/05-pickup.wav" data-start="40.58" data-duration="10.96" data-track-index="6" data-volume="1"></audio>
-      <div id="chip-05-pickup" class="clip chip" data-start="40.53" data-duration="11.11" data-track-index="2"><span class="chip-inner" id="chipi-05-pickup">As Codex: <code>specweave pickup</code></span></div>
+      <div id="chip-05-pickup" class="clip chip" data-start="40.53" data-duration="11.11" data-track-index="2"><span class="chip-inner" id="chipi-05-pickup">As <span class="pname"><span class="plogo"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</span>: <code>specweave pickup</code></span></div>
       <audio id="vo-06-next" src="assets/media/06-next.wav" data-start="51.69" data-duration="8.4" data-track-index="6" data-volume="1"></audio>
       <div id="chip-06-next" class="clip chip" data-start="51.64" data-duration="8.55" data-track-index="2"><span class="chip-inner" id="chipi-06-next">Next task: <code>T-02</code> with <code>AC-02</code></span></div>
       <audio id="vo-07-done" src="assets/media/07-done.wav" data-start="60.44" data-duration="11.12" data-track-index="6" data-volume="1"></audio>
@@ -160,7 +163,7 @@
       <section id="intro" class="clip card" data-start="0" data-duration="5.4" data-track-index="1">
         <div class="card-inner">
           <div class="wordmark rise">SpecWeave</div>
-          <h1 class="title rise">Hand off from Claude Code to Codex at a usage limit</h1>
+          <h1 class="title rise">Hand off from <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span> to <span class="pname"><span class="plogo"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</span> at a usage limit</h1>
           <div class="thread" id="intro-thread"></div>
           <p class="subtitle rise">A real run of the SpecWeave 3.1.0 CLI in a sample repo.</p>
           <div class="footer rise">spec-weave.com/tutorials</div>
@@ -176,26 +179,26 @@
           <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
         </div>
       </section>
-      <div id="cap-1" class="clip caption" data-start="1.1" data-duration="4.3" data-track-index="5"><span class="pill">Hand off from Claude Code<br>to Codex at a usage limit.</span></div>
-      <div id="cap-2" class="clip caption" data-start="5.45" data-duration="5.072" data-track-index="5"><span class="pill">With <code>specweave auto-handoff on</code>,<br>Claude Code sends its usage to SpecWeave.</span></div>
+      <div id="cap-1" class="clip caption" data-start="1.1" data-duration="4.3" data-track-index="5"><span class="pill">Hand off from <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span><br>to <span class="pname"><span class="plogo"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</span> at a usage limit.</span></div>
+      <div id="cap-2" class="clip caption" data-start="5.45" data-duration="5.072" data-track-index="5"><span class="pill">With <code>specweave auto-handoff on</code>,<br><span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span> sends its usage to SpecWeave.</span></div>
       <div id="cap-3" class="clip caption" data-start="10.522" data-duration="4.985" data-track-index="5"><span class="pill">Here we pass in a sample reading<br>of 95% of the 5-hour limit.</span></div>
       <div id="cap-4" class="clip caption" data-start="15.507" data-duration="3.723" data-track-index="5"><span class="pill">The guard says a handoff is<br>available, and work continues.</span></div>
-      <div id="cap-5" class="clip caption" data-start="19.28" data-duration="3.19" data-track-index="5"><span class="pill">When you are ready,<br>tell Claude to hand off.</span></div>
+      <div id="cap-5" class="clip caption" data-start="19.28" data-duration="3.19" data-track-index="5"><span class="pill">When you are ready,<br>tell <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude</span> to hand off.</span></div>
       <div id="cap-6" class="clip caption" data-start="22.47" data-duration="2.44" data-track-index="5"><span class="pill">It runs <code>specweave handoff</code> with a reason,</span></div>
       <div id="cap-7" class="clip caption" data-start="24.91" data-duration="4.47" data-track-index="5"><span class="pill">releases its claim on <code>T-02</code>,<br>and writes <code>handoff.md</code>.</span></div>
       <div id="cap-8" class="clip caption" data-start="29.43" data-duration="5.129" data-track-index="5"><span class="pill"><code>handoff.md</code> says who stopped and<br>why, and which tasks are done.</span></div>
       <div id="cap-9" class="clip caption" data-start="34.559" data-duration="4.046" data-track-index="5"><span class="pill">It lists the uncommitted files,<br>with the full diff beside it,</span></div>
       <div id="cap-10" class="clip caption" data-start="38.605" data-duration="1.925" data-track-index="5"><span class="pill">and the exact next step.</span></div>
-      <div id="cap-11" class="clip caption" data-start="40.58" data-duration="4.103" data-track-index="5"><span class="pill">Now open Codex in the same<br>repo and say &quot;pick up&quot;.</span></div>
+      <div id="cap-11" class="clip caption" data-start="40.58" data-duration="4.103" data-track-index="5"><span class="pill">Now open <span class="pname"><span class="plogo"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</span> in the same<br>repo and say &quot;pick up&quot;.</span></div>
       <div id="cap-12" class="clip caption" data-start="44.683" data-duration="3.257" data-track-index="5"><span class="pill">It runs <code>specweave pickup</code>,<br>which reads the handoff</span></div>
       <div id="cap-13" class="clip caption" data-start="47.94" data-duration="3.7" data-track-index="5"><span class="pill">and records the pickup in<br>the ledger as <code>codex@demo</code>.</span></div>
       <div id="cap-14" class="clip caption" data-start="51.69" data-duration="3.192" data-track-index="5"><span class="pill">Pickup names the next task, <code>T-02</code>,</span></div>
       <div id="cap-15" class="clip caption" data-start="54.882" data-duration="3.92" data-track-index="5"><span class="pill">with its acceptance criterion,<br>its files and its test.</span></div>
-      <div id="cap-16" class="clip caption" data-start="58.802" data-duration="1.388" data-track-index="5"><span class="pill">Codex claims it.</span></div>
+      <div id="cap-16" class="clip caption" data-start="58.802" data-duration="1.388" data-track-index="5"><span class="pill"><span class="pname"><span class="plogo"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</span> claims it.</span></div>
       <div id="cap-17" class="clip caption" data-start="60.44" data-duration="1.528" data-track-index="5"><span class="pill">With the change in place,</span></div>
       <div id="cap-18" class="clip caption" data-start="61.968" data-duration="4.009" data-track-index="5"><span class="pill"><code>task done --run</code> runs the test again.</span></div>
       <div id="cap-19" class="clip caption" data-start="65.977" data-duration="3.143" data-track-index="5"><span class="pill">Only a passing test marks the task done,</span></div>
-      <div id="cap-20" class="clip caption" data-start="69.12" data-duration="2.79" data-track-index="5"><span class="pill">and the ledger shows<br>that Codex finished it.</span></div>
+      <div id="cap-20" class="clip caption" data-start="69.12" data-duration="2.79" data-track-index="5"><span class="pill">and the ledger shows<br>that <span class="pname"><span class="plogo"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</span> finished it.</span></div>
       <div id="cap-21" class="clip caption" data-start="71.96" data-duration="5.12" data-track-index="5"><span class="pill">Next, <code>specweave verify</code> checks the<br>increment before you close it.</span></div>
     </div>
     <script>

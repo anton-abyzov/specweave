@@ -111,7 +111,7 @@ for (const b of beats) {
           <h1 class="title rise">${esc(s.card.title.replace(" in SpecWithCode", ""))}<span class="roman"> in SpecWithCode</span></h1>
           <div class="thread" id="intro-thread"></div>
           <p class="subtitle rise">${esc(s.card.subtitle)}</p>
-          <div class="footer rise">spec-weave.com</div>
+          <div class="footer rise">specwithcode.com</div>
         </div>
       </section>`);
     tweens.push(`tl.fromTo("#intro .rise", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: "power2.out" }, ${b.start});`);

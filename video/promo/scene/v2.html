@@ -48,6 +48,14 @@ td.sw{color:#fff;font-weight:700;background:#2a1f4d;border:2px solid #6b56d6;wid
 th.sw{color:var(--v)}
 .ok{color:var(--green);margin-right:10px}
 .foot{position:absolute;left:150px;top:960px;font:400 19px JM,monospace;color:#7d7494;letter-spacing:.03em}
+.plogo{display:inline-grid;place-items:center;flex:none;box-sizing:border-box;border-radius:26%;background:#141118;box-shadow:inset 0 0 0 1px #ffffff26;vertical-align:middle}
+.plogo img{width:64%;height:64%;object-fit:contain;display:block}
+.win .bar .plogo{margin-left:12px}.win .bar .plogo+span{margin-left:2px}
+.chip .plogo{margin-right:12px;position:relative;top:-2px}
+#hcBar{display:flex;align-items:center;gap:8px;padding:0 10px}
+#hcBar .chip{position:relative;font-size:28px;padding:10px 18px}
+td .plogo{margin-right:10px;position:relative;top:-2px}
+th .plogo{margin-right:10px;position:relative;top:-2px}
 .url{position:absolute;left:0;right:0;text-align:center;font-weight:800;letter-spacing:-.04em}
 </style></head>
 <body>
@@ -57,9 +65,9 @@ th.sw{color:var(--v)}
 <section id="s01">
   <div class="kick r" id="s01k">THE PROBLEM <b>· 1</b></div>
   <div class="h" id="s01h">One app per AI lab.<div class="strike" id="s01x"></div></div>
-  <div class="win" id="w1" style="left:230px;top:420px;rotate:-4deg"><div class="bar"><s></s><s></s><s></s><span>Claude Code</span></div><div class="ln" style="width:70%"></div><div class="ln" style="width:52%"></div><div class="ln" style="width:61%"></div><div class="in">Ask anything…</div></div>
-  <div class="win" id="w2" style="left:710px;top:500px;rotate:2deg"><div class="bar"><s></s><s></s><s></s><span>Codex</span></div><div class="ln" style="width:58%"></div><div class="ln" style="width:74%"></div><div class="ln" style="width:44%"></div><div class="in">Ask anything…</div></div>
-  <div class="win" id="w3" style="left:1190px;top:430px;rotate:5deg"><div class="bar"><s></s><s></s><s></s><span>Gemini CLI</span></div><div class="ln" style="width:66%"></div><div class="ln" style="width:48%"></div><div class="ln" style="width:70%"></div><div class="in">Ask anything…</div></div>
+  <div class="win" id="w1" style="left:230px;top:420px;rotate:-4deg"><div class="bar"><s></s><s></s><s></s><span class="plogo" style="width:32px;height:32px"><img src="logos/claude.svg" alt="Claude"></span><span>Claude Code</span></div><div class="ln" style="width:70%"></div><div class="ln" style="width:52%"></div><div class="ln" style="width:61%"></div><div class="in">Ask anything…</div></div>
+  <div class="win" id="w2" style="left:710px;top:500px;rotate:2deg"><div class="bar"><s></s><s></s><s></s><span class="plogo" style="width:32px;height:32px"><img src="logos/openai.svg" alt="Codex"></span><span>Codex</span></div><div class="ln" style="width:58%"></div><div class="ln" style="width:74%"></div><div class="ln" style="width:44%"></div><div class="in">Ask anything…</div></div>
+  <div class="win" id="w3" style="left:1190px;top:430px;rotate:5deg"><div class="bar"><s></s><s></s><s></s><span class="plogo" style="width:32px;height:32px"><img src="logos/gemini.svg" alt="Gemini"></span><span>Gemini CLI</span></div><div class="ln" style="width:66%"></div><div class="ln" style="width:48%"></div><div class="ln" style="width:70%"></div><div class="in">Ask anything…</div></div>
 </section>
 
 <!-- s02 4.4-8.6: usage limit -->
@@ -103,13 +111,14 @@ th.sw{color:var(--v)}
       <div class="ring" id="rRow" style="left:1736px;top:404px;width:640px;height:80px;border-color:var(--teal);border-width:4px;border-radius:12px"></div>
     </div>
   </div>
-  <div id="hcBar" style="position:absolute;left:388px;top:948px;width:1090px;height:84px;background:rgba(20,16,31,.94);border-radius:20px"></div>
-  <div class="chip" id="hc1" style="left:400px;top:960px">Claude Code</div>
-  <div class="chip" id="hc2" style="left:645px;top:960px">Codex</div>
-  <div class="chip" id="hc3" style="left:799px;top:960px">Copilot</div>
-  <div class="chip" id="hc4" style="left:963px;top:960px">Gemini</div>
-  <div class="chip" id="hc5" style="left:1125px;top:960px">Cursor</div>
-  <div class="chip" id="hc6" style="left:1285px;top:960px;color:var(--v)">and more</div>
+  <div id="hcBar" style="position:absolute;left:960px;translate:-50% 0;top:948px;height:84px;background:rgba(20,16,31,.94);border-radius:20px">
+    <div class="chip" id="hc1"><span class="plogo" style="width:34px;height:34px"><img src="logos/claude.svg" alt="Claude"></span>Claude Code</div>
+    <div class="chip" id="hc2"><span class="plogo" style="width:34px;height:34px"><img src="logos/openai.svg" alt="Codex"></span>Codex</div>
+    <div class="chip" id="hc3"><span class="plogo" style="width:34px;height:34px"><img src="logos/copilot.svg" alt="Copilot"></span>Copilot</div>
+    <div class="chip" id="hc4"><span class="plogo" style="width:34px;height:34px"><img src="logos/gemini.svg" alt="Gemini"></span>Gemini</div>
+    <div class="chip" id="hc5"><span class="plogo" style="width:34px;height:34px"><img src="logos/cursor.svg" alt="Cursor"></span>Cursor</div>
+    <div class="chip" id="hc6" style="color:var(--v)">and more</div>
+  </div>
 
   <div class="tag" id="tCo" style="left:240px;top:60px;background:var(--ind);font-size:30px">COORDINATOR</div>
   <div class="bubble" id="bAsk" style="left:430px;top:840px;font-size:28px">Add a --people option and a JSON output</div>
@@ -178,11 +187,11 @@ th.sw{color:var(--v)}
     <path id="k4" d="M 1450 695 C 1560 695, 1560 600, 1650 600" stroke="#a58cf2" stroke-width="4" fill="none"/>
     <path id="k5" d="M 1450 795 C 1560 795, 1560 600, 1650 600" stroke="#a58cf2" stroke-width="4" fill="none"/>
   </svg>
-  <div class="chip" id="kc1" style="left:1210px;top:365px;font-size:26px">Claude Code</div>
-  <div class="chip" id="kc2" style="left:1210px;top:465px;font-size:26px">Codex</div>
-  <div class="chip" id="kc3" style="left:1210px;top:565px;font-size:26px">Copilot</div>
-  <div class="chip" id="kc4" style="left:1210px;top:665px;font-size:26px">Gemini</div>
-  <div class="chip" id="kc5" style="left:1210px;top:765px;font-size:26px">Cursor</div>
+  <div class="chip" id="kc1" style="right:470px;top:365px;font-size:26px"><span class="plogo" style="width:32px;height:32px"><img src="logos/claude.svg" alt="Claude"></span>Claude Code</div>
+  <div class="chip" id="kc2" style="right:470px;top:465px;font-size:26px"><span class="plogo" style="width:32px;height:32px"><img src="logos/openai.svg" alt="Codex"></span>Codex</div>
+  <div class="chip" id="kc3" style="right:470px;top:565px;font-size:26px"><span class="plogo" style="width:32px;height:32px"><img src="logos/copilot.svg" alt="Copilot"></span>Copilot</div>
+  <div class="chip" id="kc4" style="right:470px;top:665px;font-size:26px"><span class="plogo" style="width:32px;height:32px"><img src="logos/gemini.svg" alt="Gemini"></span>Gemini</div>
+  <div class="chip" id="kc5" style="right:470px;top:765px;font-size:26px"><span class="plogo" style="width:32px;height:32px"><img src="logos/cursor.svg" alt="Cursor"></span>Cursor</div>
   <img id="kIcon" src="b/icon.png" style="position:absolute;left:1650px;top:530px;width:140px;height:140px;border-radius:30px;box-shadow:0 0 60px rgba(124,92,240,.6)">
   <div id="kOne" style="position:absolute;left:1600px;top:690px;width:240px;text-align:center;font:400 22px JM,monospace;color:var(--v);letter-spacing:.06em">ONE EXTENSION</div>
 </section>
@@ -192,13 +201,13 @@ th.sw{color:var(--v)}
   <div class="kick">WHY <b>SPECWITHCODE</b></div>
   <div class="h" style="font-size:72px">One coordinator. <em>A team of threads.</em></div>
   <table>
-    <tr><th></th><th class="c1 hd" id="h1">CLAUDE CODE ALONE</th><th class="c2 hd" id="h2">T3 CODE</th><th class="sw" id="h3">SPECWITHCODE</th></tr>
-    <tr><td class="l">Agents</td><td class="c1">Claude models</td><td class="c2">Many providers</td><td class="sw"><span class="ok">✓</span>Claude Code, Codex, Copilot, Gemini, Cursor and more</td></tr>
+    <tr><th></th><th class="c1 hd" id="h1"><span class="plogo" style="width:28px;height:28px"><img src="logos/claude.svg" alt="Claude"></span>CLAUDE CODE ALONE</th><th class="c2 hd" id="h2">T3 CODE</th><th class="sw" id="h3">SPECWITHCODE</th></tr>
+    <tr><td class="l">Agents</td><td class="c1"><span style="white-space:nowrap"><span class="plogo" style="width:34px;height:34px"><img src="logos/claude.svg" alt="Claude"></span>Claude models</span></td><td class="c2">Many providers</td><td class="sw"><span class="ok">✓</span><span style="white-space:nowrap"><span class="plogo" style="width:32px;height:32px;margin-right:6px"><img src="logos/claude.svg" alt="Claude"></span>Claude Code,</span> <span style="white-space:nowrap"><span class="plogo" style="width:32px;height:32px;margin-right:6px"><img src="logos/openai.svg" alt="Codex"></span>Codex,</span> <span style="white-space:nowrap"><span class="plogo" style="width:32px;height:32px;margin-right:6px"><img src="logos/copilot.svg" alt="Copilot"></span>Copilot,</span> <span style="white-space:nowrap"><span class="plogo" style="width:32px;height:32px;margin-right:6px"><img src="logos/gemini.svg" alt="Gemini"></span>Gemini,</span> <span style="white-space:nowrap"><span class="plogo" style="width:32px;height:32px;margin-right:6px"><img src="logos/cursor.svg" alt="Cursor"></span>Cursor</span> and more</td></tr>
     <tr><td class="l">At a usage limit</td><td class="c1">Buy more usage or wait</td><td class="c2">Resume at reset, or switch by hand</td><td class="sw"><span class="ok">✓</span>Switches provider for you, with context</td></tr>
-    <tr><td class="l">Browser for agents</td><td class="c1">Claude in Chrome, Claude only</td><td class="c2">Built-in preview browser</td><td class="sw"><span class="ok">✓</span>Your real Chrome profile, every agent</td></tr>
-    <tr><td class="l">Who does the work</td><td class="c1">Claude sessions and subagents</td><td class="c2">Agents delegate tasks</td><td class="sw"><span class="ok">✓</span>One coordinator per project; threads do the work</td></tr>
+    <tr><td class="l">Browser for agents</td><td class="c1"><span style="white-space:nowrap"><span class="plogo" style="width:34px;height:34px"><img src="logos/claude.svg" alt="Claude"></span>Claude in</span> Chrome, <span style="white-space:nowrap"><span class="plogo" style="width:34px;height:34px;margin-left:0"><img src="logos/claude.svg" alt="Claude"></span>Claude only</span></td><td class="c2">Built-in preview browser</td><td class="sw"><span class="ok">✓</span>Your real Chrome profile, every agent</td></tr>
+    <tr><td class="l">Who does the work</td><td class="c1"><span style="white-space:nowrap"><span class="plogo" style="width:34px;height:34px"><img src="logos/claude.svg" alt="Claude"></span>Claude sessions</span> and subagents</td><td class="c2">Agents delegate tasks</td><td class="sw"><span class="ok">✓</span>One coordinator per project; threads do the work</td></tr>
   </table>
-  <div class="foot" id="s10f">From public docs: Claude Code docs and T3 Code docs, checked 1 Nov 2026. All trademarks belong to their owners.</div>
+  <div class="foot" id="s10f">From public docs: <span class="plogo" style="width:22px;height:22px;margin-right:6px;position:relative;top:-2px"><img src="logos/claude.svg" alt="Claude"></span>Claude Code docs and T3 Code docs, checked 1 Nov 2026. All trademarks belong to their owners.</div>
 </section>
 
 <!-- s11 58.4-64.5: end card -->

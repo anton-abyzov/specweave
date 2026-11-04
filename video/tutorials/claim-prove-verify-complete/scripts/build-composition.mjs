@@ -12,9 +12,10 @@
 // - every on-screen event is anchored to a beat, a caption chunk or a spoken word, never to a fixed time;
 // - caption cues start at the nearest pause found by ffmpeg silencedetect (-40 dB, 0.18 s), clamped to ±0.4 s;
 //   edit.json `cueNudge` {beat: {cue: seconds}} moves a cue whose onset reads earlier after loudnorm.
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, cpSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { basename, resolve } from "node:path";
+import { basename, resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const [ep, outDir, slugArg] = process.argv.slice(2);
 if (!ep || !outDir) { console.error("usage: build-composition.mjs <episodeDir> <outDir> [slug]"); process.exit(2); }
@@ -25,7 +26,16 @@ const vo = Object.fromEntries(edit.beats.map((b) => [b.id, JSON.parse(readFileSy
 const r3 = (n) => Math.round(n * 1000) / 1000;
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const keepTogether = (s) => s.replace(/Claude Code/g, "Claude Code");
-const codeMarks = (s) => keepTogether(esc(s)).replace(/`([^`]+)`/g, "<code>$1</code>");
+// Official provider marks (video/tutorials/shared/provider-logos) on a dark badge, inserted before provider names
+// in rendered text. Whole words, case-sensitive; never inside <code> spans or tags (attributes, ids).
+const LOGO_OF = { "Claude Code": "claude", Claude: "claude", Codex: "openai", Copilot: "copilot", "Gemini CLI": "gemini", Gemini: "gemini", Grok: "grok", Antigravity: "antigravity", OpenCode: "opencode", Cursor: "cursor", ChatGPT: "openai", OpenAI: "openai" };
+const LOGO_RE = /(?<![\w@=./-])(Claude[ \u00a0]Code|Claude|Codex|Copilot|Gemini[ \u00a0]CLI|Gemini|Grok|Antigravity|OpenCode|Cursor|ChatGPT|OpenAI)(?![\w@=/-]|\.\w)/g;
+const plogo = (name) => `<span class="plogo"><img src="assets/logos/${LOGO_OF[name.replace(/\u00a0/g, " ")]}.svg" alt="${name.replace(/\u00a0/g, " ").replace("Claude Code", "Claude")}"></span>`;
+const logoize = (html) => html.split(/(<code>[\s\S]*?<\/code>|<[^>]+>)/).map((part, i) => (i % 2 ? part : part.replace(LOGO_RE, (m) => `<span class="pname">${plogo(m)}${m}</span>`))).join("");
+const LOGO_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../../shared/provider-logos");
+mkdirSync(`${ep}/hyperframes/assets/logos`, { recursive: true });
+for (const n of new Set(Object.values(LOGO_OF))) cpSync(`${LOGO_DIR}/${n}.svg`, `${ep}/hyperframes/assets/logos/${n}.svg`);
+const codeMarks = (s) => logoize(keepTogether(esc(s)).replace(/`([^`]+)`/g, "<code>$1</code>"));
 const COLS = edit.termCols, VIS = edit.visibleRows, ROW = 42, PROMPT = "greet-app % ";
 
 // ── Beat times ─────────────────────────────────────────────────────────────
@@ -185,7 +195,7 @@ for (const [screenId, screen] of Object.entries(edit.screens)) {
 
   els.push(`
       <section id="scr-${screenId}" class="clip stage" data-start="${s0}" data-duration="${r3(s1 - s0)}" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>${toolLabel[screen.tool]}<code>SPECWEAVE_TOOL=${screen.tool}</code></div>
+        <div class="tool-label">${logoize(esc(toolLabel[screen.tool]))}<code>SPECWEAVE_TOOL=${screen.tool}</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-${screenId}" data-layout-allow-overflow><div class="rows" id="rows-${screenId}" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
 ${rows.map((r) => `          <div class="row ${r.kind}" id="${r.id}">${r.html}</div>`).join("\n")}
         </div></div></div></div>
@@ -228,7 +238,7 @@ els.push(`
           <div class="wordmark rise">SpecWeave</div>
           <h1 class="title rise">${codeMarks(edit.title)}</h1>
           <div class="thread" id="intro-thread"></div>
-          <p class="subtitle rise">${esc((edit.subtitle ?? "A real run of the SpecWeave {version} CLI in a sample repo.").replace("{version}", session.specweave))}</p>
+          <p class="subtitle rise">${logoize(esc((edit.subtitle ?? "A real run of the SpecWeave {version} CLI in a sample repo.").replace("{version}", session.specweave)))}</p>
           <div class="footer rise">spec-weave.com/tutorials</div>
         </div>
       </section>`);
@@ -241,7 +251,7 @@ els.push(`
           <div class="wordmark rise">SpecWeave</div>
           <div class="outro-l1 rise">${codeMarks(edit.outro.next)}</div>
           <div class="thread" id="outro-thread"></div>
-          <p class="outro-l2 rise">${esc(edit.outro.note)}</p>
+          <p class="outro-l2 rise">${logoize(esc(edit.outro.note))}</p>
           <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
         </div>
       </section>`);
@@ -314,6 +324,9 @@ const html = `<!doctype html>
       .outro-l2 { margin: 44px 0 0; max-width: 1300px; font: 400 32px/1.45 var(--sans); color: var(--muted); }
       .tool-label { position: absolute; right: 140px; top: 60px; font: 600 28px/1.2 var(--sans); color: var(--ink); }
       .tool-label code { font: 400 22px var(--mono); color: var(--muted); background: var(--sunken); border-radius: 4px; padding: 3px 8px; margin-left: 14px; vertical-align: 2px; }
+      .plogo { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; width: 1.2em; height: 1.2em; border-radius: 26%; background: #141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align: middle; margin: -0.12em 0.3em -0.08em 0; }
+      .plogo img { width: 64%; height: 64%; object-fit: contain; display: block; }
+      .pname { white-space: nowrap; }
       .tool-label .dot { display: inline-block; width: 12px; height: 12px; border-radius: 6px; background: var(--iris); margin-right: 12px; vertical-align: 3px; }
       .window { position: absolute; left: 140px; right: 140px; top: 136px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-window); padding: 18px; }
       .viewport { background: var(--sunken); border-radius: 8px; padding: 22px 30px; }

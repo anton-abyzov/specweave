@@ -18,9 +18,10 @@
 //   with its content up to visibleRows, then scrolls by whole rows inside a clip box (no half rows);
 // - every on-screen event is anchored to a beat, a caption chunk or a spoken word, never to a fixed time;
 // - caption cues start at the nearest pause found by ffmpeg silencedetect (-40 dB, 0.18 s), clamped to ±0.4 s.
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, cpSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { basename, resolve, join } from "node:path";
+import { basename, resolve, join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const [ep, outDir, slugArg] = process.argv.slice(2);
 if (!ep || !outDir) { console.error("usage: build-composition.mjs <episodeDir> <outDir> [slug]"); process.exit(2); }
@@ -34,6 +35,18 @@ const segDur = (seg) => (seg[2] === "hold" ? seg[3] : (seg[1] - seg[0]) / seg[2]
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const keepTogether = (s) => s.replace(/Claude Code/g, "Claude Code");
 const codeMarks = (s) => keepTogether(esc(s)).replace(/`([^`]+)`/g, "<code>$1</code>");
+// Official provider marks (video/tutorials/shared/provider-logos) on a dark badge before every provider name in
+// rendered text. Whole words, case-sensitive, never inside <code> spans. The SVGs are copied into
+// hyperframes/assets/logos because HyperFrames serves only the project folder.
+const LOGO_OF = { "GitHub Copilot": "copilot", "Claude Code": "claude", Claude: "claude", Codex: "openai", Copilot: "copilot", "Gemini CLI": "gemini", Gemini: "gemini", Grok: "grok", Antigravity: "antigravity", OpenCode: "opencode", Cursor: "cursor", ChatGPT: "openai", OpenAI: "openai" };
+const LOGO_RE = new RegExp(`(?<![\\w@=/.-])(${Object.keys(LOGO_OF).map((k) => k.replace(/ /g, "(?: |\u00a0|&nbsp;)")).join("|")})(?![\\w@=/-])`, "g");
+const plogo = (name, size) => `<span class="plogo" style="width:${size}px;height:${size}px"><img src="assets/logos/${LOGO_OF[name]}.svg" alt="${name.replace(/^GitHub /, "")}"></span>`;
+const withLogos = (html, size) => html.split(/(<code>.*?<\/code>)/).map((part, i) => (i % 2 ? part : part.replace(LOGO_RE, (m) => `${plogo(m.replace(/&nbsp;|\u00a0/g, " "), size)}${m}`))).join("");
+{
+  const here = dirname(fileURLToPath(import.meta.url));
+  mkdirSync(`${ep}/hyperframes/assets/logos`, { recursive: true });
+  for (const n of new Set(Object.values(LOGO_OF))) cpSync(join(here, `../../shared/provider-logos/${n}.svg`), `${ep}/hyperframes/assets/logos/${n}.svg`);
+}
 const COLS = edit.termCols, VIS = edit.visibleRows, FONT = edit.termFont ?? 28, ROW = Math.round(FONT * 1.5), PROMPT = "greet-app % ";
 
 // ── Beat times ─────────────────────────────────────────────────────────────
@@ -188,7 +201,7 @@ for (const [screenId, screen] of Object.entries(edit.screens ?? {})) {
 
   els.push(`
       <section id="scr-${screenId}" class="clip stage" data-start="${s0}" data-duration="${r3(s1 - s0)}" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>${toolLabel[screen.tool] ?? screen.tool}${toolCode(screen.tool)}</div>
+        <div class="tool-label"><span class="dot"></span>${withLogos(esc(toolLabel[screen.tool] ?? screen.tool), 34)}${toolCode(screen.tool)}</div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-${screenId}" data-layout-allow-overflow><div class="rows" id="rows-${screenId}" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
 ${rows.map((r) => `          <div class="row ${r.kind}" id="${r.id}">${r.html}</div>`).join("\n")}
         </div></div></div></div>
@@ -312,7 +325,7 @@ appBeats.forEach((b, bi) => {
       const ns = s.note.from !== undefined ? map(s.note.from) : shotStart;
       const ne = s.note.to !== undefined ? map(s.note.to) : r3(shotStart + shotDur);
       const nid = `note-${id}`;
-      els.push(`      <div id="${nid}" class="clip note" data-start="${ns}" data-duration="${r3(ne - ns)}" data-track-index="4"><span class="note-inner" id="${nid}-i"><b>${esc(s.note.label ?? edit.noteLabel ?? "Known issue:")}</b> ${codeMarks(s.note.text)}</span></div>`);
+      els.push(`      <div id="${nid}" class="clip note" data-start="${ns}" data-duration="${r3(ne - ns)}" data-track-index="4"><span class="note-inner" id="${nid}-i"><b>${esc(s.note.label ?? edit.noteLabel ?? "Known issue:")}</b> ${withLogos(codeMarks(s.note.text), 32)}</span></div>`);
       tl.push(`tl.fromTo("#${nid}-i", { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25, ease: "power2.out" }, ${r3(ns + 0.05)});`);
     }
     timelineShots.push({ beat: b.id, shot: si, start: shotStart, dur: shotDur, window: { left: r3(left), top: r3(top), w: r3(ww), h: r3(wh) }, scale: r3(ww / cams[0].w), segments: s.segments, cam: cams });
@@ -320,7 +333,7 @@ appBeats.forEach((b, bi) => {
   if (chipText) chips.push({ text: chipText, start: chipStart, end: r3(b.start + b.dur) });
   chips.forEach((c, ci) => {
     const cid = `chip-${b.id}-${ci}`;
-    els.push(`      <div id="${cid}" class="clip chip appchip" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="2"><span class="chip-inner" id="${cid}-i">${codeMarks(c.text)}</span></div>`);
+    els.push(`      <div id="${cid}" class="clip chip appchip" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="2"><span class="chip-inner" id="${cid}-i">${withLogos(codeMarks(c.text), 36)}</span></div>`);
     tl.push(`tl.fromTo("#${cid}-i", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${r3(c.start + 0.05)});`);
   });
   b.chips = chips;
@@ -334,7 +347,7 @@ badges.forEach((s, i) => {
 for (const b of beats) {
   els.push(`      <audio id="vo-${b.id}" src="assets/media/${b.id}.wav" data-start="${r3(b.start + b.voOffset)}" data-duration="${vo[b.id].duration}" data-track-index="6" data-volume="1"></audio>`);
   if (b.stepChip) {
-    els.push(`      <div id="chip-${b.id}" class="clip chip" data-start="${b.start}" data-duration="${b.dur}" data-track-index="2"><span class="chip-inner" id="chipi-${b.id}">${codeMarks(b.stepChip)}</span></div>`);
+    els.push(`      <div id="chip-${b.id}" class="clip chip" data-start="${b.start}" data-duration="${b.dur}" data-track-index="2"><span class="chip-inner" id="chipi-${b.id}">${withLogos(codeMarks(b.stepChip), 36)}</span></div>`);
     tl.push(`tl.fromTo("#chipi-${b.id}", { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${r3(b.start + 0.1)});`);
   }
   if (b.diffPanel) {
@@ -342,7 +355,7 @@ for (const b of beats) {
     if (to - from > 2.5) throw new Error(`diff panel in ${b.id} is longer than 2.5 s`);
     const lines = session.offCameraDiff.split("\n").slice(4);
     const body = lines.map((l) => `<div class="dl ${l.startsWith("+") ? "add" : l.startsWith("-") ? "del" : ""}">${esc(l) || "&#8203;"}</div>`).join("");
-    els.push(`      <div id="diff-${b.id}" class="clip diffpanel" data-layout-allow-overlap data-start="${from}" data-duration="${r3(to - from)}" data-track-index="3"><div class="diff-inner" id="diffi-${b.id}" data-layout-allow-overlap><div class="diff-head">${codeMarks(b.diffPanel.head)}</div><div class="diff-body">${body}</div></div></div>`);
+    els.push(`      <div id="diff-${b.id}" class="clip diffpanel" data-layout-allow-overlap data-start="${from}" data-duration="${r3(to - from)}" data-track-index="3"><div class="diff-inner" id="diffi-${b.id}" data-layout-allow-overlap><div class="diff-head">${withLogos(codeMarks(b.diffPanel.head), 36)}</div><div class="diff-body">${body}</div></div></div>`);
     tl.push(`tl.fromTo("#diffi-${b.id}", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.2, ease: "power2.out" }, ${from});`);
     tl.push(`tl.to("#diffi-${b.id}", { opacity: 0, duration: 0.2, ease: "none" }, ${r3(to - 0.2)});`);
   }
@@ -354,9 +367,9 @@ els.push(`
       <section id="intro" class="clip card" data-start="${intro.start}" data-duration="${intro.dur}" data-track-index="1">
         <div class="card-inner">
           <div class="wordmark rise">${edit.wordmark ?? "SpecWeave"}</div>
-          <h1 class="title rise">${codeMarks(edit.title)}</h1>
+          <h1 class="title rise">${withLogos(codeMarks(edit.title), 110)}</h1>
           <div class="thread" id="intro-thread"></div>
-          <p class="subtitle rise">${esc((edit.subtitle ?? "A real run of the SpecWeave {version} CLI in a sample repo.").replace("{version}", session.specweave))}</p>
+          <p class="subtitle rise">${withLogos(esc((edit.subtitle ?? "A real run of the SpecWeave {version} CLI in a sample repo.").replace("{version}", session.specweave)), 44)}</p>
           <div class="footer rise">spec-weave.com/tutorials</div>
         </div>
       </section>`);
@@ -367,9 +380,9 @@ els.push(`
       <section id="outro" class="clip card" data-start="${outro.start}" data-duration="${outro.dur}" data-track-index="1">
         <div class="card-inner">
           <div class="wordmark rise">${edit.wordmark ?? "SpecWeave"}</div>
-          <div class="outro-l1 rise">${codeMarks(edit.outro.next)}</div>
+          <div class="outro-l1 rise">${withLogos(codeMarks(edit.outro.next), 86)}</div>
           <div class="thread" id="outro-thread"></div>
-          <p class="outro-l2 rise">${esc(edit.outro.note)}</p>
+          <p class="outro-l2 rise">${withLogos(esc(edit.outro.note), 38)}</p>
           <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
         </div>
       </section>`);
@@ -408,7 +421,7 @@ for (const c of caps) {
   if (plainLen > 84) console.warn(`cue longer than two 42-character lines: ${c.text}`);
 }
 caps.forEach((c, i) => {
-  els.push(`      <div id="cap-${i + 1}" class="clip caption" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="5"><span class="pill">${captionLines(c.text).map(codeMarks).join("<br>")}</span></div>`);
+  els.push(`      <div id="cap-${i + 1}" class="clip caption" data-start="${c.start}" data-duration="${r3(c.end - c.start)}" data-track-index="5"><span class="pill">${captionLines(c.text).map((l) => withLogos(codeMarks(l), 40)).join("<br>")}</span></div>`);
 });
 
 const html = `<!doctype html>
@@ -471,6 +484,8 @@ const html = `<!doctype html>
       .caption { left: 0; right: 0; bottom: 30px; z-index: 20; text-align: center; }
       .caption .pill { display: inline-block; white-space: nowrap; background: rgba(255, 255, 255, 0.96); border: 1px solid var(--line); color: var(--ink);
         padding: 10px 26px; border-radius: 8px; font: 600 38px/1.28 var(--sans); }
+      .plogo { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; border-radius: 26%; background: #141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align: middle; margin: 0 0.28em 0 0.06em; position: relative; top: -0.06em; }
+      .plogo img { width: 64%; height: 64%; object-fit: contain; display: block; }
       .caption code { font: 500 0.86em var(--mono); background: var(--sunken); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
     </style>
   </head>

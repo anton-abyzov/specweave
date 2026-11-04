@@ -123,7 +123,7 @@ Total: 66.7 s. Executable steps for every APP beat are in `SHOTLIST.json`; cuts,
 ### 08 Outro (1:02.7-1:06.7, MG)
 
 - **VO:** "Next, sw-done verifies and closes the increment."
-- **Card:** three lines: "Next: $sw-done · verify and close" / "SpecWithCode · free, early access · spec-weave.com/studio" / "All tutorials · spec-weave.com/tutorials".
+- **Card:** three lines: "Next: $sw-done · verify and close" / "SpecWithCode · free, early access · specwithcode.com" / "All tutorials · spec-weave.com/tutorials".
 - **Sources:**
   - `sw-done`: "every task done or skipped, specweave verify green, a fresh-context review, then specweave complete" (W:skills/sw-done/SKILL.md:2).
   - Free, early access; the public download opens with the first public release: W:docs-site/src/pages/studio.tsx:20,22,23.

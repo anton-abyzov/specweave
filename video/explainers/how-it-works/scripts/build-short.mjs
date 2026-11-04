@@ -59,7 +59,7 @@ vo.lines.forEach((l, i) => {
   });
 });
 function ts(x) { const m = Math.floor(x / 60), s = (x % 60).toFixed(3).padStart(6, "0"); return `00:${String(m).padStart(2, "0")}:${s}`; }
-html.push(`<div id="brand" class="clip brand" data-start="0" data-duration="${f(END)}" data-track-index="4"><span>SpecWithCode</span> · spec-weave.com/code</div>`);
+html.push(`<div id="brand" class="clip brand" data-start="0" data-duration="${f(END)}" data-track-index="4"><span>SpecWithCode</span> · specwithcode.com</div>`);
 const doc = `<!doctype html>
 <html lang="en">
   <head>

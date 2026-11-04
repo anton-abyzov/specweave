@@ -30,7 +30,10 @@
       .outro-l2 { margin: 44px 0 0; max-width: 1300px; font: 400 32px/1.45 var(--sans); color: var(--muted); }
       .tool-label { position: absolute; right: 140px; top: 60px; font: 600 28px/1.2 var(--sans); color: var(--ink); }
       .tool-label code { font: 400 22px var(--mono); color: var(--muted); background: var(--sunken); border-radius: 4px; padding: 3px 8px; margin-left: 14px; vertical-align: 2px; }
-      .tool-label .dot { display: inline-block; width: 12px; height: 12px; border-radius: 6px; background: var(--iris); margin-right: 12px; vertical-align: 3px; }
+      .plogo { display:inline-grid; place-items:center; flex:none; box-sizing:border-box; border-radius:26%; background:#141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align:middle; width:1.15em; height:1.15em; margin-right:0.28em; position:relative; top:-0.06em; }
+      .plogo img { width:64%; height:64%; object-fit:contain; display:block; }
+      .pname { white-space: nowrap; }
+      .title .plogo { width: 0.96em; height: 0.96em; margin-right: 0.2em; top: -0.04em; }
       .window { position: absolute; left: 140px; right: 140px; top: 136px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-window); padding: 18px; }
       .viewport { background: var(--sunken); border-radius: 8px; padding: 22px 30px; }
       .clipbox { height: 42px; overflow: hidden; margin: 0 -14px; padding: 0 14px; }
@@ -60,7 +63,7 @@
     <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="92.93">
 
       <section id="scr-claude-1" class="clip stage" data-start="4.28" data-duration="30.06" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-1" data-layout-allow-overflow><div class="rows" id="rows-claude-1" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r1"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row elide" id="r2">…</div>
@@ -87,7 +90,7 @@
       </section>
 
       <section id="scr-claude-2" class="clip stage" data-start="34.34" data-duration="13" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-2" data-layout-allow-overflow><div class="rows" id="rows-claude-2" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r22"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row elide" id="r23">…</div>
@@ -106,7 +109,7 @@
       </section>
 
       <section id="scr-claude-3" class="clip stage" data-start="47.34" data-duration="10.15" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-3" data-layout-allow-overflow><div class="rows" id="rows-claude-3" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r35"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row elide" id="r36">…</div>
@@ -127,7 +130,7 @@
       </section>
 
       <section id="scr-claude-4" class="clip stage" data-start="57.49" data-duration="26.39" data-track-index="1">
-        <div class="tool-label"><span class="dot"></span>Terminal as Claude Code<code>SPECWEAVE_TOOL=claude</code></div>
+        <div class="tool-label">Terminal as <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span><code>SPECWEAVE_TOOL=claude</code></div>
         <div class="window"><div class="viewport"><div class="clipbox" id="clip-claude-4" data-layout-allow-overflow><div class="rows" id="rows-claude-4" data-layout-allow-overflow data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row cmd" id="r50"><span class="prompt">greet-app %</span> <span class="cmd"></span></div>
           <div class="row out" id="r51">Reviewer: codex (openai; another family than the author (claude)). Author: claude.</div>
@@ -173,24 +176,24 @@
           <div class="wordmark rise">SpecWeave</div>
           <div class="outro-l1 rise">Next: <code>specweave verify</code>, then <code>specweave complete</code></div>
           <div class="thread" id="outro-thread"></div>
-          <p class="outro-l2 rise">Agent sessions are not shown: Claude Code's change, its fix and the new test were scripted off camera and committed under the claude tool id. Every command and output is real, the reviewer was the real Codex CLI, and the narration is an AI voice.</p>
+          <p class="outro-l2 rise">Agent sessions are not shown: <span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span>'s change, its fix and the new test were scripted off camera and committed under the claude tool id. Every command and output is real, the reviewer was the real <span class="pname"><span class="plogo"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</span> CLI, and the narration is an AI voice.</p>
           <div class="footer rise">All tutorials: spec-weave.com/tutorials</div>
         </div>
       </section>
       <div id="cap-1" class="clip caption" data-start="1.1" data-duration="3.18" data-track-index="5"><span class="pill">Review with the other<br>model before you ship.</span></div>
-      <div id="cap-2" class="clip caption" data-start="4.33" data-duration="3.22" data-track-index="5"><span class="pill">Claude Code finished<br>this task on a branch.</span></div>
+      <div id="cap-2" class="clip caption" data-start="4.33" data-duration="3.22" data-track-index="5"><span class="pill"><span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude Code"></span>Claude Code</span> finished<br>this task on a branch.</span></div>
       <div id="cap-3" class="clip caption" data-start="7.55" data-duration="4.422" data-track-index="5"><span class="pill"><code>specweave review --brief</code><br>shows what a reviewer gets:</span></div>
       <div id="cap-4" class="clip caption" data-start="11.972" data-duration="2.158" data-track-index="5"><span class="pill">who wrote the code, from the ledger,</span></div>
       <div id="cap-5" class="clip caption" data-start="14.13" data-duration="3.74" data-track-index="5"><span class="pill">the acceptance criteria, and<br>the diff since the branch began.</span></div>
       <div id="cap-6" class="clip caption" data-start="17.92" data-duration="3.11" data-track-index="5"><span class="pill">Before you ship, run <code>specweave review</code>.</span></div>
-      <div id="cap-7" class="clip caption" data-start="21.03" data-duration="3.777" data-track-index="5"><span class="pill">Claude wrote the code, so it<br>picks Codex, from another family.</span></div>
-      <div id="cap-8" class="clip caption" data-start="24.807" data-duration="3.251" data-track-index="5"><span class="pill">Codex gets the brief<br>in a read-only sandbox.</span></div>
+      <div id="cap-7" class="clip caption" data-start="21.03" data-duration="3.777" data-track-index="5"><span class="pill"><span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude</span> wrote the code, so it<br>picks <span class="pname"><span class="plogo"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</span>, from another family.</span></div>
+      <div id="cap-8" class="clip caption" data-start="24.807" data-duration="3.251" data-track-index="5"><span class="pill"><span class="pname"><span class="plogo"><img src="assets/logos/openai.svg" alt="Codex"></span>Codex</span> gets the brief<br>in a read-only sandbox.</span></div>
       <div id="cap-9" class="clip caption" data-start="28.058" data-duration="2.287" data-track-index="5"><span class="pill">This run took about 30 seconds.</span></div>
       <div id="cap-10" class="clip caption" data-start="30.345" data-duration="3.995" data-track-index="5"><span class="pill">Its verdict is fix first,<br>so the command exits 3.</span></div>
       <div id="cap-11" class="clip caption" data-start="34.39" data-duration="4.193" data-track-index="5"><span class="pill">The review is saved in<br><code>reports/review-codex.md</code>.</span></div>
       <div id="cap-12" class="clip caption" data-start="38.583" data-duration="3.921" data-track-index="5"><span class="pill">Each finding cites a file<br>and line, and how to fix it.</span></div>
       <div id="cap-13" class="clip caption" data-start="42.504" data-duration="4.836" data-track-index="5"><span class="pill">Here, a blank name gets no<br>fallback, which breaks <code>AC-02</code>.</span></div>
-      <div id="cap-14" class="clip caption" data-start="47.39" data-duration="4.449" data-track-index="5"><span class="pill">Claude's fix trims the name, and<br>falls back to world when it's empty.</span></div>
+      <div id="cap-14" class="clip caption" data-start="47.39" data-duration="4.449" data-track-index="5"><span class="pill"><span class="pname"><span class="plogo"><img src="assets/logos/claude.svg" alt="Claude"></span>Claude</span>'s fix trims the name, and<br>falls back to world when it's empty.</span></div>
       <div id="cap-15" class="clip caption" data-start="51.839" data-duration="3.094" data-track-index="5"><span class="pill">It also adds a test for blank names.</span></div>
       <div id="cap-16" class="clip caption" data-start="54.933" data-duration="2.557" data-track-index="5"><span class="pill">Run the tests: all three pass.</span></div>
       <div id="cap-17" class="clip caption" data-start="57.54" data-duration="3.509" data-track-index="5"><span class="pill">Then run <code>specweave review</code><br>again, on the fixed code.</span></div>

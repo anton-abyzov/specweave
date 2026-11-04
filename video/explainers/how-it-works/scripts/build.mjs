@@ -2,7 +2,7 @@
 // Inputs: scripts/vo-lines.json, vo-words/<id>.json (word timings), takes/<take>.json (cues and
 // cursor moves from scripts/rec.mjs). Every animation is a transform or opacity tween on one
 // GSAP timeline; times come from the narration's word timings so pops land on the words.
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, cpSync } from "node:fs";
 const here = new URL("..", import.meta.url).pathname;
 const read = (p) => JSON.parse(readFileSync(here + p, "utf8"));
 const vo = read("scripts/vo-lines.json");
@@ -98,6 +98,11 @@ const chip = (label, sub = "", cls = "") => `<span class="pill ${cls}"><b>${labe
 const stepChip = (id, a, b, n, text) => { track++; clip("div", id, a, b, "step", "", `<span class="step-n">${n}</span>${text}`); T(`tl.fromTo("#${id}", {opacity:0, x:-30}, {opacity:1, x:0, duration:0.6, ease:"expo.out"}, ${f(a + 0.2)});`); out(`#${id}`, b - 0.35, 0.25); };
 const bg = (id, a, b, src, rate = 1, mediaStart = 0, extra = "") => { track++; clip("video", id, a, b, "bg", `src="media/${src}" muted playsinline data-media-start="${mediaStart}" data-playback-rate="${rate}" ${extra}`); };
 const SVGNS = 'xmlns="http://www.w3.org/2000/svg"';
+// Official provider marks from video/tutorials/shared/provider-logos, on a dark badge so the white marks read on paper.
+const LOGO_OF = { Claude: "claude", Codex: "openai", Grok: "grok", Copilot: "copilot" };
+const logo = (p, size = 28) => `<span class="plogo" style="width:${size}px;height:${size}px"><img src="assets/logos/${LOGO_OF[p]}.svg" alt="${p}"></span>`;
+mkdirSync(here + "hyperframes/assets/logos", { recursive: true });
+for (const n of new Set(Object.values(LOGO_OF))) cpSync(here + `../../tutorials/shared/provider-logos/${n}.svg`, here + `hyperframes/assets/logos/${n}.svg`);
 const icons = {
   laptop: `<svg ${SVGNS} viewBox="0 0 64 44"><rect x="10" y="4" width="44" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M3 38h58l-4 4H7z" fill="currentColor"/></svg>`,
   tower: `<svg ${SVGNS} viewBox="0 0 64 44"><rect x="6" y="4" width="34" height="26" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M18 36h10M23 30v6" stroke="currentColor" stroke-width="3"/><rect x="45" y="4" width="14" height="36" rx="2" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="52" cy="12" r="2" fill="currentColor"/></svg>`,
@@ -114,7 +119,7 @@ const icons = {
   add(`<div id="s1" class="clip scene" data-start="${a}" data-duration="${f(b - a)}" data-track-index="${track}">
   <div class="vignette"></div>
   <div id="s1-q" class="s1-q">${title("s1-t", "More AI than you can use", "h1 light")}</div>
-  ${["Claude", "Codex", "Grok", "Copilot"].map((n, i) => `<div id="s1-c${i}" class="s1-chip s1-c${i}"><span class="dot d${i}"></span>${n}</div>`).join("")}
+  ${["Claude", "Codex", "Grok", "Copilot"].map((n, i) => `<div id="s1-c${i}" class="s1-chip s1-c${i}">${logo(n, 58)}${n}</div>`).join("")}
   <div id="s1-team" class="s1-team"><div class="mark">SpecWithCode</div><div class="team-sub">one team</div><div class="team-line"></div></div>
 </div>`);
   titleIn("s1-t", W("v01", /^probably/) - 0.2);
@@ -136,11 +141,11 @@ const icons = {
   stepChip("st2", a, b, "1", "Machines and subscriptions");
   const machines = [
     { id: "m4", name: "MacBook M4 Max", os: "macOS", vid: "px-macbook.mp4", x: 150,
-      keys: [{ p: "Claude", acct: "EasyChamp admin", c: "c-claude", n: 0 }, { p: "Codex", acct: "EasyChamp admin", c: "c-codex", n: 0 }] },
+      keys: [{ p: "Claude", acct: "EasyChamp admin", n: 0 }, { p: "Codex", acct: "EasyChamp admin", n: 0 }] },
     { id: "m1", name: "M1", os: "macOS", vid: "px-minipc.mp4", x: 760,
-      keys: [{ p: "Claude", acct: "Marketing", c: "c-claude", n: 1 }, { p: "Codex", acct: "Marketing", c: "c-codex", n: 1 }] },
+      keys: [{ p: "Claude", acct: "Marketing", n: 1 }, { p: "Codex", acct: "Marketing", n: 1 }] },
     { id: "lin", name: "Linux box", os: "Ubuntu", vid: "px-linux.mp4", x: 1370,
-      keys: [{ p: "Grok", acct: "", c: "c-grok" }, { p: "Copilot", acct: "", c: "c-copilot" }] },
+      keys: [{ p: "Grok", acct: "" }, { p: "Copilot", acct: "" }] },
   ];
   const TOP = 290;
   track++;
@@ -154,7 +159,7 @@ const icons = {
     <div class="slot2" style="top:262px"></div><div class="slot2" style="top:336px"></div>
     <div class="signin" id="s2-${m.id}-sign">${icons.lock}<span>Official CLI sign-in</span></div>
   </div>`).join("")}
-  ${machines.flatMap((m, i) => m.keys.map((k, j) => `<div id="s2-k-${m.id}-${j}" class="key2" style="left:${m.x + 26}px;top:${TOP + 262 + j * 74}px"><span class="kdot ${k.c}"></span><b>${k.p}</b>${k.acct ? `<em id="s2-a-${m.id}-${j}">${k.acct}</em>` : ""}</div>`)).join("")}
+  ${machines.flatMap((m, i) => m.keys.map((k, j) => `<div id="s2-k-${m.id}-${j}" class="key2" style="left:${m.x + 26}px;top:${TOP + 262 + j * 74}px">${logo(k.p, 34)}<b>${k.p}</b>${k.acct ? `<em id="s2-a-${m.id}-${j}">${k.acct}</em>` : ""}</div>`)).join("")}
   <div id="s2-stamp" class="stamp" style="top:890px">Nothing is resold</div>
 </div>`);
   pop("#s2-eb", a + 0.5, 0.6, "back.out(2.4)", 0.5, "popHigh");
@@ -201,7 +206,7 @@ const icons = {
     <div class="verdict ${h.bad ? "no" : "yes"}" id="s3-${h.id}-v">${h.bad ? "✕" : icons.check}</div>
     ${h.bad ? "" : [0, 1, 2].map((k) => `<div class="sess" id="s3-s${k}"><span class="live"></span>session ${k + 1}</div>`).join("")}
   </div>`).join("")}
-  <div id="s3-key" class="key2 solo" style="left:800px;top:300px"><span class="kdot c-claude"></span><b>Claude</b><em>your one subscription</em></div>
+  <div id="s3-key" class="key2 solo" style="left:800px;top:300px">${logo("Claude", 34)}<b>Claude</b><em>your one subscription</em></div>
   <div id="s3-ram" class="polaroid" style="left:300px;top:800px"><video class="clip" src="media/px-ram.mp4" muted playsinline data-start="${f(a)}" data-duration="${f(b - a)}" data-media-start="0.5" data-playback-rate="0.9" data-track-index="${track + 40}"></video><span>memory</span></div>
   <div id="s3-ssd" class="polaroid" style="left:620px;top:800px"><video class="clip" src="media/px-ssd.mp4" muted playsinline data-start="${f(a)}" data-duration="${f(b - a)}" data-media-start="0.5" data-playback-rate="0.9" data-track-index="${track + 41}"></video><span>disk</span></div>
   <div id="s3-cloud" class="cloud" style="left:1640px;top:470px"><svg ${SVGNS} viewBox="0 0 120 80"><path d="M30 70h62a22 22 0 0 0 0-44 30 30 0 0 0-57-6A24 24 0 0 0 30 70z" fill="none" stroke="currentColor" stroke-width="5"/></svg><span>someone else's cloud</span><i id="s3-strike"></i></div>
@@ -307,10 +312,10 @@ const icons = {
   add(`<div id="s4h" class="clip scene paper" data-start="${f(hubAt)}" data-duration="${f(b - hubAt)}" data-track-index="${track}">
   <div class="grid"></div>
   <svg class="wires" ${SVGNS} viewBox="0 0 1920 1080">${accts.map((_, i) => `<path id="s4-w${i}" d="M560 ${300 + i * 150} C 680 ${300 + i * 150}, 680 450, 800 450" pathLength="1"/>`).join("")}<path id="s4-w3" d="M1120 450 L1290 450" pathLength="1"/></svg>
-  ${accts.map((n, i) => `<div id="s4-a${i}" class="acct" style="left:220px;top:${266 + i * 150}px"><span class="kdot ${i < 2 ? "c-claude" : "c-codex"}"></span>${n}</div>`).join("")}
+  ${accts.map((n, i) => `<div id="s4-a${i}" class="acct" style="left:220px;top:${266 + i * 150}px">${logo(i < 2 ? "Claude" : "Codex", 36)}${n}</div>`).join("")}
   <div id="s4-hub" class="hubcard" style="left:800px;top:372px"><div class="eyebrow">open source</div><div class="hub-name">CLIProxyAPI hub</div><div class="hub-sub">pools your accounts</div></div>
   <div id="s4-usage" class="usage" style="left:1290px;top:300px"><div class="eyebrow">SpecWithCode · Usage</div>
-    ${["Claude A", "Claude B", "Codex C"].map((n, i) => `<div class="urow"><span>${n}</span><div class="bar"><i id="s4-b${i}"></i></div></div>`).join("")}
+    ${["Claude A", "Claude B", "Codex C"].map((n, i) => `<div class="urow"><span class="ulab">${logo(n.split(" ")[0], 26)}${n}</span><div class="bar"><i id="s4-b${i}"></i></div></div>`).join("")}
     <div class="ufoot">Settings → Providers → Usage providers → Add hub</div></div>
   <div id="s4-opts" class="opts">${["Wait for the reset", "Switch provider", "Move to another machine"].map((o, i) => `<span id="s4-o${i}">${o}</span>`).join("")}</div>
 </div>`);
@@ -345,7 +350,7 @@ const threadsData = [
   <svg class="wires" ${SVGNS} viewBox="0 0 1920 1080"><path id="s5-w0" d="M330 540 L560 540" pathLength="1"/>${threadsData.map((_, i) => `<path id="s5-t${i}w" d="M900 540 C 1000 540, 1000 ${250 + i * 150}, 1090 ${250 + i * 150}" pathLength="1"/>`).join("")}</svg>
   <div id="s5-you" class="you" style="left:150px;top:470px"><div class="avatar">A</div><div>You</div></div>
   <div id="s5-coord" class="coord" style="left:560px;top:450px"><div class="eyebrow">EasyChamp</div><div class="coord-name">Coordinator</div><div class="coord-sub">plans · delegates · reports back</div></div>
-  ${threadsData.map((th, i) => `<div id="s5-t${i}" class="trow" style="left:1090px;top:${200 + i * 150}px"><span class="sdot ${th.c}"></span><div class="tmain"><div class="ttitle">${esc(th.t)}</div><div class="tmeta"><span class="tag mach">${th.m}</span><span class="tag model">${th.mod}</span>${th.pr ? `<span class="tag pr">${th.pr}</span>` : ""}</div></div><span class="tstat ${th.c}">${th.st}</span></div>`).join("")}
+  ${threadsData.map((th, i) => `<div id="s5-t${i}" class="trow" style="left:1090px;top:${200 + i * 150}px"><span class="sdot ${th.c}"></span><div class="tmain"><div class="ttitle">${esc(th.t)}</div><div class="tmeta"><span class="tag mach">${th.m}</span><span class="tag model">${logo(th.mod.split(" ")[0], 20)}${th.mod}</span>${th.pr ? `<span class="tag pr">${th.pr}</span>` : ""}</div></div><span class="tstat ${th.c}">${th.st}</span></div>`).join("")}
 </div>`);
   pop("#s5-you", a + 0.3, 0.3, "back.out(2.4)");
   T(`tl.fromTo("#s5", {scale:1}, {scale:1.035, duration:${f(b - a)}, ease:"none"}, ${f(a)});`);
@@ -517,7 +522,7 @@ const threadsData = [
   <div class="grid"></div>
   <div id="s10-win" class="window"><div class="wbar"><i></i><i></i><i></i><span>SpecWithCode · Control desk</span></div><video id="s10-v" class="clip" src="media/desk.mp4" muted playsinline data-start="${f(a)}" data-duration="${f(b - a)}" data-media-start="${f(takes.desk.t0Offset)}" data-playback-rate="1" data-track-index="${track + 40}"></video></div>
   <div class="s10-words"><span id="s10-w0">Your machines.</span><span id="s10-w1">Your subscriptions.</span><span id="s10-w2" class="acc">One control desk.</span></div>
-  <div id="s10-brand" class="s10-brand"><div class="mark dark">SpecWithCode</div><div class="team-line"></div><div class="s10-url">open source · <b>spec-weave.com/code</b></div></div>
+  <div id="s10-brand" class="s10-brand"><div class="mark dark">SpecWithCode</div><div class="team-line"></div><div class="s10-url">source available · <b>specwithcode.com</b></div></div>
 </div>`);
   T(`tl.fromTo("#s10-win", {opacity:0, y:120, rotateX:18, scale:0.85}, {opacity:1, y:0, rotateX:0, scale:1, duration:1.2, ease:"expo.out"}, ${f(a + 0.1)});`);
   [[/^machines/, 0], [/^subscriptions/, 1], [/^control/, 2]].forEach(([re, i]) => pop(`#s10-w${i}`, W("v12", re) - 0.3, 0.5, "back.out(2.6)", 0.6));
@@ -528,7 +533,7 @@ const threadsData = [
   pop("#s10-brand", brand + 0.2, 0.3, "elastic.out(1, 0.6)", 1.1, "impact");
   S(brand + 0.7, "sparkle", 0.6);
   T(`tl.fromTo("#s10-brand .team-line", {scaleX:0}, {scaleX:1, duration:0.8, ease:"expo.out"}, ${f(brand + 0.6)});`);
-  T(`tl.fromTo("#s10-brand .s10-url", {opacity:0, y:16}, {opacity:1, y:0, duration:0.5, ease:"expo.out"}, ${f(W("v12", /^open/) - 0.1)});`);
+  T(`tl.fromTo("#s10-brand .s10-url", {opacity:0, y:16}, {opacity:1, y:0, duration:0.5, ease:"expo.out"}, ${f(W("v12", /^source/) - 0.1)});`);
 }
 
 // ---------- narration + captions ----------

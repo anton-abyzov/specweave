@@ -17,6 +17,9 @@
       body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
       .clip { position: absolute; }
+      .plogo { display: inline-grid; place-items: center; flex: none; box-sizing: border-box; border-radius: 26%; background: #141118; box-shadow: inset 0 0 0 1px #ffffff26; vertical-align: middle; margin-right: 0.28em; }
+      .plogo img { width: 64%; height: 64%; object-fit: contain; display: block; }
+      .title .plogo { margin-right: 0.2em; vertical-align: -0.12em; }
       .footage { inset: 0; width: 100%; height: 100%; object-fit: cover; }
       .card, .termstage { inset: 0; background: var(--paper); }
       .card-inner { position: absolute; inset: 96px; }
@@ -59,11 +62,11 @@
 
       <section id="intro" class="clip card" data-start="0" data-duration="7.2" data-track-index="1">
         <div class="card-inner">
-          <div class="eyebrow rise">SPECWITHCODE TUTORIAL · ANTIGRAVITY</div>
-          <h1 class="title rise">Antigravity<span class="roman"> in SpecWithCode</span></h1>
+          <div class="eyebrow rise">SPECWITHCODE TUTORIAL · <span class="plogo" style="width:28px;height:28px"><img src="assets/logos/antigravity.svg" alt="Antigravity"></span>ANTIGRAVITY</div>
+          <h1 class="title rise"><span class="plogo" style="width:110px;height:110px"><img src="assets/logos/antigravity.svg" alt="Antigravity"></span>Antigravity<span class="roman"> in SpecWithCode</span></h1>
           <div class="thread" id="intro-thread"></div>
-          <p class="subtitle rise">One task, planned, built and reviewed with Gemini. The plan stays in your repo.</p>
-          <div class="footer rise">spec-weave.com</div>
+          <p class="subtitle rise">One task, planned, built and reviewed with <span class="plogo" style="width:40px;height:40px"><img src="assets/logos/gemini.svg" alt="Gemini"></span>Gemini. The plan stays in your repo.</p>
+          <div class="footer rise">specwithcode.com</div>
         </div>
       </section>
 
@@ -118,7 +121,7 @@
 
       <div id="hl-04-connect-0" class="clip hl-box" data-start="41" data-duration="2.8" data-track-index="4" style="left:662px;top:448px;width:266px;height:80px"></div>
 
-      <div id="chip-04-connect" class="clip chip step" data-start="27.2" data-duration="16.6" data-track-index="2"><span class="chip-inner" id="chipi-04-connect">Settings <span class="arrow">→</span> Providers <span class="arrow">→</span> Add provider <span class="arrow">→</span> Antigravity <span class="arrow">→</span> Add instance</span></div>
+      <div id="chip-04-connect" class="clip chip step" data-start="27.2" data-duration="16.6" data-track-index="2"><span class="chip-inner" id="chipi-04-connect">Settings <span class="arrow">→</span> Providers <span class="arrow">→</span> Add provider <span class="arrow">→</span> <span class="plogo" style="width:28px;height:28px"><img src="assets/logos/antigravity.svg" alt="Antigravity"></span>Antigravity <span class="arrow">→</span> Add instance</span></div>
 
       <audio id="vo-04-connect" src="assets/media/04-connect.wav" data-start="27.4" data-duration="15.92" data-track-index="6" data-volume="1"></audio>
 
@@ -175,14 +178,14 @@
           <div class="eyebrow rise">SPECWITHCODE TUTORIAL 06</div>
           <div class="outro-l1 rise">Increment <code class="accent">0001</code>: verified and closed</div>
           <div class="thread" id="outro-thread"></div>
-          <div class="outro-l2 rise">SpecWithCode · free, early access · spec-weave.com/code</div>
+          <div class="outro-l2 rise">SpecWithCode · free, early access · specwithcode.com</div>
           <div class="outro-l3 rise">All tutorials · spec-weave.com/tutorials</div>
         </div>
       </section>
 
       <audio id="vo-09-outro" src="assets/media/09-outro.wav" data-start="87.6" data-duration="6.08" data-track-index="6" data-volume="1"></audio>
 
-      <div id="cap-1" class="clip caption" data-start="0.2" data-duration="6" data-track-index="5"><span class="pill">Antigravity in SpecWithCode: one task, planned, built and reviewed, with Gemini.</span></div>
+      <div id="cap-1" class="clip caption" data-start="0.2" data-duration="6" data-track-index="5"><span class="pill"><span class="plogo" style="width:42px;height:42px"><img src="assets/logos/antigravity.svg" alt="Antigravity"></span>Antigravity in SpecWithCode: one task, planned, built and reviewed, with <span class="plogo" style="width:42px;height:42px"><img src="assets/logos/gemini.svg" alt="Gemini"></span>Gemini.</span></div>
 
       <div id="cap-2" class="clip caption dark" data-start="7.4" data-duration="2.767" data-track-index="5"><span class="pill">In your repo, run <code>specweave init</code>.</span></div>
 
@@ -190,19 +193,19 @@
 
       <div id="cap-4" class="clip caption" data-start="18.4" data-duration="4.433" data-track-index="5"><span class="pill">Open SpecWithCode and set this Mac up as your main machine.</span></div>
 
-      <div id="cap-5" class="clip caption" data-start="22.833" data-duration="4.133" data-track-index="5"><span class="pill">Antigravity isn't in the first-run list, so continue past it.</span></div>
+      <div id="cap-5" class="clip caption" data-start="22.833" data-duration="4.133" data-track-index="5"><span class="pill"><span class="plogo" style="width:42px;height:42px"><img src="assets/logos/antigravity.svg" alt="Antigravity"></span>Antigravity isn't in the first-run list, so continue past it.</span></div>
 
-      <div id="cap-6" class="clip caption" data-start="27.4" data-duration="5.1" data-track-index="5"><span class="pill">In Settings, Providers, click Add provider and pick Antigravity.</span></div>
+      <div id="cap-6" class="clip caption" data-start="27.4" data-duration="5.1" data-track-index="5"><span class="pill">In Settings, Providers, click Add provider and pick <span class="plogo" style="width:42px;height:42px"><img src="assets/logos/antigravity.svg" alt="Antigravity"></span>Antigravity.</span></div>
 
       <div id="cap-7" class="clip caption" data-start="32.5" data-duration="4.533" data-track-index="5"><span class="pill">Then Next, Next, and Add instance.</span></div>
 
-      <div id="cap-8" class="clip caption" data-start="37.033" data-duration="2.533" data-track-index="5"><span class="pill">SpecWithCode installs its own Antigravity agent.</span></div>
+      <div id="cap-8" class="clip caption" data-start="37.033" data-duration="2.533" data-track-index="5"><span class="pill">SpecWithCode installs its own <span class="plogo" style="width:42px;height:42px"><img src="assets/logos/antigravity.svg" alt="Antigravity"></span>Antigravity agent.</span></div>
 
       <div id="cap-9" class="clip caption" data-start="39.567" data-duration="4" data-track-index="5"><span class="pill">Sign in with your Google account; this one is already signed in.</span></div>
 
       <div id="cap-10" class="clip caption" data-start="44" data-duration="5.3" data-track-index="5"><span class="pill">Add the repo: the plus next to Projects, Local folder, then its path.</span></div>
 
-      <div id="cap-11" class="clip caption" data-start="49.3" data-duration="6" data-track-index="5"><span class="pill">The project opens on its coordinator, and the model picker already shows Gemini 3.8 Flash.</span></div>
+      <div id="cap-11" class="clip caption" data-start="49.3" data-duration="6" data-track-index="5"><span class="pill">The project opens on its coordinator, and the model picker already shows <span class="plogo" style="width:42px;height:42px"><img src="assets/logos/gemini.svg" alt="Gemini"></span>Gemini 3.8 Flash.</span></div>
 
       <div id="cap-12" class="clip caption" data-start="56.2" data-duration="4.233" data-track-index="5" style="bottom:214px"><span class="pill">Set Full access for this demo, describe the change, and send it.</span></div>
 
