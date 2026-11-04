@@ -54,17 +54,17 @@ const LIMITS: {name: string; detail: React.ReactNode}[] = [
 ];
 
 const MACHINE_STEPS: {title: string; body: React.ReactNode}[] = [
-  {title: 'Link SpecWithCode Connect', body: <>On the new machine, open Settings &gt; Connections, sign in to SpecWithCode Connect and turn on Enable SpecWithCode Connect. Only the worker needs it. On a server, run <code>specwithcode connect</code>. It works on any network, with nothing to change on your router.</>},
-  {title: 'Invite the new machine', body: <>On it, open Settings &gt; Connections &gt; Your private machines and choose Invite this machine, or run the command below. You get one line that starts with <code>swc-machine-</code>. A Connect line works once, within an hour.</>},
-  {title: 'Add it on your main machine', body: <>Paste the line into Settings &gt; Connections &gt; Your private machines &gt; Add a machine. It checks that the address answers as that machine before saving it.</>},
-  {title: 'Allow workers', body: <>Choose Allow workers on the machine’s card. Coordinators can now start threads there.</>},
+  {title: 'Link SpecWithCode Connect', body: <>On the new machine, open Settings &gt; Machines, sign in to SpecWithCode Connect and turn on Enable SpecWithCode Connect. Only the worker needs it. On a server, run <code>specwithcode connect</code>. It works on any network, with nothing to change on your router.</>},
+  {title: 'Join a main machine', body: <>On it, open Settings &gt; Machines &gt; Join a main machine and choose Make a join line, or run the command below. You get one line that starts with <code>swc-machine-</code>. A Connect line works once, within an hour.</>},
+  {title: 'Add it on your main machine', body: <>Paste the line into Settings &gt; Machines &gt; Your private machines &gt; Add a machine. It checks that the address answers as that machine before saving it.</>},
+  {title: 'Allow workers', body: <>Choose Allow workers on the machine’s card. This lets the main machine’s coordinators start threads there. Reverse-direction access is a separate grant.</>},
 ];
 
 const CAPACITY: {name: string; detail: React.ReactNode}[] = [
   {name: 'Capacity grows with machines', detail: <>Each machine brings the limits of the accounts signed in on it. Two machines signed in to the same account share that account’s limits, so running agents on both spends them faster, not slower.</>},
   {name: 'Mac, Linux or Windows workers', detail: <>A Mac, a Linux machine on x64 or arm64, or a Windows 10 or 11 PC on x64 can join as a worker over Connect. Each one runs Claude Code, Codex and the other agents on their own sign-ins, your subscriptions included, the same way on every system. On a server you rent in a datacenter we recommend API keys instead of a subscription.</>},
   {name: 'You choose where work runs', detail: <>Threads run on the coordinator’s machine unless the project or the coordinator names another machine you allowed. A usage limit never moves a thread to another machine by itself.</>},
-  {name: 'Nothing is copied between machines', detail: <>Each machine needs its own checkout of the project, with the same remote, and its own provider sign-ins. If a machine drops, a chat can continue on another one.</>},
+  {name: 'Each machine keeps its own sign-ins', detail: <>Source and supported conversation context can transfer through a checked handoff. Provider credentials remain on each machine; adding a machine does not add subscription entitlement.</>},
 ];
 
 const FINISH: {title: string; body: React.ReactNode}[] = [
@@ -337,8 +337,13 @@ export default function Code() {
       <section className={clsx(styles.shell, styles.section)} id="machines" aria-labelledby="machines-title">
         <div className={styles.machinesHead}>
           <div className={clsx(styles.sectionHead, landing.reveal)}>
-            <h2 id="machines-title">Add the machines you trust</h2>
-            <p>Start on one computer. When you want more capacity, link a Mac, Linux or Windows worker to SpecWithCode Connect, add it with an invite line and let coordinators start workers there. Machines reach each other through Connect, whatever network each one is on. If two machines also share a Tailscale network, SpecWithCode can use that address as a direct fallback; Connect stays the primary route.</p>
+            <h2 id="machines-title">Control remotely. Move work deliberately.</h2>
+            <p>Use SpecWithCode on your Mac, Windows PC or Linux machine from another device. Remote control keeps execution on the selected machine. When you want work to change machines, review a handoff and move the thread.</p>
+            <p><strong>Remote control:</strong> agents, commands, files and terminals stay on the selected machine.</p>
+            <p><strong>Move thread:</strong> review the destination, project folder and readiness before continuing there.</p>
+            <p>This controls SpecWithCode, not whole-desktop screen sharing. Moving a thread is a checked continuation, not live-process migration.</p>
+            <p><strong>Run on</strong> selects a new thread’s initial machine. <strong>Runs on</strong> shows existing execution. Changing the viewed machine moves neither a thread nor its coordinator. Moving a coordinator and preparing or copying a project folder are separate actions.</p>
+            <p>Machine connectivity is opt-in under Settings &gt; Machines; external services are under Integrations. SpecWithCode Connect remains the primary transport. Direct routes, including a shared Tailscale address, remain available.</p>
           </div>
           <MachinesDiagram />
         </div>
@@ -354,7 +359,7 @@ export default function Code() {
           <div className={styles.machineCmd}>
             <p className={styles.cmdLabel}>On the machine you are adding</p>
             <InviteCommand />
-            <p className={styles.fine}>The line holds a management credential: treat it like a password, keep it out of chat, and revoke it in Settings &gt; Connections when you no longer need it. By default it stays valid for a year.</p>
+            <p className={styles.fine}>The line holds a management credential: treat it like a password, keep it out of chat, and revoke it in Settings &gt; Machines when you no longer need it. By default it stays valid for a year.</p>
 
             <div className={clsx('wv-note', styles.recommend)}>
               <Users {...icon} />
