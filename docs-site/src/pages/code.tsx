@@ -171,7 +171,6 @@ const SPECWITHCODE_LD = {
 export default function Code() {
   const [flow, setFlow] = useState<Flow>('free');
   useEffect(() => { if (window.location.hash === '#subscriptions') setFlow('subs'); }, []);
-  const chooseFlow = (f: Flow) => setFlow(f);
   const icon28 = useBaseUrl('/img/studio/specwithcode-icon.png');
   const providerBase = useBaseUrl('/img/studio/providers/');
   const logo = (file: string) => `${providerBase}${file}.svg`;
@@ -220,8 +219,7 @@ export default function Code() {
             <HeroDownload />
           </div>
           <div className={styles.heroMedia}>
-            {flow === 'free' && <span className={styles.zero} aria-hidden="true">$0</span>}
-            <FlowStage flow={flow} onFlow={chooseFlow} />
+            <FlowStage flow={flow} onFlow={setFlow} />
           </div>
         </div>
       </header>

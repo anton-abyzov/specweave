@@ -73,14 +73,6 @@
 .osText small { font-size: 12px; line-height: 16px; font-weight: 400; opacity: .8; }
 .downloadsMore { margin-top: var(--wv-space-3) !important; font-size: 14px; line-height: 22px; color: var(--wv-muted); }
 
-/* ---------- Captures ---------- */
-.capture { min-width: 0; }
-.window { overflow: hidden; border: 1px solid var(--wv-line); border-radius: var(--wv-radius-lg); background: #fcfcfb; box-shadow: var(--wv-shadow-window); }
-.windowBar { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #ebe9ee; background: #f6f5f7; }
-.windowBar span { width: 10px; height: 10px; border-radius: 50%; background: #d9d5de; }
-.window img { display: block; width: 100%; height: auto; }
-.capture figcaption { margin-top: var(--wv-space-3); font-size: 13px; line-height: 20px; color: var(--wv-muted); }
-.capture figcaption strong { color: var(--wv-ink); font-weight: 600; }
 
 
 /* ---------- Steps ---------- */
@@ -92,9 +84,6 @@
 .step p { color: var(--wv-muted); font-size: 16px; line-height: 25px; }
 .stepFine { font-size: 13px !important; line-height: 20px !important; }
 .stepLink { margin-top: auto; }
-.stepShot { margin-top: var(--wv-space-2); }
-.stepShot .window { border-radius: var(--wv-radius-md); box-shadow: none; }
-.stepShot .windowBar { display: none; }
 .note { margin-top: var(--wv-space-6); max-width: 820px; }
 
 /* ---------- Download panel ---------- */
@@ -127,7 +116,6 @@
 /* ---------- Narrow screens ---------- */
 @media (max-width: 1000px) {
   .heroGrid { grid-template-columns: minmax(0, 1fr); }
-  .heroShot { transform: none; }
   .steps { grid-template-columns: minmax(0, 1fr); }
   .more { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -140,9 +128,6 @@
   .more { grid-template-columns: minmax(0, 1fr); }
   .downloadPanel { padding: var(--wv-space-8) var(--wv-space-4); }
   .section { padding-top: var(--wv-space-16); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .heroShot { transform: none; }
 }
 
 /* ---------- Campaign hero (v2): loud, warm, never black ---------- */
@@ -162,10 +147,6 @@
 .hero .lead { color: rgba(255,255,255,.92); max-width: 30em; font-size: 21px; line-height: 32px; }
 .hero .badge { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.35); color: #fff; }
 .heroMedia { position: relative; min-width: 0; }
-.zero { position: absolute; z-index: 2; top: -44px; left: -40px; display: grid; place-items: center; width: 132px; height: 132px; border-radius: 50%; background: #ffe600; color: #2a0f3d; border: 5px solid #2a0f3d; font: 850 50px/1 var(--wv-font-sans); letter-spacing: -0.04em; transform: rotate(-10deg); box-shadow: 0 12px 30px -10px rgba(42,15,61,.6); }
-.hero .heroShot { transform: rotate(-1.5deg); }
-.hero .capture figcaption { color: rgba(255,255,255,.88); }
-.hero .capture figcaption strong { color: #fff; }
 .heroDownload { margin-top: var(--wv-space-8); }
 .page a.bigButton { min-height: 64px; gap: 14px; padding-inline: 24px 30px; background: #ffe600; color: #2a0f3d; border: 0; box-shadow: 0 6px 0 #2a0f3d; font-size: 18px; }
 .page a.bigButton:hover { background: #fff27a; color: #2a0f3d; }
@@ -188,21 +169,13 @@
 .vs tbody td:last-child { color: #d0461f; font-weight: 700; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* ---------- Handoff proof ---------- */
-.handoff { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--wv-space-12); align-items: center; }
-.handoffCopy h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: clamp(28px, 3.6vw, 40px); line-height: 1.15; font-weight: 800; letter-spacing: -0.03em; }
-.handoffCopy > p { margin-top: var(--wv-space-4) !important; color: var(--wv-muted); font-size: 19px; line-height: 30px; }
-.handoffCopy .proof { flex-direction: column; }
 
 @media (max-width: 1000px) {
-  .handoff { grid-template-columns: minmax(0, 1fr); }
-  .zero { width: 96px; height: 96px; font-size: 36px; top: -28px; left: auto; right: 0; border-width: 4px; }
 }
 @media (max-width: 600px) {
   .page a.bigButton { width: 100%; }
   .vs { font-size: 14px; line-height: 21px; }
   .vs th, .vs td { padding: 12px 10px; }
-  .hero .heroShot { transform: none; }
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .vs tbody td:last-child { color: #ff8a5c; }
