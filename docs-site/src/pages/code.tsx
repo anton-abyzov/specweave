@@ -27,8 +27,8 @@ import styles from '../components/code/FreeLanding.module.css';
 
 const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/`;
-const TITLE = 'SpecWithCode (Spec with Code): coding agents on your own computers, never stuck on a limit';
-const DESCRIPTION = 'SpecWithCode (Spec with Code): when Claude Code or Codex hits a limit, the chat continues on DeepSeek. Free, source available. macOS, Windows, Linux.';
+const TITLE = 'OpenAI Codex, free: SpecWithCode (Spec with Code) on your own computers, never stuck on a limit';
+const DESCRIPTION = 'SpecWithCode (Spec with Code): Codex on a free ChatGPT account. At a limit, DeepSeek picks up the same chat. Free, source available. macOS, Windows, Linux.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 
 const HANDOFF = {
@@ -88,6 +88,23 @@ function Downloads({placement}: {placement: string}) {
     </ul>
     {unsupported && <p className={styles.downloadsMore} role="note">{UNSUPPORTED[unsupported]}</p>}
     <p className={styles.downloadsMore}>Free, source available. <Link className="wv-link" to="/code/download/">Arm builds, .deb and install steps</Link></p>
+  </div>;
+}
+
+/** One big button for the visitor's own system, with the other systems one click away. */
+function HeroDownload() {
+  const {installer, detected, unsupported} = useSpecWithCodeInstaller();
+  const os: Os = !detected || unsupported ? 'mac' : installer.key === 'mac' ? 'mac' : installer.key.startsWith('windows') ? 'windows' : 'linux';
+  const main = DOWNLOADS.find(d => d.os === os)!;
+  const url = detected && !unsupported ? installer.url : main.url;
+  const note = detected && !unsupported ? installer.platformName : main.note;
+  return <div className={styles.heroDownload}>
+    <a className={clsx('wv-btn', 'wv-btn--lg', 'wv-btn--primary', styles.bigButton)} href={url} data-track="download_click" data-placement="hero" data-os={os}>
+      <span className={styles.osIcon}>{OS_ICON[os]}</span>
+      <span className={styles.osText}><span>Get it free for {main.label}</span><small>{note}</small></span>
+    </a>
+    {unsupported && <p className={styles.heroNote} role="note">{UNSUPPORTED[unsupported]}</p>}
+    <p className={styles.heroNote}>Also for {DOWNLOADS.filter(d => d.os !== os).map((d, i) => <React.Fragment key={d.os}>{i > 0 && ' and '}<a href={d.url} data-track="download_click" data-placement="hero-alt" data-os={d.os}>{d.label}</a></React.Fragment>)}. <a href="#download">All builds</a></p>
   </div>;
 }
 
@@ -198,7 +215,7 @@ export default function Code() {
     </Head>
     <main className={clsx('wv-root', styles.page)}>
 
-      {/* ---------- Hero: the promise and the proof ---------- */}
+      {/* ---------- Hero: the hook, the proof, one download ---------- */}
       <header className={styles.hero}>
         <div className={clsx(styles.shell, styles.heroGrid)}>
           <div className={styles.heroCopy}>
@@ -207,28 +224,54 @@ export default function Code() {
               <span className={styles.productName}>SpecWithCode</span>
               <span className={styles.badge}>Free · source available</span>
             </p>
-            <h1>Your coding agents, <em>never stuck on a limit</em></h1>
-            <p className={styles.lead}>When Claude Code or Codex runs out, the same chat keeps going on DeepSeek, with everything it knew. Start with Codex on a free ChatGPT account.</p>
-            <ul className={styles.proof}>
-              <li><Check size={16} strokeWidth={2} aria-hidden="true" />Works on a free ChatGPT account</li>
-              <li><Check size={16} strokeWidth={2} aria-hidden="true" />Keeps the context when it switches</li>
-              <li><Check size={16} strokeWidth={2} aria-hidden="true" />Mac, Windows and Linux</li>
-            </ul>
-            <Downloads placement="hero" />
-            <ul className={styles.marks} aria-label="Agents shown on this page">
-              <li><img src={marks.claude} alt="" width="22" height="22" />Claude Code</li>
-              <li><img className={styles.darkPlate} src={marks.openai} alt="" width="22" height="22" />Codex</li>
-              <li><img src={marks.deepseek} alt="" width="22" height="22" />DeepSeek</li>
-            </ul>
+            <h1><span className={styles.h1Top}><img className={styles.h1Mark} src={marks.openai} alt="" width="48" height="48" />OpenAI Codex.</span> <em>Free.</em></h1>
+            <p className={styles.lead}>Sign in with a free ChatGPT account: no card, no Codex API key. When it hits a limit, DeepSeek picks up the same chat and keeps coding.</p>
+            <HeroDownload />
           </div>
-          <Capture
-            shot={HANDOFF}
-            eager
-            className={styles.heroShot}
-            caption={<><strong>Real capture, 4 November 2026.</strong> When Claude’s limit hits, DeepSeek picks up the same chat and still knows the code word from before the switch. The limit here was triggered with a test switch; the handoff is real.</>}
-          />
+          <div className={styles.heroMedia}>
+            <span className={styles.zero} aria-hidden="true">$0</span>
+            <Capture
+              shot={CODEX_FREE}
+              eager
+              className={styles.heroShot}
+              caption={<><strong>Real run, 4 November 2026:</strong> GPT-6 Luna on a free ChatGPT account created a file in 8.6 seconds.</>}
+            />
+          </div>
         </div>
       </header>
+
+      {/* ---------- Why this beats free-token APIs ---------- */}
+      <section className={clsx(styles.shell, styles.vsSection)} aria-labelledby="vs-title">
+        <h2 id="vs-title">Free AI tokens went viral. <em>This goes further.</em></h2>
+        <table className={styles.vs}>
+          <thead>
+            <tr><th scope="col"><span className={styles.srOnly}>Feature</span></th><th scope="col">Free-token APIs</th><th scope="col">SpecWithCode</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Limit check</th><td>After a 429 error</td><td>Before it: switches at 98% by default</td></tr>
+            <tr><th scope="row">Handoff</th><td>Swap the model, lose the thread</td><td>Hands the agent off with its context</td></tr>
+            <tr><th scope="row">Other machines</th><td>No</td><td>Continue on another of your machines</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      {/* ---------- The handoff, shown ---------- */}
+      <section id="handoff" className={clsx(styles.shell, styles.section, styles.handoff)} aria-labelledby="handoff-title">
+        <div className={styles.handoffCopy}>
+          <h2 id="handoff-title"><img src={marks.claude} alt="" width="28" height="28" />Limit hit. <img src={marks.deepseek} alt="" width="28" height="28" />DeepSeek takes over.</h2>
+          <p>Same chat, same context. Asked for the code word given before the switch, DeepSeek still knew it.</p>
+          <ul className={styles.proof}>
+            <li><Check size={16} strokeWidth={2} aria-hidden="true" />Works on a free ChatGPT account</li>
+            <li><Check size={16} strokeWidth={2} aria-hidden="true" />Keeps the context when it switches</li>
+            <li><Check size={16} strokeWidth={2} aria-hidden="true" />Mac, Windows and Linux</li>
+          </ul>
+        </div>
+        <Capture
+          shot={HANDOFF}
+          className={styles.handoffShot}
+          caption={<><strong>Real capture, 4 November 2026.</strong> The Claude limit here was triggered with a test switch; the handoff and the remembered context are real.</>}
+        />
+      </section>
 
       {/* ---------- Three steps ---------- */}
       <section id="start" className={clsx(styles.shell, styles.section)} aria-labelledby="start-title">
@@ -247,7 +290,6 @@ export default function Code() {
             <span className={styles.stepNo} aria-hidden="true">2</span>
             <h3><img className={styles.darkPlate} src={marks.openai} alt="" width="22" height="22" />Sign in to Codex with a free ChatGPT account</h3>
             <p>In Settings › Providers, choose Codex and sign in. No card on file. The free plan’s usage limits apply.</p>
-            <Capture shot={CODEX_FREE} className={styles.stepShot} caption="Real capture: GPT-6 Luna on a free account created hello.txt in 8.6 seconds." />
           </li>
           <li className={styles.step}>
             <span className={styles.stepNo} aria-hidden="true">3</span>
@@ -307,7 +349,7 @@ export default function Code() {
       </section>
 
       <section className={clsx(styles.shell, styles.final)} aria-labelledby="final-title">
-        <h2 id="final-title">Never stuck on a limit again</h2>
+        <h2 id="final-title">Codex for free. Never stuck on a limit.</h2>
         <p>Free and source available. Your accounts, your machines. Add the optional SpecWeave CLI to keep <Link className="wv-link" to="/docs/compare/spec-as-code/">the spec with the code</Link>.</p>
         <div className={styles.finalActions}>
           <a className="wv-btn wv-btn--primary wv-btn--lg" href="#download">Download SpecWithCode</a>

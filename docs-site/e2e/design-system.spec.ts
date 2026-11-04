@@ -41,13 +41,15 @@ for (const theme of ['light', 'dark'] as const) {
 }
 
 test.describe('/code hero', () => {
-  test('leads with the promise, three steps and a download for each system', async ({ page }) => {
+  test('leads with the hook, one download, the comparison and three steps', async ({ page }) => {
     await page.goto('/code/');
-    await expect(page.locator('h1')).toHaveText(/never stuck on a limit/);
+    await expect(page.locator('h1')).toHaveText(/OpenAI Codex\.\s*Free\./);
     const hero = page.locator('header').filter({ has: page.locator('h1') });
-    for (const os of ['Mac', 'Windows', 'Linux']) await expect(hero.getByRole('link', { name: new RegExp(`Download for ${os}`) })).toBeVisible();
+    await expect(hero.getByRole('link', { name: /Get it free for/ })).toBeVisible();
+    const downloads = page.locator('#download');
+    for (const os of ['Mac', 'Windows', 'Linux']) await expect(downloads.getByRole('link', { name: new RegExp(`Download for ${os}`) })).toBeVisible();
     await expect(page.locator('#start ol > li')).toHaveCount(3);
-    await expect(hero.locator('img[src*="handoff-claude-deepseek"]')).toBeVisible();
+    await expect(page.locator('#handoff img[src*="handoff-claude-deepseek"]')).toBeVisible();
   });
 
   test('never scrolls sideways on a phone', async ({ page }) => {
