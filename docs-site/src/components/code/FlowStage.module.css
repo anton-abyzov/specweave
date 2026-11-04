@@ -96,3 +96,8 @@
 .threadTitle { flex: 1 1 auto; overflow: hidden; }
 .threadTitle small { display: block; }
 .thread { min-width: 0; }
+.steps button { position: relative; overflow: hidden; }
+.tabProgress { position: absolute; left: 10px; right: 10px; bottom: 3px; height: 2px; border-radius: 2px; background: var(--wv-iris); transform-origin: left center; opacity: .9; }
+.machineBusy .dot { animation: wvPulse 1.6s ease-in-out infinite; }
+@keyframes wvPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: .7; } }
+@media (prefers-reduced-motion: reduce) { .machineBusy .dot { animation: none; } .tabProgress { display: none; } }
