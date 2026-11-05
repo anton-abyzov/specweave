@@ -293,7 +293,7 @@ function ThreadCard({flow, th, t, base, routed}: {flow: Flow; th: Thread; t: num
   const M = MACHINES[th.machine];
   const busy = status === 'running';
   // The handoff is the moment to see: the card flashes while the next agent takes over.
-  const handing = !!next && since < 1400;
+  const handing = !!next && since < 1400 * SPEED;
   const label = queued ? translate({id: 'code.flow.step.starting', message: 'Starting', description: 'Hero diagram, thread status before it starts'}) : tx(status !== 'running' ? th.result : atLimit && th.atLimit && (!next || since < 900) ? th.atLimit : steps[Math.max(0, shown - 1)]);
   return <motion.li
     layout
