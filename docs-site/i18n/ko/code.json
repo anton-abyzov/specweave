@@ -59,6 +59,14 @@
     "message": "전체 빌드",
     "description": "Link to the download section with every build"
   },
+  "code.hero.chrome.title": {
+    "message": "SpecWithCode Browser를 Chrome에 추가",
+    "description": "Title of the Chrome extension card under the hero download button; a link to the Chrome Web Store. Keep product names in English"
+  },
+  "code.hero.chrome.body": {
+    "message": "에이전트가 로그인된 내 Chrome을 사용합니다 · 무료",
+    "description": "One line under the Chrome extension card title"
+  },
   "code.subs.parallel.title": {
     "message": "모든 요금제를 동시에",
     "description": "Card title in the paid plans section"
