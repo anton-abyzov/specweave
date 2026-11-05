@@ -118,7 +118,7 @@ function ChromeMark() {
     <path d="M43.05 13A22 22 0 0 1 24 46l10.3-17.84A11 11 0 0 0 33.9 13Z" fill="#F4B400" />
     <path d="M7.9 7.13 14.47 18.5a11 11 0 0 0 9.53 16.5h.6L17.3 45A22 22 0 0 1 7.9 7.13Z" fill="#0F9D58" />
     <circle cx="24" cy="24" r="8.5" fill="#4285F4" />
-    <circle cx="24" cy="24" r="8.5" fill="none" stroke="#fff" stroke-width="2" />
+    <circle cx="24" cy="24" r="8.5" fill="none" stroke="#fff" strokeWidth={2} />
   </svg>;
 }
 
