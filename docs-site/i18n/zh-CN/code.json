@@ -1,0 +1,3744 @@
+{
+  "installer.mac.label": {
+    "message": "下载 Mac 版",
+    "description": "Download button for the macOS installer. Keep product names in English"
+  },
+  "installer.mac.platformName": {
+    "message": "macOS（Apple silicon）",
+    "description": "Who the macOS installer is for. Keep product names in English"
+  },
+  "installer.windowsX64.label": {
+    "message": "下载 Windows 版",
+    "description": "Download button for the Windows x64 installer. Keep product names in English"
+  },
+  "installer.windowsX64.platformName": {
+    "message": "Windows 10 和 11（x64）",
+    "description": "Who the Windows x64 installer is for. Keep product names in English"
+  },
+  "installer.windowsArm64.label": {
+    "message": "下载 Windows Arm 版",
+    "description": "Download button for the Windows arm64 installer. Keep product names in English"
+  },
+  "installer.windowsArm64.platformName": {
+    "message": "Windows 10 和 11（arm64）",
+    "description": "Who the Windows arm64 installer is for. Keep product names in English"
+  },
+  "installer.linuxX64.label": {
+    "message": "下载 Linux 版",
+    "description": "Download button for the Linux x64 AppImage. Keep product names in English"
+  },
+  "installer.linuxX64.platformName": {
+    "message": "Linux（x64，glibc）",
+    "description": "Who the Linux x64 installer is for. Keep product names in English"
+  },
+  "installer.linuxArm64.label": {
+    "message": "下载 Linux Arm 版",
+    "description": "Download button for the Linux arm64 AppImage. Keep product names in English"
+  },
+  "installer.linuxArm64.platformName": {
+    "message": "Linux（arm64，glibc）",
+    "description": "Who the Linux arm64 installer is for. Keep product names in English"
+  },
+  "installer.linux.debLabel": {
+    "message": "适用于 Debian 和 Ubuntu 的 .deb",
+    "description": "Button for the Linux .deb package. Keep product names in English"
+  },
+  "providers.summary.andMore": {
+    "message": "{names} 等 {count} 个",
+    "description": "Short provider list: {names} is a comma-separated list of coding agent product names (keep in English), {count} is how many more providers there are"
+  },
+  "code.meta.title": {
+    "message": "在你自己的电脑上用 Claude Code 和 Codex，永不被额度卡住：SpecWithCode (Spec with Code)",
+    "description": "Page title of the SpecWithCode landing page. Keep product names in English"
+  },
+  "code.meta.description": {
+    "message": "SpecWithCode (Spec with Code)：在每台机器上，用同一个对话运行 Claude Code 和 Codex。触达用量上限时，下一个智能体接手。免费。支持 macOS、Windows、Linux。",
+    "description": "Meta description of the SpecWithCode landing page. Keep product names in English"
+  },
+  "code.downloads.mac.note": {
+    "message": "Apple silicon，macOS 13+",
+    "description": "Requirements note under the Mac download button. Keep product names in English"
+  },
+  "code.downloads.windows.note": {
+    "message": "Windows 10 和 11，x64",
+    "description": "Requirements note under the Windows download button. Keep product names in English"
+  },
+  "code.downloads.linux.note": {
+    "message": "AppImage，x64",
+    "description": "Package note under the Linux download button. Keep product names in English"
+  },
+  "code.downloads.unsupported.intelMac": {
+    "message": "这台 Mac 使用 Intel 芯片。Mac 版 SpecWithCode 需要 Apple silicon，请改用 Windows 或 Linux 机器。",
+    "description": "Shown when the visitor uses an Intel Mac. Keep product names in English"
+  },
+  "code.downloads.unsupported.mobile": {
+    "message": "SpecWithCode 可运行在 Mac、Windows 电脑或 Linux 机器上。请在这些设备上打开本页下载。",
+    "description": "Shown when the visitor is on a phone or tablet. Keep product names in English"
+  },
+  "code.downloads.list.ariaLabel": {
+    "message": "下载 SpecWithCode",
+    "description": "Accessible label of the list of download buttons. Keep product names in English"
+  },
+  "code.downloads.button": {
+    "message": "下载 {os} 版",
+    "description": "Download button label; {os} is Mac, Windows or Linux"
+  },
+  "code.downloads.more": {
+    "message": "免费，源码可见。{link}",
+    "description": "Line under the download buttons; {link} links to the download page"
+  },
+  "code.downloads.more.link": {
+    "message": "Arm 版本、.deb 和安装步骤",
+    "description": "Link to the download page with Arm builds, .deb packages and install steps"
+  },
+  "code.hero.download.button": {
+    "message": "免费获取 {os} 版",
+    "description": "Main hero download button; {os} is Mac, Windows or Linux"
+  },
+  "code.hero.download.also": {
+    "message": "还支持 {platforms}。{allBuilds}",
+    "description": "Line under the hero download button; {platforms} lists the other systems as links, {allBuilds} links to the download section"
+  },
+  "code.hero.download.also.and": {
+    "message": "和",
+    "description": "Word joining two system names, as in \"Windows and Linux\""
+  },
+  "code.hero.download.allBuilds": {
+    "message": "全部版本",
+    "description": "Link to the download section with every build"
+  },
+  "code.subs.parallel.title": {
+    "message": "每个套餐同时开工",
+    "description": "Card title in the paid plans section"
+  },
+  "code.subs.parallel.body": {
+    "message": "协调器把一个目标拆成多个线程，并行交给 Claude Code、Codex 等智能体，每个线程使用各自的套餐。",
+    "description": "Card text in the paid plans section. Keep product names in English"
+  },
+  "code.subs.machines.title": {
+    "message": "你的每一台机器",
+    "description": "Card title in the paid plans section"
+  },
+  "code.subs.machines.body": {
+    "message": "每台 Mac、Windows 电脑或 Linux 服务器，都会带来其上已登录套餐的额度。每台机器每个提供商登录一个账号。",
+    "description": "Card text in the paid plans section. Keep product names in English"
+  },
+  "code.subs.handoff.title": {
+    "message": "用到 98% 就交接，或按你的设定",
+    "description": "Card title in the paid plans section; 98% is the default handoff point"
+  },
+  "code.subs.handoff.body": {
+    "message": "可按项目在 50% 到 100% 之间设定触发点。在提供商拒绝服务之前，工作就已转到还有余量的套餐上。",
+    "description": "Card text in the paid plans section"
+  },
+  "code.subs.usage.title": {
+    "message": "所有账号的用量一览",
+    "description": "Card title in the paid plans section"
+  },
+  "code.subs.usage.body": {
+    "message": "在“用量 › 额度”中，可以看到每个账号、登录它的机器，以及每个会话窗口和每周窗口的剩余额度。",
+    "description": "Card text in the paid plans section; \"Usage › Limits\" is a menu path in the app, translate it as the app labels it"
+  },
+  "code.more.harnesses.title": {
+    "message": "每个智能体都在自己的原生框架里运行",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.harnesses.body": {
+    "message": "Claude Code、Codex、GitHub Copilot、Cursor、OpenCode 等，都按厂商发布的方式运行，使用你自己的登录账号。",
+    "description": "Card text in the \"more\" section. Keep product names in English"
+  },
+  "code.more.harnesses.link": {
+    "message": "框架与模型",
+    "description": "Card link to the harnesses docs"
+  },
+  "code.more.coordinator.title": {
+    "message": "大任务交给协调器",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.coordinator.body": {
+    "message": "给出一个目标，协调器把它拆成多个工作线程，分给不同的智能体，你只需审阅结果。",
+    "description": "Card text in the \"more\" section"
+  },
+  "code.more.coordinator.link": {
+    "message": "项目如何运作",
+    "description": "Card link to the projects docs"
+  },
+  "code.more.machines.title": {
+    "message": "你的所有机器",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.machines.body": {
+    "message": "把闲置的笔记本、Windows 电脑或小型 Linux 服务器加为工作机器，各自登录各自的账号。",
+    "description": "Card text in the \"more\" section. Keep product names in English"
+  },
+  "code.more.machines.link": {
+    "message": "添加机器",
+    "description": "Card link to the add-a-machine tutorial"
+  },
+  "code.more.builtWithItself.title": {
+    "message": "自己造自己",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.builtWithItself.body": {
+    "message": "2026 年 10 月下半月，SpecWithCode 有 367 个拉取请求由它自己的工作线程提交并合并。",
+    "description": "Card text in the \"more\" section. Keep product names in English"
+  },
+  "code.more.builtWithItself.link": {
+    "message": "查看源码",
+    "description": "Card link to the source repository on GitHub"
+  },
+  "code.faq.free.q": {
+    "message": "SpecWithCode 真的免费吗？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.free.a": {
+    "message": "是的。SpecWithCode 免费，源码可见，支持 Mac、Windows 和 Linux。它从不转售 token，也不加价：你用自己的账号登录即可。Codex 可使用免费的 ChatGPT 账号，受该套餐用量上限的约束。DeepSeek 使用你自己的 DeepSeek API 密钥，费用由 DeepSeek 直接向你计费。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.limit.q": {
+    "message": "Claude Code 触达用量上限会怎样？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.limit.a": {
+    "message": "对话会在同一个线程里带着历史记录，继续交给你设置的下一个智能体，比如使用免费 ChatGPT 账号的 Codex 或 DeepSeek。2026 年 11 月 4 日的测试中，我们用测试开关触发 Claude 的上限，Codex（SpecWithCode 1.0.191）和 DeepSeek 都仍然记得切换前告诉 Claude 的暗号。每个项目都可以选择：自动切换、提示后再切换，或等待额度重置。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.paid.q": {
+    "message": "需要付费的 Claude 或 ChatGPT 套餐吗？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.paid.a": {
+    "message": "不需要。你可以从免费 ChatGPT 账号的 Codex 起步，再加上 DeepSeek 作为备用。如果你已经订阅了 Claude Code 或 ChatGPT，也可以一并登录，并保留 DeepSeek 作为备用。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.local.q": {
+    "message": "一切都留在我的机器上吗？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.local.a": {
+    "message": "不是。智能体进程和项目文件都在你的机器上，但云端模型会通过你选择的提供商接收提示词和相关上下文，其中可能包含代码和文件内容。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.accounts.q": {
+    "message": "同一台机器可以在同一提供商的多个账号之间切换吗？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.accounts.a": {
+    "message": "不建议。每台机器每个提供商只登录一个账号。需要更多额度时，请添加一台带有自己账号的机器，而不是手动切换账号，并遵守各提供商的条款。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.brand.q": {
+    "message": "Spec with Code 和 SpecWithCode 是一回事吗？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.brand.a": {
+    "message": "是的。SpecWithCode 写作一个词，读作 Spec with Code。它是你已在用的编码智能体的免费统一界面。SpecWeave 则是另一个 CLI，负责把规格、任务证据和交接记录保存在 git 里。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.harness.q": {
+    "message": "SpecWithCode 是编码智能体框架吗？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.harness.a": {
+    "message": "不是。框架是厂商围绕自家模型构建的智能体循环、工具、权限和登录机制，Claude Code、Codex 和 GitHub Copilot CLI 都是框架。SpecWithCode 是这些原生框架之上的界面：每个框架照常运行自己的智能体，应用在其上提供项目、工作线程、用量上限、多机器和上下文交接。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.meta.ogImageAlt": {
+    "message": "SpecWithCode：在 macOS、Windows 和 Linux 上统一使用你的编码智能体。免费，源码可见。",
+    "description": "Alt text of the social preview image. Keep product names in English"
+  },
+  "code.meta.twitterImageAlt": {
+    "message": "SpecWithCode：统一使用你的编码智能体。支持 macOS、Windows 和 Linux。",
+    "description": "Alt text of the X/Twitter preview image. Keep product names in English"
+  },
+  "code.hero.badge": {
+    "message": "免费 · 源码可见",
+    "description": "Badge next to the product name in the hero"
+  },
+  "code.hero.title.top": {
+    "message": "Claude Code 与 Codex。",
+    "description": "First line of the hero headline. Keep product names in English"
+  },
+  "code.hero.title.emphasis": {
+    "message": "永不被额度卡住。",
+    "description": "Second, emphasized part of the hero headline"
+  },
+  "code.hero.lead": {
+    "message": "一个对话，所有机器，所有套餐。从免费 ChatGPT 账号的 Codex 起步，或加入你已在付费的 Claude Max 和 ChatGPT Pro。Claude Code 快到上限时，Codex 带着历史记录接手同一个线程。",
+    "description": "Hero lead paragraph. Keep product names in English"
+  },
+  "code.stats.title.main": {
+    "message": "数百万人在用的 Codex。",
+    "description": "First part of the stats section heading. Keep product names in English"
+  },
+  "code.stats.title.emphasis": {
+    "message": "用你的账号免费用。",
+    "description": "Second, emphasized part of the stats section heading"
+  },
+  "code.stats.weeklyUsers.label": {
+    "message": "人每周使用 Codex",
+    "description": "Stat label after 5M+. Keep product names in English"
+  },
+  "code.stats.weeklyUsers.source": {
+    "message": "OpenAI，2026 年 6 月",
+    "description": "Source link for the weekly users stat. Keep product names in English"
+  },
+  "code.stats.free.label": {
+    "message": "免费 ChatGPT 账号即可用 Codex",
+    "description": "Stat label after $0. Keep product names in English"
+  },
+  "code.stats.free.source": {
+    "message": "OpenAI，限时",
+    "description": "Source link for the free Codex stat. Keep product names in English"
+  },
+  "code.stats.threshold.label": {
+    "message": "SpecWithCode 默认的交接点，在额度耗尽前就切换",
+    "description": "Stat label after 98%. Keep product names in English"
+  },
+  "code.stats.threshold.note": {
+    "message": "可在 50% 到 100% 之间设置",
+    "description": "Small note under the 98% stat"
+  },
+  "code.subs.title": {
+    "message": "每月付 $200？那就物尽其用。",
+    "description": "Heading of the paid plans section"
+  },
+  "code.subs.intro": {
+    "message": "SpecWithCode 在你登录的每台机器上，用你已在付费的套餐运行各个智能体，某个套餐快用完时也不会停下。",
+    "description": "Intro of the paid plans section. Keep product names in English"
+  },
+  "code.subs.plans.ariaLabel": {
+    "message": "此处展示的套餐",
+    "description": "Accessible label of the list of paid plans"
+  },
+  "code.subs.plans.claude": {
+    "message": "Claude Max 和 Pro",
+    "description": "Paid plan names. Keep product names in English"
+  },
+  "code.subs.plans.chatgpt": {
+    "message": "ChatGPT Pro 和 Plus",
+    "description": "Paid plan names. Keep product names in English"
+  },
+  "code.start.title": {
+    "message": "三步完成设置",
+    "description": "Heading of the setup steps section"
+  },
+  "code.start.intro": {
+    "message": "大约两分钟，试用无需付费。",
+    "description": "Intro of the setup steps section"
+  },
+  "code.start.step1.title": {
+    "message": "安装 SpecWithCode",
+    "description": "Setup step 1 title. Keep product names in English"
+  },
+  "code.start.step1.body": {
+    "message": "下载到你的 Mac、Windows 电脑或 Linux 机器上并打开。无需 SpecWithCode 账号。",
+    "description": "Setup step 1 text. Keep product names in English"
+  },
+  "code.start.step1.link": {
+    "message": "下载",
+    "description": "Link to the download section"
+  },
+  "code.start.step2.title": {
+    "message": "用免费 ChatGPT 账号登录 Codex",
+    "description": "Setup step 2 title. Keep product names in English"
+  },
+  "code.start.step2.body": {
+    "message": "在“设置 › 提供商”中选择 Codex 并登录。无需绑定银行卡。适用免费套餐的用量上限。",
+    "description": "Setup step 2 text; Settings › Providers is a menu path in the app. Keep product names in English"
+  },
+  "code.start.step3.title": {
+    "message": "添加 DeepSeek 作为备用",
+    "description": "Setup step 3 title. Keep product names in English"
+  },
+  "code.start.step3.body": {
+    "message": "在“设置 › 提供商”中用你自己的 DeepSeek API 密钥添加 DeepSeek Harness。Codex 或 Claude Code 触达上限时，对话会带着上下文转到 DeepSeek。",
+    "description": "Setup step 3 text; Settings › Providers is a menu path in the app. Keep product names in English"
+  },
+  "code.start.step3.fine": {
+    "message": "DeepSeek 的 API 用量由其直接向你计费。SpecWithCode 不加任何费用。",
+    "description": "Fine print under setup step 3. Keep product names in English"
+  },
+  "code.start.note": {
+    "message": "{question}也登录它们，继续使用。其中一个触达上限时，对话可以转到 DeepSeek。云端模型仍会通过你选择的提供商接收提示词和相关上下文。",
+    "description": "Note under the setup steps; {question} is the bold lead-in question. Keep product names in English"
+  },
+  "code.start.note.question": {
+    "message": "已经在付费使用 Claude Code 或 ChatGPT？",
+    "description": "Bold question opening the note under the setup steps. Keep product names in English"
+  },
+  "code.downloads.title": {
+    "message": "获取 SpecWithCode",
+    "description": "Heading of the download section. Keep product names in English"
+  },
+  "code.downloads.version.same": {
+    "message": "适用于 Mac、Windows 和 Linux 的 {version} 版。",
+    "description": "Release line when all builds share one version; {version} is the version number. Keep product names in English"
+  },
+  "code.downloads.version.split": {
+    "message": "Mac {macVersion}，Windows 和 Linux {desktopVersion}。",
+    "description": "Release line when the Mac build has a different version; {macVersion} and {desktopVersion} are version numbers. Keep product names in English"
+  },
+  "code.downloads.signing": {
+    "message": "Mac 应用已签名并通过公证；Windows 和 Linux 安装包暂未进行代码签名。",
+    "description": "Signing status of the installers. Keep product names in English"
+  },
+  "code.more.title": {
+    "message": "需要时，还有更多",
+    "description": "Heading of the more section"
+  },
+  "code.more.agents.ariaLabel": {
+    "message": "其他支持的编码智能体",
+    "description": "Accessible label of the list of other coding agents"
+  },
+  "code.more.agents.andMore": {
+    "message": "等等",
+    "description": "Last item of the agent list, links to all harnesses"
+  },
+  "code.faq.title": {
+    "message": "常见问题",
+    "description": "Heading of the FAQ section"
+  },
+  "code.final.title": {
+    "message": "免费用 Codex，永不被额度卡住。",
+    "description": "Heading of the closing call to action. Keep product names in English"
+  },
+  "code.final.body": {
+    "message": "免费，源码可见。你的账号，你的机器。再加上可选的 SpecWeave CLI，{link}。",
+    "description": "Closing paragraph; {link} links to the spec-as-code comparison. Keep product names in English"
+  },
+  "code.final.body.link": {
+    "message": "让规格与代码始终在一起",
+    "description": "Link text that ends the closing paragraph, as in keep the spec with the code"
+  },
+  "code.final.download": {
+    "message": "下载 SpecWithCode",
+    "description": "Closing call-to-action button. Keep product names in English"
+  },
+  "code.final.source": {
+    "message": "在 GitHub 查看源码",
+    "description": "Closing link to the source repository. Keep product names in English"
+  },
+  "home.proof.folder.spec": {
+    "message": "计划及其验收标准",
+    "description": "Note next to spec.md in the increment folder listing"
+  },
+  "home.proof.folder.ledger": {
+    "message": "谁认领并完成了每项任务",
+    "description": "Note next to ledger.jsonl in the increment folder listing"
+  },
+  "home.proof.folder.handoff": {
+    "message": "上一个智能体停在了哪里",
+    "description": "Note next to handoff.md in the increment folder listing"
+  },
+  "home.proof.folder.taskReport": {
+    "message": "台账引用的测试输出",
+    "description": "Note next to task-T-02.txt in the increment folder listing"
+  },
+  "home.proof.folder.verifyMd": {
+    "message": "测试、lint、构建和验收标准",
+    "description": "Note next to verify.md in the increment folder listing"
+  },
+  "home.proof.folder.verifyJson": {
+    "message": "关闭增量的闸门",
+    "description": "Note next to verify.json in the increment folder listing"
+  },
+  "home.proof.folder.review": {
+    "message": "由另一个模型给出的评审",
+    "description": "Note next to review-codex.md in the increment folder listing"
+  },
+  "home.proof.folder.memory": {
+    "message": "接手时每个工具都会读取的事实",
+    "description": "Note next to memory/MEMORY.md in the increment folder listing"
+  },
+  "home.app.approval.alt": {
+    "message": "Codex 工作线程的截图局部：/bin/zsh -lc \"pwd; rg --files -g AGENTS.md\" 的命令审批，带有“拒绝”和“批准”按钮",
+    "description": "Alt text of a screenshot crop. Keep Codex and the shell command in English"
+  },
+  "home.app.machines.local": {
+    "message": "在你的代码、技能和登录状态所在的地方运行。",
+    "description": "List item under \"Your machines, not a cloud container\""
+  },
+  "home.app.machines.sleep": {
+    "message": "笔记本休眠时，工作线程仍在运行它的那台机器上继续工作。",
+    "description": "List item under \"Your machines, not a cloud container\""
+  },
+  "home.app.machines.signIn": {
+    "message": "每个智能体使用其提供商自己的登录和审批。我们这里没有账号。",
+    "description": "List item under \"Your machines, not a cloud container\""
+  },
+  "home.builtWith.specwithcode": {
+    "message": "应用本身，用 SpecWeave 增量规划：2026 年 10 月，由它自己的工作线程合并了 367 个拉取请求。",
+    "description": "Description of SpecWithCode in the Built with SpecWeave list. Keep product names in English"
+  },
+  "home.builtWith.easychamp": {
+    "message": "联赛和俱乐部工具，由多个 Claude Code 线程、两个订阅和 Codex 共同构建。",
+    "description": "Description of EasyChamp in the Built with SpecWeave list. Keep product names in English"
+  },
+  "home.builtWith.jobweave": {
+    "message": "求职、定制简历和面试准备。",
+    "description": "Description of JobWeave in the Built with SpecWeave list"
+  },
+  "home.builtWith.verifiedSkill": {
+    "message": "技能发现、源码检查和本地评测。",
+    "description": "Description of Verified Skill in the Built with SpecWeave list"
+  },
+  "home.tutorials.length.minSec": {
+    "message": "{m} 分 {s} 秒",
+    "description": "Video length in minutes and seconds"
+  },
+  "home.tutorials.length.min": {
+    "message": "{m} 分钟",
+    "description": "Video length in whole minutes"
+  },
+  "home.tutorials.length.sec": {
+    "message": "{s} 秒",
+    "description": "Video length in seconds"
+  },
+  "home.download.ariaLabel": {
+    "message": "下载 SpecWithCode {version}，适用于 macOS（Apple silicon），{size}",
+    "description": "Accessible label of the Download for Mac button; {version} is the app version, {size} the file size. Keep product names in English"
+  },
+  "home.download.button": {
+    "message": "下载 Mac 版",
+    "description": "Primary button that downloads the Mac app"
+  },
+  "home.meta.title": {
+    "message": "面向 Claude Code、Codex 和 Cursor 的规格驱动交接",
+    "description": "Home page <title>. Keep product names in English"
+  },
+  "home.meta.description": {
+    "message": "开源 CLI，把规格、任务台账和交接记录保存在 git 里，Claude Code 触达用量上限时，Codex 或任何智能体都能接着干。免费，MIT 协议。",
+    "description": "Home page meta description. Keep product names in English"
+  },
+  "home.tools.label": {
+    "message": "兼容",
+    "description": "Label before the list of supported agent tools"
+  },
+  "home.family.title": {
+    "message": "一份 git 记录，三种使用方式",
+    "description": "Heading of the product family section"
+  },
+  "home.family.lead": {
+    "message": "SpecWeave 把计划和证据保存在你的仓库里。SpecWithCode 在你的机器上，依据这份记录运行智能体。Verified Skill 为这些智能体提供可以先行检查的技能。",
+    "description": "Lead of the product family section. Keep product names in English"
+  },
+  "home.guides.ariaLabel": {
+    "message": "指南",
+    "description": "Accessible label of the guide links navigation"
+  },
+  "home.guides.label": {
+    "message": "指南",
+    "description": "Label before the guide links"
+  },
+  "home.guides.usageLimit": {
+    "message": "Claude Code 用量上限",
+    "description": "Guide link. Keep Claude Code in English"
+  },
+  "home.guides.switchToCodex": {
+    "message": "把 Claude Code 切换到 Codex",
+    "description": "Guide link. Keep product names in English"
+  },
+  "home.guides.handoff": {
+    "message": "Claude Code 交接",
+    "description": "Guide link. Keep Claude Code in English"
+  },
+  "home.guides.compare": {
+    "message": "规格驱动工具对比",
+    "description": "Guide link to the tool comparison"
+  },
+  "home.how.title": {
+    "message": "Claude Code 触达上限时，Codex 接手同一项任务",
+    "description": "Heading of the handoff section. Keep product names in English"
+  },
+  "home.how.lead": {
+    "message": "交接会带上规格、认领记录和证据。没有任何东西只存在于某个聊天窗口里。",
+    "description": "Lead of the handoff section"
+  },
+  "home.how.note": {
+    "message": "增量示例，采用 specweave {version} 可读取的格式：验收标准写成 {format} 行，台账每行一个 JSON 对象。在 {link} 中查看真实的接手过程。",
+    "description": "Note under the handoff example; {version} is the CLI version, {format} a code sample, {link} a link labelled 'How SpecWeave works'"
+  },
+  "home.how.note.link": {
+    "message": "SpecWeave 如何运作",
+    "description": "Link text to the product page. Keep SpecWeave in English"
+  },
+  "home.proof.title": {
+    "message": "没有证明，就不能关闭",
+    "description": "Heading of the proof section"
+  },
+  "home.proof.lead": {
+    "message": "打开增量文件夹，就能看到计划了什么、谁做的、用什么证明的。",
+    "description": "Lead of the proof section"
+  },
+  "home.proof.folder.ariaLabel": {
+    "message": "增量文件夹中的文件",
+    "description": "Accessible label of the increment folder listing"
+  },
+  "home.proof.verify.chip": {
+    "message": "通过",
+    "description": "Pass chip for specweave verify"
+  },
+  "home.proof.verify.detail": {
+    "message": "运行你的测试、lint 和构建命令，检查 {spec} 中的每条验收标准是否都已勾选，并写入 {report}。",
+    "description": "Explains specweave verify; {spec} and {report} are file names, keep them"
+  },
+  "home.proof.review.chip": {
+    "message": "退出码 3，先修复",
+    "description": "Warning chip for specweave review: exit code 3 means fix first"
+  },
+  "home.proof.review.detail": {
+    "message": "把差异交给另一个模型家族的评审者：Codex 评审 Claude 写的代码，Claude 评审 Codex 写的代码。报告会保存在 {report}；退出码 0 表示可以发布。",
+    "description": "Explains specweave review; {report} is a file name, keep it. Keep product names in English"
+  },
+  "home.proof.complete.chip": {
+    "message": "已拦截",
+    "description": "Fail chip for specweave complete"
+  },
+  "home.proof.complete.detail": {
+    "message": "没有通过的 {file}，就拒绝关闭增量。仍要关闭需要加 {flag}，原因会随增量一并保存。",
+    "description": "Explains specweave complete; {file} is a file name and {flag} a command flag, keep them"
+  },
+  "home.proof.caption": {
+    "message": "specweave {version} 的行为，发布于 {date}。",
+    "description": "Caption; {version} is the CLI version, {date} its release date"
+  },
+  "home.app.title": {
+    "message": "用桌面应用运行同样的工作",
+    "description": "Heading of the desktop app section"
+  },
+  "home.app.lead": {
+    "message": "SpecWithCode 在你自己的机器和订阅上，以线程的形式运行这些增量：每个项目一个协调器，工作线程可使用你已登录的任一提供商。",
+    "description": "Lead of the desktop app section. Keep SpecWithCode in English"
+  },
+  "home.app.usage.window": {
+    "message": "用量与额度",
+    "description": "Window title bar label: the app's Usage and limits screen"
+  },
+  "home.app.usage.open.ariaLabel": {
+    "message": "打开“用量与额度”截图的完整大小版本",
+    "description": "Accessible label of the screenshot link"
+  },
+  "home.app.usage.alt": {
+    "message": "SpecWithCode 的“用量与额度”界面：Codex 每周剩余 10%；Claude 会话剩余 2%，每周剩余 54%，每周 Fable 剩余 84%，每项都附带重置时间",
+    "description": "Alt text of the usage screenshot. Keep product and model names in English"
+  },
+  "home.app.usage.caption": {
+    "message": "所有已登录账号的会话窗口和每周窗口，集中在一个界面。截取自 2026 年 10 月 10 日的 SpecWithCode 录屏。",
+    "description": "Caption of the usage screenshot. Keep SpecWithCode in English"
+  },
+  "studioWindow.viewFullSize": {
+    "message": "查看原图",
+    "description": "Link that opens the full-size screenshot"
+  },
+  "home.app.approval.window": {
+    "message": "Codex 工作线程",
+    "description": "Window title bar label. Keep Codex in English"
+  },
+  "home.app.approval.caption": {
+    "message": "Codex 工作线程在运行命令前先征求同意，使用提供商自己的审批机制。截取自 2026 年 10 月 15 日的 SpecWithCode 录屏。",
+    "description": "Caption of the approval screenshot. Keep product names in English"
+  },
+  "home.app.machines.title": {
+    "message": "你自己的机器，不是云端容器",
+    "description": "Heading of the machines list"
+  },
+  "home.app.machines.add": {
+    "message": "通过 SpecWithCode Connect 添加 Mac mini 或 Linux 机器：在那台机器上用你的账号关联 Connect，在其“设置”里选择“邀请这台机器”，或在那里运行 {command}，然后把得到的那一行粘贴到主 Mac 的“设置”“连接”下的“添加机器”中。",
+    "description": "How to add a machine; {command} is a shell command, keep it. 'Invite this machine', 'Add a machine' and 'Settings, Connections' are app UI labels. Keep product names in English"
+  },
+  "home.app.boundary.title": {
+    "message": "一台机器对应一个订阅。",
+    "description": "Bold lead-in of the one-machine-per-subscription note"
+  },
+  "home.app.boundary.body": {
+    "message": "每台机器每个提供商只登录一个账号并保持不变，例如一个账号用于 Claude Code，另一个用于 Codex。在同一台机器上手动切换订阅容易造成混乱；需要更多额度时，请添加一台机器。",
+    "description": "Body of the one-machine-per-subscription note. Keep product names in English"
+  },
+  "home.app.link": {
+    "message": "查看 SpecWithCode 的全部功能",
+    "description": "Link to the SpecWithCode page. Keep SpecWithCode in English"
+  },
+  "home.tutorials.title": {
+    "message": "几分钟学会",
+    "description": "Heading of the tutorials section"
+  },
+  "home.tutorials.lead": {
+    "message": "真实应用的配音录屏，附字幕和章节。",
+    "description": "Lead of the tutorials section"
+  },
+  "home.tutorials.chapters": {
+    "message": "{count} 章",
+    "description": "Number of chapters in a tutorial video (always 2 or more)"
+  },
+  "home.tutorials.published": {
+    "message": "发布于 {date}",
+    "description": "Tutorial publication date; {date} is a formatted date"
+  },
+  "home.tutorials.all": {
+    "message": "全部教程",
+    "description": "Link to the tutorials index"
+  },
+  "home.pricing.title": {
+    "message": "对每位开发者和团队免费",
+    "description": "Heading of the pricing summary"
+  },
+  "home.pricing.lead": {
+    "message": "只有 Pro（不限数量的 Connect 机器、私有技能）或带部署和支持的团队合同才需要付费。",
+    "description": "Lead of the pricing summary. Pro and Connect are product names; keep them in English"
+  },
+  "home.pricing.link": {
+    "message": "查看定价",
+    "description": "Button linking to the pricing page"
+  },
+  "home.pricing.fact.app": {
+    "message": "SpecWithCode 应用",
+    "description": "Pricing fact term. Keep SpecWithCode in English"
+  },
+  "home.pricing.fact.app.value": {
+    "message": "免费",
+    "description": "Price of the SpecWithCode app"
+  },
+  "home.pricing.fact.cli": {
+    "message": "SpecWeave CLI",
+    "description": "Pricing fact term. Keep SpecWeave CLI in English"
+  },
+  "home.pricing.fact.cli.value": {
+    "message": "免费，MIT 许可",
+    "description": "Price and license of the CLI; keep MIT"
+  },
+  "home.pricing.fact.seat": {
+    "message": "席位费",
+    "description": "Pricing fact term: per-seat fee"
+  },
+  "home.pricing.fact.seat.value": {
+    "message": "无",
+    "description": "Value for Seat fee: there is none"
+  },
+  "home.pricing.fact.connect": {
+    "message": "Connect 机器",
+    "description": "Pricing fact term. Connect is a product name; keep it in English"
+  },
+  "home.pricing.fact.connect.value": {
+    "message": "免费 3 台，前 300 位创始用户 10 台，Pro 不限",
+    "description": "How many Connect machines each plan includes. Pro is a plan name; keep it in English"
+  },
+  "home.pricing.fact.markup": {
+    "message": "你的 AI 订阅加价",
+    "description": "Pricing fact term"
+  },
+  "home.pricing.fact.markup.value": {
+    "message": "无",
+    "description": "Value for Markup on your AI subscriptions: there is none"
+  },
+  "home.builtWith.title": {
+    "message": "用 SpecWeave 构建",
+    "description": "Heading of the list of products built with SpecWeave. Keep SpecWeave in English"
+  },
+  "home.final.title": {
+    "message": "带上所有智能体，工作不丢进度",
+    "description": "Final call-to-action heading"
+  },
+  "home.final.cliLink": {
+    "message": "从 CLI 开始",
+    "description": "Link to the CLI getting started guide"
+  },
+  "integrations.agents.claude.tool": {
+    "message": "Claude Code，包括 Projects 线程",
+    "description": "Agent card title. Keep product names in English"
+  },
+  "integrations.agents.claude.reads": {
+    "message": "CLAUDE.md，它会导入 AGENTS.md",
+    "description": "Files the agent reads. Keep file names in English"
+  },
+  "integrations.agents.grok.reads": {
+    "message": "AGENTS.md 和 CLAUDE.md",
+    "description": "Files the agent reads. Keep file names in English"
+  },
+  "integrations.agents.grok.skills": {
+    "message": ".grok/skills/、.agents/skills/、Claude Code 技能",
+    "description": "Skill folders the agent loads. Keep folder paths and product names in English"
+  },
+  "integrations.agents.others.skills": {
+    "message": "各自的文件夹，或直接使用 CLI",
+    "description": "Where other agents load skills from"
+  },
+  "integrations.trackers.guide.jiraAdo": {
+    "message": "Jira 和 Azure DevOps",
+    "description": "Link label to the Jira and Azure DevOps sync guide. Keep product names in English"
+  },
+  "integrations.trackers.github.when": {
+    "message": "议题和代码在同一个地方。",
+    "description": "When GitHub Issues is useful"
+  },
+  "integrations.trackers.jira.when": {
+    "message": "产品和工程共用现有的交付流程。",
+    "description": "When Jira is useful"
+  },
+  "integrations.trackers.ado.when": {
+    "message": "你的组织用工作项和看板做规划。",
+    "description": "When Azure DevOps is useful"
+  },
+  "integrations.diagram.caption": {
+    "message": "示意图 · 每个智能体都读取你仓库里的同一批文件",
+    "description": "Caption under the repository diagram"
+  },
+  "integrations.meta.title": {
+    "message": "AI 编码智能体与集成",
+    "description": "Integrations page title"
+  },
+  "integrations.meta.description": {
+    "message": "SpecWeave 适用于所有读取 AGENTS.md 的编码智能体。议题跟踪器同步是可选的。",
+    "description": "Integrations page meta description. Keep product and file names in English"
+  },
+  "integrations.hero.title": {
+    "message": "每个编码智能体都能读懂。",
+    "description": "Integrations page hero headline"
+  },
+  "integrations.hero.lead": {
+    "message": "SpecWeave 不需要服务，也不需要账号。编码智能体直接读取你仓库里的文件，所以 Claude Code、Codex、Grok 等都能接上同一份规格和台账。",
+    "description": "Integrations hero lead paragraph. Keep product names in English"
+  },
+  "integrations.agents.title": {
+    "message": "编码智能体",
+    "description": "Coding agents section heading"
+  },
+  "integrations.agents.intro": {
+    "message": "每个工具里的 CLI 都一样，所以没有技能的工具也能跑通整个流程。在它们之间切换，或在同一工具的两个订阅之间切换，就是一次{handoffLink}。更多内容见{othersLink}。",
+    "description": "Coding agents section intro. {handoffLink} is a link reading 'handoff and a pickup'; {othersLink} is a link reading 'Codex, Grok and others'"
+  },
+  "integrations.agents.intro.handoffLink": {
+    "message": "交接加接手",
+    "description": "Link text to the cross-tool handoff guide"
+  },
+  "integrations.agents.intro.othersLink": {
+    "message": "Codex、Grok 及其他智能体",
+    "description": "Link text to the generic AI tools guide. Keep product names in English"
+  },
+  "integrations.agents.facts.reads": {
+    "message": "读取",
+    "description": "Label: files an agent reads"
+  },
+  "integrations.agents.facts.skills": {
+    "message": "技能",
+    "description": "Label: where an agent loads skills from"
+  },
+  "integrations.trackers.title": {
+    "message": "议题跟踪器（可选）",
+    "description": "Issue trackers section heading"
+  },
+  "integrations.trackers.intro": {
+    "message": "推送属于对外写入，因此只在你运行时才会发生。开始、暂停或恢复增量绝不会碰跟踪器，除了推送，也没有任何操作会创建议题。仅当开启“完成时关闭”设置时，完成增量才会关闭推送所关联的议题；{syncSetup}会开启它，你也可以关闭。{syncPull}会报告跟踪器中发生了什么变化，供你审阅；它不会改写你的本地文件。",
+    "description": "Issue trackers section intro. {syncSetup} and {syncPull} are CLI commands shown as code"
+  },
+  "integrations.trackers.usefulWhen": {
+    "message": "适用场景",
+    "description": "Label before when a tracker is useful"
+  },
+  "integrations.trackers.code.setup": {
+    "message": "连接跟踪器",
+    "description": "Shell comment after specweave sync setup"
+  },
+  "integrations.trackers.code.status": {
+    "message": "凭据、健康状况、将发生的变更",
+    "description": "Shell comment after specweave sync status"
+  },
+  "integrations.trackers.code.push": {
+    "message": "按你的选择发布进度",
+    "description": "Shell comment after specweave sync push"
+  },
+  "integrations.trackers.code.pull": {
+    "message": "报告在跟踪器中所做的变更",
+    "description": "Shell comment after specweave sync pull"
+  },
+  "integrations.owns.title": {
+    "message": "谁负责什么",
+    "description": "Ownership section heading"
+  },
+  "integrations.owns.intro": {
+    "message": "议题被关闭，并不代表验收标准已通过；通过的验证报告才算数。",
+    "description": "Ownership section intro"
+  },
+  "integrations.owns.repo.chip": {
+    "message": "在你的仓库里",
+    "description": "Chip: owned in your repository"
+  },
+  "integrations.owns.repo.title": {
+    "message": "规格与台账",
+    "description": "Card title: what the repository owns"
+  },
+  "integrations.owns.repo.body": {
+    "message": "规格和台账记录了“完成”意味着什么，以及验证了什么。",
+    "description": "Card body: what the repository owns"
+  },
+  "integrations.owns.tracker.chip": {
+    "message": "在跟踪器里",
+    "description": "Chip: owned in the issue tracker"
+  },
+  "integrations.owns.tracker.title": {
+    "message": "规划上下文",
+    "description": "Card title: what the tracker owns"
+  },
+  "integrations.owns.tracker.body": {
+    "message": "跟踪器保存规划上下文：优先级、负责人、标签，以及相关方查看进度的地方。",
+    "description": "Card body: what the tracker owns"
+  },
+  "integrations.faq.needTracker.q": {
+    "message": "我需要跟踪器吗？",
+    "description": "FAQ question"
+  },
+  "integrations.faq.needTracker.a": {
+    "message": "不需要。规格、台账、交接和仪表板都能在本地使用。需要让协作更顺畅时再加跟踪器。",
+    "description": "FAQ answer"
+  },
+  "integrations.faq.boardJira.q": {
+    "message": "在仪表板上移动卡片会更新 Jira 吗？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "integrations.faq.boardJira.a": {
+    "message": "不会。看板变更只在本地。想更新跟踪器时，对该增量运行 {command}。",
+    "description": "FAQ answer. {command} is a CLI command shown as code"
+  },
+  "integrations.faq.evaluate.q": {
+    "message": "团队应该如何评估？",
+    "description": "FAQ question"
+  },
+  "integrations.faq.evaluate.a": {
+    "message": "先用一个仓库和一个临时的跟踪器项目。连接真正的跟踪器之前，用 {command} 检查映射、权限、重新打开的议题和部分失败的情况。",
+    "description": "FAQ answer. {command} is a CLI command shown as code"
+  },
+  "integrations.also.title": {
+    "message": "SpecWeave 的其他产品",
+    "description": "Related products heading. Keep product names in English"
+  },
+  "integrations.also.jev.body": {
+    "message": "用一个小而快的模型回答封闭集合的决策问题。",
+    "description": "Jev card description"
+  },
+  "integrations.also.vskill.body": {
+    "message": "经过安全检查的智能体技能注册表，用 {command} 安装。",
+    "description": "Verified Skill card description. {command} is a CLI command shown as code"
+  },
+  "integrations.also.syncRef.title": {
+    "message": "specweave sync 参考",
+    "description": "Card title. Keep the command specweave sync in English"
+  },
+  "integrations.also.syncRef.body": {
+    "message": "跟踪器同步命令，集中在一个参考页面。",
+    "description": "Sync reference card description"
+  },
+  "pricing.why.handoff.title": {
+    "message": "由另一个智能体完成任务",
+    "description": "Reason card title"
+  },
+  "pricing.why.handoff.body": {
+    "message": "触达上限了？Claude Code 快到用量上限时，规格和进度会交接给 Codex 或你使用的下一个工具。",
+    "description": "Reason card body. Keep product names in English"
+  },
+  "pricing.why.noMarkup.title": {
+    "message": "你的 AI 套餐不加价",
+    "description": "Reason card title"
+  },
+  "pricing.why.noMarkup.body": {
+    "message": "智能体运行在你已在付费的 Claude、Codex、Gemini 或 Cursor 套餐上。我们从不转售 token。",
+    "description": "Reason card body. Keep product names in English"
+  },
+  "pricing.why.noSeatFees.title": {
+    "message": "不按席位，不按运行次数收费",
+    "description": "Reason card title"
+  },
+  "pricing.why.noSeatFees.body": {
+    "message": "一个人或整个团队都可以用。不统计智能体、席位或时长。你自己配对的机器数量不限。",
+    "description": "Reason card body"
+  },
+  "pricing.plan.free.name": {
+    "message": "免费版",
+    "description": "Plan name"
+  },
+  "pricing.plan.free.unit": {
+    "message": "永久免费，面向每位开发者和团队",
+    "description": "Text after the $0 price of the Free plan"
+  },
+  "pricing.plan.free.who": {
+    "message": "SpecWithCode 应用和 SpecWeave CLI。应用无需我们这边的账号。",
+    "description": "Free plan summary. Keep product names in English"
+  },
+  "pricing.plan.free.feature.workspace": {
+    "message": "Claude Code、Codex、Grok、Gemini CLI、Cursor 同在一个工作区",
+    "description": "Free plan feature. Keep product names in English"
+  },
+  "pricing.plan.free.feature.handoff": {
+    "message": "触达用量上限前自动交接",
+    "description": "Free plan feature"
+  },
+  "pricing.plan.free.feature.connect": {
+    "message": "Connect：随时随地访问 3 台机器，以及你的手机",
+    "description": "Free plan feature. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.free.feature.localRoutes": {
+    "message": "局域网和 SSH 路由，永不计数",
+    "description": "Free plan feature"
+  },
+  "pricing.plan.free.cta": {
+    "message": "免费下载",
+    "description": "Free plan button"
+  },
+  "pricing.plan.founders.tag": {
+    "message": "前 300 位",
+    "description": "Chip on the Founders plan"
+  },
+  "pricing.plan.founders.name": {
+    "message": "创始用户",
+    "description": "Plan name"
+  },
+  "pricing.plan.founders.unit": {
+    "message": "一个创始席位，永久绑定你的账号",
+    "description": "Text after the $0 price of the Founders plan"
+  },
+  "pricing.plan.founders.who": {
+    "message": "前 300 个通过 Connect 关联机器的账号。无需表单：关联时即授予席位。",
+    "description": "Founders plan summary. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.founders.feature.everythingFree": {
+    "message": "包含免费版的全部功能",
+    "description": "Founders plan feature; Free is the plan name"
+  },
+  "pricing.plan.founders.feature.machines": {
+    "message": "10 台 Connect 机器，而不是 3 台",
+    "description": "Founders plan feature. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.founders.feature.number": {
+    "message": "账号上的创始用户编号",
+    "description": "Founders plan feature"
+  },
+  "pricing.plan.founders.feature.more": {
+    "message": "需要超过 10 台？联系我们，我们来提高",
+    "description": "Founders plan feature"
+  },
+  "pricing.plan.founders.cta": {
+    "message": "领取创始席位",
+    "description": "Founders plan button"
+  },
+  "pricing.plan.pro.tag": {
+    "message": "候补名单",
+    "description": "Chip on the Pro plan"
+  },
+  "pricing.plan.pro.unit": {
+    "message": "每月，按账号计",
+    "description": "Text after the $20 price of the Pro plan"
+  },
+  "pricing.plan.pro.who": {
+    "message": "适合运行大量机器或需要共享私有技能的人。开放之前不会收费。",
+    "description": "Pro plan summary"
+  },
+  "pricing.plan.pro.feature.unlimited": {
+    "message": "不限数量的 Connect 机器",
+    "description": "Pro plan feature. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.pro.feature.privateSkills": {
+    "message": "私有技能，托管并带版本管理",
+    "description": "Pro plan feature"
+  },
+  "pricing.plan.pro.feature.scan": {
+    "message": "每个技能版本都做安全扫描",
+    "description": "Pro plan feature"
+  },
+  "pricing.plan.pro.feature.billing": {
+    "message": "在你的 SpecWithCode 账号中计费",
+    "description": "Pro plan feature. Keep product names in English"
+  },
+  "pricing.plan.pro.cta": {
+    "message": "加入候补名单",
+    "description": "Pro plan button"
+  },
+  "pricing.plan.teams.name": {
+    "message": "团队版",
+    "description": "Plan name"
+  },
+  "pricing.plan.teams.price": {
+    "message": "定制",
+    "description": "Price shown for the Teams plan"
+  },
+  "pricing.plan.teams.unit": {
+    "message": "年度合同",
+    "description": "Text after the Teams plan price"
+  },
+  "pricing.plan.teams.who": {
+    "message": "适合 2–10 人、需要手把手部署、支持热线和审计记录的团队。",
+    "description": "Teams plan summary"
+  },
+  "pricing.plan.teams.feature.setup": {
+    "message": "为整个团队部署",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.feature.engineer": {
+    "message": "专属工程师，合同约定响应时间",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.feature.audit": {
+    "message": "导出审计记录：谁运行了什么，附证据",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.feature.sso": {
+    "message": "SSO、策略或自托管注册表，与你协商范围",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.cta": {
+    "message": "查看团队方案",
+    "description": "Teams plan button"
+  },
+  "pricing.pilot.step1.when": {
+    "message": "第 1 天",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step1.what": {
+    "message": "选定仓库和工作内容",
+    "description": "Pilot timeline step"
+  },
+  "pricing.pilot.step2.when": {
+    "message": "第 2-5 天",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step2.what": {
+    "message": "在你评审的分支上接入 SpecWeave",
+    "description": "Pilot timeline step. Keep product names in English"
+  },
+  "pricing.pilot.step3.when": {
+    "message": "第 6-9 天",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step3.what": {
+    "message": "共用的提示词变成技能",
+    "description": "Pilot timeline step"
+  },
+  "pricing.pilot.step4.when": {
+    "message": "第 10 天",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step4.what": {
+    "message": "现场演练：Claude 额度用尽，Codex 接着完成",
+    "description": "Pilot timeline step. Keep product names in English"
+  },
+  "pricing.faq.free.q": {
+    "message": "会一直免费吗？",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.free.a": {
+    "message": "会。应用、CLI，以及在你自己机器上运行智能体，都保持免费，无论是一位开发者还是整个团队。付费方案只增加我们运行时有成本的部分（托管中继容量、托管私有技能）以及支持服务。",
+    "description": "Pricing FAQ answer"
+  },
+  "pricing.faq.machines.q": {
+    "message": "可以连接多少台机器？",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.machines.a": {
+    "message": "Connect 是随时随地、也能用手机访问你机器的托管中继，包含 3 台机器。创始用户有 10 台，Pro 将取消限制。通过局域网或 SSH 的直连路由永不计数。{link}。",
+    "description": "Pricing FAQ answer. {link} is a link reading 'How Connect works'. Connect is a product name; keep it in English"
+  },
+  "pricing.faq.machines.a.link": {
+    "message": "Connect 如何运作",
+    "description": "Link text to the Connect docs. Connect is a product name; keep it in English"
+  },
+  "pricing.faq.founder.q": {
+    "message": "如何成为创始用户？",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.founder.a": {
+    "message": "在 SpecWithCode 中登录 Connect 并关联一台机器。前 300 个这样做的账号会获得创始用户编号和 10 台机器，关联时即授予。席位永久属于你的账号，不会过期；之后 Pro 开放也不会收回。",
+    "description": "Pricing FAQ answer. Keep product names in English"
+  },
+  "pricing.faq.teams.q": {
+    "message": "团队付费买什么？",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.teams.a": {
+    "message": "为你 2–10 人的团队做部署、带响应时间的支持，以及审计导出或 SSO 等管控。Pro 则为单个账号提供托管私有技能和不限数量的 Connect 机器。",
+    "description": "Pricing FAQ answer. Keep product names in English"
+  },
+  "pricing.faq.code.q": {
+    "message": "我们的代码会去哪里？",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.code.a": {
+    "message": "没有新的去向。规格和交接记录是你仓库里的文件，智能体运行在你的机器上，使用你的订阅。",
+    "description": "Pricing FAQ answer"
+  },
+  "pricing.faq.autoHandoff.q": {
+    "message": "自动交接如何运作？",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.autoHandoff.a": {
+    "message": "{onCommand} 会在用量窗口达到 90% 或你设定的阈值时交接。下一个工具运行 {pickupCommand}。{link}。",
+    "description": "Pricing FAQ answer. {onCommand} and {pickupCommand} are CLI commands shown as code; {link} is a link reading 'Details'"
+  },
+  "pricing.faq.autoHandoff.a.link": {
+    "message": "详情",
+    "description": "Link text to the auto-handoff guide"
+  },
+  "pricing.faq.ready.q": {
+    "message": "SpecWithCode 可以用了吗？",
+    "description": "Pricing FAQ question. Keep product names in English"
+  },
+  "pricing.faq.ready.a": {
+    "message": "目前处于抢先体验阶段，提供 macOS（Apple silicon）、Windows 10 和 11、Linux（x64 和 arm64）下载。SpecWeave CLI 可在任何地方通过 {command} 使用。",
+    "description": "Pricing FAQ answer. {command} is a CLI command shown as code. Keep product names in English"
+  },
+  "pricing.faq.pay.q": {
+    "message": "如何付款？",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.pay.a": {
+    "message": "目前只有试点项目收费，确定开始日期后开具发票。团队合同按年开票。Pro 开放后将在你的 SpecWithCode 账号中刷卡计费；候补名单上的人在此之前不会被收费。",
+    "description": "Pricing FAQ answer. Keep product names in English"
+  },
+  "pricing.why.art.picksUp": {
+    "message": "接手",
+    "description": "Diagram chip: the next agent picks up the task"
+  },
+  "pricing.why.art.yourPlan": {
+    "message": "你的套餐",
+    "description": "Diagram box: your AI subscription"
+  },
+  "pricing.why.art.reseller": {
+    "message": "转售商",
+    "description": "Diagram box: a token reseller (crossed out)"
+  },
+  "pricing.why.art.agent": {
+    "message": "智能体",
+    "description": "Diagram box: the coding agent"
+  },
+  "pricing.why.art.teamLabel": {
+    "message": "一位开发者或整个团队 · 一个免费工作区",
+    "description": "Diagram label under the team icons"
+  },
+  "pricing.founders.chip": {
+    "message": "创始用户",
+    "description": "Chip on the founders band"
+  },
+  "pricing.founders.status.open": {
+    "message": "现已开放",
+    "description": "Founder seats are still available"
+  },
+  "pricing.founders.status.full": {
+    "message": "席位已满",
+    "description": "No founder seats are left"
+  },
+  "pricing.founders.title": {
+    "message": "前 300 个账号免费获得 10 台机器",
+    "description": "Founders band heading"
+  },
+  "pricing.founders.body": {
+    "message": "通过 Connect 关联一台机器，你的账号就会占用下一个创始席位：随时随地使用 10 台机器而不是 3 台，并获得创始用户编号。无需表单，无需银行卡，席位永远属于你。",
+    "description": "Founders band body. Connect is a product name; keep it in English"
+  },
+  "pricing.founders.cta": {
+    "message": "关联你的第一台机器",
+    "description": "Founders band button"
+  },
+  "pricing.founders.seats.aria.total": {
+    "message": "{total} 个创始席位",
+    "description": "Accessible label for the seat meter before the live count loads"
+  },
+  "pricing.founders.seats.aria.left": {
+    "message": "{total} 个创始席位中还剩 {left} 个",
+    "description": "Accessible label for the live seat meter"
+  },
+  "pricing.founders.seats.label.total": {
+    "message": "个创始席位",
+    "description": "Text after the total seat count"
+  },
+  "pricing.founders.seats.label.left": {
+    "message": "个席位剩余，共 {total} 个",
+    "description": "Text after the live count of seats left"
+  },
+  "pricing.founders.seats.note.pending": {
+    "message": "来自 Connect 中继的实时数据。",
+    "description": "Note under the seat meter before the live count loads. Connect is a product name; keep it in English"
+  },
+  "pricing.founders.seats.note.live": {
+    "message": "来自 Connect 中继的实时数据。",
+    "description": "Note under the live seat meter. Connect is a product name; keep it in English"
+  },
+  "pricing.meta.title": {
+    "message": "定价",
+    "description": "Pricing page title"
+  },
+  "pricing.meta.description": {
+    "message": "SpecWithCode 和 SpecWeave CLI 对每位开发者和团队免费，不对你的 AI 订阅加价。前 300 个 Connect 账号免费获得 10 台机器。Pro 提供不限数量的机器和私有技能；团队可购买部署和支持服务。",
+    "description": "Pricing page meta description. Keep product names in English"
+  },
+  "pricing.hero.chip": {
+    "message": "定价",
+    "description": "Hero chip"
+  },
+  "pricing.hero.kicker": {
+    "message": "对每位开发者和团队免费",
+    "description": "Hero kicker next to the chip"
+  },
+  "pricing.hero.title": {
+    "message": "所有编码智能体，一个工作区，人人免费。",
+    "description": "Pricing hero headline"
+  },
+  "pricing.hero.sub": {
+    "message": "SpecWithCode 让 Claude Code、Codex、Cursor 等并肩运行，触达用量上限时把任务交给下一个。订阅仍是你自己的。",
+    "description": "Pricing hero subheading. Keep product names in English"
+  },
+  "pricing.hero.cta.download": {
+    "message": "下载 SpecWithCode",
+    "description": "Hero download button. Keep product names in English"
+  },
+  "pricing.hero.cta.plans": {
+    "message": "查看方案",
+    "description": "Hero link that jumps to the plans"
+  },
+  "pricing.hero.runsOn": {
+    "message": "运行你已在付费的智能体",
+    "description": "Text next to the agent logos"
+  },
+  "pricing.hero.capture.alt": {
+    "message": "SpecWithCode 线程面板：一个 Claude Code 线程和一个 Codex 线程并排工作",
+    "description": "Alt text for the hero screenshot. Keep product names in English"
+  },
+  "pricing.hero.capture.label": {
+    "message": "真实截图 · SpecWithCode 应用窗口，2026 年 10 月 27 日",
+    "description": "Label on the hero screenshot. Keep product names in English"
+  },
+  "pricing.hero.float.free": {
+    "message": "永久免费",
+    "description": "Floating badge text after $0"
+  },
+  "pricing.hero.float.handoff": {
+    "message": "自动交接",
+    "description": "Floating badge: automatic handoff between agents"
+  },
+  "pricing.why.aria": {
+    "message": "为什么免费",
+    "description": "Accessible label for the reasons section"
+  },
+  "pricing.why.artNote": {
+    "message": "示意图仅作说明。",
+    "description": "Note under the reason diagrams"
+  },
+  "pricing.plans.aria": {
+    "message": "方案",
+    "description": "Accessible label for the plans section"
+  },
+  "pricing.pilot.priceLabel": {
+    "message": "两周试点",
+    "description": "Text after the $990 pilot price"
+  },
+  "pricing.pilot.title": {
+    "message": "创始团队试点：$990，两周内让你 2–10 人的团队用起来",
+    "description": "Pilot section heading"
+  },
+  "pricing.pilot.body": {
+    "message": "面向 2–10 人的团队。名额五个。如果交接演练在你的仓库里失败，你不用付费。",
+    "description": "Pilot section body"
+  },
+  "pricing.pilot.cta": {
+    "message": "申请试点",
+    "description": "Pilot apply button (opens email)"
+  },
+  "pricing.faq.title": {
+    "message": "常见问题",
+    "description": "FAQ section heading"
+  },
+  "pricing.final.title": {
+    "message": "人人免费，团队需要时我们来帮忙",
+    "description": "Final call-to-action heading"
+  },
+  "pricing.final.cta.download": {
+    "message": "下载 SpecWithCode",
+    "description": "Final download button. Keep product names in English"
+  },
+  "pricing.final.cta.team": {
+    "message": "聊聊你的团队",
+    "description": "Final link that opens an email about team plans"
+  },
+  "product.command.copied": {
+    "message": "已复制",
+    "description": "Copy button label after the command was copied"
+  },
+  "product.command.copy": {
+    "message": "复制",
+    "description": "Button that copies a shell command"
+  },
+  "product.loop.plan.title": {
+    "message": "规划增量",
+    "description": "Loop step title"
+  },
+  "product.loop.plan.body": {
+    "message": "智能体会填写问题、范围、编号的验收标准、方案和任务。动手写之前，sw-increment 只询问需要你拍板的决定，一次一个并附推荐答案：默认最多五个，访谈深度由 {deepInterview} 设定。",
+    "description": "Loop step body; {deepInterview} is a config key. Keep sw-increment in English"
+  },
+  "product.loop.plan.fileNote": {
+    "message": "每个任务都写明它的验收标准、涉及的文件和测试。",
+    "description": "Note about the file spec.md"
+  },
+  "product.loop.claim.title": {
+    "message": "认领任务",
+    "description": "Loop step title"
+  },
+  "product.loop.claim.body": {
+    "message": "认领记录写入台账，所以第二个智能体再申请同一个任务会被拒绝。超过两小时的认领视为过期，可以被接管。{taskNext} 会打印下一个任务及其验收标准的文字。",
+    "description": "Loop step body; {taskNext} is a command"
+  },
+  "product.loop.claim.fileNote": {
+    "message": "只追加：认领、完成、释放、跳过和阻塞事件。",
+    "description": "Note about the file ledger.jsonl"
+  },
+  "product.loop.done.title": {
+    "message": "证明已完成",
+    "description": "Loop step title"
+  },
+  "product.loop.done.body": {
+    "message": "由 CLI 亲自运行测试。只有退出码 0 才会把任务记为完成，并以提交和输出末尾作为证据。失败的运行不会留下任何记录。",
+    "description": "Loop step body"
+  },
+  "product.loop.done.fileNote": {
+    "message": "完整的命令输出，含退出码和时间。",
+    "description": "Note about the task report file"
+  },
+  "product.loop.verify.title": {
+    "message": "验证增量",
+    "description": "Loop step title"
+  },
+  "product.loop.verify.body": {
+    "message": "运行你的测试、lint 和构建命令（来自 {testingCommands}，或从 {packageJson}、Cargo、pytest、Go 中自动识别），并检查每一条验收标准。",
+    "description": "Loop step body; placeholders are config keys and file names. Keep Cargo, pytest and Go in English"
+  },
+  "product.loop.verify.fileNote": {
+    "message": "只有所有命令和验收标准都通过，ok 才为 true。",
+    "description": "Note about verify.json; \"ok\" is a JSON field name, keep it in English"
+  },
+  "product.loop.review.title": {
+    "message": "交给另一个模型评审",
+    "description": "Loop step title"
+  },
+  "product.loop.review.body": {
+    "message": "把差异交给与编写者不同模型家族的评审者：Codex 评审 Claude 的代码，Claude 评审 OpenAI 的代码。退出码 0 表示可以发布，退出码 3 表示先修复。{brief} 会打印可粘贴到任何工具的评审简报。{version} 新增；见 {link}。",
+    "description": "Loop step body; {brief} is a CLI flag, {version} the CLI version, {link} a link to the review guide. Keep Codex, Claude and OpenAI in English"
+  },
+  "product.loop.review.link": {
+    "message": "用另一个模型评审",
+    "description": "Link text to the cross-model review guide"
+  },
+  "product.loop.review.fileNote": {
+    "message": "评审结论和判定，以评审者命名。",
+    "description": "Note about the review report file"
+  },
+  "product.loop.close.title": {
+    "message": "关闭",
+    "description": "Loop step title"
+  },
+  "product.loop.close.body": {
+    "message": "{verifyJson} 缺失或未通过时拒绝关闭。想跳过它需要加 {reason}，原因会随增量一并保存。",
+    "description": "Loop step body; {verifyJson} is a file path, {reason} a CLI flag"
+  },
+  "product.loop.close.fileNote": {
+    "message": "已完成，或在没有证明的情况下关闭的原因。",
+    "description": "Note about metadata.json"
+  },
+  "product.limits.suggest.what": {
+    "message": "只提醒你一次交接已准备好，然后继续工作。",
+    "description": "What the suggest mode does at the usage threshold"
+  },
+  "product.limits.suggest.when": {
+    "message": "默认模式。由你决定何时切换。",
+    "description": "When to use the suggest mode"
+  },
+  "product.limits.enforce.what": {
+    "message": "运行 specweave handoff 并停止会话。",
+    "description": "What the enforce mode does; keep \"specweave handoff\" in English"
+  },
+  "product.limits.enforce.when": {
+    "message": "无人值守的运行，需要在任务边界干净地停下。",
+    "description": "When to use the enforce mode"
+  },
+  "product.limits.checkpoint.what": {
+    "message": "只保存本地检查点，从不交接。",
+    "description": "What the checkpoint mode does"
+  },
+  "product.limits.checkpoint.when": {
+    "message": "有额度补充或代理、在上限之后仍可继续的套餐。",
+    "description": "When to use the checkpoint mode"
+  },
+  "product.skills.core.increment": {
+    "message": "把增量规划成一份 spec.md，并先询问关键决策。",
+    "description": "Skill description; keep spec.md in English"
+  },
+  "product.skills.core.grillMe": {
+    "message": "分轮访谈你，直到计划中的每个决策都敲定。将 planning.deepInterview 设为 deep 时，每个新增量都会运行它。",
+    "description": "Skill description; keep planning.deepInterview and deep in English"
+  },
+  "product.skills.core.do": {
+    "message": "逐个任务推进增量：认领、在其文件范围内实现、测试、提交、附证据标记完成。可单独、无人值守或并行运行。",
+    "description": "Skill description"
+  },
+  "product.skills.core.auto": {
+    "message": "无人值守地运行增量直到所有任务完成，然后验证并关闭。",
+    "description": "Skill description"
+  },
+  "product.skills.core.review": {
+    "message": "由全新上下文或另一个模型家族进行对抗式评审。每条发现都标注文件和行号。",
+    "description": "Skill description"
+  },
+  "product.skills.core.done": {
+    "message": "关闭增量：任务完成、验证通过、全新上下文评审，然后 complete。",
+    "description": "Skill description"
+  },
+  "product.skills.core.handoff": {
+    "message": "把工作交给另一个工具、账号或机器，并在那边接手。",
+    "description": "Skill description"
+  },
+  "product.skills.optional.glossary": {
+    "message": "生成 {file}，项目共用的术语表。{cmd} 在出现偏差时让 CI 失败。",
+    "description": "Skill description; {file} is a file name, {cmd} a command"
+  },
+  "product.skills.optional.sync": {
+    "message": "把增量推送到 GitHub、Jira 或 Azure DevOps。项目有跟踪器时自动开启。",
+    "description": "Skill description; keep GitHub, Jira and Azure DevOps in English"
+  },
+  "product.skills.optional.project": {
+    "message": "读取并更新项目中枢。存在 {file} 时自动开启。",
+    "description": "Skill description; {file} is a file path"
+  },
+  "product.skills.optional.jev": {
+    "message": "把封闭集合的决策交给 Jev。设置了 {key} 时自动开启。",
+    "description": "Skill description; keep Jev in English; {key} is a config key"
+  },
+  "product.record.done.what": {
+    "message": "“完成”的含义",
+    "description": "Record card title"
+  },
+  "product.record.done.how": {
+    "message": "规划时写下，写代码前阅读。",
+    "description": "Record card body"
+  },
+  "product.record.happened.what": {
+    "message": "发生了什么",
+    "description": "Record card title"
+  },
+  "product.record.happened.how": {
+    "message": "认领、附证据的完成记录、备注和交接。",
+    "description": "Record card body"
+  },
+  "product.record.proved.what": {
+    "message": "用什么证明",
+    "description": "Record card title"
+  },
+  "product.record.proved.how": {
+    "message": "任务日志、{verifyMd}、{verifyJson} 和评审报告。",
+    "description": "Record card body; placeholders are file names"
+  },
+  "product.record.stopped.what": {
+    "message": "你停在了哪里",
+    "description": "Record card title"
+  },
+  "product.record.stopped.how": {
+    "message": "由 {cmd} 写入。",
+    "description": "Record card body; {cmd} is a command"
+  },
+  "product.record.notes.what": {
+    "message": "给下一个智能体的备注",
+    "description": "Record card title"
+  },
+  "product.record.notes.how": {
+    "message": "保存在台账中，用 {cmd} 查看。",
+    "description": "Record card body; {cmd} is a command"
+  },
+  "product.record.memory.what": {
+    "message": "比会话更长久的决策",
+    "description": "Record card title"
+  },
+  "product.record.memory.how": {
+    "message": "每条事实一个文件，在 {file} 中建立索引并提交，所有工具和账号都能看到。",
+    "description": "Record card body; {file} is a file name"
+  },
+  "product.record.board.what": {
+    "message": "汇总一切的看板",
+    "description": "Record card title"
+  },
+  "product.record.board.how": {
+    "message": "仅限本地，默认在 127.0.0.1 的 3456 端口。读取它不需要调用模型。",
+    "description": "Record card body"
+  },
+  "product.record.report.what": {
+    "message": "谁做了什么，成为一个页面",
+    "description": "Record card title"
+  },
+  "product.record.report.how": {
+    "message": "{file} 中的 HTML 时间线，涵盖工具、会话、交接和证据。",
+    "description": "Record card body; {file} is a file path"
+  },
+  "product.integrations.lsp.name": {
+    "message": "代码导航",
+    "description": "Integration card title"
+  },
+  "product.integrations.lsp.body": {
+    "message": "通过语言服务器获取引用、定义、悬停类型和符号，让智能体不再靠 grep 乱找。{cmd} 会为你仓库中的语言挑选服务器。",
+    "description": "Integration card body; {cmd} is a command"
+  },
+  "product.integrations.lsp.link": {
+    "message": "LSP 指南",
+    "description": "Link to the LSP guide"
+  },
+  "product.integrations.jev.body": {
+    "message": "约 250 毫秒完成封闭集合的决策：选哪个技能或模型档位，某条 shell 命令能否安全运行，拉取的文本是否需要再看一眼。用 {cmd} 选择启用。",
+    "description": "Integration card body; {cmd} is a command"
+  },
+  "product.integrations.jev.link": {
+    "message": "关于 Jev",
+    "description": "Link to the Jev page; keep Jev in English"
+  },
+  "product.integrations.hub.name": {
+    "message": "项目中枢",
+    "description": "Integration card title"
+  },
+  "product.integrations.hub.body": {
+    "message": "{file} 中保存共同的目标、上下文、产物和例行任务，所有工具都会读取。{flag} 可导出简报给另一个工具。",
+    "description": "Integration card body; {file} is a file path, {flag} a CLI flag"
+  },
+  "product.integrations.hub.link": {
+    "message": "可移植项目指南",
+    "description": "Link to the portable projects guide"
+  },
+  "product.integrations.repos.name": {
+    "message": "已有仓库",
+    "description": "Integration card title"
+  },
+  "product.integrations.repos.body": {
+    "message": "把一个仓库克隆并注册到工作区，或用 {all} 处理组织内的所有仓库。{dryRun} 可预览如何接管你已有的检出。",
+    "description": "Integration card body; {all} and {dryRun} are CLI flags"
+  },
+  "product.integrations.repos.link": {
+    "message": "工作区接入指南",
+    "description": "Link to the workspace adoption guide"
+  },
+  "product.integrations.trackers.name": {
+    "message": "议题跟踪器",
+    "description": "Integration card title"
+  },
+  "product.integrations.trackers.body": {
+    "message": "可选。团队在 GitHub Issues、Jira 或 Azure DevOps 做规划时，可把增量推送过去。",
+    "description": "Integration card body; keep GitHub Issues, Jira and Azure DevOps in English"
+  },
+  "product.integrations.trackers.link": {
+    "message": "跟踪器同步指南",
+    "description": "Link to the tracker sync guide"
+  },
+  "product.loop.illustrationTag": {
+    "message": "示意图 · 一个增量留下的六个文件",
+    "description": "Label under the pipeline illustration"
+  },
+  "product.loop.ariaLabel": {
+    "message": "SpecWeave 工作循环",
+    "description": "Accessible label for the list of loop steps; keep SpecWeave in English"
+  },
+  "product.meta.title": {
+    "message": "SpecWeave CLI",
+    "description": "Page title of /product; keep product names in English"
+  },
+  "product.meta.description": {
+    "message": "SpecWeave CLI 把工作规划成一份简短的规格，将每个任务连同测试输出记录在 git 中，并把工作交给任何编码智能体、账号或机器。",
+    "description": "Meta description of /product; keep product names in English"
+  },
+  "product.hero.freeOpenSource": {
+    "message": "免费且开源",
+    "description": "Hero kicker next to the version chip"
+  },
+  "product.hero.title": {
+    "message": "工作比会话活得更久。",
+    "description": "Hero headline of /product"
+  },
+  "product.hero.lead": {
+    "message": "你的智能体写代码。SpecWeave 把“完成”的含义、证明和你停下的位置，保存为 git 里的普通文件，Claude Code、Codex 或任何其他智能体都能接着做同一个任务。",
+    "description": "Hero lead paragraph; keep product names in English"
+  },
+  "product.hero.copyInstall": {
+    "message": "复制安装命令",
+    "description": "Accessible label of the copy button next to the install command"
+  },
+  "product.hero.cta.start": {
+    "message": "在你的项目中开始",
+    "description": "Primary hero button"
+  },
+  "product.hero.cta.commands": {
+    "message": "全部命令",
+    "description": "Secondary hero link to the command reference"
+  },
+  "product.hero.version": {
+    "message": "版本 {version}，发布于 {date}。免费且开源。",
+    "description": "Release line; {version} is the CLI version, {date} its release date"
+  },
+  "product.hero.terminalAria": {
+    "message": "在以 Codex 身份运行的第二个克隆中，specweave pickup 的输出",
+    "description": "Accessible label of the hero terminal; keep specweave pickup and Codex in English"
+  },
+  "product.hero.pickedUpBadge": {
+    "message": "已由 Codex 接手",
+    "description": "Badge on the hero terminal; keep Codex in English"
+  },
+  "product.hero.caption": {
+    "message": "Claude Code 交接后，以 Codex 身份运行的第二个克隆的真实输出。",
+    "description": "Caption of the hero terminal; keep product names in English"
+  },
+  "product.loop.heading": {
+    "message": "从规划到关闭，六条命令",
+    "description": "Section heading"
+  },
+  "product.loop.intro": {
+    "message": "每一步都会留下文件。没有什么靠勾选框就能关闭：测试会运行，输出会保存，验证通过之前增量始终保持打开。",
+    "description": "Section intro"
+  },
+  "product.loop.caption": {
+    "message": "命令、参数和文件名与 specweave {version} 一致。增量、任务和评审者是本页通篇使用的示例。",
+    "description": "Caption under the loop; {version} is the CLI version"
+  },
+  "product.handoff.heading": {
+    "message": "token 用完不是终点",
+    "description": "Section heading"
+  },
+  "product.handoff.lead": {
+    "message": "在要离开的工具里说“交接”，在下一个工具里说“从我停下的地方接着做”。Codex 可以在同一台或另一台机器上继续 Claude Code 开始的工作。工具之间不复制任何东西：{cmd} 会把快照推送到 {ref} 和 {wip}，并添加一条台账事件。",
+    "description": "Section lead; the quoted phrases are what the user says to the agent; {cmd} is a command, {ref} and {wip} are git refs. Keep Codex and Claude Code in English"
+  },
+  "product.handoff.flag.all": {
+    "message": "写入一份索引，涵盖每个活跃增量和每个有本地独有工作的嵌套仓库。",
+    "description": "Explains the handoff --all flag"
+  },
+  "product.handoff.flag.list": {
+    "message": "列出待处理的交接，最新的在前，不做任何更改。",
+    "description": "Explains the pickup --list flag"
+  },
+  "product.handoff.flag.idOrTitle": {
+    "message": "id 或标题",
+    "description": "Placeholder argument in the command \"pickup <id or title>\""
+  },
+  "product.handoff.flag.pick": {
+    "message": "有多个等待时，选取指定的一个。",
+    "description": "Explains passing an id or title to pickup"
+  },
+  "product.handoff.flag.noPush": {
+    "message": "把交接保留在本机，不推送到远程。",
+    "description": "Explains the handoff --no-push flag"
+  },
+  "product.handoff.guideLink": {
+    "message": "交接与接手详解",
+    "description": "Link to the handoff guide"
+  },
+  "product.handoff.leaving": {
+    "message": "离开：Claude Code，身份为 claude@cloud",
+    "description": "Label above the terminal being left; keep Claude Code and claude@cloud in English"
+  },
+  "product.handoff.leavingAria": {
+    "message": "在即将离开的会话中运行 specweave handoff",
+    "description": "Accessible label of a terminal; keep specweave handoff in English"
+  },
+  "product.handoff.connector": {
+    "message": "推送到远程 {ref} 和 {wip} 的快照，加上台账中的一条交接事件",
+    "description": "Text between the two terminals; {ref} and {wip} are git refs"
+  },
+  "product.handoff.arriving": {
+    "message": "到达：Codex，身份为 codex@laptop",
+    "description": "Label above the arriving terminal; keep Codex and codex@laptop in English"
+  },
+  "product.handoff.arrivingAria": {
+    "message": "在下一个工具中运行 specweave pickup",
+    "description": "Accessible label of a terminal; keep specweave pickup in English"
+  },
+  "product.handoff.caption": {
+    "message": "接手部分是以 Codex 身份运行的第二个克隆的真实输出。交接部分是同一次运行中 CLI 的原始消息。",
+    "description": "Caption under the handoff terminals; keep Codex in English"
+  },
+  "product.limits.heading": {
+    "message": "用量上限，在触达前就处理好",
+    "description": "Section heading"
+  },
+  "product.limits.lead": {
+    "message": "{cmd} 为 Claude Code、Codex 和 Grok Build 添加钩子。每个钩子都会保存本地检查点，任一用量窗口达到 95% 时，由模式决定接下来怎么做（Grok 不报告百分比，所以它的钩子在某一轮触达速率限制时才起作用）。",
+    "description": "Section lead; {cmd} is a command. Keep product names in English"
+  },
+  "product.limits.capture.alt": {
+    "message": "SpecWithCode 用量面板：Codex 每周剩余 10%，Claude 会话剩余 2%，每周剩余 54%，每周 Fable 剩余 84%，每项都附带重置时间",
+    "description": "Alt text of the usage panel screenshot; keep product names in English"
+  },
+  "product.limits.capture.label": {
+    "message": "真实截图 · SpecWithCode 用量面板，钩子监控的窗口",
+    "description": "Label under the usage panel screenshot; keep SpecWithCode in English"
+  },
+  "product.limits.modesAria": {
+    "message": "触达阈值时的模式",
+    "description": "Accessible label of the list of auto-handoff modes"
+  },
+  "product.limits.defaultChip": {
+    "message": "默认",
+    "description": "Chip marking the default mode"
+  },
+  "product.limits.atThreshold": {
+    "message": "触达阈值时",
+    "description": "Label: what the mode does at the threshold"
+  },
+  "product.limits.useFor": {
+    "message": "适用于",
+    "description": "Label: when to use the mode"
+  },
+  "product.limits.flag.at": {
+    "message": "调整阈值；默认是 95。",
+    "description": "Explains the --at flag"
+  },
+  "product.limits.flag.waitUnder": {
+    "message": "当所有已满窗口都在这么多分钟内重置时，什么也不做；默认是 30。",
+    "description": "Explains the --wait-under flag"
+  },
+  "product.limits.flag.autocompact": {
+    "message": "在 400K token 时压缩 Claude Code，而不是接近一百万，让后面的轮次保持精简。",
+    "description": "Explains autocompact on; keep Claude Code in English"
+  },
+  "product.limits.note": {
+    "message": "在 {link} 中运行智能体？请一台机器对应一个提供商订阅：让每台机器长期只登录每个提供商的一个账号，需要更多额度时添加机器，而不是手动切换订阅。",
+    "description": "Note; {link} is a link labelled SpecWithCode"
+  },
+  "product.limits.guideLink": {
+    "message": "自动交接指南",
+    "description": "Link to the auto-handoff guide"
+  },
+  "product.skills.heading": {
+    "message": "默认七个技能，需要时再加四个",
+    "description": "Section heading"
+  },
+  "product.skills.intro": {
+    "message": "技能是智能体按需加载的简短说明。自 {version} 起，可选技能会在你的项目需要时自动开启。{list} 显示每个技能开启的原因，{enable} 或 {disable} 用来更改。",
+    "description": "Section intro; {version} is the CLI version; {list}, {enable}, {disable} are commands"
+  },
+  "product.skills.core.title": {
+    "message": "每个项目都有",
+    "description": "Heading of the default skills list"
+  },
+  "product.skills.optional.title": {
+    "message": "项目需要时开启",
+    "description": "Heading of the optional skills list"
+  },
+  "product.skills.referenceLink": {
+    "message": "技能参考",
+    "description": "Link to the skills reference"
+  },
+  "product.record.heading": {
+    "message": "一份可以检查的记录",
+    "description": "Section heading"
+  },
+  "product.record.intro": {
+    "message": "以上全部都是你仓库里的普通文件。git 评审和访问控制保护着历史记录；这些文件并不是防篡改的审计系统。",
+    "description": "Section intro"
+  },
+  "product.record.boardTitle": {
+    "message": "仪表板为这个示例读取的内容",
+    "description": "Heading above the dashboard table"
+  },
+  "product.record.boardCaption": {
+    "message": "由本页顶部展示的同一次 {pickup} 运行生成。在你的项目中运行 {dashboard}，查看你自己的。",
+    "description": "Caption under the dashboard table; {pickup} and {dashboard} are commands"
+  },
+  "product.integrations.heading": {
+    "message": "与你已在用的工具相连",
+    "description": "Section heading"
+  },
+  "product.integrations.intro": {
+    "message": "每一项都是可选的，设置之前保持关闭。",
+    "description": "Section intro"
+  },
+  "product.integrations.allLink": {
+    "message": "全部集成",
+    "description": "Link to the integrations page"
+  },
+  "product.specwithcode.heading": {
+    "message": "在桌面应用中运行同样的增量",
+    "description": "Section heading"
+  },
+  "product.specwithcode.body": {
+    "message": "SpecWithCode 的工作线程在一个分支上工作，并提交一个拉取请求，这正是增量的形态。它的清单就是增量的任务列表，它写入台账的操作就是本页上的这些命令。线程之间通过台账互留备注，而不是互相编辑对方的文件。",
+    "description": "Section body; keep SpecWithCode in English"
+  },
+  "product.specwithcode.link": {
+    "message": "了解 SpecWithCode",
+    "description": "Link to the SpecWithCode page; keep SpecWithCode in English"
+  },
+  "product.specwithcode.windowLabel": {
+    "message": "工作线程",
+    "description": "Window title bar label"
+  },
+  "product.specwithcode.imageAlt": {
+    "message": "一个 SpecWithCode 工作线程汇报结果：它运行的命令及打印的输出、无阻塞项、两个已更改的文件",
+    "description": "Alt text of the worker thread screenshot; keep SpecWithCode in English"
+  },
+  "product.specwithcode.caption": {
+    "message": "工作线程汇报其结果、证据和更改的文件。SpecWithCode 1.0.21，2026 年 10 月 15 日。",
+    "description": "Screenshot caption; keep SpecWithCode and the version in English"
+  },
+  "product.final.heading": {
+    "message": "先写下“完成”的含义，再自由切换工具",
+    "description": "Final call-to-action heading"
+  },
+  "product.final.quickStart": {
+    "message": "快速开始",
+    "description": "Final call-to-action button"
+  },
+  "product.final.changelog": {
+    "message": "3.1 有哪些变化",
+    "description": "Link to the changelog; keep the version in English"
+  },
+  "tutorials.filter.all": {
+    "message": "全部",
+    "description": "Product filter button showing guides for every product"
+  },
+  "tutorials.path.meta.one": {
+    "message": "{product} · {count} 篇指南 · {duration}",
+    "description": "Learning path meta line with one guide; {product} is a product name, {duration} a m:ss total length"
+  },
+  "tutorials.path.meta.other": {
+    "message": "{product} · {count} 篇指南 · {duration}",
+    "description": "Learning path meta line with several guides; {product} is a product name, {duration} a m:ss total length"
+  },
+  "tutorials.path.external": {
+    "message": "这些指南位于注册表站点。",
+    "description": "Shown when a path's guides live on another site"
+  },
+  "tutorials.path.externalLink": {
+    "message": "观看 Verified Skill 教程",
+    "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
+  },
+  "tutorials.path.planned.one": {
+    "message": "这条学习路径还计划再增加一篇指南。",
+    "description": "One planned guide in a learning path"
+  },
+  "tutorials.path.planned.other": {
+    "message": "这条学习路径还计划再增加 {count} 篇指南。",
+    "description": "Several planned guides in a learning path"
+  },
+  "tutorials.path.railAria": {
+    "message": "{title}，按顺序排列",
+    "description": "Accessible label of the ordered list of guides in a learning path; {title} is the path title"
+  },
+  "tutorials.path.step": {
+    "message": "第 {number} 步：",
+    "description": "Screen-reader prefix before a guide title in a path; keep the trailing space"
+  },
+  "tutorials.row.audio.silent": {
+    "message": "有字幕，无声音",
+    "description": "Guide meta: the video has captions and no audio"
+  },
+  "tutorials.row.audio.narrated": {
+    "message": "有配音",
+    "description": "Guide meta: the video has a voiceover"
+  },
+  "tutorials.row.recordedOn": {
+    "message": "录制于 {testedOn}，添加于 {date}",
+    "description": "Guide meta; {testedOn} is a product and version, {date} the date it was added"
+  },
+  "tutorials.row.olderInterface": {
+    "message": "旧版界面，添加于 {date}",
+    "description": "Guide meta for older recordings; {date} is the date it was added"
+  },
+  "tutorials.meta.title": {
+    "message": "教程：SpecWeave CLI 和 SpecWithCode 指南",
+    "description": "Page title of /tutorials; keep product names in English"
+  },
+  "tutorials.meta.description": {
+    "message": "配有真实录屏的简短指南，涵盖 SpecWeave CLI 和 SpecWithCode：规划并交接工作、用协调器和工作线程运行项目、保留记忆、验证与定时运行。每篇指南都有步骤、章节、字幕和文字记录。",
+    "description": "Meta description of /tutorials; keep product names in English"
+  },
+  "tutorials.hero.title": {
+    "message": "一次学会一件事",
+    "description": "Hero headline of /tutorials"
+  },
+  "tutorials.hero.lead": {
+    "message": "基于 SpecWeave CLI 和 SpecWithCode 真实录屏的简短指南。每篇都写明成果，播放带章节的视频，列出步骤，并附上文字记录。",
+    "description": "Hero lead paragraph; keep product names in English"
+  },
+  "tutorials.hero.stats.guides": {
+    "message": "{count} 篇指南",
+    "description": "Hero stat; {count} is the number of guides"
+  },
+  "tutorials.hero.stats.paths": {
+    "message": "{count} 条学习路径",
+    "description": "Hero stat; {count} is the number of learning paths"
+  },
+  "tutorials.hero.browseAll": {
+    "message": "浏览全部指南",
+    "description": "Link that jumps to the list of all guides"
+  },
+  "tutorials.paths.heading.one": {
+    "message": "学习路径",
+    "description": "Section heading when there is one learning path"
+  },
+  "tutorials.paths.heading.other": {
+    "message": "学习路径",
+    "description": "Section heading when there are several learning paths"
+  },
+  "tutorials.paths.intro": {
+    "message": "沿着一条路径，从第一步走到完成成果。每一步都是一篇独立指南；一条路径至少有两篇指南才会出现在这里。",
+    "description": "Learning paths section intro"
+  },
+  "tutorials.all.heading": {
+    "message": "全部指南",
+    "description": "Section heading of the full guide list"
+  },
+  "tutorials.search.label": {
+    "message": "搜索指南",
+    "description": "Label of the guide search box"
+  },
+  "tutorials.search.placeholder": {
+    "message": "交接、用量、Codex",
+    "description": "Example search words in the guide search box; keep Codex in English"
+  },
+  "tutorials.filter.groupAria": {
+    "message": "产品",
+    "description": "Accessible label of the product filter buttons"
+  },
+  "tutorials.filter.aria.one": {
+    "message": "{label}，{count} 篇指南",
+    "description": "Accessible label of a filter button with one guide; {label} is the filter name"
+  },
+  "tutorials.filter.aria.other": {
+    "message": "{label}，{count} 篇指南",
+    "description": "Accessible label of a filter button with several guides; {label} is the filter name"
+  },
+  "tutorials.results.all": {
+    "message": "{count} 篇指南",
+    "description": "Result count when every guide is shown"
+  },
+  "tutorials.results.some": {
+    "message": "{total} 篇指南中的 {count} 篇",
+    "description": "Result count when a filter or search is active"
+  },
+  "tutorials.results.empty": {
+    "message": "暂时没有匹配的指南。换个词试试，或者{reset}。",
+    "description": "Shown when no guide matches; {reset} is a button that clears the search"
+  },
+  "tutorials.results.emptyReset": {
+    "message": "显示全部指南",
+    "description": "Button text that clears the search and filter"
+  },
+  "tutorials.other.heading": {
+    "message": "来自其他产品",
+    "description": "Section heading"
+  },
+  "tutorials.other.body": {
+    "message": "查找、测试和发布智能体技能的指南位于 verified-skill.com。",
+    "description": "Points to tutorials on another site; keep verified-skill.com in English"
+  },
+  "tutorials.other.link": {
+    "message": "Verified Skill 教程",
+    "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
+  },
+  "tutorials.standards.heading": {
+    "message": "每篇指南都包含",
+    "description": "Section heading"
+  },
+  "tutorials.standards.recording.title": {
+    "message": "真实录屏",
+    "description": "Standard card title"
+  },
+  "tutorials.standards.recording.body": {
+    "message": "运行中的应用画面或真实的命令输出，配有示例项目。每篇指南都会注明所展示的版本和添加时间；当前版本的录屏排在前面。",
+    "description": "Standard card body"
+  },
+  "tutorials.standards.captions.title": {
+    "message": "字幕、章节和文字记录",
+    "description": "Standard card title"
+  },
+  "tutorials.standards.captions.body": {
+    "message": "一条 WebVTT 字幕轨道，可用键盘跳转的章节，以及根据字幕生成的文字记录。",
+    "description": "Standard card body; keep WebVTT in English"
+  },
+  "tutorials.standards.hosted.title": {
+    "message": "托管在本站",
+    "description": "Standard card title"
+  },
+  "tutorials.standards.hosted.body": {
+    "message": "视频和海报都从 spec-weave.com 加载，没有第三方播放器，也没有跟踪。",
+    "description": "Standard card body; keep spec-weave.com in English"
+  },
+  "home.family.app.crop.alt": {
+    "message": "SpecWithCode“线程”面板的截图局部：没有等待你处理的事项，2 个进行中：Claude Code 上的 README docs for --json and --people，以及 Codex 上的 split.py --people option",
+    "description": "Alt text of a screenshot crop. Keep product and file names and command flags in English"
+  },
+  "home.family.skill.row.source": {
+    "message": "来源",
+    "description": "Row label in the illustrated skill page"
+  },
+  "home.family.skill.row.source.value": {
+    "message": "仓库链接",
+    "description": "Row value in the illustrated skill page, next to Source"
+  },
+  "home.family.skill.row.scan": {
+    "message": "安全扫描",
+    "description": "Row label in the illustrated skill page"
+  },
+  "home.family.skill.row.scan.value": {
+    "message": "每个文件都已扫描",
+    "description": "Row value in the illustrated skill page, next to Security scan"
+  },
+  "home.family.skill.row.eval": {
+    "message": "评测",
+    "description": "Row label in the illustrated skill page"
+  },
+  "home.family.skill.row.eval.value": {
+    "message": "有则显示",
+    "description": "Row value in the illustrated skill page, next to Evaluation"
+  },
+  "home.family.cli.terminal.ariaLabel": {
+    "message": "在以 Codex 身份运行的第二个克隆中，specweave pickup 的输出",
+    "description": "Accessible label of the terminal output. Keep \"specweave pickup\" and \"Codex\" in English"
+  },
+  "home.family.cli.source": {
+    "message": "真实输出 · specweave {version}",
+    "description": "Caption of the terminal output; {version} is the CLI version"
+  },
+  "home.family.cli.kind": {
+    "message": "npm 上的开源项目，MIT。版本 {version}，{date}。",
+    "description": "CLI card subtitle; {version} is the CLI version, {date} its release date. Keep npm and MIT in English"
+  },
+  "home.family.cli.body": {
+    "message": "把规格、任务台账和测试证据写入你的仓库，并用 {command} 把工作交给下一个工具。如果你在终端里使用 Claude Code、Codex 或任何读取文件的智能体，就从这里开始。",
+    "description": "CLI card body; {command} is the shell command specweave handoff. Keep product names in English"
+  },
+  "home.family.cli.install.hint": {
+    "message": "然后在你的项目中运行 specweave init。",
+    "description": "Hint under the npm install command; keep \"specweave init\" in English"
+  },
+  "home.family.cli.link": {
+    "message": "CLI 如何运作",
+    "description": "Link from the CLI card to the CLI page"
+  },
+  "home.family.app.source": {
+    "message": "真实截图 · SpecWithCode 1.0.103，2026 年 10 月 27 日",
+    "description": "Caption of the app screenshot crop. Keep product names and the version in English"
+  },
+  "home.family.app.kind": {
+    "message": "适用于 Mac、Windows 和 Linux 的免费应用。版本 {version}。",
+    "description": "App card subtitle; {version} is the app version. Keep OS names in English"
+  },
+  "home.family.app.body": {
+    "message": "每个项目一个协调器，在你的机器上，用你已在付费的智能体启动工作线程。每个线程显示其 SpecWeave 增量和任务进度，报告保存在增量旁边。如果你想用一个窗口管理多个智能体，就从这里开始。",
+    "description": "App card body. Keep product names in English"
+  },
+  "home.family.app.chrome": {
+    "message": "智能体还可以在你自己的 Chrome 配置文件里，通过一个可随时关闭的标签组来打开、阅读、点击页面并截图：{link}，在“设置”“Chrome”中配对。",
+    "description": "App card extra line; {link} is a link to the Chrome extension labelled 'SpecWithCode Browser for Chrome'. 'Settings, Chrome' names the app's settings section. Keep product names in English"
+  },
+  "home.family.app.chrome.link": {
+    "message": "适用于 Chrome 的 SpecWithCode Browser",
+    "description": "Link text to the Chrome Web Store extension. Keep product names in English"
+  },
+  "home.family.app.link": {
+    "message": "了解 SpecWithCode",
+    "description": "Link from the app card to the SpecWithCode page. Keep product names in English"
+  },
+  "home.family.skill.illustration.ariaLabel": {
+    "message": "每个技能页面都会展示的三项信息示意图",
+    "description": "Accessible label of the skill page illustration"
+  },
+  "home.family.skill.illustration.title": {
+    "message": "技能页面",
+    "description": "Title inside the skill page illustration"
+  },
+  "home.family.skill.illustration.caption": {
+    "message": "示意图",
+    "description": "Caption marking a picture as an illustration, not a real capture"
+  },
+  "home.family.skill.kind": {
+    "message": "可在 verified-skill.com 免费浏览。",
+    "description": "Verified Skill card subtitle; keep the domain verified-skill.com"
+  },
+  "home.family.skill.body": {
+    "message": "智能体技能注册表。每个技能都展示来源和安全扫描结果，有评测时还展示评测，让你在智能体使用之前就清楚安装的是什么。",
+    "description": "Verified Skill card body"
+  },
+  "home.family.skill.details.summary": {
+    "message": "每个技能页面都展示什么",
+    "description": "Expandable details summary in the Verified Skill card"
+  },
+  "home.family.skill.details.source": {
+    "message": "来源",
+    "description": "Term in the skill page details list"
+  },
+  "home.family.skill.details.source.body": {
+    "message": "技能所属的仓库，方便你先读一读。",
+    "description": "Definition of Source in the skill page details list"
+  },
+  "home.family.skill.details.scan": {
+    "message": "安全扫描",
+    "description": "Term in the skill page details list"
+  },
+  "home.family.skill.details.scan.body": {
+    "message": "安装之前，对每个文件的扫描发现了什么。",
+    "description": "Definition of Security scan in the skill page details list"
+  },
+  "home.family.skill.details.eval": {
+    "message": "评测（有则显示）",
+    "description": "Term in the skill page details list"
+  },
+  "home.family.skill.details.eval.body": {
+    "message": "这个技能在真实任务上是否有帮助。目前并非每个技能都有评测。",
+    "description": "Definition of Evaluation in the skill page details list"
+  },
+  "home.family.skill.link": {
+    "message": "在 verified-skill.com 探索技能",
+    "description": "Link to verified-skill.com; keep the domain"
+  },
+  "home.hero.crop.tests.alt": {
+    "message": "协调器报告的截图局部：测试，23 项通过，用时 0.09 秒",
+    "description": "Alt text of a screenshot crop"
+  },
+  "home.hero.crop.threads.alt": {
+    "message": "“线程”面板的截图局部：进行中 2 个，Claude Code Opus 5.5 上的 README docs for --json and --people，以及 Codex GPT-6.1-Sol 上的 split.py --people option",
+    "description": "Alt text of a screenshot crop. Keep product, model and file names and command flags in English"
+  },
+  "home.hero.crop.dispatch.alt": {
+    "message": "协调器消息的截图局部：Write tip.py CLI、已请求审批，以及 README usage for tip.py、进行中，每项都带有“查看线程”",
+    "description": "Alt text of a screenshot crop. Keep file names in English"
+  },
+  "home.hero.crop.usage.alt": {
+    "message": "“用量与额度”的截图局部：Claude 会话，剩余 2%",
+    "description": "Alt text of a screenshot crop. Keep \"Claude\" in English"
+  },
+  "home.hero.pill.new": {
+    "message": "新",
+    "description": "Chip on the announcement pill above the hero headline"
+  },
+  "home.hero.pill.text": {
+    "message": "SpecWithCode Browser：让 Claude Code、Codex、GitHub Copilot 或 Grok 使用你自己的 Chrome",
+    "description": "Announcement pill above the hero headline. Keep product names in English"
+  },
+  "home.hero.title": {
+    "message": "切换 AI 工具，不丢进度。",
+    "description": "Home page main headline"
+  },
+  "home.hero.lead": {
+    "message": "SpecWeave 把计划和每个已完成的任务写入 git，Claude Code、Codex 或任何其他智能体都能接手同一份工作。{specwithcode}（读作“Spec with Code”）是覆盖这些智能体各自原生框架的统一界面，运行在你的机器和订阅上。",
+    "description": "Hero lead paragraph; {specwithcode} is a link with the product name SpecWithCode. Keep product names in English"
+  },
+  "home.hero.getCli": {
+    "message": "获取 CLI",
+    "description": "Secondary hero button linking to the CLI page"
+  },
+  "home.hero.requirements": {
+    "message": "两者都免费。应用支持 macOS 13 或更高版本的 Apple silicon Mac、Windows 10 和 11 以及 Linux：{link}。",
+    "description": "System requirements line; {link} is a link labelled 'download SpecWithCode'. Keep product and OS names in English"
+  },
+  "home.hero.requirements.link": {
+    "message": "下载 SpecWithCode",
+    "description": "Link text to the download page. Keep product names in English"
+  },
+  "home.hero.install.hint": {
+    "message": "开源 CLI：MIT 许可，本地优先，无需账号。",
+    "description": "Hint under the npm install command in the hero"
+  },
+  "home.hero.tag.threads": {
+    "message": "线程面板 · 2026 年 10 月 27 日",
+    "description": "Small tag on a floating screenshot crop"
+  },
+  "home.hero.tag.dispatch": {
+    "message": "并行的工作线程 · 2026 年 10 月 15 日",
+    "description": "Small tag on a floating screenshot crop"
+  },
+  "home.hero.tag.usage": {
+    "message": "用量上限 · 2026 年 10 月 10 日",
+    "description": "Small tag on a floating screenshot crop"
+  },
+  "home.hero.caption": {
+    "message": "真实截图，已裁剪。{windowCaption} 浮动的裁剪图：同一窗口，以及 2026 年 10 月 15 日和 10 日的 SpecWithCode 录屏。{fullSize}",
+    "description": "Caption of the hero screenshots; {windowCaption} is the main screenshot's own caption, {fullSize} a 'View full size' link. Keep product names in English"
+  },
+  "home.planning.stat.prs": {
+    "message": "四周内统计的已合并拉取请求，同期有 1,142 个智能体线程在执行工作",
+    "description": "Label under the number 1,476"
+  },
+  "home.planning.stat.share": {
+    "message": "与某个增量相关联；其余的直接完成",
+    "description": "Label under the number 35%"
+  },
+  "home.planning.stat.small": {
+    "message": "变更少于 300 行时的开放时长与输出 token，无论是否使用增量",
+    "description": "Label under the value ≈ 1x"
+  },
+  "home.planning.stat.large": {
+    "message": "在交付了一个超过 1,000 行变更的拉取请求的线程中，有增量支撑的线程消耗的消息数和输出 token（17 个线程对 11 个线程）",
+    "description": "Label under the value ≈ 2x"
+  },
+  "home.planning.skip.small": {
+    "message": "一个约 300 行变更以内的拉取请求",
+    "description": "When to skip planning an increment, list item"
+  },
+  "home.planning.skip.fix": {
+    "message": "后续修复或界面微调",
+    "description": "When to skip planning an increment, list item"
+  },
+  "home.planning.skip.investigation": {
+    "message": "调查排查",
+    "description": "When to skip planning an increment, list item"
+  },
+  "home.planning.plan.multiDay": {
+    "message": "跨多天的工作，每个拉取请求一个增量",
+    "description": "When to plan an increment, list item"
+  },
+  "home.planning.plan.risky": {
+    "message": "跨平台、认证、支付、迁移",
+    "description": "When to plan an increment, list item"
+  },
+  "home.planning.plan.handoff": {
+    "message": "将由另一个工具或机器接手的工作",
+    "description": "When to plan an increment, list item"
+  },
+  "home.planning.kicker": {
+    "message": "基于我们自己的工作实测",
+    "description": "Small label above the 'when to plan' heading"
+  },
+  "home.planning.title": {
+    "message": "划算时再规划，不划算就跳过",
+    "description": "Heading of the 'when to plan an increment' section"
+  },
+  "home.planning.lead": {
+    "message": "我们用 SpecWeave 构建这些产品，所以研究了规格在哪里最值得。小改动两种方式看起来差不多。大型的、有增量支撑的改动消息更多，所以我们只把增量留给会由 Codex、另一个账号或另一台机器继续的工作。",
+    "description": "Lead paragraph of the 'when to plan' section. Keep product names in English"
+  },
+  "home.planning.skip.title": {
+    "message": "跳过增量",
+    "description": "Column heading: when to skip an increment"
+  },
+  "home.planning.skip.command": {
+    "message": "{command}，然后直接发布。",
+    "description": "{command} is the shell command specweave small-fix; keep it as is"
+  },
+  "home.planning.plan.title": {
+    "message": "规划一个增量",
+    "description": "Column heading: when to plan an increment"
+  },
+  "home.planning.plan.command": {
+    "message": "{command}。这些情况优先于规模。",
+    "description": "{command} is the shell command specweave create-increment; keep it as is"
+  },
+  "home.planning.source": {
+    "message": "已合并的拉取请求、SpecWithCode 线程记录和 Claude Code 会话，2026 年 10 月 6 日至 11 月 3 日。",
+    "description": "Source note for the measurement. Keep product names in English"
+  },
+  "home.planning.source.link": {
+    "message": "阅读测量详情",
+    "description": "Link to the guide with the full measurement"
+  },
+  "studioWindow.alt": {
+    "message": "完整的 SpecWithCode 窗口：侧边栏里的 trip-budget 项目，Claude Code 协调器汇报两项更改均已完成、23 项测试全部通过，“线程”面板中有一个 Claude Code 工作线程和一个 Codex 工作线程在运行，以及七个已完成的线程",
+    "description": "Alt text of the full SpecWithCode app screenshot. Keep product names and \"trip-budget\" in English"
+  },
+  "studioWindow.caption": {
+    "message": "Claude Code 协调器汇报进展，同时一个 Claude Code 工作线程和一个 Codex 工作线程在“线程”面板中运行。SpecWithCode 1.0.103，2026 年 10 月 27 日。",
+    "description": "Caption of the full SpecWithCode app screenshot. Keep product names and the version in English"
+  },
+  "studioWindow.open.ariaLabel": {
+    "message": "打开完整大小的截图",
+    "description": "Accessible label of the link that opens the full-size app screenshot"
+  },
+  "home.handoff.beat.spec": {
+    "message": "规格",
+    "description": "Progress rail label for beat 1 of the handoff story"
+  },
+  "home.handoff.beat.agents": {
+    "message": "智能体",
+    "description": "Progress rail label for beat 2 of the handoff story"
+  },
+  "home.handoff.beat.ledger": {
+    "message": "台账",
+    "description": "Progress rail label for beat 3 of the handoff story"
+  },
+  "home.handoff.beat.handoff": {
+    "message": "交接",
+    "description": "Progress rail label for beat 4 of the handoff story"
+  },
+  "home.handoff.diagram.ariaLabel": {
+    "message": "示意图：Claude Code 向仓库写入，直到触达用量上限；Codex 从 git 读取同样的规格、台账和交接记录，并完成任务。",
+    "description": "Accessible label of the handoff diagram. Keep product names in English"
+  },
+  "home.handoff.chip.usageLimit": {
+    "message": "用量上限",
+    "description": "Warning chip: the agent hit its usage limit"
+  },
+  "home.handoff.diagram.repo": {
+    "message": "你的仓库，在 git 中",
+    "description": "Diagram node title for the git repository"
+  },
+  "home.handoff.diagram.verifyPass": {
+    "message": "verify：通过",
+    "description": "Pass chip in the diagram; 'verify' is the CLI command name, keep it in English"
+  },
+  "home.handoff.diagram.caption": {
+    "message": "示意图",
+    "description": "Caption marking a picture as an illustration, not a real capture"
+  },
+  "home.handoff.beats.ariaLabel": {
+    "message": "一次交接的四个层面",
+    "description": "Accessible label of the list of the four handoff beats"
+  },
+  "home.handoff.spec.title": {
+    "message": "规格",
+    "description": "Heading of beat 1"
+  },
+  "home.handoff.spec.body": {
+    "message": "“完成”的含义，在任何智能体开工前一次写好。{file}",
+    "description": "Beat 1 text; {file} is the file name spec.md"
+  },
+  "home.handoff.spec.ariaLabel": {
+    "message": "spec.md 摘录",
+    "description": "Accessible label of the spec.md excerpt; keep the file name"
+  },
+  "home.handoff.agents.title": {
+    "message": "智能体",
+    "description": "Heading of beat 2"
+  },
+  "home.handoff.agents.body": {
+    "message": "任何能读取这些文件的工具，都可以认领任务、证明完成，然后继续下一个。",
+    "description": "Beat 2 text"
+  },
+  "home.handoff.agents.claim": {
+    "message": "Claude Code 领取第一个未完成的任务。认领是台账中的一行，所以其他智能体不会重复领取。",
+    "description": "Explains specweave task claim T-01. Keep product names in English"
+  },
+  "home.handoff.agents.done": {
+    "message": "运行该任务的测试。退出码 0 就是证据，完整输出保存在 {file}。",
+    "description": "Explains specweave task done; {file} is a file path"
+  },
+  "home.handoff.agents.limit": {
+    "message": "Claude Code 认领了 T-02，做到一半就触达了用量上限。",
+    "description": "Explains the second claim. Keep product names and T-02 in English"
+  },
+  "home.handoff.ledger.title": {
+    "message": "git 中的台账",
+    "description": "Heading of beat 3"
+  },
+  "home.handoff.ledger.body": {
+    "message": "每次认领、完成和释放都是一行，与代码一起提交。{file}",
+    "description": "Beat 3 text; {file} is the file name ledger.jsonl"
+  },
+  "home.handoff.ledger.ariaLabel": {
+    "message": "两个智能体之后的 ledger.jsonl 内容",
+    "description": "Accessible label of the ledger excerpt; keep the file name"
+  },
+  "home.handoff.handoff.title": {
+    "message": "交接",
+    "description": "Heading of beat 4"
+  },
+  "home.handoff.handoff.body": {
+    "message": "另一个工具从同样的文件继续，而不是从某个聊天窗口。",
+    "description": "Beat 4 text"
+  },
+  "home.handoff.switch.srOnly": {
+    "message": "把 T-02 交给",
+    "description": "Screen-reader text between claude@cloud and codex@laptop; keep T-02"
+  },
+  "home.handoff.handoff.release": {
+    "message": "释放认领，写入记录接下来要做什么的 {file}，并把快照推送到 {ref} 和 {branch}。",
+    "description": "Explains specweave handoff; {file} is handoff.md, {ref} and {branch} are git ref names, keep them"
+  },
+  "home.handoff.handoff.pickup": {
+    "message": "在 Codex 中：获取交接，应用修改，并打印 T-02 及其两条验收标准。",
+    "description": "Explains specweave pickup. Keep Codex and T-02 in English"
+  },
+  "home.handoff.handoff.done": {
+    "message": "Codex 按同样的验收标准完成 T-02，台账引用了测试输出。",
+    "description": "Explains the second task done. Keep Codex and T-02 in English"
+  },
+  "home.handoff.handoff.verify": {
+    "message": "运行测试、lint 和构建，检查每条验收标准，并写入 {file}。",
+    "description": "Explains specweave verify; {file} is a file path"
+  },
+  "home.handoff.chip.pass": {
+    "message": "通过",
+    "description": "Pass chip after a successful verify"
+  },
+  "install.copy.ariaLabel": {
+    "message": "复制安装命令",
+    "description": "Accessible label of the button that copies the npm install command"
+  },
+  "install.copy.done": {
+    "message": "已复制",
+    "description": "Copy button text after the install command was copied"
+  },
+  "install.copy.button": {
+    "message": "复制",
+    "description": "Copy button text next to the install command"
+  },
+  "install.copy.error": {
+    "message": "无法复制。请选中上方的命令。",
+    "description": "Status line when copying the install command to the clipboard failed"
+  },
+  "install.copy.success": {
+    "message": "安装命令已复制。",
+    "description": "Status line after the install command was copied to the clipboard"
+  },
+  "builtWithItself.stat.prs": {
+    "message": "个 SpecWithCode 拉取请求由工作线程提交并合并，2026 年 10 月 15 日至 29 日",
+    "description": "Label under the number 367. Keep product names in English"
+  },
+  "builtWithItself.stat.threads": {
+    "message": "背后的工作线程：Claude Code 100 个，Codex 65 个，其余在 Gemini CLI 和 Copilot 上",
+    "description": "Label under the number 167. Keep product names in English"
+  },
+  "builtWithItself.stat.allThreads": {
+    "message": "维护者主力 Mac 上自 10 月 9 日以来的线程，横跨六个项目",
+    "description": "Label under the number 2,473"
+  },
+  "builtWithItself.pr.961": {
+    "message": "目标源里程碑完成后，用户目标仍保持打开",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.pr.954": {
+    "message": "输入框中本会话技能的弹出面板",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.pr.927": {
+    "message": "优先使用 Connect 集群路由，并支持不限数量的账号容量",
+    "description": "Title of a real merged pull request. \"Connect\" is a product name; keep it in English"
+  },
+  "builtWithItself.pr.880": {
+    "message": "让线程机器标签指向“交接给”",
+    "description": "Title of a real merged pull request; \"Hand off to\" is a menu item name in the app"
+  },
+  "builtWithItself.pr.873": {
+    "message": "返回时默认询问；空闲压缩改为主动开启",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.pr.837": {
+    "message": "PPTX 产物以幻灯片预览打开",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.kicker": {
+    "message": "SpecWithCode · 免费，抢先体验",
+    "description": "Small label above the heading. Keep product names in English"
+  },
+  "builtWithItself.title": {
+    "message": "SpecWithCode 是用 SpecWithCode 构建的",
+    "description": "Section heading. Keep product names in English"
+  },
+  "builtWithItself.lead": {
+    "message": "我们在应用里构建应用。协调器保管每个项目的简报，Claude Code、Codex 等智能体上的工作线程编写更改并提交拉取请求，整个工作跨越一台 Mac 和一台通过 SpecWithCode Connect 加入的 Linux 工作机器。",
+    "description": "Section lead paragraph. Keep product names in English"
+  },
+  "builtWithItself.statsSource": {
+    "message": "统计自应用自己的线程记录，截至 2026 年 10 月 30 日。",
+    "description": "Source note under the numbers"
+  },
+  "builtWithItself.window.title": {
+    "message": "Mac 协调器，Linux 工作机器",
+    "description": "Window title bar label of the screenshot"
+  },
+  "builtWithItself.shot.ariaLabel": {
+    "message": "打开 ministorm 上工作线程的完整大小截图",
+    "description": "Accessible label of the screenshot link; \"ministorm\" is a machine name, keep it"
+  },
+  "builtWithItself.shot.alt": {
+    "message": "实际的 SpecWithCode 项目：m4 Mac 上的协调器在 Linux 机器 ministorm 上启动 Ministorm e2e proof 线程；工作线程回复 uname 输出 Linux ministorm 7.0.0-38-generic x86_64 和 Hello, ministorm，并保存了 e2e-proof.txt",
+    "description": "Alt text of the screenshot. Keep product names, machine names, command output and file names in English"
+  },
+  "builtWithItself.shot.caption": {
+    "message": "真实截图，2026 年 10 月 30 日，来自我们的端到端测试。Mac 上的协调器在 Linux 机器 ministorm 上启动一个工作线程，工作线程从那里汇报。Claude Code 触达上限后，协调器改用 Grok 继续。",
+    "description": "Caption of the screenshot. Keep product names and the machine name ministorm in English"
+  },
+  "builtWithItself.merged.title": {
+    "message": "最近由线程合并的拉取请求",
+    "description": "Heading of the list of merged pull requests"
+  },
+  "builtWithItself.merged.ariaLabel": {
+    "message": "由工作线程合并的拉取请求",
+    "description": "Accessible label of the list of merged pull requests"
+  },
+  "builtWithItself.merged.agentThread": {
+    "message": "{agent} 线程",
+    "description": "Which agent thread opened the pull request; {agent} is a product name such as Codex or Claude Code"
+  },
+  "builtWithItself.merged.state": {
+    "message": "已合并",
+    "description": "State chip of a merged pull request"
+  },
+  "builtWithItself.merged.source": {
+    "message": "来自线程记录：每个拉取请求都由旁边标注的工作线程提交并关联。它们进入我们的开发仓库；公开的{link}会定期同步快照。",
+    "description": "Source note under the merged pull requests; {link} is a link labelled 'source repository'"
+  },
+  "builtWithItself.merged.source.link": {
+    "message": "源码仓库",
+    "description": "Link text to the public GitHub source repository"
+  },
+  "builtWithItself.more": {
+    "message": "看 SpecWithCode 如何构建自己",
+    "description": "Link to the SpecWithCode page section. Keep product names in English"
+  },
+  "code.flow.message.free.started": {
+    "message": "已在你的 Mac 上启动。",
+    "description": "Hero diagram, coordinator line: the free scene starts on the Mac. Keep product names in English"
+  },
+  "code.flow.message.free.joined": {
+    "message": "Windows 电脑和 Linux 服务器已加入：3 个线程。",
+    "description": "Hero diagram, coordinator line: two more machines connected. Keep product names in English"
+  },
+  "code.flow.message.free.handoff": {
+    "message": "Claude Code 已达 {threshold}%。使用免费 ChatGPT 账号的 Codex 接着做这个线程，历史记录保留。",
+    "description": "Hero diagram, coordinator line: Claude Code reached the handoff point ({threshold} is a number) and Codex continues. Keep product names in English"
+  },
+  "code.flow.message.free.done": {
+    "message": "注册流程完成。{check} 24 项测试通过。",
+    "description": "Hero diagram, coordinator line: the free scene finished; {check} is a check-mark icon"
+  },
+  "code.flow.message.subs.started": {
+    "message": "3 个线程，用的是你付费的套餐。",
+    "description": "Hero diagram, coordinator line: the paid plans scene starts"
+  },
+  "code.flow.message.subs.routed": {
+    "message": "Claude Max 已达 {threshold}%。退款任务转给还有余量的 Copilot。",
+    "description": "Hero diagram, coordinator line: Claude Max reached the handoff point ({threshold} is a number) and the Refunds task moves to Copilot. Keep product names in English"
+  },
+  "code.flow.message.subs.done": {
+    "message": "全部完成。{check} 3 个拉取请求待你评审。",
+    "description": "Hero diagram, coordinator line: the paid plans scene finished; {check} is a check-mark icon"
+  },
+  "code.flow.machine.windows": {
+    "message": "Windows 电脑",
+    "description": "Hero diagram, machine name"
+  },
+  "code.flow.machine.linux": {
+    "message": "Linux 服务器",
+    "description": "Hero diagram, machine name"
+  },
+  "code.flow.goal.free": {
+    "message": "构建注册流程",
+    "description": "Hero diagram, the goal you give in the free scene"
+  },
+  "code.flow.goal.subs": {
+    "message": "发布结账 v2",
+    "description": "Hero diagram, the goal you give in the paid plans scene"
+  },
+  "code.flow.plan.yours": {
+    "message": "你的套餐",
+    "description": "Hero diagram, coordinator plan label"
+  },
+  "code.flow.plan.yourClaude": {
+    "message": "你的 Claude 套餐",
+    "description": "Hero diagram, plan label. Keep product names in English"
+  },
+  "code.flow.plan.freeChatGpt": {
+    "message": "免费 ChatGPT 账号",
+    "description": "Hero diagram, plan label. Keep product names in English"
+  },
+  "code.flow.plan.apiKey": {
+    "message": "你的 API 密钥",
+    "description": "Hero diagram, plan label for DeepSeek with your own API key"
+  },
+  "code.flow.task.signup": {
+    "message": "注册页面",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.emails": {
+    "message": "邮件模板",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.tests": {
+    "message": "测试与 CI",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.payments": {
+    "message": "支付 API",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.checkout": {
+    "message": "结账页面",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.refunds": {
+    "message": "退款",
+    "description": "Hero diagram, a task that moves to another thread"
+  },
+  "code.flow.step.read14": {
+    "message": "读取 14 个文件",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteSignupForm": {
+    "message": "写入 SignupForm.tsx",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.tests18": {
+    "message": "测试：18 项通过",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.historyKept": {
+    "message": "历史记录已保留",
+    "description": "Hero diagram, thread label at the handoff point"
+  },
+  "code.flow.step.pickedUp": {
+    "message": "带着完整历史接手",
+    "description": "Hero diagram, thread progress step after the handoff"
+  },
+  "code.flow.step.emailValidation": {
+    "message": "添加邮箱校验",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.tests24": {
+    "message": "测试：24 项通过",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.read6Templates": {
+    "message": "读取 6 个模板",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteWelcome": {
+    "message": "写入 welcome.mjml",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.previews": {
+    "message": "预览已渲染",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.added30": {
+    "message": "新增 30 项测试",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.flakyE2e": {
+    "message": "修复不稳定的 e2e",
+    "description": "Hero diagram, thread progress step; e2e means end-to-end tests"
+  },
+  "code.flow.step.ciGreen": {
+    "message": "CI 通过",
+    "description": "Hero diagram, thread progress step: continuous integration passed"
+  },
+  "code.flow.step.planned6": {
+    "message": "规划了 6 个任务",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteCharge": {
+    "message": "写入 charge.ts",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.tests31": {
+    "message": "测试：31 项通过",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.doneMoved": {
+    "message": "完成 · 已转到下一个任务",
+    "description": "Hero diagram, thread label at the handoff point"
+  },
+  "code.flow.step.read22": {
+    "message": "读取 22 个文件",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteCheckout": {
+    "message": "写入 Checkout.tsx",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.tests12": {
+    "message": "测试：12 项通过",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.added40": {
+    "message": "新增 40 项测试",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.machine.connected": {
+    "message": "已连接",
+    "description": "Hero diagram, tag on a machine that just joined"
+  },
+  "code.flow.step.starting": {
+    "message": "启动中",
+    "description": "Hero diagram, thread status before it starts"
+  },
+  "code.flow.badge.handedOff": {
+    "message": "在 {threshold}% 时交接",
+    "description": "Hero diagram, badge on a thread handed to the next agent; {threshold} is a number"
+  },
+  "code.flow.badge.next": {
+    "message": "下一个：{task}",
+    "description": "Hero diagram, badge for the task a thread will take next; {task} is the task name"
+  },
+  "code.flow.tiers.ariaLabel": {
+    "message": "两种运行方式",
+    "description": "Hero diagram, accessible label of the two scene tabs"
+  },
+  "code.flow.tier.free.long": {
+    "message": "免费账号",
+    "description": "Hero diagram, tab for the free scene (wide screens)"
+  },
+  "code.flow.tier.free.short": {
+    "message": "免费",
+    "description": "Hero diagram, tab for the free scene (narrow screens)"
+  },
+  "code.flow.tier.subs.long": {
+    "message": "你付费的套餐",
+    "description": "Hero diagram, tab for the paid plans scene (wide screens)"
+  },
+  "code.flow.tier.subs.short": {
+    "message": "你的套餐",
+    "description": "Hero diagram, tab for the paid plans scene (narrow screens)"
+  },
+  "code.flow.you": {
+    "message": "你",
+    "description": "Hero diagram, chip for the person giving the goal"
+  },
+  "code.flow.coordinator": {
+    "message": "协调器",
+    "description": "Hero diagram, label of the coordinator agent"
+  },
+  "code.flow.threads.ariaLabel": {
+    "message": "工作线程",
+    "description": "Hero diagram, accessible label of the thread list"
+  },
+  "code.flow.caption": {
+    "message": "在 {threshold}% 时交接，历史记录保留。可按项目在 50% 到 100% 之间设定触发点。",
+    "description": "Caption under the hero diagram; {threshold} is the default handoff percentage"
+  },
+  "continuityBoard.increment.label": {
+    "message": "增量",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.increment.value": {
+    "message": "{id} 可恢复的结账",
+    "description": "Dashboard row value; {id} is the increment id, followed by the example increment title"
+  },
+  "continuityBoard.state.label": {
+    "message": "状态",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.state.value": {
+    "message": "进行中",
+    "description": "Increment state chip"
+  },
+  "continuityBoard.tasks.label": {
+    "message": "任务",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.tasks.value": {
+    "message": "已完成 {done}/{total}",
+    "description": "Task progress"
+  },
+  "continuityBoard.next.label": {
+    "message": "下一个任务",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.next.value": {
+    "message": "{id} 用户返回时恢复草稿",
+    "description": "Dashboard row value; {id} is a task id, followed by the example task title"
+  },
+  "continuityBoard.criteria.label": {
+    "message": "验收标准",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.criteria.value": {
+    "message": "{ac1} 24 小时内返回，会恢复购物车和配送选择。{ac2} 已付款的订单绝不恢复。",
+    "description": "Dashboard row value; {ac1} and {ac2} are acceptance criterion ids"
+  },
+  "continuityBoard.files.label": {
+    "message": "文件与测试",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.handoff.label": {
+    "message": "最近一次交接",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.handoff.value": {
+    "message": "{from} 的 token 用完了。由 {to} 接手。",
+    "description": "Dashboard row value; {from} and {to} are agent identities"
+  },
+  "continuityBoard.caption": {
+    "message": "仪表板为增量 {id} 读取的内容",
+    "description": "Screen-reader caption of the dashboard table; {id} is the increment id"
+  },
+  "motion.extension.aria": {
+    "message": "适用于 Chrome 的 SpecWithCode Browser",
+    "description": "Accessible label of the browser extension banner; keep product names in English"
+  },
+  "motion.extension.title": {
+    "message": "新品：适用于 Chrome 的 SpecWithCode Browser。",
+    "description": "Bold lead of the browser extension banner; keep product names in English"
+  },
+  "motion.extension.body": {
+    "message": "让 SpecWithCode 里的 Claude Code、Codex、GitHub Copilot、Grok 或任何智能体，在你自己的 Chrome 中打开、阅读、点击页面并截图，全程在一个可随时关闭的标签组里。",
+    "description": "Browser extension banner text; keep product names in English"
+  },
+  "motion.extension.cta": {
+    "message": "添加到 Chrome",
+    "description": "Button to install the browser extension; keep Chrome in English"
+  },
+  "motion.extension.ctaHint": {
+    "message": "（在 Chrome 应用商店中打开）",
+    "description": "Screen-reader hint after the Add to Chrome button; keep the leading space and Chrome Web Store in English"
+  },
+  "code.download.meta.title": {
+    "message": "下载 SpecWithCode：Mac、Windows、Linux 版（免费）",
+    "description": "Download page title. Keep product names in English"
+  },
+  "code.download.meta.description": {
+    "message": "下载 SpecWithCode (Spec with Code)，免费的 AI 编码智能体工作区，支持 Apple silicon Mac、Windows 10 和 11 以及 Linux。",
+    "description": "Download page meta description. Keep product names in English"
+  },
+  "code.download.steps.download.title": {
+    "message": "下载 .dmg",
+    "description": "Mac install step 1 title"
+  },
+  "code.download.steps.download.body": {
+    "message": "点击“下载 Mac 版”，你会得到 {file}，来自本页列出的发布版本。",
+    "description": "Mac install step 1 body; {file} is the installer file name. Keep product names in English"
+  },
+  "code.download.steps.drag.title": {
+    "message": "把 SpecWithCode 拖进“应用程序”",
+    "description": "Mac install step 2 title. Keep product names in English"
+  },
+  "code.download.steps.drag.body": {
+    "message": "打开 .dmg，把应用拖进“应用程序”。它使用 Apple Developer ID 签名并经过公证，无需绕过安全提示即可打开。",
+    "description": "Mac install step 2 body. Keep product names in English"
+  },
+  "code.download.steps.open.title": {
+    "message": "打开并添加提供商",
+    "description": "Mac install step 3 title"
+  },
+  "code.download.steps.open.body": {
+    "message": "应用会自动启动它的本地服务。登录你已在用的编码智能体，比如 Claude Code 或 Codex，然后开始你的第一个线程。",
+    "description": "Mac install step 3 body. Keep product names in English"
+  },
+  "code.download.desktopNotes.whichFile.name": {
+    "message": "选哪个文件",
+    "description": "Windows/Linux install note label: which installer file to pick"
+  },
+  "code.download.desktopNotes.whichFile.detail": {
+    "message": "大多数 Windows 电脑和 Linux 机器是 x64。Arm 设备（如搭载 Snapdragon 的 Windows 笔记本或 Arm 架构的 Linux 机器）请选 arm64；在 Linux 上运行 {uname}，Arm 会输出 {aarch64}，x64 则输出 {x86_64}。",
+    "description": "Which installer to pick; {uname}, {aarch64} and {x86_64} are code. Keep product names in English"
+  },
+  "code.download.desktopNotes.windows.detail": {
+    "message": "运行 {exe}，Arm 设备运行 {exeArm64}。仅为当前用户安装，不弹出管理员提示。安装程序暂未进行代码签名，所以 SmartScreen 首次会显示“{protected}”：选择“{moreInfo}”，然后选“{runAnyway}”。",
+    "description": "Windows install note; {exe} and {exeArm64} are file names; {protected}, {moreInfo} and {runAnyway} are the bold Windows SmartScreen dialog texts. Keep product names in English"
+  },
+  "code.download.desktopNotes.windows.smartscreenTitle": {
+    "message": "Windows 已保护你的电脑",
+    "description": "Title of the Windows SmartScreen dialog, as Windows shows it"
+  },
+  "code.download.desktopNotes.windows.moreInfo": {
+    "message": "更多信息",
+    "description": "Windows SmartScreen dialog link text, as Windows shows it"
+  },
+  "code.download.desktopNotes.windows.runAnyway": {
+    "message": "仍要运行",
+    "description": "Windows SmartScreen dialog button text, as Windows shows it"
+  },
+  "code.download.desktopNotes.debian.name": {
+    "message": "Debian 和 Ubuntu",
+    "description": "Install note label for Debian and Ubuntu. Keep product names in English"
+  },
+  "code.download.desktopNotes.debian.detail": {
+    "message": "{x64Command}（x64）或 {arm64Command}（arm64）会安装应用并添加菜单项。",
+    "description": "Debian/Ubuntu install note; {x64Command} and {arm64Command} are shell commands. Keep product names in English"
+  },
+  "code.download.desktopNotes.otherLinux.name": {
+    "message": "其他 Linux",
+    "description": "Install note label for other Linux distributions. Keep product names in English"
+  },
+  "code.download.desktopNotes.otherLinux.detail": {
+    "message": "用 {chmod} 让对应架构的 AppImage 可执行，然后运行。应用需要基于 glibc 的发行版。",
+    "description": "Other Linux install note; {chmod} is a shell command. Keep product names in English"
+  },
+  "code.download.desktopNotes.servers.name": {
+    "message": "Linux 服务器",
+    "description": "Install note label for headless Linux servers. Keep product names in English"
+  },
+  "code.download.desktopNotes.servers.detail": {
+    "message": "没有桌面环境的机器，可使用发布版本里的 {x64Archive} 或 {arm64Archive} 压缩包，作为工作机器运行服务。参见{link}。",
+    "description": "Linux server note; {x64Archive} and {arm64Archive} are archive names, {link} links to the Linux worker guide. Keep product names in English"
+  },
+  "code.download.desktopNotes.servers.link": {
+    "message": "Linux 工作机器",
+    "description": "Link text to the Linux worker guide. Keep product names in English"
+  },
+  "code.download.desktopNotes.differs.name": {
+    "message": "差异之处",
+    "description": "Install note label: what differs from the Mac app"
+  },
+  "code.download.desktopNotes.differs.detail": {
+    "message": "电脑操控功能用于控制 Mac 屏幕，仅限 macOS。Windows 和 Linux 上的应用同样会从新版本自动更新；.deb 更新会要求输入密码。",
+    "description": "What differs on Windows and Linux. Keep product names in English"
+  },
+  "code.download.next.firstTask.name": {
+    "message": "运行你的第一个任务",
+    "description": "After-install item label"
+  },
+  "code.download.next.firstTask.detail": {
+    "message": "简短的{link}带你了解项目、线程和机器；各智能体的首个任务视频正在重新录制。",
+    "description": "After-install item; {link} links to the video tutorials"
+  },
+  "code.download.next.firstTask.link": {
+    "message": "视频教程",
+    "description": "Link text to the video tutorials"
+  },
+  "code.download.next.usageLimit.name": {
+    "message": "不必再等用量上限",
+    "description": "After-install item label"
+  },
+  "code.download.next.usageLimit.detail": {
+    "message": "一个提供商用完时，同一个线程会带着上下文在另一个提供商上继续。参见{link}。",
+    "description": "After-install item; {link} links to a tutorial"
+  },
+  "code.download.next.usageLimit.link": {
+    "message": "提供商用完后继续工作",
+    "description": "Link text: tutorial title"
+  },
+  "code.download.next.chrome.name": {
+    "message": "让智能体使用你的 Chrome",
+    "description": "After-install item label. Keep product names in English"
+  },
+  "code.download.next.chrome.detail": {
+    "message": "从{link}添加免费的 SpecWithCode 扩展，并在“设置 › Chrome”中配对。之后智能体就在你自己的 Chrome 里工作，使用一个你看得见的标签组。",
+    "description": "After-install item; {link} is the Chrome Web Store link; Settings › Chrome is a menu path in the app. Keep product names in English"
+  },
+  "code.download.next.machine.name": {
+    "message": "再添加一台机器",
+    "description": "After-install item label"
+  },
+  "code.download.next.machine.detail": {
+    "message": "通过 SpecWithCode Connect 添加第二台 Mac 或一台 Linux 工作机器。参见{link}。",
+    "description": "After-install item; {link} links to a tutorial. Keep product names in English"
+  },
+  "code.download.next.machine.link": {
+    "message": "添加第二台机器",
+    "description": "Link text: tutorial title"
+  },
+  "code.download.faq.free.q": {
+    "message": "SpecWithCode 免费吗？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.free.a": {
+    "message": "是的。SpecWithCode 免费。本地使用不需要 SpecWithCode 账号。你自带提供商的订阅或 API 密钥，提供商的费用由你直接支付。",
+    "description": "FAQ answer. Keep product names in English"
+  },
+  "code.download.faq.macs.q": {
+    "message": "SpecWithCode 能在哪些 Mac 上运行？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.macs.a": {
+    "message": "运行 macOS 13 或更高版本的 Apple silicon Mac（M1 或更新）。不支持 Intel Mac。",
+    "description": "FAQ answer. Keep product names in English"
+  },
+  "code.download.faq.windowsLinux.q": {
+    "message": "有 Windows 或 Linux 版下载吗？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.windowsLinux.a": {
+    "message": "有。SpecWithCode {version} 提供适用于 Windows 10 和 11（x64 和 arm64）的 Windows 安装包，以及适用于基于 glibc 的发行版（x64 和 arm64）的 Linux AppImage 和 .deb。Windows 安装包暂未进行代码签名，所以首次运行时 Windows 会要求你确认。电脑操控功能仅限 macOS。",
+    "description": "FAQ answer; {version} is the release version. Keep product names in English"
+  },
+  "code.download.faq.safe.q": {
+    "message": "下载安全吗？",
+    "description": "FAQ question"
+  },
+  "code.download.faq.safe.a": {
+    "message": "每个版本都在 GitHub Actions 中构建。Mac 应用使用 Apple Developer ID 签名，并经 Apple 公证。Windows 安装包以及 Linux 的 AppImage 和 .deb 暂未进行代码签名；请对照每个发布版本附带的 SHA256SUMS-windows-linux 文件进行校验。Mac 下载有它自己的 SHA256SUMS 文件。",
+    "description": "FAQ answer; SHA256SUMS file names stay as is. Keep product names in English"
+  },
+  "code.download.faq.update.q": {
+    "message": "如何更新 SpecWithCode？",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.update.a": {
+    "message": "从 SpecWithCode 的 GitHub releases 下载最新的 .dmg，替换“应用程序”里的应用。当某台机器上的服务端版本比你的应用旧时，SpecWithCode 会在对话中以及“设置 › 连接”里显示更新提示。",
+    "description": "FAQ answer; Settings › Connections is a menu path in the app. Keep product names in English"
+  },
+  "code.download.ld.breadcrumb.download": {
+    "message": "下载",
+    "description": "Breadcrumb name of the download page (structured data)"
+  },
+  "code.download.ld.howto.name": {
+    "message": "在 Mac 上安装 SpecWithCode",
+    "description": "Structured-data how-to name. Keep product names in English"
+  },
+  "code.download.ld.howto.step1": {
+    "message": "从 spec-weave.com/code/download 下载 SpecWithCode-arm64.dmg。",
+    "description": "Structured-data how-to step 1 text; keep the file name and address as is"
+  },
+  "code.download.ld.howto.step2": {
+    "message": "打开 .dmg，把 SpecWithCode 拖进“应用程序”。它已签名并经过公证，无需绕过安全提示即可打开。",
+    "description": "Structured-data how-to step 2 text. Keep product names in English"
+  },
+  "code.download.ld.howto.step3": {
+    "message": "打开 SpecWithCode，登录你已在用的编码智能体，比如 Claude Code 或 Codex，然后开始一个线程。",
+    "description": "Structured-data how-to step 3 text. Keep product names in English"
+  },
+  "code.download.hero.windowsLinuxButton": {
+    "message": "Windows 和 Linux",
+    "description": "Button that jumps to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.hero.requirements": {
+    "message": "SpecWithCode {version}，{file}，{size}。",
+    "description": "Installer facts under the download button; {version} is the version, {file} the file name, {size} the download size. Keep product names in English"
+  },
+  "code.download.hero.macRequirements": {
+    "message": "Apple silicon，macOS 13 或更高版本。",
+    "description": "Mac system requirements. Keep product names in English"
+  },
+  "code.download.hero.platformSentence": {
+    "message": "{platform}。",
+    "description": "Who the installer is for, as a sentence; {platform} is a phrase such as Windows 10 and 11 on x64"
+  },
+  "code.download.hero.pickedArmGuess": {
+    "message": "已为你的电脑选好；如果是 Arm 机器，请在下方选择 arm64。{link}。",
+    "description": "Shown when the installer was picked for the visitor but the CPU is unknown; {link} jumps to other platforms"
+  },
+  "code.download.hero.otherPlatforms": {
+    "message": "其他平台",
+    "description": "Link to the downloads for other platforms"
+  },
+  "code.download.hero.picked": {
+    "message": "已为你的电脑选好。{link}。",
+    "description": "Shown when the installer was picked for the visitor; {link} jumps to other platforms"
+  },
+  "code.download.releaseNotes": {
+    "message": "发布说明",
+    "description": "Link to the release notes"
+  },
+  "code.download.intelMac.title": {
+    "message": "这看起来是一台 Intel Mac。",
+    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
+  },
+  "code.download.intelMac.body": {
+    "message": "macOS 版 SpecWithCode 需要 Apple silicon（M1 或更新），没有 Intel 版本。Linux 或 Windows 机器可以改用，见{link}。",
+    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.intelMac.link": {
+    "message": "Windows 和 Linux",
+    "description": "Link to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.mobile.title": {
+    "message": "SpecWithCode 是桌面应用。",
+    "description": "Bold lead of the phone visitor notice. Keep product names in English"
+  },
+  "code.download.mobile.body": {
+    "message": "请在你的 Mac、Windows 或 Linux 电脑上打开本页进行下载。",
+    "description": "Phone visitor notice. Keep product names in English"
+  },
+  "code.download.signed.title": {
+    "message": "已使用 Apple Developer ID 签名，并经 Apple 公证。",
+    "description": "Bold lead of the Mac signing notice. Keep product names in English"
+  },
+  "code.download.signed.body": {
+    "message": "下载直接来自项目的 GitHub releases。",
+    "description": "Mac signing notice. Keep product names in English"
+  },
+  "code.download.unsigned.title": {
+    "message": "暂未进行代码签名。",
+    "description": "Bold lead of the Windows/Linux signing notice"
+  },
+  "code.download.unsigned.body": {
+    "message": "下载直接来自项目的 GitHub releases；请与 SHA256SUMS 对照校验。安装说明见{link}。",
+    "description": "Windows/Linux signing notice; {link} jumps to the Windows and Linux install notes. Keep product names in English"
+  },
+  "code.download.unsigned.link": {
+    "message": "Windows 和 Linux",
+    "description": "Link to the Windows and Linux install notes. Keep product names in English"
+  },
+  "code.download.footer.windowsLinuxDownloads": {
+    "message": "Windows 和 Linux 下载",
+    "description": "Footer link to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.footer.allPlatforms": {
+    "message": "所有平台",
+    "description": "Footer link to the downloads for every platform"
+  },
+  "code.download.meta.ogImageAlt": {
+    "message": "SpecWithCode：在你自己的电脑上运行 Claude Code 和 Codex 智能体。支持 macOS、Windows 和 Linux。免费，源码可见。",
+    "description": "Social share image alt text. Keep product names in English"
+  },
+  "code.download.meta.twitterImageAlt": {
+    "message": "SpecWithCode：在你自己的电脑上运行智能体。支持 macOS、Windows 和 Linux。",
+    "description": "Twitter share image alt text. Keep product names in English"
+  },
+  "code.download.hero.productNote": {
+    "message": "免费，源码可见",
+    "description": "Short note next to the product name"
+  },
+  "code.download.hero.title": {
+    "message": "下载 SpecWithCode",
+    "description": "Download page headline. Keep product names in English"
+  },
+  "code.download.hero.pronounced": {
+    "message": "SpecWithCode，读作“Spec with Code”，把你的 AI 编码智能体集中到一个工作区。",
+    "description": "Hero sentence explaining the product name; keep SpecWithCode and Spec with Code in English"
+  },
+  "code.download.hero.lead": {
+    "message": "一个免费应用，统一使用 {providers}，运行在你自己的机器上，用你已在付费的订阅。",
+    "description": "Hero lead; {providers} is a list of coding agent product names"
+  },
+  "code.download.hero.shot.bar": {
+    "message": "工作线程",
+    "description": "Title bar label of the app screenshot"
+  },
+  "code.download.hero.shot.alt": {
+    "message": "Mac 上的 SpecWithCode：一个 Codex 工作线程汇报它运行的命令和更改的文件",
+    "description": "Alt text of the app screenshot. Keep product names in English"
+  },
+  "code.download.hero.shot.caption": {
+    "message": "macOS 上的 SpecWithCode。应用截图，2026 年 10 月 15 日。{link}",
+    "description": "Screenshot caption; {link} links to the SpecWithCode page. Keep product names in English"
+  },
+  "code.download.hero.shot.captionLink": {
+    "message": "查看它的全部功能",
+    "description": "Link from the screenshot caption to the SpecWithCode page"
+  },
+  "code.download.windowsLinux.title": {
+    "message": "Windows 和 Linux",
+    "description": "Section heading. Keep product names in English"
+  },
+  "code.download.windowsLinux.body": {
+    "message": "SpecWithCode {version} 适用于 Windows 10 和 11（x64 和 arm64），以及 Linux（x64 和 arm64，glibc）。安装程序暂未进行代码签名。与 macOS 版在真实提供商接入和原生功能方面是否一致，目前尚未验证，Windows 和 Linux 桌面版本可能落后于 Mac 版本。",
+    "description": "Windows and Linux section intro; {version} is the release version. Keep product names in English"
+  },
+  "code.download.install.title": {
+    "message": "在 Mac 上三步安装",
+    "description": "Section heading. Keep product names in English"
+  },
+  "code.download.install.body": {
+    "message": "在较新的 Mac 上大约一分钟。首次启动前无需任何配置。",
+    "description": "Mac install section intro. Keep product names in English"
+  },
+  "code.download.next.title": {
+    "message": "安装之后",
+    "description": "Section heading"
+  },
+  "code.download.next.body": {
+    "message": "前一小时的简短视频和指南。",
+    "description": "After-install section intro"
+  },
+  "code.download.faq.title": {
+    "message": "下载常见问题",
+    "description": "FAQ section heading"
+  },
+  "code.download.final.title": {
+    "message": "为你的电脑获取 SpecWithCode",
+    "description": "Closing section heading. Keep product names in English"
+  },
+  "code.download.final.body": {
+    "message": "免费，源码可见，无需账号。可选 Apple silicon 的 macOS、Windows 10 和 11（x64 或 arm64），或 Linux（x64 或 arm64）。",
+    "description": "Closing section text. Keep product names in English"
+  },
+  "code.download.final.viewSource": {
+    "message": "在 GitHub 查看源码",
+    "description": "Link to the source code. Keep product names in English"
+  },
+  "footer.column.start": {
+    "message": "开始",
+    "description": "Footer column title"
+  },
+  "footer.link.start.whatIsSpecweave": {
+    "message": "SpecWeave 是什么？",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.start.quickStart": {
+    "message": "快速开始",
+    "description": "Footer link label"
+  },
+  "footer.link.start.tutorials": {
+    "message": "教程",
+    "description": "Footer link label"
+  },
+  "footer.link.start.howItWorks": {
+    "message": "工作原理",
+    "description": "Footer link label"
+  },
+  "footer.link.start.whatChangedIn31": {
+    "message": "3.1 有哪些变化",
+    "description": "Footer link label"
+  },
+  "footer.column.switchTools": {
+    "message": "切换工具",
+    "description": "Footer column title"
+  },
+  "footer.link.switchTools.handoffAndPickup": {
+    "message": "交接与接手",
+    "description": "Footer link label"
+  },
+  "footer.link.switchTools.whatGoesInHandoffMd": {
+    "message": "handoff.md 里写什么",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.claudeCodeToCodex": {
+    "message": "从 Claude Code 到 Codex",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.usageLimitReached": {
+    "message": "触达用量上限",
+    "description": "Footer link label"
+  },
+  "footer.link.switchTools.claudeCodeProjects": {
+    "message": "Claude Code Projects",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.codexGrokAndOthers": {
+    "message": "Codex、Grok 及其他",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.integrations": {
+    "message": "集成",
+    "description": "Footer link label"
+  },
+  "footer.column.compare": {
+    "message": "对比",
+    "description": "Footer column title"
+  },
+  "footer.link.compare.specweaveVsOpenspec": {
+    "message": "SpecWeave 与 OpenSpec",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.specweaveVsSpecKit": {
+    "message": "SpecWeave 与 Spec Kit",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.specweaveVsBmad": {
+    "message": "SpecWeave 与 BMAD",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.allSpecDrivenTools": {
+    "message": "全部规格驱动工具",
+    "description": "Footer link label"
+  },
+  "footer.link.compare.claudeCodeVsCodex": {
+    "message": "Claude Code 与 Codex",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.agentsMdVsClaudeMd": {
+    "message": "AGENTS.md 与 CLAUDE.md",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.allComparisons": {
+    "message": "全部对比",
+    "description": "Footer link label"
+  },
+  "footer.column.reference": {
+    "message": "参考",
+    "description": "Footer column title"
+  },
+  "footer.link.reference.commands": {
+    "message": "命令",
+    "description": "Footer link label"
+  },
+  "footer.link.reference.skills": {
+    "message": "技能",
+    "description": "Footer link label"
+  },
+  "footer.link.reference.troubleshooting": {
+    "message": "故障排查",
+    "description": "Footer link label"
+  },
+  "footer.link.reference.changelog": {
+    "message": "更新日志",
+    "description": "Footer link label"
+  },
+  "footer.column.project": {
+    "message": "项目",
+    "description": "Footer column title"
+  },
+  "footer.link.project.downloadSpecwithcode": {
+    "message": "下载 SpecWithCode",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.project.pricing": {
+    "message": "定价",
+    "description": "Footer link label"
+  },
+  "footer.link.project.blog": {
+    "message": "博客",
+    "description": "Footer link label"
+  },
+  "footer.link.project.privacy": {
+    "message": "隐私",
+    "description": "Footer link label"
+  },
+  "footer.link.project.support": {
+    "message": "支持",
+    "description": "Footer link label"
+  },
+  "footer.social.githubIssues": {
+    "message": "GitHub Issues",
+    "description": "Accessible label for the GitHub Issues icon link in the footer. Keep product names in English"
+  },
+  "footer.copyright": {
+    "message": "© {year} SpecWeave。SpecWeave CLI：MIT 许可。SpecWithCode：免费，源码可见。",
+    "description": "Footer copyright line; {year} is the current year. Keep product names in English"
+  },
+  "navbar.family.ariaLabel": {
+    "message": "产品",
+    "description": "Accessible label for the product family bar at the top of every page"
+  },
+  "navbar.family.specweave.what": {
+    "message": "规格与交接 CLI",
+    "description": "Short description shown after the product name SpecWeave in the family bar"
+  },
+  "navbar.family.specwithcode.what": {
+    "message": "桌面工作区",
+    "description": "Short description shown after the product name SpecWithCode in the family bar"
+  },
+  "navbar.family.verifiedSkill.what": {
+    "message": "技能注册表",
+    "description": "Short description shown after the product name Verified Skill in the family bar"
+  },
+  "theme.ErrorPageContent.title": {
+    "message": "页面已崩溃。",
+    "description": "The title of the fallback page when the page crashed"
+  },
+  "theme.BackToTopButton.buttonAriaLabel": {
+    "message": "回到顶部",
+    "description": "The ARIA label for the back to top button"
+  },
+  "theme.blog.archive.title": {
+    "message": "历史博文",
+    "description": "The page & hero title of the blog archive page"
+  },
+  "theme.blog.archive.description": {
+    "message": "历史博文",
+    "description": "The page & hero description of the blog archive page"
+  },
+  "theme.blog.post.paginator.navAriaLabel": {
+    "message": "博文分页导航",
+    "description": "The ARIA label for the blog posts pagination"
+  },
+  "theme.blog.post.paginator.newerPost": {
+    "message": "较新一篇",
+    "description": "The blog post button label to navigate to the newer/previous post"
+  },
+  "theme.blog.post.paginator.olderPost": {
+    "message": "较旧一篇",
+    "description": "The blog post button label to navigate to the older/next post"
+  },
+  "theme.tags.tagsPageLink": {
+    "message": "查看所有标签",
+    "description": "The label of the link targeting the tag list page"
+  },
+  "theme.blog.paginator.navAriaLabel": {
+    "message": "博文列表分页导航",
+    "description": "The ARIA label for the blog pagination"
+  },
+  "theme.blog.paginator.newerEntries": {
+    "message": "较新的博文",
+    "description": "The label used to navigate to the newer blog posts page (previous page)"
+  },
+  "theme.blog.paginator.olderEntries": {
+    "message": "较旧的博文",
+    "description": "The label used to navigate to the older blog posts page (next page)"
+  },
+  "theme.colorToggle.ariaLabel.mode.system": {
+    "message": "系统模式",
+    "description": "The name for the system color mode"
+  },
+  "theme.colorToggle.ariaLabel.mode.light": {
+    "message": "浅色模式",
+    "description": "The name for the light color mode"
+  },
+  "theme.colorToggle.ariaLabel.mode.dark": {
+    "message": "暗黑模式",
+    "description": "The name for the dark color mode"
+  },
+  "theme.colorToggle.ariaLabel": {
+    "message": "切换浅色/暗黑模式（当前为{mode}）",
+    "description": "The ARIA label for the color mode toggle"
+  },
+  "theme.docs.breadcrumbs.navAriaLabel": {
+    "message": "页面路径",
+    "description": "The ARIA label for the breadcrumbs"
+  },
+  "theme.docs.DocCard.categoryDescription.plurals": {
+    "message": "{count} 个项目",
+    "description": "The default description for a category card in the generated index about how many items this category includes"
+  },
+  "theme.docs.paginator.navAriaLabel": {
+    "message": "文档页分页导航",
+    "description": "The ARIA label for the docs pagination"
+  },
+  "theme.docs.paginator.previous": {
+    "message": "上一页",
+    "description": "The label used to navigate to the previous doc"
+  },
+  "theme.docs.paginator.next": {
+    "message": "下一页",
+    "description": "The label used to navigate to the next doc"
+  },
+  "theme.docs.tagDocListPageTitle.nDocsTagged": {
+    "message": "{count} 篇文档带有标签",
+    "description": "Pluralized label for \"{count} docs tagged\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.docs.tagDocListPageTitle": {
+    "message": "{nDocsTagged}「{tagName}」",
+    "description": "The title of the page for a docs tag"
+  },
+  "theme.docs.versionBadge.label": {
+    "message": "版本：{versionLabel}"
+  },
+  "theme.docs.versions.unreleasedVersionLabel": {
+    "message": "此为 {siteTitle} {versionLabel} 版尚未发行的文档。",
+    "description": "The label used to tell the user that he's browsing an unreleased doc version"
+  },
+  "theme.docs.versions.unmaintainedVersionLabel": {
+    "message": "此为 {siteTitle} {versionLabel} 版的文档，现已不再积极维护。",
+    "description": "The label used to tell the user that he's browsing an unmaintained doc version"
+  },
+  "theme.docs.versions.latestVersionSuggestionLabel": {
+    "message": "最新的文档请参阅 {latestVersionLink} ({versionLabel})。",
+    "description": "The label used to tell the user to check the latest version"
+  },
+  "theme.docs.versions.latestVersionLinkLabel": {
+    "message": "最新版本",
+    "description": "The label used for the latest version suggestion link label"
+  },
+  "theme.common.editThisPage": {
+    "message": "编辑此页",
+    "description": "The link label to edit the current page"
+  },
+  "theme.common.headingLinkTitle": {
+    "message": "{heading}的直接链接",
+    "description": "Title for link to heading"
+  },
+  "theme.lastUpdated.atDate": {
+    "message": "于 {date} ",
+    "description": "The words used to describe on which date a page has been last updated"
+  },
+  "theme.lastUpdated.byUser": {
+    "message": "由 {user} ",
+    "description": "The words used to describe by who the page has been last updated"
+  },
+  "theme.lastUpdated.lastUpdatedAtBy": {
+    "message": "最后{byUser}{atDate}更新",
+    "description": "The sentence used to display when a page has been last updated, and by who"
+  },
+  "theme.NotFound.title": {
+    "message": "找不到页面",
+    "description": "The title of the 404 page"
+  },
+  "theme.navbar.mobileVersionsDropdown.label": {
+    "message": "选择版本",
+    "description": "The label for the navbar versions dropdown on mobile view"
+  },
+  "theme.tags.tagsListLabel": {
+    "message": "标签：",
+    "description": "The label alongside a tag list"
+  },
+  "theme.admonition.caution": {
+    "message": "警告",
+    "description": "The default label used for the Caution admonition (:::caution)"
+  },
+  "theme.admonition.danger": {
+    "message": "危险",
+    "description": "The default label used for the Danger admonition (:::danger)"
+  },
+  "theme.admonition.info": {
+    "message": "信息",
+    "description": "The default label used for the Info admonition (:::info)"
+  },
+  "theme.admonition.note": {
+    "message": "备注",
+    "description": "The default label used for the Note admonition (:::note)"
+  },
+  "theme.admonition.tip": {
+    "message": "提示",
+    "description": "The default label used for the Tip admonition (:::tip)"
+  },
+  "theme.admonition.warning": {
+    "message": "注意",
+    "description": "The default label used for the Warning admonition (:::warning)"
+  },
+  "theme.AnnouncementBar.closeButtonAriaLabel": {
+    "message": "关闭",
+    "description": "The ARIA label for close button of announcement bar"
+  },
+  "theme.blog.sidebar.navAriaLabel": {
+    "message": "最近博文导航",
+    "description": "The ARIA label for recent posts in the blog sidebar"
+  },
+  "theme.DocSidebarItem.expandCategoryAriaLabel": {
+    "message": "展开侧边栏分类 '{label}'",
+    "description": "The ARIA label to expand the sidebar category"
+  },
+  "theme.DocSidebarItem.collapseCategoryAriaLabel": {
+    "message": "折叠侧边栏分类 '{label}'",
+    "description": "The ARIA label to collapse the sidebar category"
+  },
+  "theme.IconExternalLink.ariaLabel": {
+    "message": "（在新标签页打开）",
+    "description": "The ARIA label for the external link icon"
+  },
+  "theme.NavBar.navAriaLabel": {
+    "message": "主导航",
+    "description": "The ARIA label for the main navigation"
+  },
+  "theme.NotFound.p1": {
+    "message": "我们找不到您要找的页面。",
+    "description": "The first paragraph of the 404 page"
+  },
+  "theme.NotFound.p2": {
+    "message": "请联系原始链接来源网站的所有者，并告知他们链接已损坏。",
+    "description": "The 2nd paragraph of the 404 page"
+  },
+  "theme.TOCCollapsible.toggleButtonLabel": {
+    "message": "本页总览",
+    "description": "The label used by the button on the collapsible TOC component"
+  },
+  "theme.navbar.mobileLanguageDropdown.label": {
+    "message": "选择语言",
+    "description": "The label for the mobile language switcher dropdown"
+  },
+  "theme.blog.post.readMore": {
+    "message": "阅读更多",
+    "description": "The label used in blog post item excerpts to link to full blog posts"
+  },
+  "theme.blog.post.readMoreLabel": {
+    "message": "阅读 {title} 的全文",
+    "description": "The ARIA label for the link to full blog posts from excerpts"
+  },
+  "theme.blog.post.readingTime.plurals": {
+    "message": "阅读需 {readingTime} 分钟",
+    "description": "Pluralized label for \"{readingTime} min read\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.CodeBlock.copy": {
+    "message": "复制",
+    "description": "The copy button label on code blocks"
+  },
+  "theme.CodeBlock.copied": {
+    "message": "复制成功",
+    "description": "The copied button label on code blocks"
+  },
+  "theme.CodeBlock.copyButtonAriaLabel": {
+    "message": "复制代码到剪贴板",
+    "description": "The ARIA label for copy code blocks button"
+  },
+  "theme.CodeBlock.wordWrapToggle": {
+    "message": "切换自动换行",
+    "description": "The title attribute for toggle word wrapping button of code block lines"
+  },
+  "theme.docs.breadcrumbs.home": {
+    "message": "主页面",
+    "description": "The ARIA label for the home page in the breadcrumbs"
+  },
+  "theme.docs.sidebar.navAriaLabel": {
+    "message": "文档侧边栏",
+    "description": "The ARIA label for the sidebar navigation"
+  },
+  "theme.docs.sidebar.collapseButtonTitle": {
+    "message": "收起侧边栏",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.collapseButtonAriaLabel": {
+    "message": "收起侧边栏",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.closeSidebarButtonAriaLabel": {
+    "message": "关闭导航栏",
+    "description": "The ARIA label for close button of mobile sidebar"
+  },
+  "theme.navbar.mobileSidebarSecondaryMenu.backButtonLabel": {
+    "message": "← 回到主菜单",
+    "description": "The label of the back button to return to main menu, inside the mobile navbar sidebar secondary menu (notably used to display the docs sidebar)"
+  },
+  "theme.docs.sidebar.toggleSidebarButtonAriaLabel": {
+    "message": "切换导航栏",
+    "description": "The ARIA label for hamburger menu button of mobile navigation"
+  },
+  "theme.navbar.mobileDropdown.collapseButton.expandAriaLabel": {
+    "message": "展开下拉菜单",
+    "description": "The ARIA label of the button to expand the mobile dropdown navbar item"
+  },
+  "theme.navbar.mobileDropdown.collapseButton.collapseAriaLabel": {
+    "message": "收起下拉菜单",
+    "description": "The ARIA label of the button to collapse the mobile dropdown navbar item"
+  },
+  "theme.docs.sidebar.expandButtonTitle": {
+    "message": "展开侧边栏",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.docs.sidebar.expandButtonAriaLabel": {
+    "message": "展开侧边栏",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.SearchPage.existingResultsTitle": {
+    "message": "“{query}”的搜索结果",
+    "description": "The search page title for non-empty query"
+  },
+  "theme.SearchPage.emptyResultsTitle": {
+    "message": "搜索文档",
+    "description": "The search page title for empty query"
+  },
+  "theme.SearchPage.searchContext.everywhere": {
+    "message": "所有"
+  },
+  "theme.SearchPage.documentsFound.plurals": {
+    "message": "共找到 {count} 篇文档",
+    "description": "Pluralized label for \"{count} documents found\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.SearchPage.noResultsText": {
+    "message": "没有找到任何文档",
+    "description": "The paragraph for empty search result"
+  },
+  "theme.SearchBar.noResultsText": {
+    "message": "没有找到任何文档"
+  },
+  "theme.SearchBar.seeAllOutsideContext": {
+    "message": "查看“{context}”以外的全部结果"
+  },
+  "theme.SearchBar.searchInContext": {
+    "message": "查看“{context}”以内的全部结果"
+  },
+  "theme.SearchBar.seeAll": {
+    "message": "查看全部结果"
+  },
+  "theme.SearchBar.label": {
+    "message": "搜索",
+    "description": "The ARIA label and placeholder for search button"
+  },
+  "theme.blog.post.plurals": {
+    "message": "{count} 篇博文",
+    "description": "Pluralized label for \"{count} posts\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.blog.tagTitle": {
+    "message": "{nPosts} 含有标签「{tagName}」",
+    "description": "The title of the page for a blog tag"
+  },
+  "theme.blog.author.pageTitle": {
+    "message": "{authorName} - {nPosts}",
+    "description": "The title of the page for a blog author"
+  },
+  "theme.blog.authorsList.pageTitle": {
+    "message": "作者",
+    "description": "The title of the authors page"
+  },
+  "theme.blog.authorsList.viewAll": {
+    "message": "查看所有作者",
+    "description": "The label of the link targeting the blog authors page"
+  },
+  "theme.blog.author.noPosts": {
+    "message": "该作者尚未撰写任何文章。",
+    "description": "The text for authors with 0 blog post"
+  },
+  "theme.contentVisibility.unlistedBanner.title": {
+    "message": "未列出页",
+    "description": "The unlisted content banner title"
+  },
+  "theme.contentVisibility.unlistedBanner.message": {
+    "message": "此页面未列出。搜索引擎不会对其索引，只有拥有直接链接的用户才能访问。",
+    "description": "The unlisted content banner message"
+  },
+  "theme.contentVisibility.draftBanner.title": {
+    "message": "草稿页",
+    "description": "The draft content banner title"
+  },
+  "theme.contentVisibility.draftBanner.message": {
+    "message": "此页面是草稿，仅在开发环境中可见，不会包含在正式版本中。",
+    "description": "The draft content banner message"
+  },
+  "theme.ErrorPageContent.tryAgain": {
+    "message": "重试",
+    "description": "The label of the button to try again rendering when the React error boundary captures an error"
+  },
+  "theme.common.skipToMainContent": {
+    "message": "跳到主要内容",
+    "description": "The skip to content label used for accessibility, allowing to rapidly navigate to main content with keyboard tab/enter navigation"
+  },
+  "theme.tags.tagsPageTitle": {
+    "message": "标签",
+    "description": "The title of the tag list page"
+  }
+}

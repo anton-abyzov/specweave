@@ -6,6 +6,7 @@ import {useLocation} from '@docusaurus/router';
 import {PageMetadata} from '@docusaurus/theme-common';
 import Head from '@docusaurus/Head';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import {isEnglishOnlyPath} from '@site/src/data/englishOnlyPaths';
 
 const archiveMetadata: Record<string, {title: string; description: string}> = {
   '/blog/authors/': {
@@ -36,8 +37,8 @@ export default function LayoutWrapper(props: Props): ReactNode {
   // Paths below are written without the locale prefix (/ru/, /ja/ ...).
   const unprefixed = pathname.startsWith(siteConfig.baseUrl) ? `/${pathname.slice(siteConfig.baseUrl.length)}` : pathname;
   const path = `${unprefixed.replace(/\/$/, '')}/`;
-  // Docs, blog and search are English in every locale; their canonical is the English page.
-  const englishOnly = i18n.currentLocale !== i18n.defaultLocale && /^\/(docs|blog|search)\//.test(path);
+  // Untranslated sections are English in every locale; their canonical is the English page.
+  const englishOnly = i18n.currentLocale !== i18n.defaultLocale && isEnglishOnlyPath(path);
   let metadata = archiveMetadata[path];
   const docTag = path.match(/^\/docs\/tags\/([^/]+)\/$/);
   if (docTag) {

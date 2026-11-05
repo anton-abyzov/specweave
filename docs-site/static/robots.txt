@@ -21,5 +21,13 @@ Disallow: /sections/
 Disallow: /docs/_page-template
 
 Sitemap: https://spec-weave.com/sitemap.xml
+Sitemap: https://spec-weave.com/de/sitemap.xml
+Sitemap: https://spec-weave.com/es/sitemap.xml
+Sitemap: https://spec-weave.com/fr/sitemap.xml
+Sitemap: https://spec-weave.com/ja/sitemap.xml
+Sitemap: https://spec-weave.com/ko/sitemap.xml
+Sitemap: https://spec-weave.com/pt-BR/sitemap.xml
+Sitemap: https://spec-weave.com/ru/sitemap.xml
+Sitemap: https://spec-weave.com/zh-CN/sitemap.xml
 
 # Search is crawlable so engines can read its noindex directive.

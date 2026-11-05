@@ -1,6 +1,7 @@
 import type {PrismTheme} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import {englishOnlySitemapPatterns} from './src/data/englishOnlyPaths';
 
 // Prism theme built from Weave tokens (src/css/weave.css). CSS variables resolve per
 // data-theme, so the same object serves light and dark: calm, low-chroma, iris used sparingly.
@@ -148,9 +149,10 @@ const config: Config = {
 
   onBrokenLinks: 'throw',
 
-  // Landing pages and navigation are translated. Docs and blog are not: every
-  // locale builds them from the English source, and their canonical URL points
-  // at the English page (src/theme/Layout) so search engines index one copy.
+  // Landing pages and navigation are translated. Docs, blog and the other
+  // sections in src/data/englishOnlyPaths.ts are not: every locale builds them
+  // from the English source, and their canonical URL points at the English page
+  // (src/theme/Layout) so search engines index one copy.
   i18n: {
     defaultLocale: 'en',
     locales: ['en', ...TRANSLATED_LOCALES],
@@ -231,8 +233,8 @@ const config: Config = {
           // Tag, archive and author lists are thin pages, so they stay out too.
           ignorePatterns: [
             '/search', '/search/**', '/docs/tags/**', '/blog/tags/**', '/blog/archive/**', '/blog/authors/**',
-            // Untranslated docs and blog copies in other locales canonicalize to English.
-            ...TRANSLATED_LOCALES.flatMap((l) => [`/${l}/docs/**`, `/${l}/blog`, `/${l}/blog/**`, `/${l}/search`, `/${l}/search/**`]),
+            // Untranslated sections (docs, blog, legal, tutorial guides) canonicalize to English.
+            ...TRANSLATED_LOCALES.flatMap(englishOnlySitemapPatterns),
           ],
         },
         theme: {

@@ -1,0 +1,3744 @@
+{
+  "installer.mac.label": {
+    "message": "Mac版をダウンロード",
+    "description": "Download button for the macOS installer. Keep product names in English"
+  },
+  "installer.mac.platformName": {
+    "message": "Apple silicon搭載のmacOS",
+    "description": "Who the macOS installer is for. Keep product names in English"
+  },
+  "installer.windowsX64.label": {
+    "message": "Windows版をダウンロード",
+    "description": "Download button for the Windows x64 installer. Keep product names in English"
+  },
+  "installer.windowsX64.platformName": {
+    "message": "x64のWindows 10/11",
+    "description": "Who the Windows x64 installer is for. Keep product names in English"
+  },
+  "installer.windowsArm64.label": {
+    "message": "Windows Arm版をダウンロード",
+    "description": "Download button for the Windows arm64 installer. Keep product names in English"
+  },
+  "installer.windowsArm64.platformName": {
+    "message": "arm64のWindows 10/11",
+    "description": "Who the Windows arm64 installer is for. Keep product names in English"
+  },
+  "installer.linuxX64.label": {
+    "message": "Linux版をダウンロード",
+    "description": "Download button for the Linux x64 AppImage. Keep product names in English"
+  },
+  "installer.linuxX64.platformName": {
+    "message": "x64のLinux(glibc)",
+    "description": "Who the Linux x64 installer is for. Keep product names in English"
+  },
+  "installer.linuxArm64.label": {
+    "message": "Linux Arm版をダウンロード",
+    "description": "Download button for the Linux arm64 AppImage. Keep product names in English"
+  },
+  "installer.linuxArm64.platformName": {
+    "message": "arm64のLinux(glibc)",
+    "description": "Who the Linux arm64 installer is for. Keep product names in English"
+  },
+  "installer.linux.debLabel": {
+    "message": "Debian/Ubuntu用 .deb",
+    "description": "Button for the Linux .deb package. Keep product names in English"
+  },
+  "providers.summary.andMore": {
+    "message": "{names}ほか{count}件",
+    "description": "Short provider list: {names} is a comma-separated list of coding agent product names (keep in English), {count} is how many more providers there are"
+  },
+  "code.meta.title": {
+    "message": "Claude CodeとCodexを自分のPCで。上限で止まらない:SpecWithCode(Spec with Code)",
+    "description": "Page title of the SpecWithCode landing page. Keep product names in English"
+  },
+  "code.meta.description": {
+    "message": "SpecWithCode(Spec with Code):すべてのマシンのClaude CodeとCodexを1つのチャットで。上限に達したら次のエージェントが引き継ぎます。無料。macOS・Windows・Linux対応。",
+    "description": "Meta description of the SpecWithCode landing page. Keep product names in English"
+  },
+  "code.downloads.mac.note": {
+    "message": "Apple silicon、macOS 13以降",
+    "description": "Requirements note under the Mac download button. Keep product names in English"
+  },
+  "code.downloads.windows.note": {
+    "message": "Windows 10/11、x64",
+    "description": "Requirements note under the Windows download button. Keep product names in English"
+  },
+  "code.downloads.linux.note": {
+    "message": "AppImage、x64",
+    "description": "Package note under the Linux download button. Keep product names in English"
+  },
+  "code.downloads.unsupported.intelMac": {
+    "message": "このMacはIntelチップです。Mac版SpecWithCodeにはApple siliconが必要です。代わりにWindowsまたはLinuxのマシンをご利用ください。",
+    "description": "Shown when the visitor uses an Intel Mac. Keep product names in English"
+  },
+  "code.downloads.unsupported.mobile": {
+    "message": "SpecWithCodeはMac、Windows PC、Linuxマシンで動作します。そちらでこのページを開いてダウンロードしてください。",
+    "description": "Shown when the visitor is on a phone or tablet. Keep product names in English"
+  },
+  "code.downloads.list.ariaLabel": {
+    "message": "SpecWithCodeをダウンロード",
+    "description": "Accessible label of the list of download buttons. Keep product names in English"
+  },
+  "code.downloads.button": {
+    "message": "{os}版をダウンロード",
+    "description": "Download button label; {os} is Mac, Windows or Linux"
+  },
+  "code.downloads.more": {
+    "message": "無料・ソース公開。{link}",
+    "description": "Line under the download buttons; {link} links to the download page"
+  },
+  "code.downloads.more.link": {
+    "message": "Arm版、.deb、インストール手順",
+    "description": "Link to the download page with Arm builds, .deb packages and install steps"
+  },
+  "code.hero.download.button": {
+    "message": "{os}版を無料で入手",
+    "description": "Main hero download button; {os} is Mac, Windows or Linux"
+  },
+  "code.hero.download.also": {
+    "message": "{platforms}にも対応。{allBuilds}",
+    "description": "Line under the hero download button; {platforms} lists the other systems as links, {allBuilds} links to the download section"
+  },
+  "code.hero.download.also.and": {
+    "message": "、",
+    "description": "Word joining two system names, as in \"Windows and Linux\""
+  },
+  "code.hero.download.allBuilds": {
+    "message": "すべてのビルド",
+    "description": "Link to the download section with every build"
+  },
+  "code.subs.parallel.title": {
+    "message": "すべてのプランを同時に稼働",
+    "description": "Card title in the paid plans section"
+  },
+  "code.subs.parallel.body": {
+    "message": "コーディネーターが1つの目標をスレッドに分け、Claude CodeやCodexなどで並行実行。スレッドごとに別のプランを使います。",
+    "description": "Card text in the paid plans section. Keep product names in English"
+  },
+  "code.subs.machines.title": {
+    "message": "お持ちのすべてのマシンで",
+    "description": "Card title in the paid plans section"
+  },
+  "code.subs.machines.body": {
+    "message": "Mac、Windows PC、Linuxサーバーを追加するたびに、そこでサインインしたプランの上限が加わります。プロバイダーごとに1マシン1アカウントです。",
+    "description": "Card text in the paid plans section. Keep product names in English"
+  },
+  "code.subs.handoff.title": {
+    "message": "98%で、または好きな地点でハンドオフ",
+    "description": "Card title in the paid plans section; 98% is the default handoff point"
+  },
+  "code.subs.handoff.body": {
+    "message": "プロジェクトごとに50%〜100%で設定可能。プロバイダーに拒否される前に、余裕のあるプランへ作業が移ります。",
+    "description": "Card text in the paid plans section"
+  },
+  "code.subs.usage.title": {
+    "message": "全アカウントの使用状況",
+    "description": "Card title in the paid plans section"
+  },
+  "code.subs.usage.body": {
+    "message": "「使用状況 › 上限」に、各アカウント、サインイン先のマシン、セッションと週ごとの残量が表示されます。",
+    "description": "Card text in the paid plans section; \"Usage › Limits\" is a menu path in the app, translate it as the app labels it"
+  },
+  "code.more.harnesses.title": {
+    "message": "エージェントごとに専用のハーネス",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.harnesses.body": {
+    "message": "Claude Code、Codex、GitHub Copilot、Cursor、OpenCodeなどを、各ベンダー提供のままご自身のサインインで実行します。",
+    "description": "Card text in the \"more\" section. Keep product names in English"
+  },
+  "code.more.harnesses.link": {
+    "message": "ハーネスとモデル",
+    "description": "Card link to the harnesses docs"
+  },
+  "code.more.coordinator.title": {
+    "message": "大きな仕事にはコーディネーター",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.coordinator.body": {
+    "message": "目標を1つ伝えるだけ。コーディネーターが別々のエージェントのワーカースレッドに分担させ、結果はあなたがレビューします。",
+    "description": "Card text in the \"more\" section"
+  },
+  "code.more.coordinator.link": {
+    "message": "プロジェクトのしくみ",
+    "description": "Card link to the projects docs"
+  },
+  "code.more.machines.title": {
+    "message": "すべてのマシンを活用",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.machines.body": {
+    "message": "余ったノートPC、Windows PC、小さなLinuxサーバーをワーカーとして追加。それぞれ自分のアカウントでサインインします。",
+    "description": "Card text in the \"more\" section. Keep product names in English"
+  },
+  "code.more.machines.link": {
+    "message": "マシンを追加する",
+    "description": "Card link to the add-a-machine tutorial"
+  },
+  "code.more.builtWithItself.title": {
+    "message": "自分自身で開発",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.builtWithItself.body": {
+    "message": "2026年10月後半、SpecWithCodeへの367件のプルリクエストが、自身のワーカースレッドによって作成・マージされました。",
+    "description": "Card text in the \"more\" section. Keep product names in English"
+  },
+  "code.more.builtWithItself.link": {
+    "message": "ソースを見る",
+    "description": "Card link to the source repository on GitHub"
+  },
+  "code.faq.free.q": {
+    "message": "SpecWithCodeは本当に無料ですか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.free.a": {
+    "message": "はい。SpecWithCodeはMac、Windows、Linuxで無料で、ソースも公開されています。トークンの再販や上乗せは一切なく、ご自身のアカウントでサインインして使います。Codexは無料のChatGPTアカウントでも、そのプランの使用上限の範囲内で動作します。DeepSeekはご自身のDeepSeek APIキーを使い、利用料はDeepSeekから直接請求されます。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.limit.q": {
+    "message": "Claude Codeが使用上限に達するとどうなりますか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.limit.a": {
+    "message": "設定済みの次のエージェント(無料ChatGPTアカウントのCodexやDeepSeekなど)が、同じスレッドで履歴を保ったまま会話を続けます。2026年11月4日のテストでは、切り替えテストでClaudeの上限を発生させたところ、Codex(SpecWithCode 1.0.191)とDeepSeekのどちらも、切り替え前にClaudeへ伝えた合言葉を覚えていました。自動で切り替える、切り替えを提案する、上限のリセットを待つのいずれにするかは、プロジェクトごとに選べます。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.paid.q": {
+    "message": "ClaudeやChatGPTの有料プランは必要ですか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.paid.a": {
+    "message": "いいえ。無料のChatGPTアカウントのCodexで始め、DeepSeekをフォールバックとして追加できます。すでにClaude CodeやChatGPTに課金している場合は、それらにもサインインし、DeepSeekをフォールバックにしてください。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.local.q": {
+    "message": "すべてマシン内で完結しますか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.local.a": {
+    "message": "いいえ。エージェントのプロセスとプロジェクトのファイルはお使いのマシンにありますが、クラウドモデルには、選択したプロバイダー経由でプロンプトと関連コンテキスト(コードやファイルの内容を含む場合があります)が送られます。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.accounts.q": {
+    "message": "1台のマシンで同じプロバイダーの複数アカウントを切り替えてもよいですか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.accounts.a": {
+    "message": "いいえ。各マシンはプロバイダーごとに1アカウントでサインインしたままにしてください。容量を増やすには、手動でアカウントを切り替えるのではなく、専用アカウントを持つマシンを追加します。各プロバイダーの規約にも従ってください。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.brand.q": {
+    "message": "Spec with CodeとSpecWithCodeは同じですか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.brand.a": {
+    "message": "はい。SpecWithCodeは1語で表記し、「スペック・ウィズ・コード」と読みます。すでにお使いのコーディング用エージェントのための無料のインターフェースです。SpecWeaveは別物のCLIで、仕様、タスクの証跡、ハンドオフをgitで管理します。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.harness.q": {
+    "message": "SpecWithCodeはコーディングエージェントのハーネスですか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.harness.a": {
+    "message": "いいえ。ハーネスとは、ベンダーがモデルの周りに構築するエージェントループ、ツール、権限、サインインのことで、Claude Code、Codex、GitHub Copilot CLIがそれにあたります。SpecWithCodeはそれらネイティブのハーネスへのインターフェースです。各エージェントは自身のハーネスで動き続け、アプリがプロジェクト、ワーカースレッド、使用上限、マシン、コンテキストのハンドオフを上乗せします。",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.meta.ogImageAlt": {
+    "message": "SpecWithCode:macOS、Windows、Linuxでコーディングエージェントを1つのインターフェースに。無料・ソース公開。",
+    "description": "Alt text of the social preview image. Keep product names in English"
+  },
+  "code.meta.twitterImageAlt": {
+    "message": "SpecWithCode:コーディングエージェントを1つのインターフェースに。macOS、Windows、Linux対応。",
+    "description": "Alt text of the X/Twitter preview image. Keep product names in English"
+  },
+  "code.hero.badge": {
+    "message": "無料・ソース公開",
+    "description": "Badge next to the product name in the hero"
+  },
+  "code.hero.title.top": {
+    "message": "Claude CodeとCodex。",
+    "description": "First line of the hero headline. Keep product names in English"
+  },
+  "code.hero.title.emphasis": {
+    "message": "上限で止まらない。",
+    "description": "Second, emphasized part of the hero headline"
+  },
+  "code.hero.lead": {
+    "message": "1つのチャットで、すべてのマシン、すべてのプランを。無料のChatGPTアカウントのCodexから始めても、すでに契約中のClaude MaxやChatGPT Proを追加してもOK。Claude Codeが上限に近づくと、Codexが履歴ごと同じスレッドを引き継ぎます。",
+    "description": "Hero lead paragraph. Keep product names in English"
+  },
+  "code.stats.title.main": {
+    "message": "数百万人が使うCodex。",
+    "description": "First part of the stats section heading. Keep product names in English"
+  },
+  "code.stats.title.emphasis": {
+    "message": "ご自身のアカウントで無料。",
+    "description": "Second, emphasized part of the stats section heading"
+  },
+  "code.stats.weeklyUsers.label": {
+    "message": "人が毎週Codexを利用",
+    "description": "Stat label after 5M+. Keep product names in English"
+  },
+  "code.stats.weeklyUsers.source": {
+    "message": "OpenAI、2026年6月",
+    "description": "Source link for the weekly users stat. Keep product names in English"
+  },
+  "code.stats.free.label": {
+    "message": "無料のChatGPTアカウントでCodexを利用可",
+    "description": "Stat label after $0. Keep product names in English"
+  },
+  "code.stats.free.source": {
+    "message": "OpenAI、期間限定",
+    "description": "Source link for the free Codex stat. Keep product names in English"
+  },
+  "code.stats.threshold.label": {
+    "message": "上限で止まる前に、SpecWithCodeがデフォルトでハンドオフする地点",
+    "description": "Stat label after 98%. Keep product names in English"
+  },
+  "code.stats.threshold.note": {
+    "message": "50%〜100%で設定できます",
+    "description": "Small note under the 98% stat"
+  },
+  "code.subs.title": {
+    "message": "月額$200を払っているなら、使い切りましょう。",
+    "description": "Heading of the paid plans section"
+  },
+  "code.subs.intro": {
+    "message": "SpecWithCodeは、サインインしたすべてのマシンで、すでに契約中のプランごとに各エージェントを動かし、1つのプランが残り少なくなっても作業を止めません。",
+    "description": "Intro of the paid plans section. Keep product names in English"
+  },
+  "code.subs.plans.ariaLabel": {
+    "message": "ここに表示しているプラン",
+    "description": "Accessible label of the list of paid plans"
+  },
+  "code.subs.plans.claude": {
+    "message": "Claude MaxとPro",
+    "description": "Paid plan names. Keep product names in English"
+  },
+  "code.subs.plans.chatgpt": {
+    "message": "ChatGPT ProとPlus",
+    "description": "Paid plan names. Keep product names in English"
+  },
+  "code.start.title": {
+    "message": "3ステップで設定",
+    "description": "Heading of the setup steps section"
+  },
+  "code.start.intro": {
+    "message": "所要時間は約2分。試すだけなら無料です。",
+    "description": "Intro of the setup steps section"
+  },
+  "code.start.step1.title": {
+    "message": "SpecWithCodeをインストール",
+    "description": "Setup step 1 title. Keep product names in English"
+  },
+  "code.start.step1.body": {
+    "message": "Mac、Windows PC、Linuxマシン用をダウンロードして開くだけ。SpecWithCodeのアカウントは不要です。",
+    "description": "Setup step 1 text. Keep product names in English"
+  },
+  "code.start.step1.link": {
+    "message": "ダウンロード",
+    "description": "Link to the download section"
+  },
+  "code.start.step2.title": {
+    "message": "無料のChatGPTアカウントでCodexにサインイン",
+    "description": "Setup step 2 title. Keep product names in English"
+  },
+  "code.start.step2.body": {
+    "message": "「設定 › プロバイダー」でCodexを選んでサインインします。カード登録は不要。無料プランの使用上限が適用されます。",
+    "description": "Setup step 2 text; Settings › Providers is a menu path in the app. Keep product names in English"
+  },
+  "code.start.step3.title": {
+    "message": "フォールバックにDeepSeekを追加",
+    "description": "Setup step 3 title. Keep product names in English"
+  },
+  "code.start.step3.body": {
+    "message": "「設定 › プロバイダー」で、ご自身のDeepSeek APIキーを使ってDeepSeek Harnessを追加します。CodexやClaude Codeが上限に達すると、チャットはコンテキストごとDeepSeekへ移ります。",
+    "description": "Setup step 3 text; Settings › Providers is a menu path in the app. Keep product names in English"
+  },
+  "code.start.step3.fine": {
+    "message": "DeepSeekのAPI利用料はDeepSeekから直接請求されます。SpecWithCodeによる上乗せはありません。",
+    "description": "Fine print under setup step 3. Keep product names in English"
+  },
+  "code.start.note": {
+    "message": "{question}それらにもサインインして、そのままお使いください。上限に達すると、チャットはDeepSeekへ移れます。クラウドモデルには、選択したプロバイダー経由でプロンプトと関連コンテキストが送られます。",
+    "description": "Note under the setup steps; {question} is the bold lead-in question. Keep product names in English"
+  },
+  "code.start.note.question": {
+    "message": "すでにClaude CodeやChatGPTに課金していますか?",
+    "description": "Bold question opening the note under the setup steps. Keep product names in English"
+  },
+  "code.downloads.title": {
+    "message": "SpecWithCodeを入手",
+    "description": "Heading of the download section. Keep product names in English"
+  },
+  "code.downloads.version.same": {
+    "message": "Mac、Windows、Linux用バージョン{version}。",
+    "description": "Release line when all builds share one version; {version} is the version number. Keep product names in English"
+  },
+  "code.downloads.version.split": {
+    "message": "Mac {macVersion}、WindowsとLinux {desktopVersion}。",
+    "description": "Release line when the Mac build has a different version; {macVersion} and {desktopVersion} are version numbers. Keep product names in English"
+  },
+  "code.downloads.signing": {
+    "message": "Mac版アプリは署名・公証済みです。WindowsとLinuxのインストーラーはまだコード署名されていません。",
+    "description": "Signing status of the installers. Keep product names in English"
+  },
+  "code.more.title": {
+    "message": "必要なときに、もっと",
+    "description": "Heading of the more section"
+  },
+  "code.more.agents.ariaLabel": {
+    "message": "対応しているその他のコーディングエージェント",
+    "description": "Accessible label of the list of other coding agents"
+  },
+  "code.more.agents.andMore": {
+    "message": "ほか",
+    "description": "Last item of the agent list, links to all harnesses"
+  },
+  "code.faq.title": {
+    "message": "よくある質問",
+    "description": "Heading of the FAQ section"
+  },
+  "code.final.title": {
+    "message": "Codexが無料。上限で止まらない。",
+    "description": "Heading of the closing call to action. Keep product names in English"
+  },
+  "code.final.body": {
+    "message": "無料・ソース公開。アカウントもマシンもあなたのもの。オプションのSpecWeave CLIを加えれば、{link}を保てます。",
+    "description": "Closing paragraph; {link} links to the spec-as-code comparison. Keep product names in English"
+  },
+  "code.final.body.link": {
+    "message": "仕様をコードと一緒に",
+    "description": "Link text that ends the closing paragraph, as in keep the spec with the code"
+  },
+  "code.final.download": {
+    "message": "SpecWithCodeをダウンロード",
+    "description": "Closing call-to-action button. Keep product names in English"
+  },
+  "code.final.source": {
+    "message": "GitHubでソースを見る",
+    "description": "Closing link to the source repository. Keep product names in English"
+  },
+  "home.proof.folder.spec": {
+    "message": "計画と受け入れ基準",
+    "description": "Note next to spec.md in the increment folder listing"
+  },
+  "home.proof.folder.ledger": {
+    "message": "誰がどのタスクを担当し完了したか",
+    "description": "Note next to ledger.jsonl in the increment folder listing"
+  },
+  "home.proof.folder.handoff": {
+    "message": "前のエージェントが止まった地点",
+    "description": "Note next to handoff.md in the increment folder listing"
+  },
+  "home.proof.folder.taskReport": {
+    "message": "台帳が参照するテスト出力",
+    "description": "Note next to task-T-02.txt in the increment folder listing"
+  },
+  "home.proof.folder.verifyMd": {
+    "message": "テスト、lint、ビルド、基準",
+    "description": "Note next to verify.md in the increment folder listing"
+  },
+  "home.proof.folder.verifyJson": {
+    "message": "クローズのゲート",
+    "description": "Note next to verify.json in the increment folder listing"
+  },
+  "home.proof.folder.review": {
+    "message": "別モデルによるレビュー",
+    "description": "Note next to review-codex.md in the increment folder listing"
+  },
+  "home.proof.folder.memory": {
+    "message": "引き継ぎ時にすべてのツールが読む事実",
+    "description": "Note next to memory/MEMORY.md in the increment folder listing"
+  },
+  "home.app.approval.alt": {
+    "message": "Codexワーカースレッドの切り抜き:/bin/zsh -lc \"pwd; rg --files -g AGENTS.md\" のコマンド承認。「拒否」と「承認」ボタン付き",
+    "description": "Alt text of a screenshot crop. Keep Codex and the shell command in English"
+  },
+  "home.app.machines.local": {
+    "message": "コード、スキル、ログイン情報がすでにある場所で動きます。",
+    "description": "List item under \"Your machines, not a cloud container\""
+  },
+  "home.app.machines.sleep": {
+    "message": "ノートPCがスリープしても、ワーカーは実行中のマシンで作業を続けます。",
+    "description": "List item under \"Your machines, not a cloud container\""
+  },
+  "home.app.machines.signIn": {
+    "message": "各エージェントはプロバイダー自身のサインインと承認を使います。こちらのアカウントは不要です。",
+    "description": "List item under \"Your machines, not a cloud container\""
+  },
+  "home.builtWith.specwithcode": {
+    "message": "アプリ自体。SpecWeaveのインクリメントで計画し、2026年10月に自身のワーカースレッドから367件のプルリクエストをマージしました。",
+    "description": "Description of SpecWithCode in the Built with SpecWeave list. Keep product names in English"
+  },
+  "home.builtWith.easychamp": {
+    "message": "リーグ・クラブ向けツール。Claude Codeのスレッド、2つのサブスクリプション、Codexで構築。",
+    "description": "Description of EasyChamp in the Built with SpecWeave list. Keep product names in English"
+  },
+  "home.builtWith.jobweave": {
+    "message": "求人検索、レジュメの最適化、面接準備。",
+    "description": "Description of JobWeave in the Built with SpecWeave list"
+  },
+  "home.builtWith.verifiedSkill": {
+    "message": "スキルの探索、ソースの確認、ローカル評価。",
+    "description": "Description of Verified Skill in the Built with SpecWeave list"
+  },
+  "home.tutorials.length.minSec": {
+    "message": "{m}分{s}秒",
+    "description": "Video length in minutes and seconds"
+  },
+  "home.tutorials.length.min": {
+    "message": "{m}分",
+    "description": "Video length in whole minutes"
+  },
+  "home.tutorials.length.sec": {
+    "message": "{s}秒",
+    "description": "Video length in seconds"
+  },
+  "home.download.ariaLabel": {
+    "message": "SpecWithCode {version}をダウンロード(macOS、Apple silicon、{size})",
+    "description": "Accessible label of the Download for Mac button; {version} is the app version, {size} the file size. Keep product names in English"
+  },
+  "home.download.button": {
+    "message": "Mac版をダウンロード",
+    "description": "Primary button that downloads the Mac app"
+  },
+  "home.meta.title": {
+    "message": "Claude Code、Codex、Cursor向けの仕様駆動ハンドオフ",
+    "description": "Home page <title>. Keep product names in English"
+  },
+  "home.meta.description": {
+    "message": "仕様、タスク台帳、ハンドオフをgitに保存するオープンソースのCLI。Claude Codeが使用上限に達しても、Codexなどのエージェントがそのまま作業を続けられます。無料、MIT。",
+    "description": "Home page meta description. Keep product names in English"
+  },
+  "home.tools.label": {
+    "message": "対応ツール",
+    "description": "Label before the list of supported agent tools"
+  },
+  "home.family.title": {
+    "message": "gitに1つの記録、3つの使い方",
+    "description": "Heading of the product family section"
+  },
+  "home.family.lead": {
+    "message": "SpecWeaveは、計画と証跡をリポジトリに残します。SpecWithCodeは、その記録に沿ってお使いのマシンでエージェントを動かします。Verified Skillは、事前に確認できるスキルをエージェントに提供します。",
+    "description": "Lead of the product family section. Keep product names in English"
+  },
+  "home.guides.ariaLabel": {
+    "message": "ガイド",
+    "description": "Accessible label of the guide links navigation"
+  },
+  "home.guides.label": {
+    "message": "ガイド",
+    "description": "Label before the guide links"
+  },
+  "home.guides.usageLimit": {
+    "message": "Claude Codeの使用上限",
+    "description": "Guide link. Keep Claude Code in English"
+  },
+  "home.guides.switchToCodex": {
+    "message": "Claude CodeからCodexへ切り替える",
+    "description": "Guide link. Keep product names in English"
+  },
+  "home.guides.handoff": {
+    "message": "Claude Codeのハンドオフ",
+    "description": "Guide link. Keep Claude Code in English"
+  },
+  "home.guides.compare": {
+    "message": "仕様駆動ツールの比較",
+    "description": "Guide link to the tool comparison"
+  },
+  "home.how.title": {
+    "message": "Claude Codeが上限に達しても、Codexが同じタスクを引き継ぐ",
+    "description": "Heading of the handoff section. Keep product names in English"
+  },
+  "home.how.lead": {
+    "message": "ハンドオフには、仕様、担当、証跡が含まれます。チャットの中だけに残るものはありません。",
+    "description": "Lead of the handoff section"
+  },
+  "home.how.note": {
+    "message": "インクリメントの例。specweave {version}が読み取る形式で記述しています。基準は{format}形式の行、台帳は1行につき1つのJSONオブジェクトです。実際の引き継ぎは{link}をご覧ください。",
+    "description": "Note under the handoff example; {version} is the CLI version, {format} a code sample, {link} a link labelled 'How SpecWeave works'"
+  },
+  "home.how.note.link": {
+    "message": "SpecWeaveのしくみ",
+    "description": "Link text to the product page. Keep SpecWeave in English"
+  },
+  "home.proof.title": {
+    "message": "証拠なしにはクローズしない",
+    "description": "Heading of the proof section"
+  },
+  "home.proof.lead": {
+    "message": "インクリメントのフォルダーを開けば、何を計画し、誰が実行し、何が証明したかが分かります。",
+    "description": "Lead of the proof section"
+  },
+  "home.proof.folder.ariaLabel": {
+    "message": "インクリメントフォルダー内のファイル",
+    "description": "Accessible label of the increment folder listing"
+  },
+  "home.proof.verify.chip": {
+    "message": "合格",
+    "description": "Pass chip for specweave verify"
+  },
+  "home.proof.verify.detail": {
+    "message": "テスト、lint、ビルドのコマンドを実行し、{spec}のすべての基準にチェックが付いていることを確認して、{report}を書き出します。",
+    "description": "Explains specweave verify; {spec} and {report} are file names, keep them"
+  },
+  "home.proof.review.chip": {
+    "message": "終了コード3、先に修正",
+    "description": "Warning chip for specweave review: exit code 3 means fix first"
+  },
+  "home.proof.review.detail": {
+    "message": "差分を別のモデルファミリーのレビュアーに渡します。Claudeが書いたコードはCodexが、Codexが書いたコードはClaudeがレビューします。レポートは{report}に保存され、終了コード0ならリリース可能です。",
+    "description": "Explains specweave review; {report} is a file name, keep it. Keep product names in English"
+  },
+  "home.proof.complete.chip": {
+    "message": "ブロック",
+    "description": "Fail chip for specweave complete"
+  },
+  "home.proof.complete.detail": {
+    "message": "{file}が合格していないインクリメントのクローズを拒否します。それでも閉じるには{flag}が必要で、理由はインクリメントに保存されます。",
+    "description": "Explains specweave complete; {file} is a file name and {flag} a command flag, keep them"
+  },
+  "home.proof.caption": {
+    "message": "specweave {version}(リリース日 {date})の動作。",
+    "description": "Caption; {version} is the CLI version, {date} its release date"
+  },
+  "home.app.title": {
+    "message": "同じ作業をデスクトップアプリで",
+    "description": "Heading of the desktop app section"
+  },
+  "home.app.lead": {
+    "message": "SpecWithCodeは、これらのインクリメントをご自身のマシンとサブスクリプション上のスレッドとして実行します。プロジェクトごとに1つのコーディネーターがいて、サインイン済みの任意のプロバイダーでワーカーが動きます。",
+    "description": "Lead of the desktop app section. Keep SpecWithCode in English"
+  },
+  "home.app.usage.window": {
+    "message": "使用状況と上限",
+    "description": "Window title bar label: the app's Usage and limits screen"
+  },
+  "home.app.usage.open.ariaLabel": {
+    "message": "「使用状況と上限」のスクリーンショットを原寸で開く",
+    "description": "Accessible label of the screenshot link"
+  },
+  "home.app.usage.alt": {
+    "message": "SpecWithCodeの「使用状況と上限」画面:Codex週次の残り10%、Claudeセッション2%、週次54%、週次Fable 84%、それぞれのリセット時刻つき",
+    "description": "Alt text of the usage screenshot. Keep product and model names in English"
+  },
+  "home.app.usage.caption": {
+    "message": "サインイン済みの全アカウントのセッションと週ごとの枠を1画面に表示。2026年10月10日のSpecWithCode録画より。",
+    "description": "Caption of the usage screenshot. Keep SpecWithCode in English"
+  },
+  "studioWindow.viewFullSize": {
+    "message": "原寸で表示",
+    "description": "Link that opens the full-size screenshot"
+  },
+  "home.app.approval.window": {
+    "message": "Codexワーカー",
+    "description": "Window title bar label. Keep Codex in English"
+  },
+  "home.app.approval.caption": {
+    "message": "Codexワーカーは、コマンドを実行する前に、プロバイダー自身の承認で確認を求めます。2026年10月15日のSpecWithCode録画から切り抜き。",
+    "description": "Caption of the approval screenshot. Keep product names in English"
+  },
+  "home.app.machines.title": {
+    "message": "クラウドコンテナではなく、あなたのマシンで",
+    "description": "Heading of the machines list"
+  },
+  "home.app.machines.add": {
+    "message": "SpecWithCode Connect経由でMac miniやLinuxマシンを追加できます。そのマシンでアカウントを使ってConnectにリンクし、設定の「このマシンを招待」を選ぶか、そこで{command}を実行します。表示された行を、メインMacの「設定」→「接続」の「マシンを追加」に貼り付けてください。",
+    "description": "How to add a machine; {command} is a shell command, keep it. 'Invite this machine', 'Add a machine' and 'Settings, Connections' are app UI labels. Keep product names in English"
+  },
+  "home.app.boundary.title": {
+    "message": "サブスクリプション1つにつき、マシン1台。",
+    "description": "Bold lead-in of the one-machine-per-subscription note"
+  },
+  "home.app.boundary.body": {
+    "message": "各マシンはプロバイダーごとに1アカウントでサインインしたままにします。たとえば、Claude Codeは1つのアカウント、Codexは別のアカウントです。同じマシンで手動でサブスクリプションを切り替えると混乱のもとです。容量が必要なときは、マシンを追加してください。",
+    "description": "Body of the one-machine-per-subscription note. Keep product names in English"
+  },
+  "home.app.link": {
+    "message": "SpecWithCodeのすべての機能を見る",
+    "description": "Link to the SpecWithCode page. Keep SpecWithCode in English"
+  },
+  "home.tutorials.title": {
+    "message": "数分で学べます",
+    "description": "Heading of the tutorials section"
+  },
+  "home.tutorials.lead": {
+    "message": "実際のアプリのナレーション付き録画。字幕とチャプターつきです。",
+    "description": "Lead of the tutorials section"
+  },
+  "home.tutorials.chapters": {
+    "message": "{count}チャプター",
+    "description": "Number of chapters in a tutorial video (always 2 or more)"
+  },
+  "home.tutorials.published": {
+    "message": "公開日 {date}",
+    "description": "Tutorial publication date; {date} is a formatted date"
+  },
+  "home.tutorials.all": {
+    "message": "すべてのチュートリアル",
+    "description": "Link to the tutorials index"
+  },
+  "home.pricing.title": {
+    "message": "すべての開発者とチームに無料",
+    "description": "Heading of the pricing summary"
+  },
+  "home.pricing.lead": {
+    "message": "料金がかかるのは、Pro(Connectマシン無制限、プライベートスキル)か、セットアップとサポートつきのチーム契約だけです。",
+    "description": "Lead of the pricing summary. Pro and Connect are product names; keep them in English"
+  },
+  "home.pricing.link": {
+    "message": "料金を見る",
+    "description": "Button linking to the pricing page"
+  },
+  "home.pricing.fact.app": {
+    "message": "SpecWithCodeアプリ",
+    "description": "Pricing fact term. Keep SpecWithCode in English"
+  },
+  "home.pricing.fact.app.value": {
+    "message": "無料",
+    "description": "Price of the SpecWithCode app"
+  },
+  "home.pricing.fact.cli": {
+    "message": "SpecWeave CLI",
+    "description": "Pricing fact term. Keep SpecWeave CLI in English"
+  },
+  "home.pricing.fact.cli.value": {
+    "message": "無料、MITライセンス",
+    "description": "Price and license of the CLI; keep MIT"
+  },
+  "home.pricing.fact.seat": {
+    "message": "シート料金",
+    "description": "Pricing fact term: per-seat fee"
+  },
+  "home.pricing.fact.seat.value": {
+    "message": "なし",
+    "description": "Value for Seat fee: there is none"
+  },
+  "home.pricing.fact.connect": {
+    "message": "Connectマシン",
+    "description": "Pricing fact term. Connect is a product name; keep it in English"
+  },
+  "home.pricing.fact.connect.value": {
+    "message": "3台まで無料、先着300名のファウンダーは10台、Proは無制限",
+    "description": "How many Connect machines each plan includes. Pro is a plan name; keep it in English"
+  },
+  "home.pricing.fact.markup": {
+    "message": "AIサブスクリプションへの上乗せ",
+    "description": "Pricing fact term"
+  },
+  "home.pricing.fact.markup.value": {
+    "message": "なし",
+    "description": "Value for Markup on your AI subscriptions: there is none"
+  },
+  "home.builtWith.title": {
+    "message": "SpecWeaveで作られたもの",
+    "description": "Heading of the list of products built with SpecWeave. Keep SpecWeave in English"
+  },
+  "home.final.title": {
+    "message": "どのエージェントも使えて、作業の続きも失わない",
+    "description": "Final call-to-action heading"
+  },
+  "home.final.cliLink": {
+    "message": "CLIで始める",
+    "description": "Link to the CLI getting started guide"
+  },
+  "integrations.agents.claude.tool": {
+    "message": "Claude Code(Projectsスレッドを含む)",
+    "description": "Agent card title. Keep product names in English"
+  },
+  "integrations.agents.claude.reads": {
+    "message": "CLAUDE.md(AGENTS.mdを取り込み)",
+    "description": "Files the agent reads. Keep file names in English"
+  },
+  "integrations.agents.grok.reads": {
+    "message": "AGENTS.mdとCLAUDE.md",
+    "description": "Files the agent reads. Keep file names in English"
+  },
+  "integrations.agents.grok.skills": {
+    "message": ".grok/skills/、.agents/skills/、Claude Codeのスキル",
+    "description": "Skill folders the agent loads. Keep folder paths and product names in English"
+  },
+  "integrations.agents.others.skills": {
+    "message": "それぞれ独自のフォルダー、またはCLIを直接利用",
+    "description": "Where other agents load skills from"
+  },
+  "integrations.trackers.guide.jiraAdo": {
+    "message": "JiraとAzure DevOps",
+    "description": "Link label to the Jira and Azure DevOps sync guide. Keep product names in English"
+  },
+  "integrations.trackers.github.when": {
+    "message": "IssueとコードがGitHub上に集まっています。",
+    "description": "When GitHub Issues is useful"
+  },
+  "integrations.trackers.jira.when": {
+    "message": "プロダクトとエンジニアリングが既存のデリバリープロセスを共有しています。",
+    "description": "When Jira is useful"
+  },
+  "integrations.trackers.ado.when": {
+    "message": "組織がワークアイテムとボードで計画しています。",
+    "description": "When Azure DevOps is useful"
+  },
+  "integrations.diagram.caption": {
+    "message": "イラスト・すべてのエージェントがリポジトリ内の同じファイルを読みます",
+    "description": "Caption under the repository diagram"
+  },
+  "integrations.meta.title": {
+    "message": "AIコーディングエージェントと連携",
+    "description": "Integrations page title"
+  },
+  "integrations.meta.description": {
+    "message": "SpecWeaveは、AGENTS.mdを読むすべてのコーディングエージェントに対応します。課題トラッカーとの同期は任意です。",
+    "description": "Integrations page meta description. Keep product and file names in English"
+  },
+  "integrations.hero.title": {
+    "message": "どのコーディングエージェントも読める。",
+    "description": "Integrations page hero headline"
+  },
+  "integrations.hero.lead": {
+    "message": "SpecWeaveにサービスもアカウントも不要です。コーディングエージェントがリポジトリ内のファイルを読むので、Claude Code、Codex、Grokなどが同じ仕様と台帳を引き継ぎます。",
+    "description": "Integrations hero lead paragraph. Keep product names in English"
+  },
+  "integrations.agents.title": {
+    "message": "コーディングエージェント",
+    "description": "Coding agents section heading"
+  },
+  "integrations.agents.intro": {
+    "message": "CLIはどのツールでも同じなので、スキルのないツールでも一連の流れを実行できます。ツール間の切り替え、あるいは同じツールの2つのサブスクリプション間の切り替えは、{handoffLink}で行えます。詳しくは{othersLink}をご覧ください。",
+    "description": "Coding agents section intro. {handoffLink} is a link reading 'handoff and a pickup'; {othersLink} is a link reading 'Codex, Grok and others'"
+  },
+  "integrations.agents.intro.handoffLink": {
+    "message": "ハンドオフと引き継ぎ",
+    "description": "Link text to the cross-tool handoff guide"
+  },
+  "integrations.agents.intro.othersLink": {
+    "message": "Codex、Grokなど",
+    "description": "Link text to the generic AI tools guide. Keep product names in English"
+  },
+  "integrations.agents.facts.reads": {
+    "message": "読み込み",
+    "description": "Label: files an agent reads"
+  },
+  "integrations.agents.facts.skills": {
+    "message": "スキル",
+    "description": "Label: where an agent loads skills from"
+  },
+  "integrations.trackers.title": {
+    "message": "課題トラッカー(任意)",
+    "description": "Issue trackers section heading"
+  },
+  "integrations.trackers.intro": {
+    "message": "プッシュは外部への書き込みなので、実行したときだけ行われます。インクリメントの開始、一時停止、再開でトラッカーに触れることはなく、プッシュ以外でIssueが作られることもありません。インクリメントの完了時にプッシュで関連付けたIssueが閉じられるのは、完了時クローズの設定がオンのときだけです。{syncSetup}でオンになり、いつでもオフにできます。{syncPull}は、トラッカー側の変更をレビュー用に報告するだけで、ローカルのファイルは書き換えません。",
+    "description": "Issue trackers section intro. {syncSetup} and {syncPull} are CLI commands shown as code"
+  },
+  "integrations.trackers.usefulWhen": {
+    "message": "こんなときに便利",
+    "description": "Label before when a tracker is useful"
+  },
+  "integrations.trackers.code.setup": {
+    "message": "トラッカーを接続",
+    "description": "Shell comment after specweave sync setup"
+  },
+  "integrations.trackers.code.status": {
+    "message": "認証情報、状態、変更内容",
+    "description": "Shell comment after specweave sync status"
+  },
+  "integrations.trackers.code.push": {
+    "message": "好きなタイミングで進捗を公開",
+    "description": "Shell comment after specweave sync push"
+  },
+  "integrations.trackers.code.pull": {
+    "message": "トラッカー側の変更を報告",
+    "description": "Shell comment after specweave sync pull"
+  },
+  "integrations.owns.title": {
+    "message": "役割分担",
+    "description": "Ownership section heading"
+  },
+  "integrations.owns.intro": {
+    "message": "Issueが閉じられていても、受け入れ基準に合格した証明にはなりません。合格した検証レポートが証明です。",
+    "description": "Ownership section intro"
+  },
+  "integrations.owns.repo.chip": {
+    "message": "リポジトリ内",
+    "description": "Chip: owned in your repository"
+  },
+  "integrations.owns.repo.title": {
+    "message": "仕様と台帳",
+    "description": "Card title: what the repository owns"
+  },
+  "integrations.owns.repo.body": {
+    "message": "仕様と台帳に、完了の定義と検証済みの内容が記録されます。",
+    "description": "Card body: what the repository owns"
+  },
+  "integrations.owns.tracker.chip": {
+    "message": "トラッカー内",
+    "description": "Chip: owned in the issue tracker"
+  },
+  "integrations.owns.tracker.title": {
+    "message": "計画のコンテキスト",
+    "description": "Card title: what the tracker owns"
+  },
+  "integrations.owns.tracker.body": {
+    "message": "トラッカーが持つのは計画のコンテキストです。優先度、担当者、ラベル、そして関係者が確認する場所です。",
+    "description": "Card body: what the tracker owns"
+  },
+  "integrations.faq.needTracker.q": {
+    "message": "トラッカーは必要ですか?",
+    "description": "FAQ question"
+  },
+  "integrations.faq.needTracker.a": {
+    "message": "いいえ。仕様、台帳、ハンドオフ、ダッシュボードはすべてローカルで動きます。共同作業が楽になるときにトラッカーを追加してください。",
+    "description": "FAQ answer"
+  },
+  "integrations.faq.boardJira.q": {
+    "message": "ダッシュボードでカードを動かすと、Jiraも更新されますか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "integrations.faq.boardJira.a": {
+    "message": "いいえ。ボードの変更はローカルのみです。トラッカーを更新したいときは、そのインクリメントに対して{command}を実行してください。",
+    "description": "FAQ answer. {command} is a CLI command shown as code"
+  },
+  "integrations.faq.evaluate.q": {
+    "message": "チームではどう評価すればよいですか?",
+    "description": "FAQ question"
+  },
+  "integrations.faq.evaluate.a": {
+    "message": "まず1つのリポジトリと、使い捨てのトラッカープロジェクトで始めましょう。本番のトラッカーに接続する前に、{command}で、マッピング、権限、再オープンされたIssue、部分的な失敗を確認してください。",
+    "description": "FAQ answer. {command} is a CLI command shown as code"
+  },
+  "integrations.also.title": {
+    "message": "SpecWeaveのその他のツール",
+    "description": "Related products heading. Keep product names in English"
+  },
+  "integrations.also.jev.body": {
+    "message": "小型で高速なモデルで、選択肢が決まった判断に答えます。",
+    "description": "Jev card description"
+  },
+  "integrations.also.vskill.body": {
+    "message": "セキュリティ確認済みのエージェントスキルのレジストリ。{command}でインストールします。",
+    "description": "Verified Skill card description. {command} is a CLI command shown as code"
+  },
+  "integrations.also.syncRef.title": {
+    "message": "specweave syncリファレンス",
+    "description": "Card title. Keep the command specweave sync in English"
+  },
+  "integrations.also.syncRef.body": {
+    "message": "トラッカー同期コマンドを1ページにまとめました。",
+    "description": "Sync reference card description"
+  },
+  "pricing.why.handoff.title": {
+    "message": "別のエージェントがタスクを完了",
+    "description": "Reason card title"
+  },
+  "pricing.why.handoff.body": {
+    "message": "上限に到達?Claude Codeが使用上限に近づくと、仕様と進捗がCodexや次に使うツールへハンドオフされます。",
+    "description": "Reason card body. Keep product names in English"
+  },
+  "pricing.why.noMarkup.title": {
+    "message": "AIプランへの上乗せなし",
+    "description": "Reason card title"
+  },
+  "pricing.why.noMarkup.body": {
+    "message": "エージェントは、すでに契約中のClaude、Codex、Gemini、Cursorのプランで動きます。トークンの再販は一切しません。",
+    "description": "Reason card body. Keep product names in English"
+  },
+  "pricing.why.noSeatFees.title": {
+    "message": "シート課金も実行課金もなし",
+    "description": "Reason card title"
+  },
+  "pricing.why.noSeatFees.body": {
+    "message": "一人でもチーム全員でも。エージェント数、シート数、時間数は一切カウントしません。ご自身でペアリングしたマシンは無制限です。",
+    "description": "Reason card body"
+  },
+  "pricing.plan.free.name": {
+    "message": "無料",
+    "description": "Plan name"
+  },
+  "pricing.plan.free.unit": {
+    "message": "ずっと無料。すべての開発者とチームに",
+    "description": "Text after the $0 price of the Free plan"
+  },
+  "pricing.plan.free.who": {
+    "message": "SpecWithCodeアプリとSpecWeave CLI。アプリにこちらのアカウントは不要です。",
+    "description": "Free plan summary. Keep product names in English"
+  },
+  "pricing.plan.free.feature.workspace": {
+    "message": "Claude Code、Codex、Grok、Gemini CLI、Cursorを1つのワークスペースで",
+    "description": "Free plan feature. Keep product names in English"
+  },
+  "pricing.plan.free.feature.handoff": {
+    "message": "使用上限で止まる前の自動ハンドオフ",
+    "description": "Free plan feature"
+  },
+  "pricing.plan.free.feature.connect": {
+    "message": "Connect:どこからでも3台のマシンと、スマートフォンにアクセス",
+    "description": "Free plan feature. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.free.feature.localRoutes": {
+    "message": "ローカルネットワークとSSH経由は、台数に数えません",
+    "description": "Free plan feature"
+  },
+  "pricing.plan.free.cta": {
+    "message": "無料でダウンロード",
+    "description": "Free plan button"
+  },
+  "pricing.plan.founders.tag": {
+    "message": "先着300名",
+    "description": "Chip on the Founders plan"
+  },
+  "pricing.plan.founders.name": {
+    "message": "ファウンダー",
+    "description": "Plan name"
+  },
+  "pricing.plan.founders.unit": {
+    "message": "ファウンダー枠。アカウントに紐づいてずっと有効",
+    "description": "Text after the $0 price of the Founders plan"
+  },
+  "pricing.plan.founders.who": {
+    "message": "Connectで最初にマシンをリンクした先着300アカウント。申込フォームはなく、リンクした時点で枠が付与されます。",
+    "description": "Founders plan summary. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.founders.feature.everythingFree": {
+    "message": "無料プランのすべて",
+    "description": "Founders plan feature; Free is the plan name"
+  },
+  "pricing.plan.founders.feature.machines": {
+    "message": "Connectマシンが3台ではなく10台",
+    "description": "Founders plan feature. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.founders.feature.number": {
+    "message": "アカウントにファウンダー番号",
+    "description": "Founders plan feature"
+  },
+  "pricing.plan.founders.feature.more": {
+    "message": "10台を超える場合はご相談ください。上限を引き上げます",
+    "description": "Founders plan feature"
+  },
+  "pricing.plan.founders.cta": {
+    "message": "ファウンダー枠を獲得",
+    "description": "Founders plan button"
+  },
+  "pricing.plan.pro.tag": {
+    "message": "ウェイトリスト",
+    "description": "Chip on the Pro plan"
+  },
+  "pricing.plan.pro.unit": {
+    "message": "月額、アカウントごと",
+    "description": "Text after the $20 price of the Pro plan"
+  },
+  "pricing.plan.pro.who": {
+    "message": "多数のマシンを動かす方や、プライベートスキルを共有したい方向け。提供開始まで課金されません。",
+    "description": "Pro plan summary"
+  },
+  "pricing.plan.pro.feature.unlimited": {
+    "message": "Connectマシン無制限",
+    "description": "Pro plan feature. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.pro.feature.privateSkills": {
+    "message": "ホスティングとバージョン管理つきのプライベートスキル",
+    "description": "Pro plan feature"
+  },
+  "pricing.plan.pro.feature.scan": {
+    "message": "スキルの全バージョンをセキュリティスキャン",
+    "description": "Pro plan feature"
+  },
+  "pricing.plan.pro.feature.billing": {
+    "message": "SpecWithCodeアカウントで請求",
+    "description": "Pro plan feature. Keep product names in English"
+  },
+  "pricing.plan.pro.cta": {
+    "message": "ウェイトリストに登録",
+    "description": "Pro plan button"
+  },
+  "pricing.plan.teams.name": {
+    "message": "チーム",
+    "description": "Plan name"
+  },
+  "pricing.plan.teams.price": {
+    "message": "個別見積もり",
+    "description": "Price shown for the Teams plan"
+  },
+  "pricing.plan.teams.unit": {
+    "message": "年間契約",
+    "description": "Text after the Teams plan price"
+  },
+  "pricing.plan.teams.who": {
+    "message": "導入の伴走、サポート窓口、監査記録を求める2〜10名のチーム向け。",
+    "description": "Teams plan summary"
+  },
+  "pricing.plan.teams.feature.setup": {
+    "message": "チーム全体のセットアップ",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.feature.engineer": {
+    "message": "担当エンジニア、応答時間は契約で明記",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.feature.audit": {
+    "message": "誰が何を実行したかを証跡つきで監査エクスポート",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.feature.sso": {
+    "message": "SSO、ポリシー、セルフホストのレジストリは、ご要件に合わせて設計",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.cta": {
+    "message": "チームプランを見る",
+    "description": "Teams plan button"
+  },
+  "pricing.pilot.step1.when": {
+    "message": "1日目",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step1.what": {
+    "message": "リポジトリと作業を選ぶ",
+    "description": "Pilot timeline step"
+  },
+  "pricing.pilot.step2.when": {
+    "message": "2〜5日目",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step2.what": {
+    "message": "レビュー用ブランチでSpecWeaveを導入",
+    "description": "Pilot timeline step. Keep product names in English"
+  },
+  "pricing.pilot.step3.when": {
+    "message": "6〜9日目",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step3.what": {
+    "message": "共有プロンプトをスキルに",
+    "description": "Pilot timeline step"
+  },
+  "pricing.pilot.step4.when": {
+    "message": "10日目",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step4.what": {
+    "message": "実地訓練:Claudeが上限に達し、Codexが完了させる",
+    "description": "Pilot timeline step. Keep product names in English"
+  },
+  "pricing.faq.free.q": {
+    "message": "ずっと無料ですか?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.free.a": {
+    "message": "はい。アプリ、CLI、お使いのマシンでのエージェント実行は、開発者1人でもチーム全体でも無料のままです。有料プランで追加されるのは、運用コストのかかるもの(ホスト型リレーの容量、ホスト型のプライベートスキル)とサポートだけです。",
+    "description": "Pricing FAQ answer"
+  },
+  "pricing.faq.machines.q": {
+    "message": "何台のマシンを接続できますか?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.machines.a": {
+    "message": "Connect(どこからでも、スマートフォンからでもマシンに届くホスト型リレー)には、3台が含まれます。ファウンダーは10台で、Proでは上限がなくなります。ローカルネットワークやSSH経由の直接接続は、台数に数えません。{link}。",
+    "description": "Pricing FAQ answer. {link} is a link reading 'How Connect works'. Connect is a product name; keep it in English"
+  },
+  "pricing.faq.machines.a.link": {
+    "message": "Connectのしくみ",
+    "description": "Link text to the Connect docs. Connect is a product name; keep it in English"
+  },
+  "pricing.faq.founder.q": {
+    "message": "ファウンダーになるには?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.founder.a": {
+    "message": "SpecWithCodeでConnectにサインインし、マシンをリンクしてください。最初にリンクした300アカウントに、ファウンダー番号と10台分の枠が、リンク時に付与されます。枠はアカウントに紐づいて期限はなく、のちにProが始まっても失われません。",
+    "description": "Pricing FAQ answer. Keep product names in English"
+  },
+  "pricing.faq.teams.q": {
+    "message": "チームは何に対して支払うのですか?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.teams.a": {
+    "message": "2〜10名のチームのセットアップ、応答時間つきのサポート、監査エクスポートやSSOといった管理機能です。Proは、1アカウント向けのホスト型プライベートスキルとConnectマシン無制限をカバーします。",
+    "description": "Pricing FAQ answer. Keep product names in English"
+  },
+  "pricing.faq.code.q": {
+    "message": "コードはどこに送られますか?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.code.a": {
+    "message": "新たな送り先はありません。仕様とハンドオフはリポジトリ内のファイルで、エージェントはご自身のマシンとサブスクリプションで動きます。",
+    "description": "Pricing FAQ answer"
+  },
+  "pricing.faq.autoHandoff.q": {
+    "message": "自動ハンドオフのしくみは?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.autoHandoff.a": {
+    "message": "{onCommand}を実行すると、使用枠の90%、またはご指定の地点でハンドオフします。次のツールが{pickupCommand}を実行します。{link}。",
+    "description": "Pricing FAQ answer. {onCommand} and {pickupCommand} are CLI commands shown as code; {link} is a link reading 'Details'"
+  },
+  "pricing.faq.autoHandoff.a.link": {
+    "message": "詳細",
+    "description": "Link text to the auto-handoff guide"
+  },
+  "pricing.faq.ready.q": {
+    "message": "SpecWithCodeはもう使えますか?",
+    "description": "Pricing FAQ question. Keep product names in English"
+  },
+  "pricing.faq.ready.a": {
+    "message": "アーリーアクセスで、macOS(Apple silicon)、Windows 10/11、Linux(x64とarm64)向けのダウンロードを提供しています。SpecWeave CLIは、{command}ですべての環境で動作します。",
+    "description": "Pricing FAQ answer. {command} is a CLI command shown as code. Keep product names in English"
+  },
+  "pricing.faq.pay.q": {
+    "message": "支払い方法は?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.pay.a": {
+    "message": "現在有料なのはパイロットのみで、開始日が決まり次第、請求書を発行します。チーム契約は年次で請求します。Proは、提供開始時にSpecWithCodeアカウントでカード請求となります。ウェイトリストの方は、それまで課金されません。",
+    "description": "Pricing FAQ answer. Keep product names in English"
+  },
+  "pricing.why.art.picksUp": {
+    "message": "引き継ぐ",
+    "description": "Diagram chip: the next agent picks up the task"
+  },
+  "pricing.why.art.yourPlan": {
+    "message": "あなたのプラン",
+    "description": "Diagram box: your AI subscription"
+  },
+  "pricing.why.art.reseller": {
+    "message": "再販業者",
+    "description": "Diagram box: a token reseller (crossed out)"
+  },
+  "pricing.why.art.agent": {
+    "message": "エージェント",
+    "description": "Diagram box: the coding agent"
+  },
+  "pricing.why.art.teamLabel": {
+    "message": "開発者1人でもチーム全体でも・無料のワークスペース1つ",
+    "description": "Diagram label under the team icons"
+  },
+  "pricing.founders.chip": {
+    "message": "ファウンダー",
+    "description": "Chip on the founders band"
+  },
+  "pricing.founders.status.open": {
+    "message": "受付中",
+    "description": "Founder seats are still available"
+  },
+  "pricing.founders.status.full": {
+    "message": "全枠が埋まりました",
+    "description": "No founder seats are left"
+  },
+  "pricing.founders.title": {
+    "message": "先着300アカウントは、10台まで無料",
+    "description": "Founders band heading"
+  },
+  "pricing.founders.body": {
+    "message": "Connectでマシンをリンクすると、アカウントに次のファウンダー枠が付与されます。どこからでも3台ではなく10台まで接続でき、ファウンダー番号も付きます。フォームもカードも不要で、枠はずっとあなたのものです。",
+    "description": "Founders band body. Connect is a product name; keep it in English"
+  },
+  "pricing.founders.cta": {
+    "message": "最初のマシンをリンク",
+    "description": "Founders band button"
+  },
+  "pricing.founders.seats.aria.total": {
+    "message": "ファウンダー枠 {total}",
+    "description": "Accessible label for the seat meter before the live count loads"
+  },
+  "pricing.founders.seats.aria.left": {
+    "message": "ファウンダー枠 {total}のうち残り{left}",
+    "description": "Accessible label for the live seat meter"
+  },
+  "pricing.founders.seats.label.total": {
+    "message": "ファウンダー枠",
+    "description": "Text after the total seat count"
+  },
+  "pricing.founders.seats.label.left": {
+    "message": "/ {total}枠が残り",
+    "description": "Text after the live count of seats left"
+  },
+  "pricing.founders.seats.note.pending": {
+    "message": "Connectリレーのライブ集計。",
+    "description": "Note under the seat meter before the live count loads. Connect is a product name; keep it in English"
+  },
+  "pricing.founders.seats.note.live": {
+    "message": "Connectリレーからのライブ値。",
+    "description": "Note under the live seat meter. Connect is a product name; keep it in English"
+  },
+  "pricing.meta.title": {
+    "message": "料金",
+    "description": "Pricing page title"
+  },
+  "pricing.meta.description": {
+    "message": "SpecWithCodeとSpecWeave CLIは、すべての開発者とチームに無料で、AIサブスクリプションへの上乗せもありません。先着300のConnectアカウントは10台まで無料。Proはマシン無制限とプライベートスキル、チームにはセットアップとサポートを提供します。",
+    "description": "Pricing page meta description. Keep product names in English"
+  },
+  "pricing.hero.chip": {
+    "message": "料金",
+    "description": "Hero chip"
+  },
+  "pricing.hero.kicker": {
+    "message": "すべての開発者とチームに無料",
+    "description": "Hero kicker next to the chip"
+  },
+  "pricing.hero.title": {
+    "message": "あらゆるコーディングエージェントを1つのワークスペースに。誰でも無料。",
+    "description": "Pricing hero headline"
+  },
+  "pricing.hero.sub": {
+    "message": "SpecWithCodeは、Claude Code、Codex、Cursorなどを並べて動かし、使用上限に達したら次のエージェントへタスクをハンドオフします。サブスクリプションはご自身のものをそのまま使えます。",
+    "description": "Pricing hero subheading. Keep product names in English"
+  },
+  "pricing.hero.cta.download": {
+    "message": "SpecWithCodeをダウンロード",
+    "description": "Hero download button. Keep product names in English"
+  },
+  "pricing.hero.cta.plans": {
+    "message": "プランを見る",
+    "description": "Hero link that jumps to the plans"
+  },
+  "pricing.hero.runsOn": {
+    "message": "すでに契約中のエージェントで動作",
+    "description": "Text next to the agent logos"
+  },
+  "pricing.hero.capture.alt": {
+    "message": "SpecWithCodeのスレッドパネル:Claude CodeスレッドとCodexスレッドが並んで作業中",
+    "description": "Alt text for the hero screenshot. Keep product names in English"
+  },
+  "pricing.hero.capture.label": {
+    "message": "実際のキャプチャ・SpecWithCodeアプリのウィンドウ、2026年10月27日",
+    "description": "Label on the hero screenshot. Keep product names in English"
+  },
+  "pricing.hero.float.free": {
+    "message": "ずっと無料",
+    "description": "Floating badge text after $0"
+  },
+  "pricing.hero.float.handoff": {
+    "message": "自動ハンドオフ",
+    "description": "Floating badge: automatic handoff between agents"
+  },
+  "pricing.why.aria": {
+    "message": "無料である理由",
+    "description": "Accessible label for the reasons section"
+  },
+  "pricing.why.artNote": {
+    "message": "図はイメージです。",
+    "description": "Note under the reason diagrams"
+  },
+  "pricing.plans.aria": {
+    "message": "プラン",
+    "description": "Accessible label for the plans section"
+  },
+  "pricing.pilot.priceLabel": {
+    "message": "2週間のパイロット",
+    "description": "Text after the $990 pilot price"
+  },
+  "pricing.pilot.title": {
+    "message": "創設チームパイロット:$990で、2〜10名のチームを2週間で移行",
+    "description": "Pilot section heading"
+  },
+  "pricing.pilot.body": {
+    "message": "2〜10名のチーム向け。5枠限定。お客様のリポジトリでハンドオフ訓練に失敗した場合、料金は発生しません。",
+    "description": "Pilot section body"
+  },
+  "pricing.pilot.cta": {
+    "message": "パイロットに申し込む",
+    "description": "Pilot apply button (opens email)"
+  },
+  "pricing.faq.title": {
+    "message": "よくある質問",
+    "description": "FAQ section heading"
+  },
+  "pricing.final.title": {
+    "message": "誰でも無料。チームに必要なときはサポートも",
+    "description": "Final call-to-action heading"
+  },
+  "pricing.final.cta.download": {
+    "message": "SpecWithCodeをダウンロード",
+    "description": "Final download button. Keep product names in English"
+  },
+  "pricing.final.cta.team": {
+    "message": "チーム導入のご相談",
+    "description": "Final link that opens an email about team plans"
+  },
+  "product.command.copied": {
+    "message": "コピーしました",
+    "description": "Copy button label after the command was copied"
+  },
+  "product.command.copy": {
+    "message": "コピー",
+    "description": "Button that copies a shell command"
+  },
+  "product.loop.plan.title": {
+    "message": "インクリメントを計画する",
+    "description": "Loop step title"
+  },
+  "product.loop.plan.body": {
+    "message": "エージェントが、課題、スコープ、番号つきの受け入れ基準、アプローチ、タスクを書き込みます。書き始める前に、sw-incrementはあなたの判断が必要な点だけを、推奨回答つきで1つずつ尋ねます。デフォルトでは最大5問で、深さは{deepInterview}で設定します。",
+    "description": "Loop step body; {deepInterview} is a config key. Keep sw-increment in English"
+  },
+  "product.loop.plan.fileNote": {
+    "message": "各タスクには、基準、ファイル、テストが明記されます。",
+    "description": "Note about the file spec.md"
+  },
+  "product.loop.claim.title": {
+    "message": "タスクを担当する",
+    "description": "Loop step title"
+  },
+  "product.loop.claim.body": {
+    "message": "担当宣言は台帳に記録されるため、同じタスクを別のエージェントが求めても拒否されます。2時間を過ぎた宣言は期限切れとなり、引き継げます。{taskNext}は、次のタスクを基準の本文つきで表示します。",
+    "description": "Loop step body; {taskNext} is a command"
+  },
+  "product.loop.claim.fileNote": {
+    "message": "追記専用:claim、done、release、skip、blockのイベント。",
+    "description": "Note about the file ledger.jsonl"
+  },
+  "product.loop.done.title": {
+    "message": "完了を証明する",
+    "description": "Loop step title"
+  },
+  "product.loop.done.body": {
+    "message": "テストはCLI自身が実行します。終了コード0のときだけタスクが完了と記録され、コミットと出力の末尾が証跡として残ります。失敗した実行は何も記録しません。",
+    "description": "Loop step body"
+  },
+  "product.loop.done.fileNote": {
+    "message": "コマンドの全出力、終了コード、実行時刻。",
+    "description": "Note about the task report file"
+  },
+  "product.loop.verify.title": {
+    "message": "インクリメントを検証する",
+    "description": "Loop step title"
+  },
+  "product.loop.verify.body": {
+    "message": "{testingCommands}のコマンド、または{packageJson}、Cargo、pytest、Goから検出したコマンドで、テスト、lint、ビルドを実行し、すべての受け入れ基準を確認します。",
+    "description": "Loop step body; placeholders are config keys and file names. Keep Cargo, pytest and Go in English"
+  },
+  "product.loop.verify.fileNote": {
+    "message": "okがtrueになるのは、すべてのコマンドと基準が合格したときだけ。",
+    "description": "Note about verify.json; \"ok\" is a JSON field name, keep it in English"
+  },
+  "product.loop.review.title": {
+    "message": "別のモデルでレビューする",
+    "description": "Loop step title"
+  },
+  "product.loop.review.body": {
+    "message": "差分を、書いたモデルとは別のモデルファミリーのレビュアーに渡します。ClaudeのコードはCodexが、OpenAIのコードはClaudeがレビューします。終了コード0はリリース可能、3は先に修正を意味します。{brief}は、どのツールにも貼り付けられるブリーフを出力します。{version}で追加。{link}をご覧ください。",
+    "description": "Loop step body; {brief} is a CLI flag, {version} the CLI version, {link} a link to the review guide. Keep Codex, Claude and OpenAI in English"
+  },
+  "product.loop.review.link": {
+    "message": "別のモデルによるレビュー",
+    "description": "Link text to the cross-model review guide"
+  },
+  "product.loop.review.fileNote": {
+    "message": "所見と判定。レビュアーの名前で保存されます。",
+    "description": "Note about the review report file"
+  },
+  "product.loop.close.title": {
+    "message": "クローズする",
+    "description": "Loop step title"
+  },
+  "product.loop.close.body": {
+    "message": "{verifyJson}がない、またはokでない間は拒否します。それでも閉じるには{reason}が必要で、理由はインクリメントに保存されます。",
+    "description": "Loop step body; {verifyJson} is a file path, {reason} a CLI flag"
+  },
+  "product.loop.close.fileNote": {
+    "message": "完了、または証明なしでクローズした理由。",
+    "description": "Note about metadata.json"
+  },
+  "product.limits.suggest.what": {
+    "message": "ハンドオフの準備ができたことを一度だけ知らせ、作業は続けます。",
+    "description": "What the suggest mode does at the usage threshold"
+  },
+  "product.limits.suggest.when": {
+    "message": "デフォルト。切り替えるタイミングは自分で決めます。",
+    "description": "When to use the suggest mode"
+  },
+  "product.limits.enforce.what": {
+    "message": "specweave handoffを実行し、セッションを停止します。",
+    "description": "What the enforce mode does; keep \"specweave handoff\" in English"
+  },
+  "product.limits.enforce.when": {
+    "message": "無人実行で、タスクの区切りできれいに止めたいとき。",
+    "description": "When to use the enforce mode"
+  },
+  "product.limits.checkpoint.what": {
+    "message": "ローカルのチェックポイントを保存するだけで、ハンドオフはしません。",
+    "description": "What the checkpoint mode does"
+  },
+  "product.limits.checkpoint.when": {
+    "message": "クレジットやプロキシにより、上限を過ぎても動き続けるプラン向け。",
+    "description": "When to use the checkpoint mode"
+  },
+  "product.skills.core.increment": {
+    "message": "インクリメントを1つのspec.mdとして計画し、重要な判断を先に尋ねます。",
+    "description": "Skill description; keep spec.md in English"
+  },
+  "product.skills.core.grillMe": {
+    "message": "計画のすべての判断が固まるまで、何ラウンドかに分けてあなたに質問します。planning.deepInterviewをdeepにすると、新しいインクリメントごとに実行されます。",
+    "description": "Skill description; keep planning.deepInterview and deep in English"
+  },
+  "product.skills.core.do": {
+    "message": "インクリメントをタスクごとに進めます。担当、ファイル内で実装、テスト、コミット、証跡つきで完了。単独でも、無人でも、並列レーンでも。",
+    "description": "Skill description"
+  },
+  "product.skills.core.auto": {
+    "message": "すべてのタスクが完了するまでインクリメントを無人で実行し、検証してクローズします。",
+    "description": "Skill description"
+  },
+  "product.skills.core.review": {
+    "message": "新しいコンテキスト、または別のモデルファミリーによる敵対的レビュー。すべての所見がファイルと行を示します。",
+    "description": "Skill description"
+  },
+  "product.skills.core.done": {
+    "message": "インクリメントをクローズします。タスク完了、検証グリーン、新しいコンテキストでのレビュー、そして完了。",
+    "description": "Skill description"
+  },
+  "product.skills.core.handoff": {
+    "message": "作業を別のツール、アカウント、マシンへ渡し、そちらで引き継ぎます。",
+    "description": "Skill description"
+  },
+  "product.skills.optional.glossary": {
+    "message": "プロジェクト共通の用語集{file}を作成します。{cmd}は、内容のずれをCIで失敗させます。",
+    "description": "Skill description; {file} is a file name, {cmd} a command"
+  },
+  "product.skills.optional.sync": {
+    "message": "インクリメントをGitHub、Jira、Azure DevOpsにプッシュします。プロジェクトにトラッカーがあるとオンになります。",
+    "description": "Skill description; keep GitHub, Jira and Azure DevOps in English"
+  },
+  "product.skills.optional.project": {
+    "message": "プロジェクトハブを読み取り、更新します。{file}があるとオンになります。",
+    "description": "Skill description; {file} is a file path"
+  },
+  "product.skills.optional.jev": {
+    "message": "選択肢が決まった判断をJevに任せます。{key}を設定するとオンになります。",
+    "description": "Skill description; keep Jev in English; {key} is a config key"
+  },
+  "product.record.done.what": {
+    "message": "完了の定義",
+    "description": "Record card title"
+  },
+  "product.record.done.how": {
+    "message": "計画時に書かれ、コードを書く前に読まれます。",
+    "description": "Record card body"
+  },
+  "product.record.happened.what": {
+    "message": "起きたこと",
+    "description": "Record card title"
+  },
+  "product.record.happened.how": {
+    "message": "担当宣言、証跡つきの完了、メモ、ハンドオフ。",
+    "description": "Record card body"
+  },
+  "product.record.proved.what": {
+    "message": "証明したもの",
+    "description": "Record card title"
+  },
+  "product.record.proved.how": {
+    "message": "タスクログ、{verifyMd}、{verifyJson}、レビューレポート。",
+    "description": "Record card body; placeholders are file names"
+  },
+  "product.record.stopped.what": {
+    "message": "止まった地点",
+    "description": "Record card title"
+  },
+  "product.record.stopped.how": {
+    "message": "{cmd}が書き込みます。",
+    "description": "Record card body; {cmd} is a command"
+  },
+  "product.record.notes.what": {
+    "message": "次のエージェントへのメモ",
+    "description": "Record card title"
+  },
+  "product.record.notes.how": {
+    "message": "台帳に保存され、{cmd}で表示できます。",
+    "description": "Record card body; {cmd} is a command"
+  },
+  "product.record.memory.what": {
+    "message": "セッションを越えて残る判断",
+    "description": "Record card title"
+  },
+  "product.record.memory.how": {
+    "message": "1つの事実につき1ファイル。{file}に索引化されてコミットされるため、すべてのツールとアカウントから見えます。",
+    "description": "Record card body; {file} is a file name"
+  },
+  "product.record.board.what": {
+    "message": "すべてをまとめたボード",
+    "description": "Record card title"
+  },
+  "product.record.board.how": {
+    "message": "デフォルトでは127.0.0.1のポート3456、ローカルのみ。読み取りにモデル呼び出しは不要です。",
+    "description": "Record card body"
+  },
+  "product.record.report.what": {
+    "message": "誰が何をしたかをページで",
+    "description": "Record card title"
+  },
+  "product.record.report.how": {
+    "message": "ツール、セッション、ハンドオフ、証跡のHTMLタイムライン({file})。",
+    "description": "Record card body; {file} is a file path"
+  },
+  "product.integrations.lsp.name": {
+    "message": "コードナビゲーション",
+    "description": "Integration card title"
+  },
+  "product.integrations.lsp.body": {
+    "message": "言語サーバーから参照、定義、ホバー時の型、シンボルを取得できるので、エージェントはgrepに頼らずに済みます。{cmd}が、リポジトリの言語に合うサーバーを選びます。",
+    "description": "Integration card body; {cmd} is a command"
+  },
+  "product.integrations.lsp.link": {
+    "message": "LSPガイド",
+    "description": "Link to the LSP guide"
+  },
+  "product.integrations.jev.body": {
+    "message": "選択肢が決まった判断を約250ミリ秒で返します。どのスキルやモデル階層を使うか、シェルコマンドを実行して安全か、取得したテキストに再確認が必要かなどです。{cmd}で有効化します。",
+    "description": "Integration card body; {cmd} is a command"
+  },
+  "product.integrations.jev.link": {
+    "message": "Jevについて",
+    "description": "Link to the Jev page; keep Jev in English"
+  },
+  "product.integrations.hub.name": {
+    "message": "プロジェクトハブ",
+    "description": "Integration card title"
+  },
+  "product.integrations.hub.body": {
+    "message": "共通の目標、コンテキスト、成果物、定型作業を{file}にまとめ、すべてのツールが読み取ります。{flag}で、別のツール向けにブリーフを書き出せます。",
+    "description": "Integration card body; {file} is a file path, {flag} a CLI flag"
+  },
+  "product.integrations.hub.link": {
+    "message": "ポータブルプロジェクトのガイド",
+    "description": "Link to the portable projects guide"
+  },
+  "product.integrations.repos.name": {
+    "message": "既存のリポジトリ",
+    "description": "Integration card title"
+  },
+  "product.integrations.repos.body": {
+    "message": "リポジトリをクローンしてワークスペースに登録します。{all}を付ければ、組織内のすべてのリポジトリが対象です。{dryRun}で、すでにあるチェックアウトの取り込みをプレビューできます。",
+    "description": "Integration card body; {all} and {dryRun} are CLI flags"
+  },
+  "product.integrations.repos.link": {
+    "message": "ワークスペース導入ガイド",
+    "description": "Link to the workspace adoption guide"
+  },
+  "product.integrations.trackers.name": {
+    "message": "課題トラッカー",
+    "description": "Integration card title"
+  },
+  "product.integrations.trackers.body": {
+    "message": "任意。チームがGitHub Issues、Jira、Azure DevOpsで計画しているなら、インクリメントをプッシュできます。",
+    "description": "Integration card body; keep GitHub Issues, Jira and Azure DevOps in English"
+  },
+  "product.integrations.trackers.link": {
+    "message": "トラッカー同期ガイド",
+    "description": "Link to the tracker sync guide"
+  },
+  "product.loop.illustrationTag": {
+    "message": "イラスト・1つのインクリメントが残す6つのファイル",
+    "description": "Label under the pipeline illustration"
+  },
+  "product.loop.ariaLabel": {
+    "message": "SpecWeaveの流れ",
+    "description": "Accessible label for the list of loop steps; keep SpecWeave in English"
+  },
+  "product.meta.title": {
+    "message": "SpecWeave CLI",
+    "description": "Page title of /product; keep product names in English"
+  },
+  "product.meta.description": {
+    "message": "SpecWeave CLIは、作業を短い仕様として計画し、すべてのタスクをテスト出力とともにgitに記録し、任意のコーディングエージェント、アカウント、マシンへ作業を引き継ぎます。",
+    "description": "Meta description of /product; keep product names in English"
+  },
+  "product.hero.freeOpenSource": {
+    "message": "無料・オープンソース",
+    "description": "Hero kicker next to the version chip"
+  },
+  "product.hero.title": {
+    "message": "作業は、セッションより長く生きる。",
+    "description": "Hero headline of /product"
+  },
+  "product.hero.lead": {
+    "message": "コードを書くのはエージェント。SpecWeaveは、完了の定義、それを証明したもの、止まった地点を、gitのプレーンなファイルとして残します。だからClaude CodeでもCodexでも、他のエージェントでも、同じタスクを続けられます。",
+    "description": "Hero lead paragraph; keep product names in English"
+  },
+  "product.hero.copyInstall": {
+    "message": "インストールコマンドをコピー",
+    "description": "Accessible label of the copy button next to the install command"
+  },
+  "product.hero.cta.start": {
+    "message": "プロジェクトで始める",
+    "description": "Primary hero button"
+  },
+  "product.hero.cta.commands": {
+    "message": "全コマンド",
+    "description": "Secondary hero link to the command reference"
+  },
+  "product.hero.version": {
+    "message": "バージョン{version}、{date}リリース。無料・オープンソース。",
+    "description": "Release line; {version} is the CLI version, {date} its release date"
+  },
+  "product.hero.terminalAria": {
+    "message": "Codexとして動く2つ目のクローンでのspecweave pickupの出力",
+    "description": "Accessible label of the hero terminal; keep specweave pickup and Codex in English"
+  },
+  "product.hero.pickedUpBadge": {
+    "message": "Codexが引き継ぎ",
+    "description": "Badge on the hero terminal; keep Codex in English"
+  },
+  "product.hero.caption": {
+    "message": "Claude Codeがハンドオフした後、Codexとして動く2つ目のクローンでの実際の出力。",
+    "description": "Caption of the hero terminal; keep product names in English"
+  },
+  "product.loop.heading": {
+    "message": "計画からクローズまで、6つのコマンド",
+    "description": "Section heading"
+  },
+  "product.loop.intro": {
+    "message": "どのステップもファイルを残します。チェックボックスだけではクローズしません。テストが実行され、出力が保存され、検証に合格するまでインクリメントは開いたままです。",
+    "description": "Section intro"
+  },
+  "product.loop.caption": {
+    "message": "コマンド、フラグ、ファイル名はspecweave {version}のとおり。インクリメント、タスク、レビュアーは、このページ全体で使う例です。",
+    "description": "Caption under the loop; {version} is the CLI version"
+  },
+  "product.handoff.heading": {
+    "message": "トークン切れは終わりではない",
+    "description": "Section heading"
+  },
+  "product.handoff.lead": {
+    "message": "離れるツールで「ハンドオフして」、次のツールで「中断したところから再開して」と伝えるだけ。Claude Codeが始めた作業を、同じマシンでも別のマシンでも、Codexが続けられます。ツール間でコピーするものはありません。{cmd}がスナップショットを{ref}と{wip}にプッシュし、台帳にイベントを追加します。",
+    "description": "Section lead; the quoted phrases are what the user says to the agent; {cmd} is a command, {ref} and {wip} are git refs. Keep Codex and Claude Code in English"
+  },
+  "product.handoff.flag.all": {
+    "message": "アクティブなすべてのインクリメントと、ローカルだけの作業が残るすべてのネストしたリポジトリの索引を1つ書き出します。",
+    "description": "Explains the handoff --all flag"
+  },
+  "product.handoff.flag.list": {
+    "message": "保留中のハンドオフを新しい順に表示します。何も変更しません。",
+    "description": "Explains the pickup --list flag"
+  },
+  "product.handoff.flag.idOrTitle": {
+    "message": "idまたはタイトル",
+    "description": "Placeholder argument in the command \"pickup <id or title>\""
+  },
+  "product.handoff.flag.pick": {
+    "message": "複数が待機しているとき、特定の1つを指定します。",
+    "description": "Explains passing an id or title to pickup"
+  },
+  "product.handoff.flag.noPush": {
+    "message": "ハンドオフをリモートにプッシュせず、このマシンに留めます。",
+    "description": "Explains the handoff --no-push flag"
+  },
+  "product.handoff.guideLink": {
+    "message": "ハンドオフと引き継ぎの詳細",
+    "description": "Link to the handoff guide"
+  },
+  "product.handoff.leaving": {
+    "message": "離れる側:Claude Code(claude@cloud)",
+    "description": "Label above the terminal being left; keep Claude Code and claude@cloud in English"
+  },
+  "product.handoff.leavingAria": {
+    "message": "離れるセッションでのspecweave handoff",
+    "description": "Accessible label of a terminal; keep specweave handoff in English"
+  },
+  "product.handoff.connector": {
+    "message": "リモートの{ref}と{wip}にスナップショットをプッシュし、台帳にハンドオフのイベントを記録",
+    "description": "Text between the two terminals; {ref} and {wip} are git refs"
+  },
+  "product.handoff.arriving": {
+    "message": "引き継ぐ側:Codex(codex@laptop)",
+    "description": "Label above the arriving terminal; keep Codex and codex@laptop in English"
+  },
+  "product.handoff.arrivingAria": {
+    "message": "次のツールでのspecweave pickup",
+    "description": "Accessible label of a terminal; keep specweave pickup in English"
+  },
+  "product.handoff.caption": {
+    "message": "pickupの行は、Codexとして動く2つ目のクローンでの実際の出力です。handoffの行は、同じ実行でCLIが出す実際のメッセージです。",
+    "description": "Caption under the handoff terminals; keep Codex in English"
+  },
+  "product.limits.heading": {
+    "message": "使用上限に当たる前に対処",
+    "description": "Section heading"
+  },
+  "product.limits.lead": {
+    "message": "{cmd}は、Claude Code、Codex、Grok Buildにフックを追加します。すべてのフックがローカルのチェックポイントを保存し、いずれかの使用枠が95%に達したときは、モードによって動作が決まります(Grokはパーセンテージを報告しないため、ターンがレート制限に達したときにフックが動作します)。",
+    "description": "Section lead; {cmd} is a command. Keep product names in English"
+  },
+  "product.limits.capture.alt": {
+    "message": "SpecWithCodeの使用状況パネル:Codex週次の残り10%、Claudeセッション残り2%、週次残り54%、週次Fable残り84%、それぞれのリセット時刻つき",
+    "description": "Alt text of the usage panel screenshot; keep product names in English"
+  },
+  "product.limits.capture.label": {
+    "message": "実際のキャプチャ・SpecWithCodeの使用状況パネル。フックが監視する枠",
+    "description": "Label under the usage panel screenshot; keep SpecWithCode in English"
+  },
+  "product.limits.modesAria": {
+    "message": "しきい値でのモード",
+    "description": "Accessible label of the list of auto-handoff modes"
+  },
+  "product.limits.defaultChip": {
+    "message": "デフォルト",
+    "description": "Chip marking the default mode"
+  },
+  "product.limits.atThreshold": {
+    "message": "しきい値に達すると",
+    "description": "Label: what the mode does at the threshold"
+  },
+  "product.limits.useFor": {
+    "message": "向いている場面",
+    "description": "Label: when to use the mode"
+  },
+  "product.limits.flag.at": {
+    "message": "しきい値を変更します。デフォルトは95です。",
+    "description": "Explains the --at flag"
+  },
+  "product.limits.flag.waitUnder": {
+    "message": "すべての枠がその分数以内にリセットされる場合は何もしません。デフォルトは30です。",
+    "description": "Explains the --wait-under flag"
+  },
+  "product.limits.flag.autocompact": {
+    "message": "Claude Codeを100万トークン近くではなく40万トークンで圧縮するので、後半のターンが小さく保たれます。",
+    "description": "Explains autocompact on; keep Claude Code in English"
+  },
+  "product.limits.note": {
+    "message": "{link}でエージェントを動かしていますか?プロバイダーのサブスクリプションごとに1台のマシンを使いましょう。各マシンはプロバイダーごとに1アカウントでサインインしたままにし、容量が必要なときは手動でサブスクリプションを切り替えず、マシンを追加します。",
+    "description": "Note; {link} is a link labelled SpecWithCode"
+  },
+  "product.limits.guideLink": {
+    "message": "自動ハンドオフガイド",
+    "description": "Link to the auto-handoff guide"
+  },
+  "product.skills.heading": {
+    "message": "標準で7つのスキル、必要に応じて4つ",
+    "description": "Section heading"
+  },
+  "product.skills.intro": {
+    "message": "スキルとは、エージェントが必要なときに読み込む短い指示です。{version}以降、オプションのスキルはプロジェクトが必要とするときに自動でオンになります。{list}で各スキルがオンの理由を確認でき、{enable}または{disable}で変更できます。",
+    "description": "Section intro; {version} is the CLI version; {list}, {enable}, {disable} are commands"
+  },
+  "product.skills.core.title": {
+    "message": "すべてのプロジェクトで",
+    "description": "Heading of the default skills list"
+  },
+  "product.skills.optional.title": {
+    "message": "プロジェクトが必要とするとき",
+    "description": "Heading of the optional skills list"
+  },
+  "product.skills.referenceLink": {
+    "message": "スキルのリファレンス",
+    "description": "Link to the skills reference"
+  },
+  "product.record.heading": {
+    "message": "確認できる記録",
+    "description": "Section heading"
+  },
+  "product.record.intro": {
+    "message": "ここまでのものはすべて、リポジトリ内の通常のファイルです。履歴はgitのレビューとアクセス制御で守られます。これらのファイルは、改ざん防止の監査システムではありません。",
+    "description": "Section intro"
+  },
+  "product.record.boardTitle": {
+    "message": "この例でダッシュボードが読み取る内容",
+    "description": "Heading above the dashboard table"
+  },
+  "product.record.boardCaption": {
+    "message": "このページ冒頭と同じ{pickup}の実行から作成しています。ご自身のプロジェクトで{dashboard}を実行すると、あなたの分が表示されます。",
+    "description": "Caption under the dashboard table; {pickup} and {dashboard} are commands"
+  },
+  "product.integrations.heading": {
+    "message": "いつものツールと連携",
+    "description": "Section heading"
+  },
+  "product.integrations.intro": {
+    "message": "どれも任意で、設定するまでオフのままです。",
+    "description": "Section intro"
+  },
+  "product.integrations.allLink": {
+    "message": "すべての連携",
+    "description": "Link to the integrations page"
+  },
+  "product.specwithcode.heading": {
+    "message": "同じインクリメントをデスクトップアプリで",
+    "description": "Section heading"
+  },
+  "product.specwithcode.body": {
+    "message": "SpecWithCodeのワーカースレッドは、1つのブランチで作業して1つのプルリクエストを開きます。これはまさにインクリメントの形です。チェックリストはインクリメントのタスクリストで、台帳への書き込みはこのページのコマンドそのものです。スレッドどうしは、互いのファイルを編集せず、台帳にメモを残してやり取りします。",
+    "description": "Section body; keep SpecWithCode in English"
+  },
+  "product.specwithcode.link": {
+    "message": "SpecWithCodeを見る",
+    "description": "Link to the SpecWithCode page; keep SpecWithCode in English"
+  },
+  "product.specwithcode.windowLabel": {
+    "message": "ワーカースレッド",
+    "description": "Window title bar label"
+  },
+  "product.specwithcode.imageAlt": {
+    "message": "成果を報告するSpecWithCodeのワーカースレッド。実行したコマンドとその出力、ブロッカーなし、変更された2つのファイルを表示",
+    "description": "Alt text of the worker thread screenshot; keep SpecWithCode in English"
+  },
+  "product.specwithcode.caption": {
+    "message": "ワーカースレッドが成果、証跡、変更したファイルを報告します。SpecWithCode 1.0.21、2026年10月15日。",
+    "description": "Screenshot caption; keep SpecWithCode and the version in English"
+  },
+  "product.final.heading": {
+    "message": "完了の定義を書き留めれば、ツールは自由に乗り換えられる",
+    "description": "Final call-to-action heading"
+  },
+  "product.final.quickStart": {
+    "message": "クイックスタート",
+    "description": "Final call-to-action button"
+  },
+  "product.final.changelog": {
+    "message": "3.1での変更点",
+    "description": "Link to the changelog; keep the version in English"
+  },
+  "tutorials.filter.all": {
+    "message": "すべて",
+    "description": "Product filter button showing guides for every product"
+  },
+  "tutorials.path.meta.one": {
+    "message": "{product}・{count}本のガイド・{duration}",
+    "description": "Learning path meta line with one guide; {product} is a product name, {duration} a m:ss total length"
+  },
+  "tutorials.path.meta.other": {
+    "message": "{product}・{count}本のガイド・{duration}",
+    "description": "Learning path meta line with several guides; {product} is a product name, {duration} a m:ss total length"
+  },
+  "tutorials.path.external": {
+    "message": "これらのガイドはレジストリ側にあります。",
+    "description": "Shown when a path's guides live on another site"
+  },
+  "tutorials.path.externalLink": {
+    "message": "Verified Skillのチュートリアルを見る",
+    "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
+  },
+  "tutorials.path.planned.one": {
+    "message": "このパスには、ガイドをあと1本追加予定です。",
+    "description": "One planned guide in a learning path"
+  },
+  "tutorials.path.planned.other": {
+    "message": "このパスには、ガイドをあと{count}本追加予定です。",
+    "description": "Several planned guides in a learning path"
+  },
+  "tutorials.path.railAria": {
+    "message": "{title}(順番どおり)",
+    "description": "Accessible label of the ordered list of guides in a learning path; {title} is the path title"
+  },
+  "tutorials.path.step": {
+    "message": "ステップ{number}:",
+    "description": "Screen-reader prefix before a guide title in a path; keep the trailing space"
+  },
+  "tutorials.row.audio.silent": {
+    "message": "字幕のみ、音声なし",
+    "description": "Guide meta: the video has captions and no audio"
+  },
+  "tutorials.row.audio.narrated": {
+    "message": "ナレーションつき",
+    "description": "Guide meta: the video has a voiceover"
+  },
+  "tutorials.row.recordedOn": {
+    "message": "{testedOn}に録画、{date}に追加",
+    "description": "Guide meta; {testedOn} is a product and version, {date} the date it was added"
+  },
+  "tutorials.row.olderInterface": {
+    "message": "旧インターフェース、{date}に追加",
+    "description": "Guide meta for older recordings; {date} is the date it was added"
+  },
+  "tutorials.meta.title": {
+    "message": "チュートリアル:SpecWeave CLIとSpecWithCodeのガイド",
+    "description": "Page title of /tutorials; keep product names in English"
+  },
+  "tutorials.meta.description": {
+    "message": "SpecWeave CLIとSpecWithCodeの実際の録画つき短いガイド。作業の計画とハンドオフ、コーディネーターとワーカーによるプロジェクト運営、メモリ、検証、スケジュールまで。各ガイドに、手順、チャプター、字幕、文字起こしがあります。",
+    "description": "Meta description of /tutorials; keep product names in English"
+  },
+  "tutorials.hero.title": {
+    "message": "1つのタスクずつ学ぶ",
+    "description": "Hero headline of /tutorials"
+  },
+  "tutorials.hero.lead": {
+    "message": "SpecWeave CLIとSpecWithCodeの実際の録画をもとにした短いガイド。各ガイドに、得られる成果、チャプターつきの動画、手順、文字起こしを載せています。",
+    "description": "Hero lead paragraph; keep product names in English"
+  },
+  "tutorials.hero.stats.guides": {
+    "message": "{count}本のガイド",
+    "description": "Hero stat; {count} is the number of guides"
+  },
+  "tutorials.hero.stats.paths": {
+    "message": "{count}本の学習パス",
+    "description": "Hero stat; {count} is the number of learning paths"
+  },
+  "tutorials.hero.browseAll": {
+    "message": "すべてのガイドを見る",
+    "description": "Link that jumps to the list of all guides"
+  },
+  "tutorials.paths.heading.one": {
+    "message": "学習パス",
+    "description": "Section heading when there is one learning path"
+  },
+  "tutorials.paths.heading.other": {
+    "message": "学習パス",
+    "description": "Section heading when there are several learning paths"
+  },
+  "tutorials.paths.intro": {
+    "message": "最初のステップから完成まで、パスに沿って進めます。各ステップは単独のガイドです。パスは、ガイドが2本以上そろった時点でここに表示されます。",
+    "description": "Learning paths section intro"
+  },
+  "tutorials.all.heading": {
+    "message": "すべてのガイド",
+    "description": "Section heading of the full guide list"
+  },
+  "tutorials.search.label": {
+    "message": "ガイドを検索",
+    "description": "Label of the guide search box"
+  },
+  "tutorials.search.placeholder": {
+    "message": "ハンドオフ、使用状況、Codex",
+    "description": "Example search words in the guide search box; keep Codex in English"
+  },
+  "tutorials.filter.groupAria": {
+    "message": "製品",
+    "description": "Accessible label of the product filter buttons"
+  },
+  "tutorials.filter.aria.one": {
+    "message": "{label}、{count}本のガイド",
+    "description": "Accessible label of a filter button with one guide; {label} is the filter name"
+  },
+  "tutorials.filter.aria.other": {
+    "message": "{label}、{count}本のガイド",
+    "description": "Accessible label of a filter button with several guides; {label} is the filter name"
+  },
+  "tutorials.results.all": {
+    "message": "{count}本のガイド",
+    "description": "Result count when every guide is shown"
+  },
+  "tutorials.results.some": {
+    "message": "{total}本中{count}本のガイド",
+    "description": "Result count when a filter or search is active"
+  },
+  "tutorials.results.empty": {
+    "message": "該当するガイドはまだありません。別のキーワードを試すか、{reset}。",
+    "description": "Shown when no guide matches; {reset} is a button that clears the search"
+  },
+  "tutorials.results.emptyReset": {
+    "message": "すべてのガイドを表示",
+    "description": "Button text that clears the search and filter"
+  },
+  "tutorials.other.heading": {
+    "message": "他の製品のガイド",
+    "description": "Section heading"
+  },
+  "tutorials.other.body": {
+    "message": "エージェントスキルの検索、テスト、公開に関するガイドは、verified-skill.comにあります。",
+    "description": "Points to tutorials on another site; keep verified-skill.com in English"
+  },
+  "tutorials.other.link": {
+    "message": "Verified Skillのチュートリアル",
+    "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
+  },
+  "tutorials.standards.heading": {
+    "message": "すべてのガイドに含まれるもの",
+    "description": "Section heading"
+  },
+  "tutorials.standards.recording.title": {
+    "message": "実際の録画",
+    "description": "Standard card title"
+  },
+  "tutorials.standards.recording.body": {
+    "message": "実行中のアプリの映像や実際のコマンド出力を、サンプルプロジェクトで収録しています。各ガイドに、対象のバージョンと追加日を明記しており、最新リリースの録画を先頭に表示します。",
+    "description": "Standard card body"
+  },
+  "tutorials.standards.captions.title": {
+    "message": "字幕、チャプター、文字起こし",
+    "description": "Standard card title"
+  },
+  "tutorials.standards.captions.body": {
+    "message": "WebVTTの字幕トラック、キーボードでジャンプできるチャプター、字幕から作成した文字起こしがあります。",
+    "description": "Standard card body; keep WebVTT in English"
+  },
+  "tutorials.standards.hosted.title": {
+    "message": "このサイトでホスティング",
+    "description": "Standard card title"
+  },
+  "tutorials.standards.hosted.body": {
+    "message": "動画とポスターはspec-weave.comから配信され、サードパーティのプレーヤーやトラッキングはありません。",
+    "description": "Standard card body; keep spec-weave.com in English"
+  },
+  "code.download.meta.title": {
+    "message": "SpecWithCodeをダウンロード(Mac・Windows・Linux、無料)",
+    "description": "Download page title. Keep product names in English"
+  },
+  "code.download.meta.description": {
+    "message": "無料のAIコーディングエージェント用ワークスペース、SpecWithCode(Spec with Code)をダウンロード。Apple silicon搭載Mac、Windows 10/11、Linuxに対応。",
+    "description": "Download page meta description. Keep product names in English"
+  },
+  "code.download.steps.download.title": {
+    "message": ".dmgをダウンロード",
+    "description": "Mac install step 1 title"
+  },
+  "code.download.steps.download.body": {
+    "message": "「Mac版をダウンロード」をクリックすると、このページに記載のリリースから{file}を入手できます。",
+    "description": "Mac install step 1 body; {file} is the installer file name. Keep product names in English"
+  },
+  "code.download.steps.drag.title": {
+    "message": "SpecWithCodeを「アプリケーション」へドラッグ",
+    "description": "Mac install step 2 title. Keep product names in English"
+  },
+  "code.download.steps.drag.body": {
+    "message": ".dmgを開き、アプリを「アプリケーション」にドラッグします。Apple Developer IDで署名され公証済みのため、セキュリティの例外設定なしで開けます。",
+    "description": "Mac install step 2 body. Keep product names in English"
+  },
+  "code.download.steps.open.title": {
+    "message": "開いてプロバイダーを追加",
+    "description": "Mac install step 3 title"
+  },
+  "code.download.steps.open.body": {
+    "message": "アプリがローカルサービスを自動で起動します。Claude CodeやCodexなど、お使いのコーディングエージェントにサインインして、最初のスレッドを始めましょう。",
+    "description": "Mac install step 3 body. Keep product names in English"
+  },
+  "code.download.desktopNotes.whichFile.name": {
+    "message": "どのファイルか",
+    "description": "Windows/Linux install note label: which installer file to pick"
+  },
+  "code.download.desktopNotes.whichFile.detail": {
+    "message": "ほとんどのWindows PCとLinuxマシンはx64です。Snapdragon搭載のWindowsノートPCやArmのLinuxマシンなど、Armデバイスにはarm64を選んでください。Linuxで{uname}を実行すると、Armでは{aarch64}、x64では{x86_64}と表示されます。",
+    "description": "Which installer to pick; {uname}, {aarch64} and {x86_64} are code. Keep product names in English"
+  },
+  "code.download.desktopNotes.windows.detail": {
+    "message": "{exe}を実行します。Armでは{exeArm64}です。インストールは現在のユーザーのみで、管理者権限の確認は出ません。インストーラーはまだコード署名されていないため、初回はSmartScreenに{protected}と表示されます。{moreInfo}を選び、続けて{runAnyway}を選んでください。",
+    "description": "Windows install note; {exe} and {exeArm64} are file names; {protected}, {moreInfo} and {runAnyway} are the bold Windows SmartScreen dialog texts. Keep product names in English"
+  },
+  "code.download.desktopNotes.windows.smartscreenTitle": {
+    "message": "Windows によって PC が保護されました",
+    "description": "Title of the Windows SmartScreen dialog, as Windows shows it"
+  },
+  "code.download.desktopNotes.windows.moreInfo": {
+    "message": "詳細情報",
+    "description": "Windows SmartScreen dialog link text, as Windows shows it"
+  },
+  "code.download.desktopNotes.windows.runAnyway": {
+    "message": "実行",
+    "description": "Windows SmartScreen dialog button text, as Windows shows it"
+  },
+  "code.download.desktopNotes.debian.name": {
+    "message": "DebianとUbuntu",
+    "description": "Install note label for Debian and Ubuntu. Keep product names in English"
+  },
+  "code.download.desktopNotes.debian.detail": {
+    "message": "{x64Command}(x64)または{arm64Command}(arm64)で、メニュー項目つきでアプリをインストールできます。",
+    "description": "Debian/Ubuntu install note; {x64Command} and {arm64Command} are shell commands. Keep product names in English"
+  },
+  "code.download.desktopNotes.otherLinux.name": {
+    "message": "その他のLinux",
+    "description": "Install note label for other Linux distributions. Keep product names in English"
+  },
+  "code.download.desktopNotes.otherLinux.detail": {
+    "message": "お使いのアーキテクチャ用のAppImageに{chmod}で実行権限を付けて起動します。アプリにはglibcベースのディストリビューションが必要です。",
+    "description": "Other Linux install note; {chmod} is a shell command. Keep product names in English"
+  },
+  "code.download.desktopNotes.servers.name": {
+    "message": "Linuxサーバー",
+    "description": "Install note label for headless Linux servers. Keep product names in English"
+  },
+  "code.download.desktopNotes.servers.detail": {
+    "message": "デスクトップのないマシンでは、リリースの{x64Archive}または{arm64Archive}アーカイブからサーバーをワーカーとして実行します。{link}をご覧ください。",
+    "description": "Linux server note; {x64Archive} and {arm64Archive} are archive names, {link} links to the Linux worker guide. Keep product names in English"
+  },
+  "code.download.desktopNotes.servers.link": {
+    "message": "Linuxワーカー",
+    "description": "Link text to the Linux worker guide. Keep product names in English"
+  },
+  "code.download.desktopNotes.differs.name": {
+    "message": "違い",
+    "description": "Install note label: what differs from the Mac app"
+  },
+  "code.download.desktopNotes.differs.detail": {
+    "message": "コンピューター操作(Computer use)はMacの画面を操作する機能で、macOS専用です。WindowsとLinuxでも、アプリは新しいリリースから自動で更新されます。.debの更新ではパスワードを求められます。",
+    "description": "What differs on Windows and Linux. Keep product names in English"
+  },
+  "code.download.next.firstTask.name": {
+    "message": "最初のタスクを実行",
+    "description": "After-install item label"
+  },
+  "code.download.next.firstTask.detail": {
+    "message": "プロジェクト、スレッド、マシンを紹介する短い{link}があります。エージェントごとの最初のタスク動画は、再収録中です。",
+    "description": "After-install item; {link} links to the video tutorials"
+  },
+  "code.download.next.firstTask.link": {
+    "message": "動画チュートリアル",
+    "description": "Link text to the video tutorials"
+  },
+  "code.download.next.usageLimit.name": {
+    "message": "使用上限を待たない",
+    "description": "After-install item label"
+  },
+  "code.download.next.usageLimit.detail": {
+    "message": "あるプロバイダーが上限に達しても、同じスレッドがコンテキストごと別のプロバイダーで続きます。{link}をご覧ください。",
+    "description": "After-install item; {link} links to a tutorial"
+  },
+  "code.download.next.usageLimit.link": {
+    "message": "プロバイダーが上限に達しても作業を続ける",
+    "description": "Link text: tutorial title"
+  },
+  "code.download.next.chrome.name": {
+    "message": "エージェントにChromeを使わせる",
+    "description": "After-install item label. Keep product names in English"
+  },
+  "code.download.next.chrome.detail": {
+    "message": "{link}から無料のSpecWithCode拡張機能を追加し、「設定 › Chrome」でペアリングします。以後、エージェントはあなたのChromeの中で、見えるタブグループ内で作業します。",
+    "description": "After-install item; {link} is the Chrome Web Store link; Settings › Chrome is a menu path in the app. Keep product names in English"
+  },
+  "code.download.next.machine.name": {
+    "message": "別のマシンを追加",
+    "description": "After-install item label"
+  },
+  "code.download.next.machine.detail": {
+    "message": "SpecWithCode Connect経由で、2台目のMacやLinuxワーカーを追加できます。{link}をご覧ください。",
+    "description": "After-install item; {link} links to a tutorial. Keep product names in English"
+  },
+  "code.download.next.machine.link": {
+    "message": "2台目のマシンを追加する",
+    "description": "Link text: tutorial title"
+  },
+  "code.download.faq.free.q": {
+    "message": "SpecWithCodeは無料ですか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.free.a": {
+    "message": "はい。SpecWithCodeは無料です。ローカルで使うだけならSpecWithCodeのアカウントは不要です。プロバイダーのサブスクリプションやAPIキーはご自身のものを使い、プロバイダーの料金は直接お支払いいただきます。",
+    "description": "FAQ answer. Keep product names in English"
+  },
+  "code.download.faq.macs.q": {
+    "message": "どのMacで動きますか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.macs.a": {
+    "message": "macOS 13以降のApple silicon搭載Mac(M1以降)です。Intel Macには対応していません。",
+    "description": "FAQ answer. Keep product names in English"
+  },
+  "code.download.faq.windowsLinux.q": {
+    "message": "WindowsやLinux向けのダウンロードはありますか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.windowsLinux.a": {
+    "message": "はい。SpecWithCode {version}には、x64とarm64のWindows 10/11用インストーラーと、glibcベースのディストリビューション向けにx64とarm64のLinux用AppImageと.debがあります。Windowsのインストーラーはまだコード署名されていないため、初回実行時に確認を求められます。コンピューター操作(Computer use)はmacOS専用です。",
+    "description": "FAQ answer; {version} is the release version. Keep product names in English"
+  },
+  "code.download.faq.safe.q": {
+    "message": "ダウンロードは安全ですか?",
+    "description": "FAQ question"
+  },
+  "code.download.faq.safe.a": {
+    "message": "すべてのリリースはGitHub Actionsでビルドされます。Mac版アプリはApple Developer IDで署名され、Appleの公証を受けています。WindowsのインストーラーとLinuxのAppImage・.debはまだコード署名されていません。各リリースで公開しているSHA256SUMS-windows-linuxファイルと照合してください。Mac版のダウンロードには専用のSHA256SUMSファイルがあります。",
+    "description": "FAQ answer; SHA256SUMS file names stay as is. Keep product names in English"
+  },
+  "code.download.faq.update.q": {
+    "message": "SpecWithCodeはどう更新しますか?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.update.a": {
+    "message": "SpecWithCodeのGitHubリリースから最新の.dmgをダウンロードし、「アプリケーション」内のアプリを置き換えてください。マシン上のサーバーがアプリより古い場合は、会話内と「設定 › 接続」に更新のお知らせが表示されます。",
+    "description": "FAQ answer; Settings › Connections is a menu path in the app. Keep product names in English"
+  },
+  "code.download.ld.breadcrumb.download": {
+    "message": "ダウンロード",
+    "description": "Breadcrumb name of the download page (structured data)"
+  },
+  "code.download.ld.howto.name": {
+    "message": "MacにSpecWithCodeをインストールする",
+    "description": "Structured-data how-to name. Keep product names in English"
+  },
+  "code.download.ld.howto.step1": {
+    "message": "spec-weave.com/code/downloadからSpecWithCode-arm64.dmgをダウンロードします。",
+    "description": "Structured-data how-to step 1 text; keep the file name and address as is"
+  },
+  "code.download.ld.howto.step2": {
+    "message": ".dmgを開き、SpecWithCodeを「アプリケーション」にドラッグします。署名・公証済みのため、セキュリティの例外設定なしで開けます。",
+    "description": "Structured-data how-to step 2 text. Keep product names in English"
+  },
+  "code.download.ld.howto.step3": {
+    "message": "SpecWithCodeを開き、Claude CodeやCodexなど、お使いのコーディングエージェントにサインインして、スレッドを始めます。",
+    "description": "Structured-data how-to step 3 text. Keep product names in English"
+  },
+  "code.download.hero.windowsLinuxButton": {
+    "message": "WindowsとLinux",
+    "description": "Button that jumps to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.hero.requirements": {
+    "message": "SpecWithCode {version}、{file}、{size}。",
+    "description": "Installer facts under the download button; {version} is the version, {file} the file name, {size} the download size. Keep product names in English"
+  },
+  "code.download.hero.macRequirements": {
+    "message": "Apple silicon、macOS 13以降。",
+    "description": "Mac system requirements. Keep product names in English"
+  },
+  "code.download.hero.platformSentence": {
+    "message": "{platform}。",
+    "description": "Who the installer is for, as a sentence; {platform} is a phrase such as Windows 10 and 11 on x64"
+  },
+  "code.download.hero.pickedArmGuess": {
+    "message": "お使いのコンピューター向けに選びました。Armマシンの場合は、下からarm64を選んでください。{link}。",
+    "description": "Shown when the installer was picked for the visitor but the CPU is unknown; {link} jumps to other platforms"
+  },
+  "code.download.hero.otherPlatforms": {
+    "message": "その他のプラットフォーム",
+    "description": "Link to the downloads for other platforms"
+  },
+  "code.download.hero.picked": {
+    "message": "お使いのコンピューター向けに選びました。{link}。",
+    "description": "Shown when the installer was picked for the visitor; {link} jumps to other platforms"
+  },
+  "code.download.releaseNotes": {
+    "message": "リリースノート",
+    "description": "Link to the release notes"
+  },
+  "code.download.intelMac.title": {
+    "message": "Intel Macのようです。",
+    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
+  },
+  "code.download.intelMac.body": {
+    "message": "macOS版のSpecWithCodeにはApple silicon(M1以降)が必要で、Intel向けビルドはありません。代わりにLinuxまたはWindowsのマシンで動かせます。{link}をご覧ください。",
+    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.intelMac.link": {
+    "message": "WindowsとLinux",
+    "description": "Link to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.mobile.title": {
+    "message": "SpecWithCodeはデスクトップアプリです。",
+    "description": "Bold lead of the phone visitor notice. Keep product names in English"
+  },
+  "code.download.mobile.body": {
+    "message": "Mac、Windows、Linuxのコンピューターでこのページを開いてダウンロードしてください。",
+    "description": "Phone visitor notice. Keep product names in English"
+  },
+  "code.download.signed.title": {
+    "message": "Apple Developer IDで署名され、Appleの公証を受けています。",
+    "description": "Bold lead of the Mac signing notice. Keep product names in English"
+  },
+  "code.download.signed.body": {
+    "message": "ダウンロードは、プロジェクトのGitHubリリースから直接提供されます。",
+    "description": "Mac signing notice. Keep product names in English"
+  },
+  "code.download.unsigned.title": {
+    "message": "まだコード署名されていません。",
+    "description": "Bold lead of the Windows/Linux signing notice"
+  },
+  "code.download.unsigned.body": {
+    "message": "ダウンロードは、プロジェクトのGitHubリリースから直接提供されます。SHA256SUMSと照合してください。インストールの注意点は{link}にあります。",
+    "description": "Windows/Linux signing notice; {link} jumps to the Windows and Linux install notes. Keep product names in English"
+  },
+  "code.download.unsigned.link": {
+    "message": "WindowsとLinux",
+    "description": "Link to the Windows and Linux install notes. Keep product names in English"
+  },
+  "code.download.footer.windowsLinuxDownloads": {
+    "message": "WindowsとLinuxのダウンロード",
+    "description": "Footer link to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.footer.allPlatforms": {
+    "message": "すべてのプラットフォーム",
+    "description": "Footer link to the downloads for every platform"
+  },
+  "code.download.meta.ogImageAlt": {
+    "message": "SpecWithCode:Claude CodeとCodexのエージェントを自分のコンピューターで実行。macOS、Windows、Linux対応。無料・ソース公開。",
+    "description": "Social share image alt text. Keep product names in English"
+  },
+  "code.download.meta.twitterImageAlt": {
+    "message": "SpecWithCode:エージェントを自分のコンピューターで。macOS、Windows、Linux対応。",
+    "description": "Twitter share image alt text. Keep product names in English"
+  },
+  "code.download.hero.productNote": {
+    "message": "無料・ソース公開",
+    "description": "Short note next to the product name"
+  },
+  "code.download.hero.title": {
+    "message": "SpecWithCodeをダウンロード",
+    "description": "Download page headline. Keep product names in English"
+  },
+  "code.download.hero.pronounced": {
+    "message": "「スペック・ウィズ・コード」と読むSpecWithCodeは、AIコーディングエージェントを1つのワークスペースにまとめます。",
+    "description": "Hero sentence explaining the product name; keep SpecWithCode and Spec with Code in English"
+  },
+  "code.download.hero.lead": {
+    "message": "{providers}を、お使いのマシンと契約中のサブスクリプションで動かせる、1つの無料アプリ。",
+    "description": "Hero lead; {providers} is a list of coding agent product names"
+  },
+  "code.download.hero.shot.bar": {
+    "message": "ワーカースレッド",
+    "description": "Title bar label of the app screenshot"
+  },
+  "code.download.hero.shot.alt": {
+    "message": "MacのSpecWithCode:実行したコマンドと変更したファイルを報告するCodexワーカースレッド",
+    "description": "Alt text of the app screenshot. Keep product names in English"
+  },
+  "code.download.hero.shot.caption": {
+    "message": "macOSのSpecWithCode。アプリのキャプチャ、2026年10月15日。{link}",
+    "description": "Screenshot caption; {link} links to the SpecWithCode page. Keep product names in English"
+  },
+  "code.download.hero.shot.captionLink": {
+    "message": "できることをすべて見る",
+    "description": "Link from the screenshot caption to the SpecWithCode page"
+  },
+  "code.download.windowsLinux.title": {
+    "message": "WindowsとLinux",
+    "description": "Section heading. Keep product names in English"
+  },
+  "code.download.windowsLinux.body": {
+    "message": "x64とarm64のWindows 10/11、およびx64とarm64のLinux(glibc)向けのSpecWithCode {version}。インストーラーはまだコード署名されていません。ライブプロバイダーやネイティブ機能がmacOSと同等であることは確認できておらず、WindowsとLinuxのデスクトップ版はMac版より遅れる場合があります。",
+    "description": "Windows and Linux section intro; {version} is the release version. Keep product names in English"
+  },
+  "code.download.install.title": {
+    "message": "Macに3ステップでインストール",
+    "description": "Section heading. Keep product names in English"
+  },
+  "code.download.install.body": {
+    "message": "最近のMacなら約1分。初回起動前の設定は不要です。",
+    "description": "Mac install section intro. Keep product names in English"
+  },
+  "code.download.next.title": {
+    "message": "インストール後に",
+    "description": "Section heading"
+  },
+  "code.download.next.body": {
+    "message": "最初の1時間に役立つ短い動画とガイド。",
+    "description": "After-install section intro"
+  },
+  "code.download.faq.title": {
+    "message": "ダウンロードに関する質問",
+    "description": "FAQ section heading"
+  },
+  "code.download.final.title": {
+    "message": "あなたのコンピューターにSpecWithCodeを",
+    "description": "Closing section heading. Keep product names in English"
+  },
+  "code.download.final.body": {
+    "message": "無料・ソース公開・アカウント不要。Apple silicon搭載のmacOS、Windows 10/11(x64またはarm64)、Linux(x64またはarm64)から選べます。",
+    "description": "Closing section text. Keep product names in English"
+  },
+  "code.download.final.viewSource": {
+    "message": "GitHubでソースを見る",
+    "description": "Link to the source code. Keep product names in English"
+  },
+  "footer.column.start": {
+    "message": "はじめに",
+    "description": "Footer column title"
+  },
+  "footer.link.start.whatIsSpecweave": {
+    "message": "SpecWeaveとは",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.start.quickStart": {
+    "message": "クイックスタート",
+    "description": "Footer link label"
+  },
+  "footer.link.start.tutorials": {
+    "message": "チュートリアル",
+    "description": "Footer link label"
+  },
+  "footer.link.start.howItWorks": {
+    "message": "しくみ",
+    "description": "Footer link label"
+  },
+  "footer.link.start.whatChangedIn31": {
+    "message": "3.1での変更点",
+    "description": "Footer link label"
+  },
+  "footer.column.switchTools": {
+    "message": "ツールの切り替え",
+    "description": "Footer column title"
+  },
+  "footer.link.switchTools.handoffAndPickup": {
+    "message": "ハンドオフと引き継ぎ",
+    "description": "Footer link label"
+  },
+  "footer.link.switchTools.whatGoesInHandoffMd": {
+    "message": "handoff.mdの内容",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.claudeCodeToCodex": {
+    "message": "Claude CodeからCodexへ",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.usageLimitReached": {
+    "message": "使用上限に達したとき",
+    "description": "Footer link label"
+  },
+  "footer.link.switchTools.claudeCodeProjects": {
+    "message": "Claude Code Projects",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.codexGrokAndOthers": {
+    "message": "Codex、Grokなど",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.integrations": {
+    "message": "連携",
+    "description": "Footer link label"
+  },
+  "footer.column.compare": {
+    "message": "比較",
+    "description": "Footer column title"
+  },
+  "footer.link.compare.specweaveVsOpenspec": {
+    "message": "SpecWeave vs OpenSpec",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.specweaveVsSpecKit": {
+    "message": "SpecWeave vs Spec Kit",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.specweaveVsBmad": {
+    "message": "SpecWeave vs BMAD",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.allSpecDrivenTools": {
+    "message": "仕様駆動ツールの比較一覧",
+    "description": "Footer link label"
+  },
+  "footer.link.compare.claudeCodeVsCodex": {
+    "message": "Claude Code vs Codex",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.agentsMdVsClaudeMd": {
+    "message": "AGENTS.md vs CLAUDE.md",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.allComparisons": {
+    "message": "すべての比較",
+    "description": "Footer link label"
+  },
+  "footer.column.reference": {
+    "message": "リファレンス",
+    "description": "Footer column title"
+  },
+  "footer.link.reference.commands": {
+    "message": "コマンド",
+    "description": "Footer link label"
+  },
+  "footer.link.reference.skills": {
+    "message": "スキル",
+    "description": "Footer link label"
+  },
+  "footer.link.reference.troubleshooting": {
+    "message": "トラブルシューティング",
+    "description": "Footer link label"
+  },
+  "footer.link.reference.changelog": {
+    "message": "変更履歴",
+    "description": "Footer link label"
+  },
+  "footer.column.project": {
+    "message": "プロジェクト",
+    "description": "Footer column title"
+  },
+  "footer.link.project.downloadSpecwithcode": {
+    "message": "SpecWithCodeをダウンロード",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.project.pricing": {
+    "message": "料金",
+    "description": "Footer link label"
+  },
+  "footer.link.project.blog": {
+    "message": "ブログ",
+    "description": "Footer link label"
+  },
+  "footer.link.project.privacy": {
+    "message": "プライバシー",
+    "description": "Footer link label"
+  },
+  "footer.link.project.support": {
+    "message": "サポート",
+    "description": "Footer link label"
+  },
+  "footer.social.githubIssues": {
+    "message": "GitHub Issues",
+    "description": "Accessible label for the GitHub Issues icon link in the footer. Keep product names in English"
+  },
+  "footer.copyright": {
+    "message": "© {year} SpecWeave. SpecWeave CLI:MITライセンス。SpecWithCode:無料・ソース公開。",
+    "description": "Footer copyright line; {year} is the current year. Keep product names in English"
+  },
+  "navbar.family.ariaLabel": {
+    "message": "製品",
+    "description": "Accessible label for the product family bar at the top of every page"
+  },
+  "navbar.family.specweave.what": {
+    "message": "仕様とハンドオフのCLI",
+    "description": "Short description shown after the product name SpecWeave in the family bar"
+  },
+  "navbar.family.specwithcode.what": {
+    "message": "デスクトップワークスペース",
+    "description": "Short description shown after the product name SpecWithCode in the family bar"
+  },
+  "navbar.family.verifiedSkill.what": {
+    "message": "スキルレジストリ",
+    "description": "Short description shown after the product name Verified Skill in the family bar"
+  },
+  "builtWithItself.stat.prs": {
+    "message": "ワーカースレッドが作成しマージした、SpecWithCodeへのプルリクエスト(2026年10月15日〜29日)",
+    "description": "Label under the number 367. Keep product names in English"
+  },
+  "builtWithItself.stat.threads": {
+    "message": "その背後にあるワーカースレッド:Claude Codeが100、Codexが65、残りはGemini CLIとCopilot",
+    "description": "Label under the number 167. Keep product names in English"
+  },
+  "builtWithItself.stat.allThreads": {
+    "message": "10月9日以降、メンテナーのメインMacで6つのプロジェクトにわたって動いたスレッド",
+    "description": "Label under the number 2,473"
+  },
+  "builtWithItself.pr.961": {
+    "message": "ユーザーの目標を、完了したソースのマイルストーンを越えて開いたままにする",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.pr.954": {
+    "message": "コンポーザーのセッションポップオーバーにスキルを表示",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.pr.927": {
+    "message": "Connectのフリートルートを優先し、アカウント容量の無制限をサポート",
+    "description": "Title of a real merged pull request. \"Connect\" is a product name; keep it in English"
+  },
+  "builtWithItself.pr.880": {
+    "message": "スレッドのマシンチップを「ハンドオフ先」に向ける",
+    "description": "Title of a real merged pull request; \"Hand off to\" is a menu item name in the app"
+  },
+  "builtWithItself.pr.873": {
+    "message": "復帰時はデフォルトで確認し、アイドル時の圧縮はオプトインに",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.pr.837": {
+    "message": "PPTXアーティファクトをスライドプレビューで開く",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.kicker": {
+    "message": "SpecWithCode・無料、アーリーアクセス",
+    "description": "Small label above the heading. Keep product names in English"
+  },
+  "builtWithItself.title": {
+    "message": "SpecWithCodeは、SpecWithCodeで作られている",
+    "description": "Section heading. Keep product names in English"
+  },
+  "builtWithItself.lead": {
+    "message": "アプリの開発も、アプリの中で行っています。コーディネーターが各プロジェクトのブリーフを保持し、Claude CodeやCodexなどのワーカースレッドが変更を書いてプルリクエストを開きます。作業は、SpecWithCode ConnectでつないだMacとLinuxワーカーにまたがって進みます。",
+    "description": "Section lead paragraph. Keep product names in English"
+  },
+  "builtWithItself.statsSource": {
+    "message": "アプリ自身のスレッド記録から集計、2026年10月30日時点。",
+    "description": "Source note under the numbers"
+  },
+  "builtWithItself.window.title": {
+    "message": "Macのコーディネーター、Linuxのワーカー",
+    "description": "Window title bar label of the screenshot"
+  },
+  "builtWithItself.shot.ariaLabel": {
+    "message": "ministorm上のワーカースレッドのスクリーンショットを原寸で開く",
+    "description": "Accessible label of the screenshot link; \"ministorm\" is a machine name, keep it"
+  },
+  "builtWithItself.shot.alt": {
+    "message": "実際のSpecWithCodeプロジェクト:m4 Macのコーディネーターが、Linuxマシンのministorm上でMinistorm e2eプルーフスレッドを開始。ワーカーはunameの出力 Linux ministorm 7.0.0-38-generic x86_64 とHello, ministormを返し、e2e-proof.txtを保存",
+    "description": "Alt text of the screenshot. Keep product names, machine names, command output and file names in English"
+  },
+  "builtWithItself.shot.caption": {
+    "message": "実際のキャプチャ、2026年10月30日、エンドツーエンドテストより。MacのコーディネーターがLinuxマシンのministorm上でワーカーを起動し、ワーカーがそこから報告します。Claude Codeが上限に達したときは、コーディネーターがGrokで作業を続けました。",
+    "description": "Caption of the screenshot. Keep product names and the machine name ministorm in English"
+  },
+  "builtWithItself.merged.title": {
+    "message": "最近スレッドからマージされたもの",
+    "description": "Heading of the list of merged pull requests"
+  },
+  "builtWithItself.merged.ariaLabel": {
+    "message": "ワーカースレッドからマージされたプルリクエスト",
+    "description": "Accessible label of the list of merged pull requests"
+  },
+  "builtWithItself.merged.agentThread": {
+    "message": "{agent}スレッド",
+    "description": "Which agent thread opened the pull request; {agent} is a product name such as Codex or Claude Code"
+  },
+  "builtWithItself.merged.state": {
+    "message": "マージ済み",
+    "description": "State chip of a merged pull request"
+  },
+  "builtWithItself.merged.source": {
+    "message": "スレッド記録より。各プルリクエストは、横に記載したワーカースレッドが作成し、リンクしたものです。開発用リポジトリに反映され、公開の{link}には定期的にスナップショットが公開されます。",
+    "description": "Source note under the merged pull requests; {link} is a link labelled 'source repository'"
+  },
+  "builtWithItself.merged.source.link": {
+    "message": "ソースリポジトリ",
+    "description": "Link text to the public GitHub source repository"
+  },
+  "builtWithItself.more": {
+    "message": "SpecWithCodeが自分自身を作るしくみを見る",
+    "description": "Link to the SpecWithCode page section. Keep product names in English"
+  },
+  "code.flow.message.free.started": {
+    "message": "あなたのMacで開始。",
+    "description": "Hero diagram, coordinator line: the free scene starts on the Mac. Keep product names in English"
+  },
+  "code.flow.message.free.joined": {
+    "message": "Windows PCとLinuxサーバーが加わり、スレッドは3つに。",
+    "description": "Hero diagram, coordinator line: two more machines connected. Keep product names in English"
+  },
+  "code.flow.message.free.handoff": {
+    "message": "Claude Codeが{threshold}%に到達。無料ChatGPTアカウントのCodexが履歴を保ったままスレッドを続行。",
+    "description": "Hero diagram, coordinator line: Claude Code reached the handoff point ({threshold} is a number) and Codex continues. Keep product names in English"
+  },
+  "code.flow.message.free.done": {
+    "message": "サインアップフローが完成。{check}24件のテストに合格。",
+    "description": "Hero diagram, coordinator line: the free scene finished; {check} is a check-mark icon"
+  },
+  "code.flow.message.subs.started": {
+    "message": "契約中のプランで3スレッドを実行。",
+    "description": "Hero diagram, coordinator line: the paid plans scene starts"
+  },
+  "code.flow.message.subs.routed": {
+    "message": "Claude Maxが{threshold}%に到達。返金処理は、余裕のあるCopilotへ。",
+    "description": "Hero diagram, coordinator line: Claude Max reached the handoff point ({threshold} is a number) and the Refunds task moves to Copilot. Keep product names in English"
+  },
+  "code.flow.message.subs.done": {
+    "message": "すべて完了。{check}レビュー待ちのプルリクエストは3件。",
+    "description": "Hero diagram, coordinator line: the paid plans scene finished; {check} is a check-mark icon"
+  },
+  "code.flow.machine.windows": {
+    "message": "Windows PC",
+    "description": "Hero diagram, machine name"
+  },
+  "code.flow.machine.linux": {
+    "message": "Linuxサーバー",
+    "description": "Hero diagram, machine name"
+  },
+  "code.flow.goal.free": {
+    "message": "サインアップフローを作る",
+    "description": "Hero diagram, the goal you give in the free scene"
+  },
+  "code.flow.goal.subs": {
+    "message": "チェックアウトv2をリリース",
+    "description": "Hero diagram, the goal you give in the paid plans scene"
+  },
+  "code.flow.plan.yours": {
+    "message": "あなたのプラン",
+    "description": "Hero diagram, coordinator plan label"
+  },
+  "code.flow.plan.yourClaude": {
+    "message": "あなたのClaudeプラン",
+    "description": "Hero diagram, plan label. Keep product names in English"
+  },
+  "code.flow.plan.freeChatGpt": {
+    "message": "無料のChatGPTアカウント",
+    "description": "Hero diagram, plan label. Keep product names in English"
+  },
+  "code.flow.plan.apiKey": {
+    "message": "あなたのAPIキー",
+    "description": "Hero diagram, plan label for DeepSeek with your own API key"
+  },
+  "code.flow.task.signup": {
+    "message": "サインアップページ",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.emails": {
+    "message": "メールテンプレート",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.tests": {
+    "message": "テストとCI",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.payments": {
+    "message": "決済API",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.checkout": {
+    "message": "チェックアウト画面",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.refunds": {
+    "message": "返金",
+    "description": "Hero diagram, a task that moves to another thread"
+  },
+  "code.flow.step.read14": {
+    "message": "14ファイルを読み込み",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteSignupForm": {
+    "message": "SignupForm.tsxを作成",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.tests18": {
+    "message": "テスト:18件合格",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.historyKept": {
+    "message": "履歴を保持",
+    "description": "Hero diagram, thread label at the handoff point"
+  },
+  "code.flow.step.pickedUp": {
+    "message": "履歴ごと引き継ぎ",
+    "description": "Hero diagram, thread progress step after the handoff"
+  },
+  "code.flow.step.emailValidation": {
+    "message": "メール検証を追加",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.tests24": {
+    "message": "テスト:24件合格",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.read6Templates": {
+    "message": "6件のテンプレートを読み込み",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteWelcome": {
+    "message": "welcome.mjmlを作成",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.previews": {
+    "message": "プレビューを描画",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.added30": {
+    "message": "テストを30件追加",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.flakyE2e": {
+    "message": "不安定なe2eを修正",
+    "description": "Hero diagram, thread progress step; e2e means end-to-end tests"
+  },
+  "code.flow.step.ciGreen": {
+    "message": "CIグリーン",
+    "description": "Hero diagram, thread progress step: continuous integration passed"
+  },
+  "code.flow.step.planned6": {
+    "message": "6件のタスクを計画",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteCharge": {
+    "message": "charge.tsを作成",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.tests31": {
+    "message": "テスト:31件合格",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.doneMoved": {
+    "message": "完了・次のタスクへ移動",
+    "description": "Hero diagram, thread label at the handoff point"
+  },
+  "code.flow.step.read22": {
+    "message": "22ファイルを読み込み",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteCheckout": {
+    "message": "Checkout.tsxを作成",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.tests12": {
+    "message": "テスト:12件合格",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.added40": {
+    "message": "テストを40件追加",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.machine.connected": {
+    "message": "接続済み",
+    "description": "Hero diagram, tag on a machine that just joined"
+  },
+  "code.flow.step.starting": {
+    "message": "開始中",
+    "description": "Hero diagram, thread status before it starts"
+  },
+  "code.flow.badge.handedOff": {
+    "message": "{threshold}%でハンドオフ",
+    "description": "Hero diagram, badge on a thread handed to the next agent; {threshold} is a number"
+  },
+  "code.flow.badge.next": {
+    "message": "次:{task}",
+    "description": "Hero diagram, badge for the task a thread will take next; {task} is the task name"
+  },
+  "code.flow.tiers.ariaLabel": {
+    "message": "2通りの使い方",
+    "description": "Hero diagram, accessible label of the two scene tabs"
+  },
+  "code.flow.tier.free.long": {
+    "message": "無料アカウント",
+    "description": "Hero diagram, tab for the free scene (wide screens)"
+  },
+  "code.flow.tier.free.short": {
+    "message": "無料",
+    "description": "Hero diagram, tab for the free scene (narrow screens)"
+  },
+  "code.flow.tier.subs.long": {
+    "message": "契約中のプラン",
+    "description": "Hero diagram, tab for the paid plans scene (wide screens)"
+  },
+  "code.flow.tier.subs.short": {
+    "message": "契約プラン",
+    "description": "Hero diagram, tab for the paid plans scene (narrow screens)"
+  },
+  "code.flow.you": {
+    "message": "あなた",
+    "description": "Hero diagram, chip for the person giving the goal"
+  },
+  "code.flow.coordinator": {
+    "message": "コーディネーター",
+    "description": "Hero diagram, label of the coordinator agent"
+  },
+  "code.flow.threads.ariaLabel": {
+    "message": "ワーカースレッド",
+    "description": "Hero diagram, accessible label of the thread list"
+  },
+  "code.flow.caption": {
+    "message": "{threshold}%で履歴を保ったままハンドオフ。地点はプロジェクトごとに50%〜100%で設定できます。",
+    "description": "Caption under the hero diagram; {threshold} is the default handoff percentage"
+  },
+  "studioWindow.alt": {
+    "message": "SpecWithCodeのウィンドウ全体:サイドバーにtrip-budgetプロジェクト、2件の変更が完了し23件のテストがすべて合格したと報告するClaude Codeコーディネーター、Claude CodeワーカーとCodexワーカーが稼働中で7つのスレッドが完了済みのスレッドペイン",
+    "description": "Alt text of the full SpecWithCode app screenshot. Keep product names and \"trip-budget\" in English"
+  },
+  "studioWindow.caption": {
+    "message": "スレッドペインでClaude CodeワーカーとCodexワーカーが稼働する中、Claude Codeコーディネーターが報告。SpecWithCode 1.0.103、2026年10月27日。",
+    "description": "Caption of the full SpecWithCode app screenshot. Keep product names and the version in English"
+  },
+  "studioWindow.open.ariaLabel": {
+    "message": "スクリーンショットを原寸で開く",
+    "description": "Accessible label of the link that opens the full-size app screenshot"
+  },
+  "home.family.app.crop.alt": {
+    "message": "SpecWithCodeのスレッドペインの切り抜き:待機中のものはなし、稼働中は2件。Claude Codeで--jsonと--people用のREADME、Codexでsplit.pyの--peopleオプション",
+    "description": "Alt text of a screenshot crop. Keep product and file names and command flags in English"
+  },
+  "home.family.skill.row.source": {
+    "message": "ソース",
+    "description": "Row label in the illustrated skill page"
+  },
+  "home.family.skill.row.source.value": {
+    "message": "リポジトリへのリンク",
+    "description": "Row value in the illustrated skill page, next to Source"
+  },
+  "home.family.skill.row.scan": {
+    "message": "セキュリティスキャン",
+    "description": "Row label in the illustrated skill page"
+  },
+  "home.family.skill.row.scan.value": {
+    "message": "全ファイルをスキャン",
+    "description": "Row value in the illustrated skill page, next to Security scan"
+  },
+  "home.family.skill.row.eval": {
+    "message": "評価",
+    "description": "Row label in the illustrated skill page"
+  },
+  "home.family.skill.row.eval.value": {
+    "message": "ある場合のみ",
+    "description": "Row value in the illustrated skill page, next to Evaluation"
+  },
+  "home.family.cli.terminal.ariaLabel": {
+    "message": "Codexとして動く2つ目のクローンでのspecweave pickupの出力",
+    "description": "Accessible label of the terminal output. Keep \"specweave pickup\" and \"Codex\" in English"
+  },
+  "home.family.cli.source": {
+    "message": "実際の出力・specweave {version}",
+    "description": "Caption of the terminal output; {version} is the CLI version"
+  },
+  "home.family.cli.kind": {
+    "message": "npmで公開のオープンソース、MIT。バージョン{version}、{date}。",
+    "description": "CLI card subtitle; {version} is the CLI version, {date} its release date. Keep npm and MIT in English"
+  },
+  "home.family.cli.body": {
+    "message": "仕様、タスク台帳、テストの証跡をリポジトリに書き込み、{command}で次のツールに作業を渡します。Claude Code、Codex、ファイルを読めるあらゆるエージェントとターミナルで作業するなら、ここから始めましょう。",
+    "description": "CLI card body; {command} is the shell command specweave handoff. Keep product names in English"
+  },
+  "home.family.cli.install.hint": {
+    "message": "その後、プロジェクトでspecweave initを実行します。",
+    "description": "Hint under the npm install command; keep \"specweave init\" in English"
+  },
+  "home.family.cli.link": {
+    "message": "CLIのしくみ",
+    "description": "Link from the CLI card to the CLI page"
+  },
+  "home.family.app.source": {
+    "message": "実際のキャプチャ・SpecWithCode 1.0.103、2026年10月27日",
+    "description": "Caption of the app screenshot crop. Keep product names and the version in English"
+  },
+  "home.family.app.kind": {
+    "message": "Mac、Windows、Linux向けの無料アプリ。バージョン{version}。",
+    "description": "App card subtitle; {version} is the app version. Keep OS names in English"
+  },
+  "home.family.app.body": {
+    "message": "プロジェクトごとのコーディネーターが、お使いのマシン上で、すでに契約中のエージェントのワーカースレッドを起動します。各スレッドにSpecWeaveのインクリメントとタスクの進捗が表示され、レポートはインクリメントの隣に保存されます。複数のエージェントを1つのウィンドウで扱いたいなら、ここから始めましょう。",
+    "description": "App card body. Keep product names in English"
+  },
+  "home.family.app.chrome": {
+    "message": "エージェントは、あなた自身のChromeプロファイルのページも、閉じられるタブグループの中で開いて、読み取り、クリックし、スクリーンショットを撮れます。{link}を、設定のChromeでペアリングします。",
+    "description": "App card extra line; {link} is a link to the Chrome extension labelled 'SpecWithCode Browser for Chrome'. 'Settings, Chrome' names the app's settings section. Keep product names in English"
+  },
+  "home.family.app.chrome.link": {
+    "message": "SpecWithCode Browser for Chrome",
+    "description": "Link text to the Chrome Web Store extension. Keep product names in English"
+  },
+  "home.family.app.link": {
+    "message": "SpecWithCodeを見る",
+    "description": "Link from the app card to the SpecWithCode page. Keep product names in English"
+  },
+  "home.family.skill.illustration.ariaLabel": {
+    "message": "すべてのスキルページに表示される3つの事実のイラスト",
+    "description": "Accessible label of the skill page illustration"
+  },
+  "home.family.skill.illustration.title": {
+    "message": "スキルのページ",
+    "description": "Title inside the skill page illustration"
+  },
+  "home.family.skill.illustration.caption": {
+    "message": "イラスト",
+    "description": "Caption marking a picture as an illustration, not a real capture"
+  },
+  "home.family.skill.kind": {
+    "message": "verified-skill.comで無料で閲覧できます。",
+    "description": "Verified Skill card subtitle; keep the domain verified-skill.com"
+  },
+  "home.family.skill.body": {
+    "message": "エージェントスキルのレジストリ。各スキルにソースとセキュリティスキャン、あれば評価も表示されるので、エージェントに使わせる前に、何をインストールするのかが分かります。",
+    "description": "Verified Skill card body"
+  },
+  "home.family.skill.details.summary": {
+    "message": "すべてのスキルページに表示される内容",
+    "description": "Expandable details summary in the Verified Skill card"
+  },
+  "home.family.skill.details.source": {
+    "message": "ソース",
+    "description": "Term in the skill page details list"
+  },
+  "home.family.skill.details.source.body": {
+    "message": "スキルの元になったリポジトリ。先に中身を読めます。",
+    "description": "Definition of Source in the skill page details list"
+  },
+  "home.family.skill.details.scan": {
+    "message": "セキュリティスキャン",
+    "description": "Term in the skill page details list"
+  },
+  "home.family.skill.details.scan.body": {
+    "message": "インストール前に、全ファイルのスキャンで見つかった内容を確認できます。",
+    "description": "Definition of Security scan in the skill page details list"
+  },
+  "home.family.skill.details.eval": {
+    "message": "評価(ある場合)",
+    "description": "Term in the skill page details list"
+  },
+  "home.family.skill.details.eval.body": {
+    "message": "実際のタスクで、そのスキルが役に立ったかどうか。まだ評価のないスキルもあります。",
+    "description": "Definition of Evaluation in the skill page details list"
+  },
+  "home.family.skill.link": {
+    "message": "verified-skill.comでスキルを探す",
+    "description": "Link to verified-skill.com; keep the domain"
+  },
+  "home.hero.crop.tests.alt": {
+    "message": "コーディネーターのレポートの切り抜き:テスト、0.09秒で23件合格",
+    "description": "Alt text of a screenshot crop"
+  },
+  "home.hero.crop.threads.alt": {
+    "message": "スレッドペインの切り抜き:稼働中は2件。Claude Code Opus 5.5で--jsonと--people用のREADME、Codex GPT-6.1-Solでsplit.pyの--peopleオプション",
+    "description": "Alt text of a screenshot crop. Keep product, model and file names and command flags in English"
+  },
+  "home.hero.crop.dispatch.alt": {
+    "message": "コーディネーターのメッセージの切り抜き:tip.py CLIの作成(承認待ち)とtip.pyのREADME使用方法(作業中)。それぞれに「スレッドを表示」",
+    "description": "Alt text of a screenshot crop. Keep file names in English"
+  },
+  "home.hero.crop.usage.alt": {
+    "message": "使用状況と上限の切り抜き:Claudeセッション、残り2%",
+    "description": "Alt text of a screenshot crop. Keep \"Claude\" in English"
+  },
+  "home.hero.pill.new": {
+    "message": "新機能",
+    "description": "Chip on the announcement pill above the hero headline"
+  },
+  "home.hero.pill.text": {
+    "message": "SpecWithCode Browser:Claude Code、Codex、GitHub Copilot、Grokにご自身のChromeを使わせる",
+    "description": "Announcement pill above the hero headline. Keep product names in English"
+  },
+  "home.hero.title": {
+    "message": "AIツールを替えても、作業の続きは失わない。",
+    "description": "Home page main headline"
+  },
+  "home.hero.lead": {
+    "message": "SpecWeaveは、計画と完了したすべてのタスクをgitに書き込むので、Claude CodeでもCodexでも他のエージェントでも、同じ作業を引き継げます。{specwithcode}(「スペック・ウィズ・コード」と読みます)は、それらのエージェント固有のネイティブハーネスの上にある1つのインターフェースで、あなたのマシンとサブスクリプションで動きます。",
+    "description": "Hero lead paragraph; {specwithcode} is a link with the product name SpecWithCode. Keep product names in English"
+  },
+  "home.hero.getCli": {
+    "message": "CLIを入手",
+    "description": "Secondary hero button linking to the CLI page"
+  },
+  "home.hero.requirements": {
+    "message": "どちらも無料。アプリはmacOS 13以降のApple silicon搭載Mac、Windows 10/11、Linuxで動作します:{link}。",
+    "description": "System requirements line; {link} is a link labelled 'download SpecWithCode'. Keep product and OS names in English"
+  },
+  "home.hero.requirements.link": {
+    "message": "SpecWithCodeをダウンロード",
+    "description": "Link text to the download page. Keep product names in English"
+  },
+  "home.hero.install.hint": {
+    "message": "オープンソースのCLI。MITライセンス、ローカルファースト、アカウント不要。",
+    "description": "Hint under the npm install command in the hero"
+  },
+  "home.hero.tag.threads": {
+    "message": "スレッドペイン・2026年10月27日",
+    "description": "Small tag on a floating screenshot crop"
+  },
+  "home.hero.tag.dispatch": {
+    "message": "ワーカーの並列実行・2026年10月15日",
+    "description": "Small tag on a floating screenshot crop"
+  },
+  "home.hero.tag.usage": {
+    "message": "使用上限・2026年10月10日",
+    "description": "Small tag on a floating screenshot crop"
+  },
+  "home.hero.caption": {
+    "message": "実際のキャプチャを切り抜いたものです。{windowCaption} 浮かんでいる切り抜きは、同じウィンドウと、2026年10月15日・10日のSpecWithCode録画からのものです。{fullSize}",
+    "description": "Caption of the hero screenshots; {windowCaption} is the main screenshot's own caption, {fullSize} a 'View full size' link. Keep product names in English"
+  },
+  "home.planning.stat.prs": {
+    "message": "4週間で計測したマージ済みプルリクエスト。作業を実行した1,142のエージェントスレッドを含む",
+    "description": "Label under the number 1,476"
+  },
+  "home.planning.stat.share": {
+    "message": "インクリメントに紐づいていたもの。残りは直接作業しました",
+    "description": "Label under the number 35%"
+  },
+  "home.planning.stat.small": {
+    "message": "変更が300行未満の場合の、オープン時間と出力トークン。インクリメントの有無にかかわらず",
+    "description": "Label under the value ≈ 1x"
+  },
+  "home.planning.stat.large": {
+    "message": "変更が1,000行を超えるプルリクエストを1件出荷した、インクリメント付きスレッドのメッセージ数と出力トークン(17スレッド対11スレッド)",
+    "description": "Label under the value ≈ 2x"
+  },
+  "home.planning.skip.small": {
+    "message": "変更が約300行未満の1件のプルリクエスト",
+    "description": "When to skip planning an increment, list item"
+  },
+  "home.planning.skip.fix": {
+    "message": "後続の修正やUIの微調整",
+    "description": "When to skip planning an increment, list item"
+  },
+  "home.planning.skip.investigation": {
+    "message": "調査",
+    "description": "When to skip planning an increment, list item"
+  },
+  "home.planning.plan.multiDay": {
+    "message": "数日にわたる作業(プルリクエスト1件につきインクリメント1つ)",
+    "description": "When to plan an increment, list item"
+  },
+  "home.planning.plan.risky": {
+    "message": "クロスプラットフォーム、認証、決済、マイグレーション",
+    "description": "When to plan an increment, list item"
+  },
+  "home.planning.plan.handoff": {
+    "message": "別のツールやマシンが引き継ぐ作業",
+    "description": "When to plan an increment, list item"
+  },
+  "home.planning.kicker": {
+    "message": "自分たちの作業で計測",
+    "description": "Small label above the 'when to plan' heading"
+  },
+  "home.planning.title": {
+    "message": "効果があるときは計画し、ないときは省く",
+    "description": "Heading of the 'when to plan an increment' section"
+  },
+  "home.planning.lead": {
+    "message": "私たちはSpecWeaveでこれらの製品を作っているので、仕様がどこで効果を発揮するかを調べました。小さな変更では、どちらでもほぼ同じでした。大きなインクリメント付きの作業ではメッセージ数が増えたため、インクリメントは、Codex、別のアカウント、別のマシンが引き継ぐ作業に限っています。",
+    "description": "Lead paragraph of the 'when to plan' section. Keep product names in English"
+  },
+  "home.planning.skip.title": {
+    "message": "インクリメントは省く",
+    "description": "Column heading: when to skip an increment"
+  },
+  "home.planning.skip.command": {
+    "message": "{command}して出荷。",
+    "description": "{command} is the shell command specweave small-fix; keep it as is"
+  },
+  "home.planning.plan.title": {
+    "message": "インクリメントを計画する",
+    "description": "Column heading: when to plan an increment"
+  },
+  "home.planning.plan.command": {
+    "message": "{command}。規模よりこちらが優先されます。",
+    "description": "{command} is the shell command specweave create-increment; keep it as is"
+  },
+  "home.planning.source": {
+    "message": "マージ済みプルリクエスト、SpecWithCodeのスレッド記録、Claude Codeのセッション、2026年10月6日〜11月3日。",
+    "description": "Source note for the measurement. Keep product names in English"
+  },
+  "home.planning.source.link": {
+    "message": "計測結果を読む",
+    "description": "Link to the guide with the full measurement"
+  },
+  "continuityBoard.increment.label": {
+    "message": "インクリメント",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.increment.value": {
+    "message": "{id} 再開できるチェックアウト",
+    "description": "Dashboard row value; {id} is the increment id, followed by the example increment title"
+  },
+  "continuityBoard.state.label": {
+    "message": "状態",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.state.value": {
+    "message": "進行中",
+    "description": "Increment state chip"
+  },
+  "continuityBoard.tasks.label": {
+    "message": "タスク",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.tasks.value": {
+    "message": "{total}件中{done}件完了",
+    "description": "Task progress"
+  },
+  "continuityBoard.next.label": {
+    "message": "次のタスク",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.next.value": {
+    "message": "{id} 復帰時に下書きを復元",
+    "description": "Dashboard row value; {id} is a task id, followed by the example task title"
+  },
+  "continuityBoard.criteria.label": {
+    "message": "基準",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.criteria.value": {
+    "message": "{ac1} 24時間以内に戻ると、カートと配送の選択が復元される。{ac2} 支払い済みの注文は復元されない。",
+    "description": "Dashboard row value; {ac1} and {ac2} are acceptance criterion ids"
+  },
+  "continuityBoard.files.label": {
+    "message": "ファイルとテスト",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.handoff.label": {
+    "message": "直近のハンドオフ",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.handoff.value": {
+    "message": "{from}がトークン切れ。{to}が引き継ぎ。",
+    "description": "Dashboard row value; {from} and {to} are agent identities"
+  },
+  "continuityBoard.caption": {
+    "message": "インクリメント{id}についてダッシュボードが読み取る内容",
+    "description": "Screen-reader caption of the dashboard table; {id} is the increment id"
+  },
+  "motion.extension.aria": {
+    "message": "SpecWithCode Browser for Chrome",
+    "description": "Accessible label of the browser extension banner; keep product names in English"
+  },
+  "motion.extension.title": {
+    "message": "新登場:SpecWithCode Browser for Chrome。",
+    "description": "Bold lead of the browser extension banner; keep product names in English"
+  },
+  "motion.extension.body": {
+    "message": "SpecWithCode内のClaude Code、Codex、GitHub Copilot、Grokなどのエージェントが、あなた自身のChromeで、閉じられるタブグループの中で、ページを開き、読み取り、クリックし、スクリーンショットを撮れます。",
+    "description": "Browser extension banner text; keep product names in English"
+  },
+  "motion.extension.cta": {
+    "message": "Chromeに追加",
+    "description": "Button to install the browser extension; keep Chrome in English"
+  },
+  "motion.extension.ctaHint": {
+    "message": "(Chrome ウェブストアが開きます)",
+    "description": "Screen-reader hint after the Add to Chrome button; keep the leading space and Chrome Web Store in English"
+  },
+  "home.handoff.beat.spec": {
+    "message": "仕様",
+    "description": "Progress rail label for beat 1 of the handoff story"
+  },
+  "home.handoff.beat.agents": {
+    "message": "エージェント",
+    "description": "Progress rail label for beat 2 of the handoff story"
+  },
+  "home.handoff.beat.ledger": {
+    "message": "台帳",
+    "description": "Progress rail label for beat 3 of the handoff story"
+  },
+  "home.handoff.beat.handoff": {
+    "message": "ハンドオフ",
+    "description": "Progress rail label for beat 4 of the handoff story"
+  },
+  "home.handoff.diagram.ariaLabel": {
+    "message": "イラスト:Claude Codeは使用上限までリポジトリに書き込み、Codexはgitから同じ仕様、台帳、ハンドオフを読み取ってタスクを完了する。",
+    "description": "Accessible label of the handoff diagram. Keep product names in English"
+  },
+  "home.handoff.chip.usageLimit": {
+    "message": "使用上限",
+    "description": "Warning chip: the agent hit its usage limit"
+  },
+  "home.handoff.diagram.repo": {
+    "message": "gitのあなたのリポジトリ",
+    "description": "Diagram node title for the git repository"
+  },
+  "home.handoff.diagram.verifyPass": {
+    "message": "verify:合格",
+    "description": "Pass chip in the diagram; 'verify' is the CLI command name, keep it in English"
+  },
+  "home.handoff.diagram.caption": {
+    "message": "イラスト",
+    "description": "Caption marking a picture as an illustration, not a real capture"
+  },
+  "home.handoff.beats.ariaLabel": {
+    "message": "1つのハンドオフを構成する4つのレイヤー",
+    "description": "Accessible label of the list of the four handoff beats"
+  },
+  "home.handoff.spec.title": {
+    "message": "仕様",
+    "description": "Heading of beat 1"
+  },
+  "home.handoff.spec.body": {
+    "message": "完了の定義を、どのエージェントも始める前に一度だけ書きます。{file}",
+    "description": "Beat 1 text; {file} is the file name spec.md"
+  },
+  "home.handoff.spec.ariaLabel": {
+    "message": "spec.mdの抜粋",
+    "description": "Accessible label of the spec.md excerpt; keep the file name"
+  },
+  "home.handoff.agents.title": {
+    "message": "エージェント",
+    "description": "Heading of beat 2"
+  },
+  "home.handoff.agents.body": {
+    "message": "ファイルを読めるツールなら、タスクを担当し、証明し、次へ進めます。",
+    "description": "Beat 2 text"
+  },
+  "home.handoff.agents.claim": {
+    "message": "Claude Codeが最初の未着手タスクを担当します。担当宣言は台帳の1行なので、他のエージェントが同じタスクを取ることはありません。",
+    "description": "Explains specweave task claim T-01. Keep product names in English"
+  },
+  "home.handoff.agents.done": {
+    "message": "タスクのテストを実行します。終了コード0が証跡となり、全出力は{file}に保存されます。",
+    "description": "Explains specweave task done; {file} is a file path"
+  },
+  "home.handoff.agents.limit": {
+    "message": "Claude CodeがT-02を担当し、途中で使用上限に達します。",
+    "description": "Explains the second claim. Keep product names and T-02 in English"
+  },
+  "home.handoff.ledger.title": {
+    "message": "gitの台帳",
+    "description": "Heading of beat 3"
+  },
+  "home.handoff.ledger.body": {
+    "message": "担当、完了、解除のすべてが1行で、コードと一緒にコミットされます。{file}",
+    "description": "Beat 3 text; {file} is the file name ledger.jsonl"
+  },
+  "home.handoff.ledger.ariaLabel": {
+    "message": "両方のエージェントの後のledger.jsonlの行",
+    "description": "Accessible label of the ledger excerpt; keep the file name"
+  },
+  "home.handoff.handoff.title": {
+    "message": "ハンドオフ",
+    "description": "Heading of beat 4"
+  },
+  "home.handoff.handoff.body": {
+    "message": "別のツールが、チャットウィンドウではなく同じファイルから続きます。",
+    "description": "Beat 4 text"
+  },
+  "home.handoff.switch.srOnly": {
+    "message": "T-02を引き渡す先:",
+    "description": "Screen-reader text between claude@cloud and codex@laptop; keep T-02"
+  },
+  "home.handoff.handoff.release": {
+    "message": "担当を解除し、次にやることを{file}に書き、スナップショットを{ref}と{branch}にプッシュします。",
+    "description": "Explains specweave handoff; {file} is handoff.md, {ref} and {branch} are git ref names, keep them"
+  },
+  "home.handoff.handoff.pickup": {
+    "message": "Codexで:ハンドオフを取得して編集内容を適用し、T-02とその2つの基準を表示します。",
+    "description": "Explains specweave pickup. Keep Codex and T-02 in English"
+  },
+  "home.handoff.handoff.done": {
+    "message": "Codexが同じ基準でT-02を完了し、台帳がテスト出力を参照します。",
+    "description": "Explains the second task done. Keep Codex and T-02 in English"
+  },
+  "home.handoff.handoff.verify": {
+    "message": "テスト、lint、ビルドを実行し、すべての基準を確認して{file}を書き込みます。",
+    "description": "Explains specweave verify; {file} is a file path"
+  },
+  "home.handoff.chip.pass": {
+    "message": "合格",
+    "description": "Pass chip after a successful verify"
+  },
+  "install.copy.ariaLabel": {
+    "message": "インストールコマンドをコピー",
+    "description": "Accessible label of the button that copies the npm install command"
+  },
+  "install.copy.done": {
+    "message": "コピーしました",
+    "description": "Copy button text after the install command was copied"
+  },
+  "install.copy.button": {
+    "message": "コピー",
+    "description": "Copy button text next to the install command"
+  },
+  "install.copy.error": {
+    "message": "コピーできません。上のコマンドを選択してください。",
+    "description": "Status line when copying the install command to the clipboard failed"
+  },
+  "install.copy.success": {
+    "message": "インストールコマンドをコピーしました。",
+    "description": "Status line after the install command was copied to the clipboard"
+  },
+  "theme.ErrorPageContent.title": {
+    "message": "エラーが発生しました",
+    "description": "The title of the fallback page when the page crashed"
+  },
+  "theme.BackToTopButton.buttonAriaLabel": {
+    "message": "先頭へ戻る",
+    "description": "The ARIA label for the back to top button"
+  },
+  "theme.blog.archive.title": {
+    "message": "アーカイブ",
+    "description": "The page & hero title of the blog archive page"
+  },
+  "theme.blog.archive.description": {
+    "message": "アーカイブ",
+    "description": "The page & hero description of the blog archive page"
+  },
+  "theme.blog.paginator.navAriaLabel": {
+    "message": "ブログ記事一覧のナビゲーション",
+    "description": "The ARIA label for the blog pagination"
+  },
+  "theme.blog.paginator.newerEntries": {
+    "message": "新しい記事",
+    "description": "The label used to navigate to the newer blog posts page (previous page)"
+  },
+  "theme.blog.paginator.olderEntries": {
+    "message": "過去の記事",
+    "description": "The label used to navigate to the older blog posts page (next page)"
+  },
+  "theme.blog.post.paginator.navAriaLabel": {
+    "message": "ブログ記事のナビゲーション",
+    "description": "The ARIA label for the blog posts pagination"
+  },
+  "theme.blog.post.paginator.newerPost": {
+    "message": "新しい記事",
+    "description": "The blog post button label to navigate to the newer/previous post"
+  },
+  "theme.blog.post.paginator.olderPost": {
+    "message": "過去の記事",
+    "description": "The blog post button label to navigate to the older/next post"
+  },
+  "theme.tags.tagsPageLink": {
+    "message": "全てのタグを見る",
+    "description": "The label of the link targeting the tag list page"
+  },
+  "theme.colorToggle.ariaLabel.mode.system": {
+    "message": "システムモード",
+    "description": "The name for the system color mode"
+  },
+  "theme.colorToggle.ariaLabel.mode.light": {
+    "message": "ライトモード",
+    "description": "The name for the light color mode"
+  },
+  "theme.colorToggle.ariaLabel.mode.dark": {
+    "message": "ダークモード",
+    "description": "The name for the dark color mode"
+  },
+  "theme.colorToggle.ariaLabel": {
+    "message": "ダークモードを切り替える(現在は{mode})",
+    "description": "The ARIA label for the color mode toggle"
+  },
+  "theme.docs.DocCard.categoryDescription.plurals": {
+    "message": "{count}項目",
+    "description": "The default description for a category card in the generated index about how many items this category includes"
+  },
+  "theme.docs.breadcrumbs.navAriaLabel": {
+    "message": "パンくずリストのナビゲーション",
+    "description": "The ARIA label for the breadcrumbs"
+  },
+  "theme.docs.paginator.navAriaLabel": {
+    "message": "ドキュメントページ",
+    "description": "The ARIA label for the docs pagination"
+  },
+  "theme.docs.paginator.previous": {
+    "message": "前へ",
+    "description": "The label used to navigate to the previous doc"
+  },
+  "theme.docs.paginator.next": {
+    "message": "次へ",
+    "description": "The label used to navigate to the next doc"
+  },
+  "theme.docs.tagDocListPageTitle.nDocsTagged": {
+    "message": "{count}記事",
+    "description": "Pluralized label for \"{count} docs tagged\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.docs.tagDocListPageTitle": {
+    "message": "「{tagName}」タグのついた{nDocsTagged}",
+    "description": "The title of the page for a docs tag"
+  },
+  "theme.docs.versionBadge.label": {
+    "message": "バージョン: {versionLabel}"
+  },
+  "theme.docs.versions.unreleasedVersionLabel": {
+    "message": "これはリリース前のバージョン{versionLabel}の{siteTitle}のドキュメントです。",
+    "description": "The label used to tell the user that he's browsing an unreleased doc version"
+  },
+  "theme.docs.versions.unmaintainedVersionLabel": {
+    "message": "これはバージョン{versionLabel}の{siteTitle}のドキュメントで現在はメンテナンスされていません",
+    "description": "The label used to tell the user that he's browsing an unmaintained doc version"
+  },
+  "theme.docs.versions.latestVersionSuggestionLabel": {
+    "message": "最新のドキュメントは{latestVersionLink} ({versionLabel}) を見てください",
+    "description": "The label used to tell the user to check the latest version"
+  },
+  "theme.docs.versions.latestVersionLinkLabel": {
+    "message": "最新バージョン",
+    "description": "The label used for the latest version suggestion link label"
+  },
+  "theme.common.editThisPage": {
+    "message": "このページを編集",
+    "description": "The link label to edit the current page"
+  },
+  "theme.common.headingLinkTitle": {
+    "message": "{heading} への直接リンク",
+    "description": "Title for link to heading"
+  },
+  "theme.lastUpdated.atDate": {
+    "message": "{date}に",
+    "description": "The words used to describe on which date a page has been last updated"
+  },
+  "theme.lastUpdated.byUser": {
+    "message": "{user}が",
+    "description": "The words used to describe by who the page has been last updated"
+  },
+  "theme.lastUpdated.lastUpdatedAtBy": {
+    "message": "{atDate}{byUser}最終更新",
+    "description": "The sentence used to display when a page has been last updated, and by who"
+  },
+  "theme.NotFound.title": {
+    "message": "ページが見つかりません",
+    "description": "The title of the 404 page"
+  },
+  "theme.navbar.mobileVersionsDropdown.label": {
+    "message": "他のバージョン",
+    "description": "The label for the navbar versions dropdown on mobile view"
+  },
+  "theme.tags.tagsListLabel": {
+    "message": "タグ:",
+    "description": "The label alongside a tag list"
+  },
+  "theme.AnnouncementBar.closeButtonAriaLabel": {
+    "message": "閉じる",
+    "description": "The ARIA label for close button of announcement bar"
+  },
+  "theme.admonition.caution": {
+    "message": "注意",
+    "description": "The default label used for the Caution admonition (:::caution)"
+  },
+  "theme.admonition.danger": {
+    "message": "危険",
+    "description": "The default label used for the Danger admonition (:::danger)"
+  },
+  "theme.admonition.info": {
+    "message": "備考",
+    "description": "The default label used for the Info admonition (:::info)"
+  },
+  "theme.admonition.note": {
+    "message": "注記",
+    "description": "The default label used for the Note admonition (:::note)"
+  },
+  "theme.admonition.tip": {
+    "message": "ヒント",
+    "description": "The default label used for the Tip admonition (:::tip)"
+  },
+  "theme.admonition.warning": {
+    "message": "警告",
+    "description": "The default label used for the Warning admonition (:::warning)"
+  },
+  "theme.blog.sidebar.navAriaLabel": {
+    "message": "最近のブログ記事のナビゲーション",
+    "description": "The ARIA label for recent posts in the blog sidebar"
+  },
+  "theme.DocSidebarItem.expandCategoryAriaLabel": {
+    "message": "'{label}'の目次を開く",
+    "description": "The ARIA label to expand the sidebar category"
+  },
+  "theme.DocSidebarItem.collapseCategoryAriaLabel": {
+    "message": "'{label}'の目次を隠す",
+    "description": "The ARIA label to collapse the sidebar category"
+  },
+  "theme.IconExternalLink.ariaLabel": {
+    "message": "(新しいタブで開きます)",
+    "description": "The ARIA label for the external link icon"
+  },
+  "theme.NavBar.navAriaLabel": {
+    "message": "ナビゲーション",
+    "description": "The ARIA label for the main navigation"
+  },
+  "theme.navbar.mobileLanguageDropdown.label": {
+    "message": "他の言語",
+    "description": "The label for the mobile language switcher dropdown"
+  },
+  "theme.NotFound.p1": {
+    "message": "お探しのページが見つかりませんでした",
+    "description": "The first paragraph of the 404 page"
+  },
+  "theme.NotFound.p2": {
+    "message": "このページにリンクしているサイトの所有者にリンクが壊れていることを伝えてください",
+    "description": "The 2nd paragraph of the 404 page"
+  },
+  "theme.TOCCollapsible.toggleButtonLabel": {
+    "message": "このページの見出し",
+    "description": "The label used by the button on the collapsible TOC component"
+  },
+  "theme.blog.post.readingTime.plurals": {
+    "message": "約{readingTime}分",
+    "description": "Pluralized label for \"{readingTime} min read\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.blog.post.readMore": {
+    "message": "もっと見る",
+    "description": "The label used in blog post item excerpts to link to full blog posts"
+  },
+  "theme.blog.post.readMoreLabel": {
+    "message": "{title}についてもっと見る",
+    "description": "The ARIA label for the link to full blog posts from excerpts"
+  },
+  "theme.CodeBlock.copy": {
+    "message": "コピー",
+    "description": "The copy button label on code blocks"
+  },
+  "theme.CodeBlock.copied": {
+    "message": "コピーしました",
+    "description": "The copied button label on code blocks"
+  },
+  "theme.CodeBlock.copyButtonAriaLabel": {
+    "message": "クリップボードにコードをコピー",
+    "description": "The ARIA label for copy code blocks button"
+  },
+  "theme.CodeBlock.wordWrapToggle": {
+    "message": "折り返し",
+    "description": "The title attribute for toggle word wrapping button of code block lines"
+  },
+  "theme.docs.sidebar.collapseButtonTitle": {
+    "message": "サイドバーを隠す",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.collapseButtonAriaLabel": {
+    "message": "サイドバーを隠す",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.navAriaLabel": {
+    "message": "ドキュメントのサイドバー",
+    "description": "The ARIA label for the sidebar navigation"
+  },
+  "theme.docs.breadcrumbs.home": {
+    "message": "ホームページ",
+    "description": "The ARIA label for the home page in the breadcrumbs"
+  },
+  "theme.docs.sidebar.closeSidebarButtonAriaLabel": {
+    "message": "ナビゲーションバーを閉じる",
+    "description": "The ARIA label for close button of mobile sidebar"
+  },
+  "theme.docs.sidebar.toggleSidebarButtonAriaLabel": {
+    "message": "ナビゲーションバーを開く",
+    "description": "The ARIA label for hamburger menu button of mobile navigation"
+  },
+  "theme.navbar.mobileSidebarSecondaryMenu.backButtonLabel": {
+    "message": "← メインメニューに戻る",
+    "description": "The label of the back button to return to main menu, inside the mobile navbar sidebar secondary menu (notably used to display the docs sidebar)"
+  },
+  "theme.navbar.mobileDropdown.collapseButton.expandAriaLabel": {
+    "message": "ドロップダウンを開く",
+    "description": "The ARIA label of the button to expand the mobile dropdown navbar item"
+  },
+  "theme.navbar.mobileDropdown.collapseButton.collapseAriaLabel": {
+    "message": "ドロップダウンを閉じる",
+    "description": "The ARIA label of the button to collapse the mobile dropdown navbar item"
+  },
+  "theme.docs.sidebar.expandButtonTitle": {
+    "message": "サイドバーを開く",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.docs.sidebar.expandButtonAriaLabel": {
+    "message": "サイドバーを開く",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.SearchBar.noResultsText": {
+    "message": "結果が見つかりません。"
+  },
+  "theme.SearchBar.seeAllOutsideContext": {
+    "message": "「{context}」以外のすべての結果を見る"
+  },
+  "theme.SearchBar.searchInContext": {
+    "message": "「{context}」のすべての結果を見る"
+  },
+  "theme.SearchBar.seeAll": {
+    "message": "すべての結果を見る"
+  },
+  "theme.SearchBar.label": {
+    "message": "検索",
+    "description": "The ARIA label and placeholder for search button"
+  },
+  "theme.SearchPage.existingResultsTitle": {
+    "message": "検索：{query}",
+    "description": "The search page title for non-empty query"
+  },
+  "theme.SearchPage.emptyResultsTitle": {
+    "message": "検索したい語句を入力してください。",
+    "description": "The search page title for empty query"
+  },
+  "theme.SearchPage.searchContext.everywhere": {
+    "message": "すべての場所"
+  },
+  "theme.SearchPage.documentsFound.plurals": {
+    "message": "検索数：{count}件",
+    "description": "Pluralized label for \"{count} documents found\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.SearchPage.noResultsText": {
+    "message": "結果が見つかりません。",
+    "description": "The paragraph for empty search result"
+  },
+  "theme.blog.post.plurals": {
+    "message": "{count}件",
+    "description": "Pluralized label for \"{count} posts\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.blog.tagTitle": {
+    "message": "「{tagName}」タグの記事が{nPosts}件あります",
+    "description": "The title of the page for a blog tag"
+  },
+  "theme.blog.author.pageTitle": {
+    "message": "{authorName} - {nPosts}",
+    "description": "The title of the page for a blog author"
+  },
+  "theme.blog.authorsList.pageTitle": {
+    "message": "著者一覧",
+    "description": "The title of the authors page"
+  },
+  "theme.blog.authorsList.viewAll": {
+    "message": "すべての著者を見る",
+    "description": "The label of the link targeting the blog authors page"
+  },
+  "theme.blog.author.noPosts": {
+    "message": "この著者による投稿はまだありません。",
+    "description": "The text for authors with 0 blog post"
+  },
+  "theme.contentVisibility.unlistedBanner.title": {
+    "message": "非公開のページ",
+    "description": "The unlisted content banner title"
+  },
+  "theme.contentVisibility.unlistedBanner.message": {
+    "message": "このページは非公開です。 検索対象外となり、このページのリンクに直接アクセスできるユーザーのみに公開されます。",
+    "description": "The unlisted content banner message"
+  },
+  "theme.contentVisibility.draftBanner.title": {
+    "message": "下書きのページ",
+    "description": "The draft content banner title"
+  },
+  "theme.contentVisibility.draftBanner.message": {
+    "message": "このページは下書きです。開発環境でのみ表示され、本番環境のビルドには含まれません。",
+    "description": "The draft content banner message"
+  },
+  "theme.ErrorPageContent.tryAgain": {
+    "message": "もう一度試してください",
+    "description": "The label of the button to try again rendering when the React error boundary captures an error"
+  },
+  "theme.common.skipToMainContent": {
+    "message": "メインコンテンツまでスキップ",
+    "description": "The skip to content label used for accessibility, allowing to rapidly navigate to main content with keyboard tab/enter navigation"
+  },
+  "theme.tags.tagsPageTitle": {
+    "message": "タグ",
+    "description": "The title of the tag list page"
+  }
+}
