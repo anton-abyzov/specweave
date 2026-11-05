@@ -107,6 +107,14 @@
     "message": "Todos os builds",
     "description": "Link to the download section with every build"
   },
+  "code.hero.chrome.title": {
+    "message": "Adicionar SpecWithCode Browser ao Chrome",
+    "description": "Title of the Chrome extension card under the hero download button; a link to the Chrome Web Store. Keep product names in English"
+  },
+  "code.hero.chrome.body": {
+    "message": "Os agentes usam seu Chrome já logado · grátis",
+    "description": "One line under the Chrome extension card title"
+  },
   "code.subs.parallel.title": {
     "message": "Todos os planos trabalhando ao mesmo tempo",
     "description": "Card title in the paid plans section"

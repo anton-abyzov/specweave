@@ -144,6 +144,21 @@
 .heroNote { margin-top: var(--wv-space-4) !important; font-size: 14px; line-height: 22px; color: var(--wv-muted); }
 .heroNote a { color: var(--wv-iris-strong); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 
+/* The Chrome extension, one quiet card under the download button: mark, two lines, and an arrow. Hover tints it, lifts it and tilts the mark. */
+.page a.companion { display: flex; align-items: center; gap: 12px; max-width: 30em; margin-top: var(--wv-space-3); padding: 9px 14px 9px 10px; border: 1px solid var(--wv-line); border-radius: 12px; background: var(--wv-panel); color: var(--wv-ink); text-decoration: none; transition: border-color .2s, background .2s, transform .2s, box-shadow .2s; }
+.page a.companion:hover, .page a.companion:focus-visible { border-color: var(--wv-iris); background: var(--wv-iris-tint); transform: translateY(-2px); box-shadow: var(--wv-shadow-overlay); color: var(--wv-ink); outline: none; }
+.companionMark { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--wv-sunken); transition: transform .25s; }
+.companionMark svg { width: 20px; height: 20px; }
+.page a.companion:hover .companionMark, .page a.companion:focus-visible .companionMark { transform: rotate(8deg); }
+.companionText { display: flex; flex-direction: column; min-width: 0; font-size: 13px; line-height: 18px; color: var(--wv-muted); }
+.companionText strong { font-size: 14px; line-height: 20px; font-weight: 700; color: var(--wv-ink); }
+.companionArrow { flex: none; margin-left: auto; color: var(--wv-iris-strong); transition: transform .2s; }
+.page a.companion:hover .companionArrow { transform: translate(1px, -1px); }
+@media (prefers-reduced-motion: reduce) {
+  .page a.companion, .companionMark, .companionArrow { transition: none; }
+  .page a.companion:hover, .page a.companion:hover .companionMark, .page a.companion:hover .companionArrow { transform: none; }
+}
+
 /* ---------- Versus strip ---------- */
 .vsSection { padding-top: var(--wv-space-16); }
 .vsSection h2 { font-size: clamp(28px, 3.6vw, 40px); line-height: 1.12; font-weight: 800; letter-spacing: -0.03em; }

@@ -107,6 +107,14 @@
     "message": "全部版本",
     "description": "Link to the download section with every build"
   },
+  "code.hero.chrome.title": {
+    "message": "将 SpecWithCode Browser 添加到 Chrome",
+    "description": "Title of the Chrome extension card under the hero download button; a link to the Chrome Web Store. Keep product names in English"
+  },
+  "code.hero.chrome.body": {
+    "message": "代理使用你已登录的 Chrome · 免费",
+    "description": "One line under the Chrome extension card title"
+  },
   "code.subs.parallel.title": {
     "message": "每个套餐同时开工",
     "description": "Card title in the paid plans section"

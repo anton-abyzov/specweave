@@ -107,6 +107,14 @@
     "message": "すべてのビルド",
     "description": "Link to the download section with every build"
   },
+  "code.hero.chrome.title": {
+    "message": "SpecWithCode Browser を Chrome に追加",
+    "description": "Title of the Chrome extension card under the hero download button; a link to the Chrome Web Store. Keep product names in English"
+  },
+  "code.hero.chrome.body": {
+    "message": "エージェントがログイン済みの Chrome を使います · 無料",
+    "description": "One line under the Chrome extension card title"
+  },
   "code.subs.parallel.title": {
     "message": "すべてのプランを同時に稼働",
     "description": "Card title in the paid plans section"

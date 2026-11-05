@@ -10,6 +10,7 @@ import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
 import {useSpecWithCodeInstaller} from '../data/specwithcodeInstaller';
 import FlowStage from '../components/code/FlowStage';
+import {CHROME_EXTENSION_URL} from '../components/home/chrome';
 import styles from '../components/code/FreeLanding.module.css';
 
 /*
@@ -93,12 +94,32 @@ function HeroDownload() {
       <span className={styles.osIcon}>{OS_ICON[os]}</span>
       <span className={styles.osText}><span><Translate id="code.hero.download.button" description="Main hero download button; {os} is Mac, Windows or Linux" values={{os: main.label}}>{'Get it free for {os}'}</Translate></span><small>{note}</small></span>
     </a>
+    <a className={styles.companion} href={CHROME_EXTENSION_URL} target="_blank" rel="noopener" data-track="chrome_extension_click" data-placement="hero">
+      <span className={styles.companionMark} aria-hidden="true"><ChromeMark /></span>
+      <span className={styles.companionText}>
+        <strong><Translate id="code.hero.chrome.title" description="Title of the Chrome extension card under the hero download button; a link to the Chrome Web Store. Keep product names in English">Add SpecWithCode Browser to Chrome</Translate></strong>
+        <span><Translate id="code.hero.chrome.body" description="One line under the Chrome extension card title">Agents use your signed-in Chrome · free</Translate></span>
+      </span>
+      <ArrowUpRight className={styles.companionArrow} size={18} strokeWidth={2.25} aria-hidden="true" />
+    </a>
     {unsupported && <p className={styles.heroNote} role="note">{UNSUPPORTED[unsupported]}</p>}
     <p className={styles.heroNote}><Translate id="code.hero.download.also" description="Line under the hero download button; {platforms} lists the other systems as links, {allBuilds} links to the download section" values={{
       platforms: DOWNLOADS.filter(d => d.os !== os).map((d, i) => <React.Fragment key={d.os}>{i > 0 && <>{' '}{translate({id: 'code.hero.download.also.and', message: 'and', description: 'Word joining two system names, as in "Windows and Linux"'})}{' '}</>}<a href={d.url} data-track="download_click" data-placement="hero-alt" data-os={d.os}>{d.label}</a></React.Fragment>),
       allBuilds: <a href="#download"><Translate id="code.hero.download.allBuilds" description="Link to the download section with every build">All builds</Translate></a>,
     }}>{'Also for {platforms}. {allBuilds}'}</Translate></p>
   </div>;
+}
+
+/** The Chrome mark, drawn inline so the card needs no image request. */
+function ChromeMark() {
+  return <svg viewBox="0 0 48 48" width="24" height="24" aria-hidden="true">
+    <circle cx="24" cy="24" r="22" fill="#fff" />
+    <path d="M24 2a22 22 0 0 1 19.05 11H24a11 11 0 0 0-9.53 5.5L7.9 7.13A21.95 21.95 0 0 1 24 2Z" fill="#DB4437" />
+    <path d="M43.05 13A22 22 0 0 1 24 46l10.3-17.84A11 11 0 0 0 33.9 13Z" fill="#F4B400" />
+    <path d="M7.9 7.13 14.47 18.5a11 11 0 0 0 9.53 16.5h.6L17.3 45A22 22 0 0 1 7.9 7.13Z" fill="#0F9D58" />
+    <circle cx="24" cy="24" r="8.5" fill="#4285F4" />
+    <circle cx="24" cy="24" r="8.5" fill="none" stroke="#fff" strokeWidth={2} />
+  </svg>;
 }
 
 const getSubs = (): {icon: typeof Layers; title: string; body: React.ReactNode}[] => [

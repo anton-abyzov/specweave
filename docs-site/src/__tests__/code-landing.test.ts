@@ -87,6 +87,12 @@ describe('SpecWithCode landing page', () => {
     }
   });
 
+  it('links the Chrome extension from the hero, by its one shared URL', () => {
+    expect(page).toMatch(/import \{CHROME_EXTENSION_URL\} from '\.\.\/components\/home\/chrome'/);
+    expect(page).toMatch(/href=\{CHROME_EXTENSION_URL\} target="_blank" rel="noopener"/);
+    expect(page).not.toMatch(/chromewebstore\.google\.com/);
+  });
+
   it('has a translation entry for every piece of hero diagram copy', () => {
     const stage = read('components/code/FlowStage.tsx');
     const scenes = stage.slice(stage.indexOf('const SCENES'), stage.indexOf('const ease'));
