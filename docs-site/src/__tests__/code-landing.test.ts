@@ -93,6 +93,17 @@ describe('SpecWithCode landing page', () => {
     expect(page).not.toMatch(/chromewebstore\.google\.com/);
   });
 
+  it('shows the phone apps as coming soon until a real store URL is set', () => {
+    const data = read('data/specwithcodeMobile.ts');
+    const stores = read('components/code/MobileStores.tsx');
+    // The only store links are the ones in the data file, and a null URL renders a card that is not a link.
+    expect(stores).not.toMatch(/apps\.apple\.com|play\.google\.com/);
+    expect(stores).toMatch(/s\.url\s*\n?\s*\?\s*<a /);
+    expect(stores).toMatch(/aria-disabled="true"/);
+    for (const m of data.matchAll(/url: '([^']+)'/g)) expect(m[1]).toMatch(/^https:\/\/(apps\.apple\.com|play\.google\.com)\//);
+    expect(page).toMatch(/<MobileStores placement="download"/);
+  });
+
   it('has a translation entry for every piece of hero diagram copy', () => {
     const stage = read('components/code/FlowStage.tsx');
     const scenes = stage.slice(stage.indexOf('const SCENES'), stage.indexOf('const ease'));

@@ -10,6 +10,7 @@ import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
 import {useSpecWithCodeInstaller} from '../data/specwithcodeInstaller';
 import FlowStage from '../components/code/FlowStage';
+import MobileStores from '../components/code/MobileStores';
 import {CHROME_EXTENSION_URL} from '../components/home/chrome';
 import styles from '../components/code/FreeLanding.module.css';
 
@@ -323,6 +324,7 @@ export default function Code() {
           <h2 id="download-title"><Translate id="code.downloads.title" description="Heading of the download section. Keep product names in English">Get SpecWithCode</Translate></h2>
           <p>{release.version === desktop.version ? <Translate id="code.downloads.version.same" description="Release line when all builds share one version; {version} is the version number. Keep product names in English" values={{version: release.version}}>{'Version {version} for Mac, Windows and Linux.'}</Translate> : <Translate id="code.downloads.version.split" description="Release line when the Mac build has a different version; {macVersion} and {desktopVersion} are version numbers. Keep product names in English" values={{macVersion: release.version, desktopVersion: desktop.version}}>{'Mac {macVersion}, Windows and Linux {desktopVersion}.'}</Translate>} <Translate id="code.downloads.signing" description="Signing status of the installers. Keep product names in English">The Mac app is signed and notarized; the Windows and Linux installers are not code-signed yet.</Translate></p>
           <Downloads placement="download" />
+          <MobileStores placement="download" align="center" />
         </div>
       </section>
 

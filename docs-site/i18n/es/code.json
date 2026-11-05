@@ -3772,5 +3772,29 @@
   "code.hero.marks.label": {
     "message": "También funciona con",
     "description": "Accessible label of the row of other supported agents under the hero lead"
+  },
+  "code.mobile.title": {
+    "message": "SpecWithCode para iPhone y Android",
+    "description": "Heading of the phone apps row under the desktop downloads. Keep product names in English"
+  },
+  "code.mobile.ariaLabel": {
+    "message": "Apps para el teléfono",
+    "description": "Accessible label of the list of phone app store cards"
+  },
+  "code.mobile.soon": {
+    "message": "Próximamente",
+    "description": "Tag on a phone app store card whose listing is not live yet"
+  },
+  "code.mobile.getOn": {
+    "message": "Consíguelo en",
+    "description": "Small line above the store name on a live store card"
+  },
+  "code.download.phones.title": {
+    "message": "En tu teléfono",
+    "description": "Section heading for the phone apps. Keep product names in English"
+  },
+  "code.download.phones.body": {
+    "message": "SpecWithCode para iPhone y Android está en camino. Las tarjetas de App Store y Google Play de abajo se convertirán en enlaces el día que cada ficha esté publicada.",
+    "description": "Phone apps section intro. Keep product names in English"
   }
 }
