@@ -3794,7 +3794,7 @@
     "description": "Section heading for the phone apps. Keep product names in English"
   },
   "code.download.phones.body": {
-    "message": "SpecWithCode para iPhone y Android está en camino. Las tarjetas de App Store y Google Play de abajo se convertirán en enlaces el día que cada ficha esté publicada.",
+    "message": "SpecWithCode para Android ya está en Google Play. La app para iPhone está en camino; su tarjeta de App Store se convertirá en enlace el día que la ficha esté publicada.",
     "description": "Phone apps section intro. Keep product names in English"
   }
 }

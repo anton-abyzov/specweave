@@ -3794,7 +3794,7 @@
     "description": "Section heading for the phone apps. Keep product names in English"
   },
   "code.download.phones.body": {
-    "message": "iPhone と Android 向けの SpecWithCode を準備中です。下の App Store と Google Play のカードは、各ストアで公開された日からリンクになります。",
+    "message": "Android 向け SpecWithCode は Google Play で公開中です。iPhone アプリは準備中で、App Store のカードは公開された日からリンクになります。",
     "description": "Phone apps section intro. Keep product names in English"
   }
 }

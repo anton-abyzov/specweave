@@ -323,7 +323,7 @@ export default function CodeDownload() {
       <section className={clsx(styles.shell, styles.section)} aria-labelledby="phones-title">
         <div className={styles.sectionHead}>
           <h2 id="phones-title"><Translate id="code.download.phones.title" description="Section heading for the phone apps. Keep product names in English">On your phone</Translate></h2>
-          <p><Translate id="code.download.phones.body" description="Phone apps section intro. Keep product names in English">SpecWithCode for iPhone and Android is on its way. The App Store and Google Play cards below become links the day each listing goes live.</Translate></p>
+          <p><Translate id="code.download.phones.body" description="Phone apps section intro. Keep product names in English">SpecWithCode for Android is on Google Play. The iPhone app is on its way; its App Store card becomes a link the day the listing goes live.</Translate></p>
           <MobileStores placement="download-page" kicker={false} />
         </div>
       </section>

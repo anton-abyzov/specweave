@@ -3794,7 +3794,7 @@
     "description": "Section heading for the phone apps. Keep product names in English"
   },
   "code.download.phones.body": {
-    "message": "SpecWithCode для iPhone и Android уже на подходе. Карточки App Store и Google Play ниже станут ссылками в день публикации каждого приложения.",
+    "message": "SpecWithCode для Android уже в Google Play. Приложение для iPhone на подходе: карточка App Store станет ссылкой в день публикации.",
     "description": "Phone apps section intro. Keep product names in English"
   }
 }
