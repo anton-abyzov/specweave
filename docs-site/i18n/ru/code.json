@@ -1084,7 +1084,7 @@
     "description": "Teams plan feature"
   },
   "pricing.plan.teams.cta": {
-    "message": "Посмотреть тариф для команд",
+    "message": "Тариф для команд",
     "description": "Teams plan button"
   },
   "pricing.pilot.step1.when": {
@@ -1196,7 +1196,7 @@
     "description": "Diagram chip: the next agent picks up the task"
   },
   "pricing.why.art.yourPlan": {
-    "message": "Ваша подписка",
+    "message": "Подписка",
     "description": "Diagram box: your AI subscription"
   },
   "pricing.why.art.reseller": {

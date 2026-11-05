@@ -1200,7 +1200,7 @@
     "description": "Diagram box: your AI subscription"
   },
   "pricing.why.art.reseller": {
-    "message": "Wiederverkäufer",
+    "message": "Reseller",
     "description": "Diagram box: a token reseller (crossed out)"
   },
   "pricing.why.art.agent": {

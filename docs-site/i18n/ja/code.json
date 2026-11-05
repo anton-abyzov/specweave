@@ -1196,11 +1196,11 @@
     "description": "Diagram chip: the next agent picks up the task"
   },
   "pricing.why.art.yourPlan": {
-    "message": "あなたのプラン",
+    "message": "契約プラン",
     "description": "Diagram box: your AI subscription"
   },
   "pricing.why.art.reseller": {
-    "message": "再販業者",
+    "message": "再販",
     "description": "Diagram box: a token reseller (crossed out)"
   },
   "pricing.why.art.agent": {

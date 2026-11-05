@@ -1016,7 +1016,7 @@
     "description": "Founders plan feature"
   },
   "pricing.plan.founders.cta": {
-    "message": "Garantir uma vaga de fundador",
+    "message": "Ser fundador",
     "description": "Founders plan button"
   },
   "pricing.plan.pro.tag": {
@@ -1200,7 +1200,7 @@
     "description": "Diagram box: your AI subscription"
   },
   "pricing.why.art.reseller": {
-    "message": "Revendedor",
+    "message": "Revenda",
     "description": "Diagram box: a token reseller (crossed out)"
   },
   "pricing.why.art.agent": {
