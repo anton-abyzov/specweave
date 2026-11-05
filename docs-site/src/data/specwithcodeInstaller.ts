@@ -1,4 +1,5 @@
 import {useEffect, useState} from 'react';
+import {translate} from '@docusaurus/Translate';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop} from './specwithcodeRelease';
 import {detectVisitorPlatform, type VisitorPlatform} from '../lib/visitorPlatform';
 
@@ -84,5 +85,42 @@ export function useSpecWithCodeInstaller(): InstallerChoice {
     detectVisitorPlatform(navigator).then(p => { if (live) setPlatform(p); });
     return () => { live = false; };
   }, []);
-  return chooseInstaller(platform);
+  return localizeChoice(chooseInstaller(platform));
+}
+
+/** The installer's visible copy in the active locale; the data above stays English. */
+function localizeInstaller(installer: SpecWithCodeInstaller): SpecWithCodeInstaller {
+  switch (installer.key) {
+    case 'mac': return {...installer,
+      label: translate({id: 'installer.mac.label', message: 'Download for Mac', description: 'Download button for the macOS installer. Keep product names in English'}),
+      platformName: translate({id: 'installer.mac.platformName', message: 'macOS on Apple silicon', description: 'Who the macOS installer is for. Keep product names in English'}),
+    };
+    case 'windows-x64': return {...installer,
+      label: translate({id: 'installer.windowsX64.label', message: 'Download for Windows', description: 'Download button for the Windows x64 installer. Keep product names in English'}),
+      platformName: translate({id: 'installer.windowsX64.platformName', message: 'Windows 10 and 11 on x64', description: 'Who the Windows x64 installer is for. Keep product names in English'}),
+    };
+    case 'windows-arm64': return {...installer,
+      label: translate({id: 'installer.windowsArm64.label', message: 'Download for Windows on Arm', description: 'Download button for the Windows arm64 installer. Keep product names in English'}),
+      platformName: translate({id: 'installer.windowsArm64.platformName', message: 'Windows 10 and 11 on arm64', description: 'Who the Windows arm64 installer is for. Keep product names in English'}),
+    };
+    case 'linux-x64': return {...installer,
+      label: translate({id: 'installer.linuxX64.label', message: 'Download for Linux', description: 'Download button for the Linux x64 AppImage. Keep product names in English'}),
+      platformName: translate({id: 'installer.linuxX64.platformName', message: 'Linux on x64 (glibc)', description: 'Who the Linux x64 installer is for. Keep product names in English'}),
+      alt: installer.alt && {...installer.alt, label: localizedDebLabel()},
+    };
+    case 'linux-arm64': return {...installer,
+      label: translate({id: 'installer.linuxArm64.label', message: 'Download for Linux on Arm', description: 'Download button for the Linux arm64 AppImage. Keep product names in English'}),
+      platformName: translate({id: 'installer.linuxArm64.platformName', message: 'Linux on arm64 (glibc)', description: 'Who the Linux arm64 installer is for. Keep product names in English'}),
+      alt: installer.alt && {...installer.alt, label: localizedDebLabel()},
+    };
+    default: return installer;
+  }
+}
+
+function localizedDebLabel(): string {
+  return translate({id: 'installer.linux.debLabel', message: '.deb for Debian and Ubuntu', description: 'Button for the Linux .deb package. Keep product names in English'});
+}
+
+function localizeChoice(choice: InstallerChoice): InstallerChoice {
+  return {...choice, installer: localizeInstaller(choice.installer)};
 }
