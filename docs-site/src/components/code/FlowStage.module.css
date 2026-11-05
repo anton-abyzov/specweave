@@ -136,3 +136,14 @@
   .threadBusy::after { display: none; }
   .tierProgress { display: none; }
 }
+
+/* Nothing fully still: marks breathe, price chips pulse softly, the goal bubble drifts. */
+.thread .mark { animation: wvFloat 3.2s ease-in-out infinite; }
+.thread:nth-child(2) .mark { animation-delay: -1.1s; }
+.thread:nth-child(3) .mark { animation-delay: -2.2s; }
+.coordinator .mark { animation: wvFloat 4s ease-in-out infinite; }
+.tierOn em { animation: wvBreathe 2.4s ease-in-out infinite; }
+.youChip { animation: wvFloat 3.6s ease-in-out infinite; }
+@keyframes wvFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes wvBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .thread .mark, .coordinator .mark, .tierOn em, .youChip { animation: none; } }
