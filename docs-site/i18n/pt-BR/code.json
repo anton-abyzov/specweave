@@ -1,0 +1,3764 @@
+{
+  "installer.mac.label": {
+    "message": "Baixar para Mac",
+    "description": "Download button for the macOS installer. Keep product names in English"
+  },
+  "installer.mac.platformName": {
+    "message": "macOS em Apple silicon",
+    "description": "Who the macOS installer is for. Keep product names in English"
+  },
+  "installer.windowsX64.label": {
+    "message": "Baixar para Windows",
+    "description": "Download button for the Windows x64 installer. Keep product names in English"
+  },
+  "installer.windowsX64.platformName": {
+    "message": "Windows 10 e 11 em x64",
+    "description": "Who the Windows x64 installer is for. Keep product names in English"
+  },
+  "installer.windowsArm64.label": {
+    "message": "Baixar para Windows em Arm",
+    "description": "Download button for the Windows arm64 installer. Keep product names in English"
+  },
+  "installer.windowsArm64.platformName": {
+    "message": "Windows 10 e 11 em arm64",
+    "description": "Who the Windows arm64 installer is for. Keep product names in English"
+  },
+  "installer.linuxX64.label": {
+    "message": "Baixar para Linux",
+    "description": "Download button for the Linux x64 AppImage. Keep product names in English"
+  },
+  "installer.linuxX64.platformName": {
+    "message": "Linux em x64 (glibc)",
+    "description": "Who the Linux x64 installer is for. Keep product names in English"
+  },
+  "installer.linuxArm64.label": {
+    "message": "Baixar para Linux em Arm",
+    "description": "Download button for the Linux arm64 AppImage. Keep product names in English"
+  },
+  "installer.linuxArm64.platformName": {
+    "message": "Linux em arm64 (glibc)",
+    "description": "Who the Linux arm64 installer is for. Keep product names in English"
+  },
+  "installer.linux.debLabel": {
+    "message": ".deb para Debian e Ubuntu",
+    "description": "Button for the Linux .deb package. Keep product names in English"
+  },
+  "providers.summary.andMore": {
+    "message": "{names} e mais {count}",
+    "description": "Short provider list: {names} is a comma-separated list of coding agent product names (keep in English), {count} is how many more providers there are"
+  },
+  "code.meta.title": {
+    "message": "Claude Code e Codex nas suas próprias máquinas, sem travar em limites: SpecWithCode (Spec with Code)",
+    "description": "Page title of the SpecWithCode landing page. Keep product names in English"
+  },
+  "code.meta.description": {
+    "message": "SpecWithCode (Spec with Code): Claude Code e Codex em um só chat, em todas as suas máquinas. No limite, o próximo agente assume. Grátis. macOS, Windows, Linux.",
+    "description": "Meta description of the SpecWithCode landing page. Keep product names in English"
+  },
+  "code.downloads.mac.note": {
+    "message": "Apple silicon, macOS 13+",
+    "description": "Requirements note under the Mac download button. Keep product names in English"
+  },
+  "code.downloads.windows.note": {
+    "message": "Windows 10 e 11, x64",
+    "description": "Requirements note under the Windows download button. Keep product names in English"
+  },
+  "code.downloads.linux.note": {
+    "message": "AppImage, x64",
+    "description": "Package note under the Linux download button. Keep product names in English"
+  },
+  "code.downloads.unsupported.intelMac": {
+    "message": "Este Mac tem chip Intel. O SpecWithCode para Mac exige Apple silicon; use uma máquina Windows ou Linux.",
+    "description": "Shown when the visitor uses an Intel Mac. Keep product names in English"
+  },
+  "code.downloads.unsupported.mobile": {
+    "message": "O SpecWithCode roda em Mac, PC com Windows ou máquina Linux. Abra esta página em um deles para baixar.",
+    "description": "Shown when the visitor is on a phone or tablet. Keep product names in English"
+  },
+  "code.downloads.list.ariaLabel": {
+    "message": "Baixar o SpecWithCode",
+    "description": "Accessible label of the list of download buttons. Keep product names in English"
+  },
+  "code.downloads.button": {
+    "message": "Baixar para {os}",
+    "description": "Download button label; {os} is Mac, Windows or Linux"
+  },
+  "code.downloads.more": {
+    "message": "Grátis, código-fonte disponível. {link}",
+    "description": "Line under the download buttons; {link} links to the download page"
+  },
+  "code.downloads.more.link": {
+    "message": "Builds Arm, .deb e passos de instalação",
+    "description": "Link to the download page with Arm builds, .deb packages and install steps"
+  },
+  "code.hero.download.button": {
+    "message": "Baixe grátis para {os}",
+    "description": "Main hero download button; {os} is Mac, Windows or Linux"
+  },
+  "code.hero.download.also": {
+    "message": "Também para {platforms}. {allBuilds}",
+    "description": "Line under the hero download button; {platforms} lists the other systems as links, {allBuilds} links to the download section"
+  },
+  "code.hero.download.also.and": {
+    "message": "e",
+    "description": "Word joining two system names, as in \"Windows and Linux\""
+  },
+  "code.hero.download.allBuilds": {
+    "message": "Todos os builds",
+    "description": "Link to the download section with every build"
+  },
+  "code.subs.parallel.title": {
+    "message": "Todos os planos trabalhando ao mesmo tempo",
+    "description": "Card title in the paid plans section"
+  },
+  "code.subs.parallel.body": {
+    "message": "Um coordenador divide um objetivo em threads e as executa em paralelo no Claude Code, no Codex e em outros, cada uma no seu próprio plano.",
+    "description": "Card text in the paid plans section. Keep product names in English"
+  },
+  "code.subs.machines.title": {
+    "message": "Todas as máquinas que você tem",
+    "description": "Card title in the paid plans section"
+  },
+  "code.subs.machines.body": {
+    "message": "Cada Mac, PC com Windows ou servidor Linux soma os limites dos planos conectados nele. Uma conta por provedor em cada máquina.",
+    "description": "Card text in the paid plans section. Keep product names in English"
+  },
+  "code.subs.handoff.title": {
+    "message": "Handoff aos 98%, ou onde você escolher",
+    "description": "Card title in the paid plans section; 98% is the default handoff point"
+  },
+  "code.subs.handoff.body": {
+    "message": "Defina o ponto de 50% a 100% por projeto. O trabalho passa para um plano com folga antes de o provedor recusar.",
+    "description": "Card text in the paid plans section"
+  },
+  "code.subs.usage.title": {
+    "message": "Uso de todas as contas",
+    "description": "Card title in the paid plans section"
+  },
+  "code.subs.usage.body": {
+    "message": "Uso › Limites mostra cada conta, a máquina em que ela está conectada e o que resta em cada sessão e janela semanal.",
+    "description": "Card text in the paid plans section; \"Usage › Limits\" is a menu path in the app, translate it as the app labels it"
+  },
+  "code.more.harnesses.title": {
+    "message": "Cada agente no seu próprio harness",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.harnesses.body": {
+    "message": "Claude Code, Codex, GitHub Copilot, Cursor, OpenCode e outros rodam como os fabricantes os entregam, com os seus próprios logins.",
+    "description": "Card text in the \"more\" section. Keep product names in English"
+  },
+  "code.more.harnesses.link": {
+    "message": "Harnesses e modelos",
+    "description": "Card link to the harnesses docs"
+  },
+  "code.more.coordinator.title": {
+    "message": "Um coordenador para trabalhos maiores",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.coordinator.body": {
+    "message": "Dê um objetivo. Um coordenador o divide em threads de worker em agentes diferentes, e você revisa o resultado.",
+    "description": "Card text in the \"more\" section"
+  },
+  "code.more.coordinator.link": {
+    "message": "Como os projetos funcionam",
+    "description": "Card link to the projects docs"
+  },
+  "code.more.machines.title": {
+    "message": "Todas as suas máquinas",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.machines.body": {
+    "message": "Adicione um notebook sobrando, um PC com Windows ou um pequeno servidor Linux como worker, cada um conectado às suas próprias contas.",
+    "description": "Card text in the \"more\" section. Keep product names in English"
+  },
+  "code.more.machines.link": {
+    "message": "Adicionar uma máquina",
+    "description": "Card link to the add-a-machine tutorial"
+  },
+  "code.more.builtWithItself.title": {
+    "message": "Construído com ele mesmo",
+    "description": "Card title in the \"more\" section"
+  },
+  "code.more.builtWithItself.body": {
+    "message": "367 pull requests do SpecWithCode foram abertos pelas próprias threads de worker e mesclados na segunda metade de outubro de 2026.",
+    "description": "Card text in the \"more\" section. Keep product names in English"
+  },
+  "code.more.builtWithItself.link": {
+    "message": "Ver o código-fonte",
+    "description": "Card link to the source repository on GitHub"
+  },
+  "code.faq.free.q": {
+    "message": "O SpecWithCode é mesmo grátis?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.free.a": {
+    "message": "Sim. O SpecWithCode é grátis, com código-fonte disponível, no Mac, Windows e Linux. Ele nunca revende tokens nem cobra margem: você entra com as suas próprias contas. O Codex funciona com uma conta gratuita do ChatGPT, dentro dos limites de uso desse plano. O DeepSeek usa a sua própria chave de API do DeepSeek, e o DeepSeek cobra esse uso diretamente de você.",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.limit.q": {
+    "message": "O que acontece quando o Claude Code atinge o limite de uso?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.limit.a": {
+    "message": "O chat continua no próximo agente que você configurou, como o Codex em uma conta gratuita do ChatGPT ou o DeepSeek, na mesma thread e com o histórico. Em nossos testes de 4 de novembro de 2026, com o limite do Claude simulado por uma troca de teste, o Codex (SpecWithCode 1.0.191) e o DeepSeek ainda sabiam uma palavra-código dita ao Claude antes da troca. Em cada projeto, você escolhe se o SpecWithCode troca automaticamente, oferece a troca ou espera o limite ser renovado.",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.paid.q": {
+    "message": "Preciso de um plano pago do Claude ou do ChatGPT?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.paid.a": {
+    "message": "Não. Você pode começar com o Codex em uma conta gratuita do ChatGPT e adicionar o DeepSeek como reserva. Se você já paga pelo Claude Code ou pelo ChatGPT, entre nesses também e mantenha o DeepSeek como reserva.",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.local.q": {
+    "message": "Tudo fica na minha máquina?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.local.a": {
+    "message": "Não. Os processos dos agentes e os arquivos do projeto ficam na sua máquina, mas os modelos na nuvem recebem prompts e o contexto relevante, que pode incluir código e conteúdo de arquivos, pelo provedor que você escolheu.",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.accounts.q": {
+    "message": "Uma máquina deve alternar entre contas do mesmo provedor?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.accounts.a": {
+    "message": "Não. Mantenha cada máquina conectada a uma conta por provedor. Para ter mais capacidade, adicione uma máquina com as próprias contas em vez de trocar de conta manualmente, e siga os termos de cada provedor.",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.brand.q": {
+    "message": "Spec with Code é o mesmo que SpecWithCode?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.brand.a": {
+    "message": "Sim. SpecWithCode se escreve numa palavra só e se pronuncia Spec with Code. É uma interface gratuita para os agentes de código que você já usa. O SpecWeave é o CLI separado que guarda especificações, evidências de tarefas e handoffs no git.",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.faq.harness.q": {
+    "message": "O SpecWithCode é um harness de agente de código?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.faq.harness.a": {
+    "message": "Não. Um harness é o loop do agente, as ferramentas, as permissões e o login que um fabricante constrói em torno do seu modelo, e Claude Code, Codex e GitHub Copilot CLI são harnesses. O SpecWithCode é uma interface para esses harnesses nativos: cada um continua rodando o seu próprio agente, e o app acrescenta por cima projetos, threads de worker, limites de uso, máquinas e handoffs de contexto.",
+    "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
+  },
+  "code.meta.ogImageAlt": {
+    "message": "SpecWithCode: uma interface para os seus agentes de código no macOS, Windows e Linux. Grátis, código-fonte disponível.",
+    "description": "Alt text of the social preview image. Keep product names in English"
+  },
+  "code.meta.twitterImageAlt": {
+    "message": "SpecWithCode: uma interface para os seus agentes de código. macOS, Windows e Linux.",
+    "description": "Alt text of the X/Twitter preview image. Keep product names in English"
+  },
+  "code.hero.badge": {
+    "message": "Grátis · código-fonte disponível",
+    "description": "Badge next to the product name in the hero"
+  },
+  "code.hero.title.top": {
+    "message": "Claude Code e Codex.",
+    "description": "First line of the hero headline. Keep product names in English"
+  },
+  "code.hero.title.emphasis": {
+    "message": "Sem travar em limites.",
+    "description": "Second, emphasized part of the hero headline"
+  },
+  "code.hero.lead": {
+    "message": "Um chat, todas as máquinas, todos os planos. Comece com o Codex em uma conta gratuita do ChatGPT ou adicione o Claude Max e o ChatGPT Pro que você já paga. Quando o Claude Code chega perto do limite, o Codex continua a mesma thread com o histórico.",
+    "description": "Hero lead paragraph. Keep product names in English"
+  },
+  "code.stats.title.main": {
+    "message": "O Codex que milhões usam.",
+    "description": "First part of the stats section heading. Keep product names in English"
+  },
+  "code.stats.title.emphasis": {
+    "message": "Grátis na sua conta.",
+    "description": "Second, emphasized part of the stats section heading"
+  },
+  "code.stats.weeklyUsers.label": {
+    "message": "pessoas usam o Codex toda semana",
+    "description": "Stat label after 5M+. Keep product names in English"
+  },
+  "code.stats.weeklyUsers.source": {
+    "message": "OpenAI, junho de 2026",
+    "description": "Source link for the weekly users stat. Keep product names in English"
+  },
+  "code.stats.free.label": {
+    "message": "Codex em uma conta gratuita do ChatGPT",
+    "description": "Stat label after $0. Keep product names in English"
+  },
+  "code.stats.free.source": {
+    "message": "OpenAI, por tempo limitado",
+    "description": "Source link for the free Codex stat. Keep product names in English"
+  },
+  "code.stats.threshold.label": {
+    "message": "ponto em que o SpecWithCode faz o handoff por padrão, antes de o limite te parar",
+    "description": "Stat label after 98%. Keep product names in English"
+  },
+  "code.stats.threshold.note": {
+    "message": "Você pode ajustar de 50% a 100%",
+    "description": "Small note under the 98% stat"
+  },
+  "code.subs.title": {
+    "message": "Paga $200 por mês? Aproveite tudo.",
+    "description": "Heading of the paid plans section"
+  },
+  "code.subs.intro": {
+    "message": "O SpecWithCode roda cada agente no plano que você já paga, em todas as máquinas em que você entra, e segue em frente quando um plano está acabando.",
+    "description": "Intro of the paid plans section. Keep product names in English"
+  },
+  "code.subs.plans.ariaLabel": {
+    "message": "Planos mostrados aqui",
+    "description": "Accessible label of the list of paid plans"
+  },
+  "code.subs.plans.claude": {
+    "message": "Claude Max e Pro",
+    "description": "Paid plan names. Keep product names in English"
+  },
+  "code.subs.plans.chatgpt": {
+    "message": "ChatGPT Pro e Plus",
+    "description": "Paid plan names. Keep product names in English"
+  },
+  "code.start.title": {
+    "message": "Configure em três passos",
+    "description": "Heading of the setup steps section"
+  },
+  "code.start.intro": {
+    "message": "Cerca de dois minutos, e nada a pagar para testar.",
+    "description": "Intro of the setup steps section"
+  },
+  "code.start.step1.title": {
+    "message": "Instale o SpecWithCode",
+    "description": "Setup step 1 title. Keep product names in English"
+  },
+  "code.start.step1.body": {
+    "message": "Baixe para o seu Mac, PC com Windows ou máquina Linux e abra. Não precisa de conta no SpecWithCode.",
+    "description": "Setup step 1 text. Keep product names in English"
+  },
+  "code.start.step1.link": {
+    "message": "Downloads",
+    "description": "Link to the download section"
+  },
+  "code.start.step2.title": {
+    "message": "Entre no Codex com uma conta gratuita do ChatGPT",
+    "description": "Setup step 2 title. Keep product names in English"
+  },
+  "code.start.step2.body": {
+    "message": "Em Configurações › Provedores, escolha o Codex e entre. Sem cartão cadastrado. Valem os limites de uso do plano gratuito.",
+    "description": "Setup step 2 text; Settings › Providers is a menu path in the app. Keep product names in English"
+  },
+  "code.start.step3.title": {
+    "message": "Adicione o DeepSeek como reserva",
+    "description": "Setup step 3 title. Keep product names in English"
+  },
+  "code.start.step3.body": {
+    "message": "Adicione o DeepSeek Harness em Configurações › Provedores com a sua própria chave de API do DeepSeek. Quando o Codex ou o Claude Code atingir um limite, o chat passa para o DeepSeek com o contexto.",
+    "description": "Setup step 3 text; Settings › Providers is a menu path in the app. Keep product names in English"
+  },
+  "code.start.step3.fine": {
+    "message": "O DeepSeek cobra o uso da API diretamente de você. O SpecWithCode não acrescenta nada por cima.",
+    "description": "Fine print under setup step 3. Keep product names in English"
+  },
+  "code.start.note": {
+    "message": "{question} Entre nesses também e continue usando. Quando um atingir o limite, o chat pode passar para o DeepSeek. Os modelos na nuvem continuam recebendo prompts e o contexto relevante pelo provedor que você escolheu.",
+    "description": "Note under the setup steps; {question} is the bold lead-in question. Keep product names in English"
+  },
+  "code.start.note.question": {
+    "message": "Já paga pelo Claude Code ou pelo ChatGPT?",
+    "description": "Bold question opening the note under the setup steps. Keep product names in English"
+  },
+  "code.downloads.title": {
+    "message": "Baixe o SpecWithCode",
+    "description": "Heading of the download section. Keep product names in English"
+  },
+  "code.downloads.version.same": {
+    "message": "Versão {version} para Mac, Windows e Linux.",
+    "description": "Release line when all builds share one version; {version} is the version number. Keep product names in English"
+  },
+  "code.downloads.version.split": {
+    "message": "Mac {macVersion}, Windows e Linux {desktopVersion}.",
+    "description": "Release line when the Mac build has a different version; {macVersion} and {desktopVersion} are version numbers. Keep product names in English"
+  },
+  "code.downloads.signing": {
+    "message": "O app para Mac é assinado e notarizado; os instaladores de Windows e Linux ainda não têm assinatura de código.",
+    "description": "Signing status of the installers. Keep product names in English"
+  },
+  "code.more.title": {
+    "message": "Tem mais quando você precisar",
+    "description": "Heading of the more section"
+  },
+  "code.more.agents.ariaLabel": {
+    "message": "Outros agentes de código compatíveis",
+    "description": "Accessible label of the list of other coding agents"
+  },
+  "code.more.agents.andMore": {
+    "message": "e mais",
+    "description": "Last item of the agent list, links to all harnesses"
+  },
+  "code.faq.title": {
+    "message": "Perguntas",
+    "description": "Heading of the FAQ section"
+  },
+  "code.final.title": {
+    "message": "Codex grátis. Sem travar em limites.",
+    "description": "Heading of the closing call to action. Keep product names in English"
+  },
+  "code.final.body": {
+    "message": "Grátis e com código-fonte disponível. Suas contas, suas máquinas. Adicione o CLI opcional do SpecWeave para manter {link}.",
+    "description": "Closing paragraph; {link} links to the spec-as-code comparison. Keep product names in English"
+  },
+  "code.final.body.link": {
+    "message": "a spec junto com o código",
+    "description": "Link text that ends the closing paragraph, as in keep the spec with the code"
+  },
+  "code.final.download": {
+    "message": "Baixar o SpecWithCode",
+    "description": "Closing call-to-action button. Keep product names in English"
+  },
+  "code.final.source": {
+    "message": "Ver o código no GitHub",
+    "description": "Closing link to the source repository. Keep product names in English"
+  },
+  "home.proof.folder.spec": {
+    "message": "o plano e seus critérios de aceitação",
+    "description": "Note next to spec.md in the increment folder listing"
+  },
+  "home.proof.folder.ledger": {
+    "message": "quem assumiu e concluiu cada tarefa",
+    "description": "Note next to ledger.jsonl in the increment folder listing"
+  },
+  "home.proof.folder.handoff": {
+    "message": "onde o último agente parou",
+    "description": "Note next to handoff.md in the increment folder listing"
+  },
+  "home.proof.folder.taskReport": {
+    "message": "saída de testes citada pelo ledger",
+    "description": "Note next to task-T-02.txt in the increment folder listing"
+  },
+  "home.proof.folder.verifyMd": {
+    "message": "testes, lint, build e critérios",
+    "description": "Note next to verify.md in the increment folder listing"
+  },
+  "home.proof.folder.verifyJson": {
+    "message": "o portão de fechamento",
+    "description": "Note next to verify.json in the increment folder listing"
+  },
+  "home.proof.folder.review": {
+    "message": "uma revisão feita pelo outro modelo",
+    "description": "Note next to review-codex.md in the increment folder listing"
+  },
+  "home.proof.folder.memory": {
+    "message": "fatos que toda ferramenta lê ao retomar",
+    "description": "Note next to memory/MEMORY.md in the increment folder listing"
+  },
+  "home.app.approval.alt": {
+    "message": "Recorte de uma thread de worker do Codex: aprovação do comando /bin/zsh -lc \"pwd; rg --files -g AGENTS.md\", com os botões Recusar e Aprovar",
+    "description": "Alt text of a screenshot crop. Keep Codex and the shell command in English"
+  },
+  "home.app.machines.local": {
+    "message": "Roda onde o seu código, as suas skills e os seus logins já estão.",
+    "description": "List item under \"Your machines, not a cloud container\""
+  },
+  "home.app.machines.sleep": {
+    "message": "Os workers continuam trabalhando enquanto o notebook está em repouso, na máquina que os executa.",
+    "description": "List item under \"Your machines, not a cloud container\""
+  },
+  "home.app.machines.signIn": {
+    "message": "Cada agente usa o login e as aprovações do próprio provedor. Não existe conta conosco.",
+    "description": "List item under \"Your machines, not a cloud container\""
+  },
+  "home.builtWith.specwithcode": {
+    "message": "O próprio app, planejado em incrementos do SpecWeave: 367 pull requests mesclados a partir das suas próprias threads de worker em outubro de 2026.",
+    "description": "Description of SpecWithCode in the Built with SpecWeave list. Keep product names in English"
+  },
+  "home.builtWith.easychamp": {
+    "message": "Ferramentas de ligas e clubes, construídas em threads do Claude Code, duas assinaturas e o Codex.",
+    "description": "Description of EasyChamp in the Built with SpecWeave list. Keep product names in English"
+  },
+  "home.builtWith.jobweave": {
+    "message": "Busca de vagas, currículos sob medida e preparação para entrevistas.",
+    "description": "Description of JobWeave in the Built with SpecWeave list"
+  },
+  "home.builtWith.verifiedSkill": {
+    "message": "Descoberta de skills, inspeção de código-fonte e avaliações locais.",
+    "description": "Description of Verified Skill in the Built with SpecWeave list"
+  },
+  "home.tutorials.length.minSec": {
+    "message": "{m} min {s} s",
+    "description": "Video length in minutes and seconds"
+  },
+  "home.tutorials.length.min": {
+    "message": "{m} min",
+    "description": "Video length in whole minutes"
+  },
+  "home.tutorials.length.sec": {
+    "message": "{s} s",
+    "description": "Video length in seconds"
+  },
+  "home.download.ariaLabel": {
+    "message": "Baixar o SpecWithCode {version} para macOS, Apple silicon, {size}",
+    "description": "Accessible label of the Download for Mac button; {version} is the app version, {size} the file size. Keep product names in English"
+  },
+  "home.download.button": {
+    "message": "Baixar para Mac",
+    "description": "Primary button that downloads the Mac app"
+  },
+  "home.meta.title": {
+    "message": "Handoff guiado por spec para Claude Code, Codex e Cursor",
+    "description": "Home page <title>. Keep product names in English"
+  },
+  "home.meta.description": {
+    "message": "CLI de código aberto que guarda a spec, o ledger de tarefas e o handoff no git, para o Codex ou qualquer agente continuar quando o Claude Code atingir o limite de uso. Grátis, MIT.",
+    "description": "Home page meta description. Keep product names in English"
+  },
+  "home.tools.label": {
+    "message": "Funciona com",
+    "description": "Label before the list of supported agent tools"
+  },
+  "home.family.title": {
+    "message": "Um registro no git, três formas de trabalhar com ele",
+    "description": "Heading of the product family section"
+  },
+  "home.family.lead": {
+    "message": "O SpecWeave guarda o plano e as evidências no seu repositório. O SpecWithCode executa agentes sobre esse registro nas suas máquinas. O Verified Skill dá a esses agentes skills que você pode conferir antes.",
+    "description": "Lead of the product family section. Keep product names in English"
+  },
+  "home.guides.ariaLabel": {
+    "message": "Guias",
+    "description": "Accessible label of the guide links navigation"
+  },
+  "home.guides.label": {
+    "message": "Guias",
+    "description": "Label before the guide links"
+  },
+  "home.guides.usageLimit": {
+    "message": "Limite de uso do Claude Code",
+    "description": "Guide link. Keep Claude Code in English"
+  },
+  "home.guides.switchToCodex": {
+    "message": "Trocar o Claude Code pelo Codex",
+    "description": "Guide link. Keep product names in English"
+  },
+  "home.guides.handoff": {
+    "message": "Handoff no Claude Code",
+    "description": "Guide link. Keep Claude Code in English"
+  },
+  "home.guides.compare": {
+    "message": "Ferramentas guiadas por spec comparadas",
+    "description": "Guide link to the tool comparison"
+  },
+  "home.how.title": {
+    "message": "Quando o Claude Code atinge o limite, o Codex continua a mesma tarefa",
+    "description": "Heading of the handoff section. Keep product names in English"
+  },
+  "home.how.lead": {
+    "message": "O handoff leva a spec, os claims e as evidências. Nada fica só numa janela de chat.",
+    "description": "Lead of the handoff section"
+  },
+  "home.how.note": {
+    "message": "Exemplo de incremento, escrito nos formatos que o specweave {version} lê: critérios como linhas {format}, um objeto JSON por linha do ledger. Veja uma retomada real em {link}.",
+    "description": "Note under the handoff example; {version} is the CLI version, {format} a code sample, {link} a link labelled 'How SpecWeave works'"
+  },
+  "home.how.note.link": {
+    "message": "Como o SpecWeave funciona",
+    "description": "Link text to the product page. Keep SpecWeave in English"
+  },
+  "home.proof.title": {
+    "message": "Nada fecha sem prova",
+    "description": "Heading of the proof section"
+  },
+  "home.proof.lead": {
+    "message": "Abra a pasta do incremento e veja o que foi planejado, quem fez e o que comprovou.",
+    "description": "Lead of the proof section"
+  },
+  "home.proof.folder.ariaLabel": {
+    "message": "Arquivos de uma pasta de incremento",
+    "description": "Accessible label of the increment folder listing"
+  },
+  "home.proof.verify.chip": {
+    "message": "Aprovado",
+    "description": "Pass chip for specweave verify"
+  },
+  "home.proof.verify.detail": {
+    "message": "Executa os seus comandos de teste, lint e build, confere se todos os critérios em {spec} estão marcados e grava {report}.",
+    "description": "Explains specweave verify; {spec} and {report} are file names, keep them"
+  },
+  "home.proof.review.chip": {
+    "message": "Saída 3, corrija antes",
+    "description": "Warning chip for specweave review: exit code 3 means fix first"
+  },
+  "home.proof.review.detail": {
+    "message": "Entrega o diff a um revisor de outra família de modelos: o Codex revisa o código escrito pelo Claude, e o Claude revisa o escrito pelo Codex. O relatório vai para {report}; saída 0 significa que pode entregar.",
+    "description": "Explains specweave review; {report} is a file name, keep it. Keep product names in English"
+  },
+  "home.proof.complete.chip": {
+    "message": "Bloqueado",
+    "description": "Fail chip for specweave complete"
+  },
+  "home.proof.complete.detail": {
+    "message": "Recusa fechar um incremento sem um {file} aprovado. Fechar mesmo assim exige {flag}, e o motivo fica guardado no incremento.",
+    "description": "Explains specweave complete; {file} is a file name and {flag} a command flag, keep them"
+  },
+  "home.proof.caption": {
+    "message": "Comportamento do specweave {version}, lançado em {date}.",
+    "description": "Caption; {version} is the CLI version, {date} its release date"
+  },
+  "home.app.title": {
+    "message": "Execute o mesmo trabalho em um app de desktop",
+    "description": "Heading of the desktop app section"
+  },
+  "home.app.lead": {
+    "message": "O SpecWithCode executa esses incrementos como threads nas suas próprias máquinas e assinaturas, com um coordenador por projeto e workers em qualquer provedor em que você esteja conectado.",
+    "description": "Lead of the desktop app section. Keep SpecWithCode in English"
+  },
+  "home.app.usage.window": {
+    "message": "Uso e limites",
+    "description": "Window title bar label: the app's Usage and limits screen"
+  },
+  "home.app.usage.open.ariaLabel": {
+    "message": "Abrir a captura de tela de Uso e limites em tamanho real",
+    "description": "Accessible label of the screenshot link"
+  },
+  "home.app.usage.alt": {
+    "message": "Tela de Uso e limites do SpecWithCode: Codex semanal com 10% restantes; Claude sessão com 2%, semanal com 54% e semanal Fable com 84% restantes, cada um com seu horário de renovação",
+    "description": "Alt text of the usage screenshot. Keep product and model names in English"
+  },
+  "home.app.usage.caption": {
+    "message": "As janelas de sessão e semanais de cada conta conectada em uma só tela. Da gravação do SpecWithCode de 10 de outubro de 2026.",
+    "description": "Caption of the usage screenshot. Keep SpecWithCode in English"
+  },
+  "studioWindow.viewFullSize": {
+    "message": "Ver em tamanho real",
+    "description": "Link that opens the full-size screenshot"
+  },
+  "home.app.approval.window": {
+    "message": "Worker do Codex",
+    "description": "Window title bar label. Keep Codex in English"
+  },
+  "home.app.approval.caption": {
+    "message": "Um worker do Codex pede permissão antes de executar um comando, com a aprovação do próprio provedor. Recorte da gravação do SpecWithCode de 15 de outubro de 2026.",
+    "description": "Caption of the approval screenshot. Keep product names in English"
+  },
+  "home.app.machines.title": {
+    "message": "Suas máquinas, não um contêiner na nuvem",
+    "description": "Heading of the machines list"
+  },
+  "home.app.machines.add": {
+    "message": "Adicione um Mac mini ou uma máquina Linux pelo SpecWithCode Connect: vincule o Connect nela com a sua conta, escolha Convidar esta máquina nas Configurações dela ou execute {command} lá, e cole a linha em Adicionar uma máquina, em Configurações, Conexões, no seu Mac principal.",
+    "description": "How to add a machine; {command} is a shell command, keep it. 'Invite this machine', 'Add a machine' and 'Settings, Connections' are app UI labels. Keep product names in English"
+  },
+  "home.app.boundary.title": {
+    "message": "Uma máquina por assinatura.",
+    "description": "Bold lead-in of the one-machine-per-subscription note"
+  },
+  "home.app.boundary.body": {
+    "message": "Conecte cada máquina a uma conta por provedor e deixe assim, por exemplo o Claude Code em uma conta e o Codex em outra. Trocar de assinatura manualmente na mesma máquina causa confusão; quando precisar de mais capacidade, adicione uma máquina.",
+    "description": "Body of the one-machine-per-subscription note. Keep product names in English"
+  },
+  "home.app.link": {
+    "message": "Veja tudo o que o SpecWithCode faz",
+    "description": "Link to the SpecWithCode page. Keep SpecWithCode in English"
+  },
+  "home.tutorials.title": {
+    "message": "Aprenda em poucos minutos",
+    "description": "Heading of the tutorials section"
+  },
+  "home.tutorials.lead": {
+    "message": "Gravações narradas dos apps reais, com legendas e capítulos.",
+    "description": "Lead of the tutorials section"
+  },
+  "home.tutorials.chapters": {
+    "message": "{count} capítulos",
+    "description": "Number of chapters in a tutorial video (always 2 or more)"
+  },
+  "home.tutorials.published": {
+    "message": "publicado em {date}",
+    "description": "Tutorial publication date; {date} is a formatted date"
+  },
+  "home.tutorials.all": {
+    "message": "Todos os tutoriais",
+    "description": "Link to the tutorials index"
+  },
+  "home.pricing.title": {
+    "message": "Grátis para todo desenvolvedor e equipe",
+    "description": "Heading of the pricing summary"
+  },
+  "home.pricing.lead": {
+    "message": "Você paga apenas pelo Pro (máquinas Connect ilimitadas, skills privadas) ou por um contrato para equipes com implantação e suporte.",
+    "description": "Lead of the pricing summary. Pro and Connect are product names; keep them in English"
+  },
+  "home.pricing.link": {
+    "message": "Ver preços",
+    "description": "Button linking to the pricing page"
+  },
+  "home.pricing.fact.app": {
+    "message": "App SpecWithCode",
+    "description": "Pricing fact term. Keep SpecWithCode in English"
+  },
+  "home.pricing.fact.app.value": {
+    "message": "Grátis",
+    "description": "Price of the SpecWithCode app"
+  },
+  "home.pricing.fact.cli": {
+    "message": "CLI do SpecWeave",
+    "description": "Pricing fact term. Keep SpecWeave CLI in English"
+  },
+  "home.pricing.fact.cli.value": {
+    "message": "Grátis, licença MIT",
+    "description": "Price and license of the CLI; keep MIT"
+  },
+  "home.pricing.fact.seat": {
+    "message": "Taxa por usuário",
+    "description": "Pricing fact term: per-seat fee"
+  },
+  "home.pricing.fact.seat.value": {
+    "message": "Nenhuma",
+    "description": "Value for Seat fee: there is none"
+  },
+  "home.pricing.fact.connect": {
+    "message": "Máquinas Connect",
+    "description": "Pricing fact term. Connect is a product name; keep it in English"
+  },
+  "home.pricing.fact.connect.value": {
+    "message": "3 grátis, 10 para os primeiros 300 fundadores, ilimitadas no Pro",
+    "description": "How many Connect machines each plan includes. Pro is a plan name; keep it in English"
+  },
+  "home.pricing.fact.markup": {
+    "message": "Margem sobre as suas assinaturas de IA",
+    "description": "Pricing fact term"
+  },
+  "home.pricing.fact.markup.value": {
+    "message": "Nenhuma",
+    "description": "Value for Markup on your AI subscriptions: there is none"
+  },
+  "home.builtWith.title": {
+    "message": "Construído com o SpecWeave",
+    "description": "Heading of the list of products built with SpecWeave. Keep SpecWeave in English"
+  },
+  "home.final.title": {
+    "message": "Traga todos os agentes, sem perder o fio",
+    "description": "Final call-to-action heading"
+  },
+  "home.final.cliLink": {
+    "message": "Comece com o CLI",
+    "description": "Link to the CLI getting started guide"
+  },
+  "integrations.agents.claude.tool": {
+    "message": "Claude Code, incluindo threads de Projects",
+    "description": "Agent card title. Keep product names in English"
+  },
+  "integrations.agents.claude.reads": {
+    "message": "CLAUDE.md, que importa o AGENTS.md",
+    "description": "Files the agent reads. Keep file names in English"
+  },
+  "integrations.agents.grok.reads": {
+    "message": "AGENTS.md e CLAUDE.md",
+    "description": "Files the agent reads. Keep file names in English"
+  },
+  "integrations.agents.grok.skills": {
+    "message": ".grok/skills/, .agents/skills/, skills do Claude Code",
+    "description": "Skill folders the agent loads. Keep folder paths and product names in English"
+  },
+  "integrations.agents.others.skills": {
+    "message": "Pastas próprias, ou o CLI diretamente",
+    "description": "Where other agents load skills from"
+  },
+  "integrations.trackers.guide.jiraAdo": {
+    "message": "Jira e Azure DevOps",
+    "description": "Link label to the Jira and Azure DevOps sync guide. Keep product names in English"
+  },
+  "integrations.trackers.github.when": {
+    "message": "Issues e código ficam no mesmo lugar.",
+    "description": "When GitHub Issues is useful"
+  },
+  "integrations.trackers.jira.when": {
+    "message": "Produto e engenharia compartilham um processo de entrega já existente.",
+    "description": "When Jira is useful"
+  },
+  "integrations.trackers.ado.when": {
+    "message": "Sua organização planeja com work items e quadros.",
+    "description": "When Azure DevOps is useful"
+  },
+  "integrations.diagram.caption": {
+    "message": "Ilustração · todos os agentes leem os mesmos arquivos no seu repositório",
+    "description": "Caption under the repository diagram"
+  },
+  "integrations.meta.title": {
+    "message": "Agentes de código com IA e integrações",
+    "description": "Integrations page title"
+  },
+  "integrations.meta.description": {
+    "message": "O SpecWeave funciona com todo agente de código que lê o AGENTS.md. A sincronização com issue trackers é opcional.",
+    "description": "Integrations page meta description. Keep product and file names in English"
+  },
+  "integrations.hero.title": {
+    "message": "Todo agente de código lê.",
+    "description": "Integrations page hero headline"
+  },
+  "integrations.hero.lead": {
+    "message": "O SpecWeave não precisa de serviço nem de conta. Os agentes de código leem os arquivos do seu repositório, então Claude Code, Codex, Grok e os demais retomam a mesma spec e o mesmo ledger.",
+    "description": "Integrations hero lead paragraph. Keep product names in English"
+  },
+  "integrations.agents.title": {
+    "message": "Agentes de código",
+    "description": "Coding agents section heading"
+  },
+  "integrations.agents.intro": {
+    "message": "O CLI é o mesmo em todas as ferramentas, então uma ferramenta sem skills ainda executa o loop. Alternar entre elas, ou entre duas assinaturas da mesma, é um {handoffLink}. Mais em {othersLink}.",
+    "description": "Coding agents section intro. {handoffLink} is a link reading 'handoff and a pickup'; {othersLink} is a link reading 'Codex, Grok and others'"
+  },
+  "integrations.agents.intro.handoffLink": {
+    "message": "handoff e uma retomada",
+    "description": "Link text to the cross-tool handoff guide"
+  },
+  "integrations.agents.intro.othersLink": {
+    "message": "Codex, Grok e outros",
+    "description": "Link text to the generic AI tools guide. Keep product names in English"
+  },
+  "integrations.agents.facts.reads": {
+    "message": "Lê",
+    "description": "Label: files an agent reads"
+  },
+  "integrations.agents.facts.skills": {
+    "message": "Skills",
+    "description": "Label: where an agent loads skills from"
+  },
+  "integrations.trackers.title": {
+    "message": "Issue trackers (opcional)",
+    "description": "Issue trackers section heading"
+  },
+  "integrations.trackers.intro": {
+    "message": "Um push é uma escrita externa, então só acontece quando você o executa. Iniciar, pausar ou retomar um incremento nunca toca um tracker, e nada cria issues além de um push. Concluir um incremento fecha a issue vinculada por um push somente quando a opção de fechar ao concluir está ativada; {syncSetup} a ativa, e você pode desativá-la. {syncPull} informa o que mudou no tracker para você revisar; ele não reescreve os seus arquivos locais.",
+    "description": "Issue trackers section intro. {syncSetup} and {syncPull} are CLI commands shown as code"
+  },
+  "integrations.trackers.usefulWhen": {
+    "message": "Útil quando",
+    "description": "Label before when a tracker is useful"
+  },
+  "integrations.trackers.code.setup": {
+    "message": "conectar um tracker",
+    "description": "Shell comment after specweave sync setup"
+  },
+  "integrations.trackers.code.status": {
+    "message": "credenciais, saúde, o que mudaria",
+    "description": "Shell comment after specweave sync status"
+  },
+  "integrations.trackers.code.push": {
+    "message": "publicar o progresso, quando você escolher",
+    "description": "Shell comment after specweave sync push"
+  },
+  "integrations.trackers.code.pull": {
+    "message": "informar mudanças feitas no tracker",
+    "description": "Shell comment after specweave sync pull"
+  },
+  "integrations.owns.title": {
+    "message": "Quem é dono de quê",
+    "description": "Ownership section heading"
+  },
+  "integrations.owns.intro": {
+    "message": "Uma issue fechada não prova que os critérios de aceitação passaram; um relatório de verify aprovado prova.",
+    "description": "Ownership section intro"
+  },
+  "integrations.owns.repo.chip": {
+    "message": "No seu repositório",
+    "description": "Chip: owned in your repository"
+  },
+  "integrations.owns.repo.title": {
+    "message": "A spec e o ledger",
+    "description": "Card title: what the repository owns"
+  },
+  "integrations.owns.repo.body": {
+    "message": "A spec e o ledger registram o que significa concluído e o que foi verificado.",
+    "description": "Card body: what the repository owns"
+  },
+  "integrations.owns.tracker.chip": {
+    "message": "No tracker",
+    "description": "Chip: owned in the issue tracker"
+  },
+  "integrations.owns.tracker.title": {
+    "message": "Contexto de planejamento",
+    "description": "Card title: what the tracker owns"
+  },
+  "integrations.owns.tracker.body": {
+    "message": "O tracker guarda o contexto de planejamento: prioridade, responsável, rótulos e o lugar onde os stakeholders olham.",
+    "description": "Card body: what the tracker owns"
+  },
+  "integrations.faq.needTracker.q": {
+    "message": "Preciso de um tracker?",
+    "description": "FAQ question"
+  },
+  "integrations.faq.needTracker.a": {
+    "message": "Não. Specs, ledger, handoffs e o painel funcionam localmente. Adicione um tracker quando ele facilitar a colaboração.",
+    "description": "FAQ answer"
+  },
+  "integrations.faq.boardJira.q": {
+    "message": "Mover um card no painel atualiza o Jira?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "integrations.faq.boardJira.a": {
+    "message": "Não. As mudanças no quadro são locais. Execute {command} para o incremento quando quiser atualizar o tracker.",
+    "description": "FAQ answer. {command} is a CLI command shown as code"
+  },
+  "integrations.faq.evaluate.q": {
+    "message": "Como uma equipe deve avaliar isso?",
+    "description": "FAQ question"
+  },
+  "integrations.faq.evaluate.a": {
+    "message": "Comece com um repositório e um projeto de tracker descartável. Confira o mapeamento, as permissões, as issues reabertas e as falhas parciais com {command} antes de conectar o tracker de verdade.",
+    "description": "FAQ answer. {command} is a CLI command shown as code"
+  },
+  "integrations.also.title": {
+    "message": "Também do SpecWeave",
+    "description": "Related products heading. Keep product names in English"
+  },
+  "integrations.also.jev.body": {
+    "message": "Responde decisões de conjunto fechado com um modelo pequeno e rápido.",
+    "description": "Jev card description"
+  },
+  "integrations.also.vskill.body": {
+    "message": "Um registro de skills de agente verificadas quanto à segurança, instaladas com {command}.",
+    "description": "Verified Skill card description. {command} is a CLI command shown as code"
+  },
+  "integrations.also.syncRef.title": {
+    "message": "Referência do specweave sync",
+    "description": "Card title. Keep the command specweave sync in English"
+  },
+  "integrations.also.syncRef.body": {
+    "message": "Os comandos de sincronização com trackers em uma única página de referência.",
+    "description": "Sync reference card description"
+  },
+  "pricing.why.handoff.title": {
+    "message": "Outro agente termina a tarefa",
+    "description": "Reason card title"
+  },
+  "pricing.why.handoff.body": {
+    "message": "Atingiu o limite? Quando o Claude Code chega perto do limite de uso, a spec e o progresso passam para o Codex ou para a próxima ferramenta que você usa.",
+    "description": "Reason card body. Keep product names in English"
+  },
+  "pricing.why.noMarkup.title": {
+    "message": "Sem margem sobre os seus planos de IA",
+    "description": "Reason card title"
+  },
+  "pricing.why.noMarkup.body": {
+    "message": "Os agentes rodam nos planos do Claude, Codex, Gemini ou Cursor que você já paga. Nunca revendemos tokens.",
+    "description": "Reason card body. Keep product names in English"
+  },
+  "pricing.why.noSeatFees.title": {
+    "message": "Sem cobrança por usuário nem por execução",
+    "description": "Reason card title"
+  },
+  "pricing.why.noSeatFees.body": {
+    "message": "Venha sozinho ou com a equipe toda. Nada conta agentes, usuários ou horas. As máquinas que você mesmo conecta são ilimitadas.",
+    "description": "Reason card body"
+  },
+  "pricing.plan.free.name": {
+    "message": "Grátis",
+    "description": "Plan name"
+  },
+  "pricing.plan.free.unit": {
+    "message": "para sempre, para todo desenvolvedor e equipe",
+    "description": "Text after the $0 price of the Free plan"
+  },
+  "pricing.plan.free.who": {
+    "message": "O app SpecWithCode e o CLI do SpecWeave. O app não precisa de conta conosco.",
+    "description": "Free plan summary. Keep product names in English"
+  },
+  "pricing.plan.free.feature.workspace": {
+    "message": "Claude Code, Codex, Grok, Gemini CLI e Cursor em um só workspace",
+    "description": "Free plan feature. Keep product names in English"
+  },
+  "pricing.plan.free.feature.handoff": {
+    "message": "Handoff automático antes de um limite de uso te parar",
+    "description": "Free plan feature"
+  },
+  "pricing.plan.free.feature.connect": {
+    "message": "Connect: acesse 3 máquinas de qualquer lugar, e o seu celular",
+    "description": "Free plan feature. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.free.feature.localRoutes": {
+    "message": "Rotas de rede local e SSH, nunca contadas",
+    "description": "Free plan feature"
+  },
+  "pricing.plan.free.cta": {
+    "message": "Baixar grátis",
+    "description": "Free plan button"
+  },
+  "pricing.plan.founders.tag": {
+    "message": "Os primeiros 300",
+    "description": "Chip on the Founders plan"
+  },
+  "pricing.plan.founders.name": {
+    "message": "Fundadores",
+    "description": "Plan name"
+  },
+  "pricing.plan.founders.unit": {
+    "message": "uma vaga de fundador, que fica com a sua conta",
+    "description": "Text after the $0 price of the Founders plan"
+  },
+  "pricing.plan.founders.who": {
+    "message": "As primeiras 300 contas a vincular uma máquina pelo Connect. Sem formulário: a vaga é concedida nesse vínculo.",
+    "description": "Founders plan summary. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.founders.feature.everythingFree": {
+    "message": "Tudo do plano Grátis",
+    "description": "Founders plan feature; Free is the plan name"
+  },
+  "pricing.plan.founders.feature.machines": {
+    "message": "10 máquinas Connect em vez de 3",
+    "description": "Founders plan feature. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.founders.feature.number": {
+    "message": "Um número de fundador na sua conta",
+    "description": "Founders plan feature"
+  },
+  "pricing.plan.founders.feature.more": {
+    "message": "Precisa de mais de 10? Peça e aumentamos",
+    "description": "Founders plan feature"
+  },
+  "pricing.plan.founders.cta": {
+    "message": "Ser fundador",
+    "description": "Founders plan button"
+  },
+  "pricing.plan.pro.tag": {
+    "message": "Lista de espera",
+    "description": "Chip on the Pro plan"
+  },
+  "pricing.plan.pro.unit": {
+    "message": "por mês, por conta",
+    "description": "Text after the $20 price of the Pro plan"
+  },
+  "pricing.plan.pro.who": {
+    "message": "Para quem usa muitas máquinas ou compartilha skills privadas. Sem cobrança até abrir.",
+    "description": "Pro plan summary"
+  },
+  "pricing.plan.pro.feature.unlimited": {
+    "message": "Máquinas Connect ilimitadas",
+    "description": "Pro plan feature. Connect is a product name; keep it in English"
+  },
+  "pricing.plan.pro.feature.privateSkills": {
+    "message": "Skills privadas, hospedadas e versionadas",
+    "description": "Pro plan feature"
+  },
+  "pricing.plan.pro.feature.scan": {
+    "message": "Varredura de segurança em cada versão de skill",
+    "description": "Pro plan feature"
+  },
+  "pricing.plan.pro.feature.billing": {
+    "message": "Cobrado na sua conta do SpecWithCode",
+    "description": "Pro plan feature. Keep product names in English"
+  },
+  "pricing.plan.pro.cta": {
+    "message": "Entrar na lista de espera",
+    "description": "Pro plan button"
+  },
+  "pricing.plan.teams.name": {
+    "message": "Equipes",
+    "description": "Plan name"
+  },
+  "pricing.plan.teams.price": {
+    "message": "Sob consulta",
+    "description": "Price shown for the Teams plan"
+  },
+  "pricing.plan.teams.unit": {
+    "message": "contrato anual",
+    "description": "Text after the Teams plan price"
+  },
+  "pricing.plan.teams.who": {
+    "message": "Para equipes de 2 a 10 pessoas que querem implantação acompanhada, uma linha de suporte e registros de auditoria.",
+    "description": "Teams plan summary"
+  },
+  "pricing.plan.teams.feature.setup": {
+    "message": "Implantação para a equipe inteira",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.feature.engineer": {
+    "message": "Engenheiro dedicado, prazos de resposta em contrato",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.feature.audit": {
+    "message": "Exportação de auditoria de quem executou o quê, com evidências",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.feature.sso": {
+    "message": "SSO, políticas ou registro auto-hospedado, definidos com você",
+    "description": "Teams plan feature"
+  },
+  "pricing.plan.teams.cta": {
+    "message": "Ver o plano para equipes",
+    "description": "Teams plan button"
+  },
+  "pricing.pilot.step1.when": {
+    "message": "Dia 1",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step1.what": {
+    "message": "Escolher o repositório e o trabalho",
+    "description": "Pilot timeline step"
+  },
+  "pricing.pilot.step2.when": {
+    "message": "Dias 2-5",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step2.what": {
+    "message": "SpecWeave em uma branch que você revisa",
+    "description": "Pilot timeline step. Keep product names in English"
+  },
+  "pricing.pilot.step3.when": {
+    "message": "Dias 6-9",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step3.what": {
+    "message": "Prompts compartilhados viram skills",
+    "description": "Pilot timeline step"
+  },
+  "pricing.pilot.step4.when": {
+    "message": "Dia 10",
+    "description": "Pilot timeline step label"
+  },
+  "pricing.pilot.step4.what": {
+    "message": "Simulação ao vivo: o Claude esgota, o Codex termina",
+    "description": "Pilot timeline step. Keep product names in English"
+  },
+  "pricing.faq.free.q": {
+    "message": "Vai continuar grátis?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.free.a": {
+    "message": "Sim. O app, o CLI e a execução de agentes nas suas máquinas continuam grátis, para um desenvolvedor ou uma equipe inteira. Os planos pagos só acrescentam o que nos custa para manter (capacidade do relay hospedado, skills privadas hospedadas) e suporte.",
+    "description": "Pricing FAQ answer"
+  },
+  "pricing.faq.machines.q": {
+    "message": "Quantas máquinas posso conectar?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.machines.a": {
+    "message": "O Connect, o relay hospedado que alcança as suas máquinas de qualquer lugar e do celular, inclui 3 máquinas. Os fundadores têm 10, e o Pro vai remover o limite. Rotas diretas pela rede local ou por SSH nunca são contadas. {link}.",
+    "description": "Pricing FAQ answer. {link} is a link reading 'How Connect works'. Connect is a product name; keep it in English"
+  },
+  "pricing.faq.machines.a.link": {
+    "message": "Como o Connect funciona",
+    "description": "Link text to the Connect docs. Connect is a product name; keep it in English"
+  },
+  "pricing.faq.founder.q": {
+    "message": "Como me torno fundador?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.founder.a": {
+    "message": "Entre no Connect no SpecWithCode e vincule uma máquina. As primeiras 300 contas a fazer isso ganham um número de fundador e 10 máquinas, concedidos nesse vínculo. A vaga fica com a sua conta e não expira; a abertura do Pro depois não a tira.",
+    "description": "Pricing FAQ answer. Keep product names in English"
+  },
+  "pricing.faq.teams.q": {
+    "message": "Pelo que as equipes pagam?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.teams.a": {
+    "message": "Pela implantação para a sua equipe de 2 a 10 pessoas, suporte com prazos de resposta e controles como exportação de auditoria ou SSO. O Pro cobre skills privadas hospedadas e máquinas Connect ilimitadas para uma conta.",
+    "description": "Pricing FAQ answer. Keep product names in English"
+  },
+  "pricing.faq.code.q": {
+    "message": "Para onde vai o nosso código?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.code.a": {
+    "message": "Para lugar nenhum novo. Specs e handoffs são arquivos no seu repositório, e os agentes rodam nas suas máquinas com as suas assinaturas.",
+    "description": "Pricing FAQ answer"
+  },
+  "pricing.faq.autoHandoff.q": {
+    "message": "Como funciona o handoff automático?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.autoHandoff.a": {
+    "message": "{onCommand} faz o handoff em 90 por cento de uma janela de uso, ou em um limite que você escolher. A próxima ferramenta executa {pickupCommand}. {link}.",
+    "description": "Pricing FAQ answer. {onCommand} and {pickupCommand} are CLI commands shown as code; {link} is a link reading 'Details'"
+  },
+  "pricing.faq.autoHandoff.a.link": {
+    "message": "Detalhes",
+    "description": "Link text to the auto-handoff guide"
+  },
+  "pricing.faq.ready.q": {
+    "message": "O SpecWithCode está pronto?",
+    "description": "Pricing FAQ question. Keep product names in English"
+  },
+  "pricing.faq.ready.a": {
+    "message": "Está em acesso antecipado, com downloads para macOS (Apple silicon), Windows 10 e 11 e Linux (x64 e arm64). O CLI do SpecWeave funciona em qualquer lugar com {command}.",
+    "description": "Pricing FAQ answer. {command} is a CLI command shown as code. Keep product names in English"
+  },
+  "pricing.faq.pay.q": {
+    "message": "Como pagamos?",
+    "description": "Pricing FAQ question"
+  },
+  "pricing.faq.pay.a": {
+    "message": "Hoje só o piloto é pago, com fatura emitida quando você escolhe a data de início. Os contratos para equipes são faturados anualmente. O Pro será cobrado por cartão na sua conta do SpecWithCode quando abrir; ninguém na lista de espera é cobrado antes disso.",
+    "description": "Pricing FAQ answer. Keep product names in English"
+  },
+  "pricing.why.art.picksUp": {
+    "message": "assume",
+    "description": "Diagram chip: the next agent picks up the task"
+  },
+  "pricing.why.art.yourPlan": {
+    "message": "Seu plano",
+    "description": "Diagram box: your AI subscription"
+  },
+  "pricing.why.art.reseller": {
+    "message": "Revenda",
+    "description": "Diagram box: a token reseller (crossed out)"
+  },
+  "pricing.why.art.agent": {
+    "message": "Agente",
+    "description": "Diagram box: the coding agent"
+  },
+  "pricing.why.art.teamLabel": {
+    "message": "Um desenvolvedor ou uma equipe inteira · um workspace grátis",
+    "description": "Diagram label under the team icons"
+  },
+  "pricing.founders.chip": {
+    "message": "Fundadores",
+    "description": "Chip on the founders band"
+  },
+  "pricing.founders.status.open": {
+    "message": "Aberto agora",
+    "description": "Founder seats are still available"
+  },
+  "pricing.founders.status.full": {
+    "message": "Todas as vagas preenchidas",
+    "description": "No founder seats are left"
+  },
+  "pricing.founders.title": {
+    "message": "As primeiras 300 contas ganham 10 máquinas, grátis",
+    "description": "Founders band heading"
+  },
+  "pricing.founders.body": {
+    "message": "Vincule uma máquina pelo Connect e a sua conta ocupa a próxima vaga de fundador: 10 máquinas de qualquer lugar em vez de 3, e um número de fundador. Sem formulário, sem cartão, e a vaga continua sua.",
+    "description": "Founders band body. Connect is a product name; keep it in English"
+  },
+  "pricing.founders.cta": {
+    "message": "Vincular a sua primeira máquina",
+    "description": "Founders band button"
+  },
+  "pricing.founders.seats.aria.total": {
+    "message": "{total} vagas de fundador",
+    "description": "Accessible label for the seat meter before the live count loads"
+  },
+  "pricing.founders.seats.aria.left": {
+    "message": "{left} de {total} vagas de fundador restantes",
+    "description": "Accessible label for the live seat meter"
+  },
+  "pricing.founders.seats.label.total": {
+    "message": "vagas de fundador",
+    "description": "Text after the total seat count"
+  },
+  "pricing.founders.seats.label.left": {
+    "message": "de {total} vagas restantes",
+    "description": "Text after the live count of seats left"
+  },
+  "pricing.founders.seats.note.pending": {
+    "message": "Contagem ao vivo do relay do Connect.",
+    "description": "Note under the seat meter before the live count loads. Connect is a product name; keep it in English"
+  },
+  "pricing.founders.seats.note.live": {
+    "message": "Ao vivo, do relay do Connect.",
+    "description": "Note under the live seat meter. Connect is a product name; keep it in English"
+  },
+  "pricing.meta.title": {
+    "message": "Preços",
+    "description": "Pricing page title"
+  },
+  "pricing.meta.description": {
+    "message": "O SpecWithCode e o CLI do SpecWeave são grátis para todo desenvolvedor e equipe, sem margem sobre as suas assinaturas de IA. As primeiras 300 contas do Connect ganham 10 máquinas grátis. O Pro traz máquinas ilimitadas e skills privadas; as equipes podem contratar implantação e suporte.",
+    "description": "Pricing page meta description. Keep product names in English"
+  },
+  "pricing.hero.chip": {
+    "message": "Preços",
+    "description": "Hero chip"
+  },
+  "pricing.hero.kicker": {
+    "message": "Grátis para todo desenvolvedor e equipe",
+    "description": "Hero kicker next to the chip"
+  },
+  "pricing.hero.title": {
+    "message": "Todos os agentes de código em um workspace, grátis para todos.",
+    "description": "Pricing hero headline"
+  },
+  "pricing.hero.sub": {
+    "message": "O SpecWithCode executa Claude Code, Codex, Cursor e outros lado a lado, e passa a tarefa ao próximo quando um limite de uso é atingido. As assinaturas continuam sendo suas.",
+    "description": "Pricing hero subheading. Keep product names in English"
+  },
+  "pricing.hero.cta.download": {
+    "message": "Baixar o SpecWithCode",
+    "description": "Hero download button. Keep product names in English"
+  },
+  "pricing.hero.cta.plans": {
+    "message": "Ver planos",
+    "description": "Hero link that jumps to the plans"
+  },
+  "pricing.hero.runsOn": {
+    "message": "Executa os agentes que você já paga",
+    "description": "Text next to the agent logos"
+  },
+  "pricing.hero.capture.alt": {
+    "message": "O painel de threads do SpecWithCode: uma thread do Claude Code e uma do Codex trabalhando lado a lado",
+    "description": "Alt text for the hero screenshot. Keep product names in English"
+  },
+  "pricing.hero.capture.label": {
+    "message": "Captura real · janela do app SpecWithCode, 27 de outubro de 2026",
+    "description": "Label on the hero screenshot. Keep product names in English"
+  },
+  "pricing.hero.float.free": {
+    "message": "grátis para sempre",
+    "description": "Floating badge text after $0"
+  },
+  "pricing.hero.float.handoff": {
+    "message": "Handoff automático",
+    "description": "Floating badge: automatic handoff between agents"
+  },
+  "pricing.why.aria": {
+    "message": "Por que é grátis",
+    "description": "Accessible label for the reasons section"
+  },
+  "pricing.why.artNote": {
+    "message": "Os diagramas são ilustrações.",
+    "description": "Note under the reason diagrams"
+  },
+  "pricing.plans.aria": {
+    "message": "Planos",
+    "description": "Accessible label for the plans section"
+  },
+  "pricing.pilot.priceLabel": {
+    "message": "piloto de duas semanas",
+    "description": "Text after the $990 pilot price"
+  },
+  "pricing.pilot.title": {
+    "message": "Piloto para equipes fundadoras: $990 para migrar sua equipe de 2 a 10 pessoas em duas semanas",
+    "description": "Pilot section heading"
+  },
+  "pricing.pilot.body": {
+    "message": "Para equipes de 2 a 10 pessoas. Cinco vagas. Se o teste de handoff falhar no seu repositório, você não paga.",
+    "description": "Pilot section body"
+  },
+  "pricing.pilot.cta": {
+    "message": "Candidatar-se ao piloto",
+    "description": "Pilot apply button (opens email)"
+  },
+  "pricing.faq.title": {
+    "message": "Perguntas",
+    "description": "FAQ section heading"
+  },
+  "pricing.final.title": {
+    "message": "Grátis para todos, com ajuda quando a sua equipe precisar",
+    "description": "Final call-to-action heading"
+  },
+  "pricing.final.cta.download": {
+    "message": "Baixar o SpecWithCode",
+    "description": "Final download button. Keep product names in English"
+  },
+  "pricing.final.cta.team": {
+    "message": "Fale conosco sobre a sua equipe",
+    "description": "Final link that opens an email about team plans"
+  },
+  "product.command.copied": {
+    "message": "Copiado",
+    "description": "Copy button label after the command was copied"
+  },
+  "product.command.copy": {
+    "message": "Copiar",
+    "description": "Button that copies a shell command"
+  },
+  "product.loop.plan.title": {
+    "message": "Planeje o incremento",
+    "description": "Loop step title"
+  },
+  "product.loop.plan.body": {
+    "message": "O agente preenche Problem, Scope, critérios de aceitação numerados, Approach e Tasks. Antes de escrever, o sw-increment pergunta apenas as decisões que precisam de você, uma de cada vez e com uma resposta recomendada: no máximo cinco por padrão, e {deepInterview} define a profundidade.",
+    "description": "Loop step body; {deepInterview} is a config key. Keep sw-increment in English"
+  },
+  "product.loop.plan.fileNote": {
+    "message": "Cada tarefa cita seus critérios, seus arquivos e seu teste.",
+    "description": "Note about the file spec.md"
+  },
+  "product.loop.claim.title": {
+    "message": "Assuma uma tarefa",
+    "description": "Loop step title"
+  },
+  "product.loop.claim.body": {
+    "message": "O claim vai para o ledger, então um segundo agente que peça a mesma tarefa é recusado. Um claim com mais de duas horas é considerado vencido e pode ser assumido por outro. {taskNext} mostra a próxima tarefa com o texto dos seus critérios.",
+    "description": "Loop step body; {taskNext} is a command"
+  },
+  "product.loop.claim.fileNote": {
+    "message": "Somente acréscimo: eventos de claim, done, release, skip e block.",
+    "description": "Note about the file ledger.jsonl"
+  },
+  "product.loop.done.title": {
+    "message": "Prove que está pronto",
+    "description": "Loop step title"
+  },
+  "product.loop.done.body": {
+    "message": "O CLI executa o teste por conta própria. Só a saída 0 registra a tarefa como concluída, com o commit e o final da saída como evidência. Uma execução com falha não registra nada.",
+    "description": "Loop step body"
+  },
+  "product.loop.done.fileNote": {
+    "message": "A saída completa do comando, com o código de saída e o horário.",
+    "description": "Note about the task report file"
+  },
+  "product.loop.verify.title": {
+    "message": "Verifique o incremento",
+    "description": "Loop step title"
+  },
+  "product.loop.verify.body": {
+    "message": "Executa os seus comandos de teste, lint e build, vindos de {testingCommands} ou detectados a partir de {packageJson}, Cargo, pytest ou Go, e confere cada critério de aceitação.",
+    "description": "Loop step body; placeholders are config keys and file names. Keep Cargo, pytest and Go in English"
+  },
+  "product.loop.verify.fileNote": {
+    "message": "ok só é true quando todos os comandos e critérios passam.",
+    "description": "Note about verify.json; \"ok\" is a JSON field name, keep it in English"
+  },
+  "product.loop.review.title": {
+    "message": "Revise com o outro modelo",
+    "description": "Loop step title"
+  },
+  "product.loop.review.body": {
+    "message": "Entrega o diff a um revisor de uma família de modelos diferente da que o escreveu: o Codex revisa o código do Claude, e o Claude revisa o da OpenAI. Saída 0 significa entregar, saída 3 significa corrigir antes. {brief} mostra o briefing para colar em qualquer ferramenta. Novo na versão {version}; veja {link}.",
+    "description": "Loop step body; {brief} is a CLI flag, {version} the CLI version, {link} a link to the review guide. Keep Codex, Claude and OpenAI in English"
+  },
+  "product.loop.review.link": {
+    "message": "Revisão com outro modelo",
+    "description": "Link text to the cross-model review guide"
+  },
+  "product.loop.review.fileNote": {
+    "message": "Os achados e o veredito, com o nome do revisor.",
+    "description": "Note about the review report file"
+  },
+  "product.loop.close.title": {
+    "message": "Feche",
+    "description": "Loop step title"
+  },
+  "product.loop.close.body": {
+    "message": "Recusa enquanto {verifyJson} estiver ausente ou não estiver ok. Fechar sem ele exige {reason}, e o motivo fica guardado no incremento.",
+    "description": "Loop step body; {verifyJson} is a file path, {reason} a CLI flag"
+  },
+  "product.loop.close.fileNote": {
+    "message": "Concluído, ou o motivo de ter fechado sem prova.",
+    "description": "Note about metadata.json"
+  },
+  "product.limits.suggest.what": {
+    "message": "Avisa uma vez que um handoff está pronto e continua trabalhando.",
+    "description": "What the suggest mode does at the usage threshold"
+  },
+  "product.limits.suggest.when": {
+    "message": "O padrão. Você decide quando trocar.",
+    "description": "When to use the suggest mode"
+  },
+  "product.limits.enforce.what": {
+    "message": "Executa specweave handoff e encerra a sessão.",
+    "description": "What the enforce mode does; keep \"specweave handoff\" in English"
+  },
+  "product.limits.enforce.when": {
+    "message": "Execuções sem supervisão que devem parar limpas no limite de uma tarefa.",
+    "description": "When to use the enforce mode"
+  },
+  "product.limits.checkpoint.what": {
+    "message": "Só salva checkpoints locais e nunca faz handoff.",
+    "description": "What the checkpoint mode does"
+  },
+  "product.limits.checkpoint.when": {
+    "message": "Planos em que créditos ou um proxy continuam funcionando além do limite.",
+    "description": "When to use the checkpoint mode"
+  },
+  "product.skills.core.increment": {
+    "message": "Planeja o incremento como uma única spec.md e faz primeiro as perguntas sobre decisões críticas.",
+    "description": "Skill description; keep spec.md in English"
+  },
+  "product.skills.core.grillMe": {
+    "message": "Entrevista você em rodadas até que toda decisão de um plano esteja resolvida. Com planning.deepInterview definido como deep, todo novo incremento a executa.",
+    "description": "Skill description; keep planning.deepInterview and deep in English"
+  },
+  "product.skills.core.do": {
+    "message": "Trabalha o incremento tarefa por tarefa: claim, implementação dentro dos seus arquivos, teste, commit, done com evidência. Sozinho, sem supervisão ou em lanes paralelas.",
+    "description": "Skill description"
+  },
+  "product.skills.core.auto": {
+    "message": "Executa um incremento sem supervisão até que todas as tarefas estejam concluídas, depois verifica e fecha.",
+    "description": "Skill description"
+  },
+  "product.skills.core.review": {
+    "message": "Uma revisão adversarial por um contexto novo ou outra família de modelos. Cada achado cita um arquivo e uma linha.",
+    "description": "Skill description"
+  },
+  "product.skills.core.done": {
+    "message": "Fecha o incremento: tarefas concluídas, verify verde, revisão com contexto novo e então complete.",
+    "description": "Skill description"
+  },
+  "product.skills.core.handoff": {
+    "message": "Passa o trabalho para outra ferramenta, conta ou máquina e o retoma lá.",
+    "description": "Skill description"
+  },
+  "product.skills.optional.glossary": {
+    "message": "Cria {file}, o vocabulário compartilhado do projeto. {cmd} faz o CI falhar se houver divergência.",
+    "description": "Skill description; {file} is a file name, {cmd} a command"
+  },
+  "product.skills.optional.sync": {
+    "message": "Envia incrementos para o GitHub, Jira ou Azure DevOps. Ativada quando o projeto tem um tracker.",
+    "description": "Skill description; keep GitHub, Jira and Azure DevOps in English"
+  },
+  "product.skills.optional.project": {
+    "message": "Lê e atualiza o hub do projeto. Ativada quando {file} existe.",
+    "description": "Skill description; {file} is a file path"
+  },
+  "product.skills.optional.jev": {
+    "message": "Entrega decisões de conjunto fechado ao Jev. Ativada quando {key} está definido.",
+    "description": "Skill description; keep Jev in English; {key} is a config key"
+  },
+  "product.record.done.what": {
+    "message": "O que significa concluído",
+    "description": "Record card title"
+  },
+  "product.record.done.how": {
+    "message": "Escrito no planejamento e lido antes do código.",
+    "description": "Record card body"
+  },
+  "product.record.happened.what": {
+    "message": "O que aconteceu",
+    "description": "Record card title"
+  },
+  "product.record.happened.how": {
+    "message": "Claims, conclusões com evidências, notas e handoffs.",
+    "description": "Record card body"
+  },
+  "product.record.proved.what": {
+    "message": "O que comprovou",
+    "description": "Record card title"
+  },
+  "product.record.proved.how": {
+    "message": "Logs de tarefas, {verifyMd}, {verifyJson} e relatórios de revisão.",
+    "description": "Record card body; placeholders are file names"
+  },
+  "product.record.stopped.what": {
+    "message": "Onde você parou",
+    "description": "Record card title"
+  },
+  "product.record.stopped.how": {
+    "message": "Escrito por {cmd}.",
+    "description": "Record card body; {cmd} is a command"
+  },
+  "product.record.notes.what": {
+    "message": "Notas para o próximo agente",
+    "description": "Record card title"
+  },
+  "product.record.notes.how": {
+    "message": "Guardadas no ledger, e {cmd} as mostra.",
+    "description": "Record card body; {cmd} is a command"
+  },
+  "product.record.memory.what": {
+    "message": "Decisões que sobrevivem à sessão",
+    "description": "Record card title"
+  },
+  "product.record.memory.how": {
+    "message": "Um arquivo por fato, indexado em {file} e commitado, para que toda ferramenta e conta o veja.",
+    "description": "Record card body; {file} is a file name"
+  },
+  "product.record.board.what": {
+    "message": "Um quadro com tudo isso",
+    "description": "Record card title"
+  },
+  "product.record.board.how": {
+    "message": "Somente local, em 127.0.0.1 na porta 3456 por padrão. Lê-lo não exige nenhuma chamada a modelo.",
+    "description": "Record card body"
+  },
+  "product.record.report.what": {
+    "message": "Quem fez o quê, em uma página",
+    "description": "Record card title"
+  },
+  "product.record.report.how": {
+    "message": "Uma linha do tempo em HTML com ferramentas, sessões, handoffs e evidências em {file}.",
+    "description": "Record card body; {file} is a file path"
+  },
+  "product.integrations.lsp.name": {
+    "message": "Navegação no código",
+    "description": "Integration card title"
+  },
+  "product.integrations.lsp.body": {
+    "message": "Referências, definições, tipos ao passar o mouse e símbolos vindos de language servers, para os agentes pararem de usar grep. {cmd} escolhe servidores para as linguagens do seu repositório.",
+    "description": "Integration card body; {cmd} is a command"
+  },
+  "product.integrations.lsp.link": {
+    "message": "Guia de LSP",
+    "description": "Link to the LSP guide"
+  },
+  "product.integrations.jev.body": {
+    "message": "Decisões de conjunto fechado em cerca de 250 ms: qual skill ou nível de modelo, se um comando de shell é seguro de executar, se um texto baixado merece uma segunda olhada. Ative com {cmd}.",
+    "description": "Integration card body; {cmd} is a command"
+  },
+  "product.integrations.jev.link": {
+    "message": "Sobre o Jev",
+    "description": "Link to the Jev page; keep Jev in English"
+  },
+  "product.integrations.hub.name": {
+    "message": "Hub do projeto",
+    "description": "Integration card title"
+  },
+  "product.integrations.hub.body": {
+    "message": "Um objetivo, contexto, artefatos e rotinas compartilhados em {file}, lidos por todas as ferramentas. {flag} exporta o briefing para outra ferramenta.",
+    "description": "Integration card body; {file} is a file path, {flag} a CLI flag"
+  },
+  "product.integrations.hub.link": {
+    "message": "Guia de projetos portáteis",
+    "description": "Link to the portable projects guide"
+  },
+  "product.integrations.repos.name": {
+    "message": "Repositórios existentes",
+    "description": "Integration card title"
+  },
+  "product.integrations.repos.body": {
+    "message": "Clona e registra um repositório no workspace, ou todos os repositórios de uma organização com {all}. {dryRun} mostra antes como seria adotar um checkout que você já tem.",
+    "description": "Integration card body; {all} and {dryRun} are CLI flags"
+  },
+  "product.integrations.repos.link": {
+    "message": "Guia de adoção do workspace",
+    "description": "Link to the workspace adoption guide"
+  },
+  "product.integrations.trackers.name": {
+    "message": "Issue trackers",
+    "description": "Integration card title"
+  },
+  "product.integrations.trackers.body": {
+    "message": "Opcional. Envie um incremento para o GitHub Issues, Jira ou Azure DevOps quando a sua equipe planeja por lá.",
+    "description": "Integration card body; keep GitHub Issues, Jira and Azure DevOps in English"
+  },
+  "product.integrations.trackers.link": {
+    "message": "Guia de sincronização com trackers",
+    "description": "Link to the tracker sync guide"
+  },
+  "product.loop.illustrationTag": {
+    "message": "Ilustração · os seis arquivos que um incremento deixa para trás",
+    "description": "Label under the pipeline illustration"
+  },
+  "product.loop.ariaLabel": {
+    "message": "O loop do SpecWeave",
+    "description": "Accessible label for the list of loop steps; keep SpecWeave in English"
+  },
+  "product.meta.title": {
+    "message": "CLI do SpecWeave",
+    "description": "Page title of /product; keep product names in English"
+  },
+  "product.meta.description": {
+    "message": "O CLI do SpecWeave planeja o trabalho como uma spec curta, registra cada tarefa com a saída do teste no git e passa o trabalho a qualquer agente de código, conta ou máquina.",
+    "description": "Meta description of /product; keep product names in English"
+  },
+  "product.hero.freeOpenSource": {
+    "message": "Grátis e de código aberto",
+    "description": "Hero kicker next to the version chip"
+  },
+  "product.hero.title": {
+    "message": "O trabalho sobrevive à sessão.",
+    "description": "Hero headline of /product"
+  },
+  "product.hero.lead": {
+    "message": "Seu agente escreve o código. O SpecWeave guarda o que significa concluído, o que comprovou e onde você parou, como arquivos simples no git, para o Claude Code, o Codex ou qualquer outro agente continuar a mesma tarefa.",
+    "description": "Hero lead paragraph; keep product names in English"
+  },
+  "product.hero.copyInstall": {
+    "message": "Copiar o comando de instalação",
+    "description": "Accessible label of the copy button next to the install command"
+  },
+  "product.hero.cta.start": {
+    "message": "Comece no seu projeto",
+    "description": "Primary hero button"
+  },
+  "product.hero.cta.commands": {
+    "message": "Todos os comandos",
+    "description": "Secondary hero link to the command reference"
+  },
+  "product.hero.version": {
+    "message": "Versão {version}, lançada em {date}. Grátis e de código aberto.",
+    "description": "Release line; {version} is the CLI version, {date} its release date"
+  },
+  "product.hero.terminalAria": {
+    "message": "Saída do specweave pickup em um segundo clone executado como Codex",
+    "description": "Accessible label of the hero terminal; keep specweave pickup and Codex in English"
+  },
+  "product.hero.pickedUpBadge": {
+    "message": "Retomado pelo Codex",
+    "description": "Badge on the hero terminal; keep Codex in English"
+  },
+  "product.hero.caption": {
+    "message": "Saída real de um segundo clone executado como Codex, depois que o Claude Code fez o handoff.",
+    "description": "Caption of the hero terminal; keep product names in English"
+  },
+  "product.loop.heading": {
+    "message": "Seis comandos do plano ao fechamento",
+    "description": "Section heading"
+  },
+  "product.loop.intro": {
+    "message": "Cada passo deixa um arquivo. Nada fecha com um checkbox: o teste roda, a saída fica guardada, e o incremento continua aberto até a verificação passar.",
+    "description": "Section intro"
+  },
+  "product.loop.caption": {
+    "message": "Comandos, flags e nomes de arquivo como no specweave {version}. O incremento, a tarefa e o revisor são o exemplo usado em toda esta página.",
+    "description": "Caption under the loop; {version} is the CLI version"
+  },
+  "product.handoff.heading": {
+    "message": "Ficar sem tokens não é o fim",
+    "description": "Section heading"
+  },
+  "product.handoff.lead": {
+    "message": "Diga \"hand off\" na ferramenta que você está deixando e \"pick up where I left off\" na próxima. O Codex pode continuar o que o Claude Code começou, na mesma máquina ou em outra. Nada é copiado entre ferramentas: {cmd} envia um snapshot para {ref} e {wip} e adiciona um evento ao ledger.",
+    "description": "Section lead; the quoted phrases are what the user says to the agent; {cmd} is a command, {ref} and {wip} are git refs. Keep Codex and Claude Code in English"
+  },
+  "product.handoff.flag.all": {
+    "message": "Grava um índice de todos os incrementos ativos e de todos os repositórios aninhados com trabalho apenas local.",
+    "description": "Explains the handoff --all flag"
+  },
+  "product.handoff.flag.list": {
+    "message": "Mostra os handoffs pendentes, do mais novo ao mais antigo, e não altera nada.",
+    "description": "Explains the pickup --list flag"
+  },
+  "product.handoff.flag.idOrTitle": {
+    "message": "id ou título",
+    "description": "Placeholder argument in the command \"pickup <id or title>\""
+  },
+  "product.handoff.flag.pick": {
+    "message": "Pega um específico quando vários estão esperando.",
+    "description": "Explains passing an id or title to pickup"
+  },
+  "product.handoff.flag.noPush": {
+    "message": "Mantém o handoff nesta máquina em vez de enviá-lo ao seu remote.",
+    "description": "Explains the handoff --no-push flag"
+  },
+  "product.handoff.guideLink": {
+    "message": "Handoff e retomada em detalhe",
+    "description": "Link to the handoff guide"
+  },
+  "product.handoff.leaving": {
+    "message": "Saindo: Claude Code, como claude@cloud",
+    "description": "Label above the terminal being left; keep Claude Code and claude@cloud in English"
+  },
+  "product.handoff.leavingAria": {
+    "message": "specweave handoff na sessão que está sendo deixada",
+    "description": "Accessible label of a terminal; keep specweave handoff in English"
+  },
+  "product.handoff.connector": {
+    "message": "Um snapshot enviado para {ref} e {wip} no seu remote, mais um evento de handoff no ledger",
+    "description": "Text between the two terminals; {ref} and {wip} are git refs"
+  },
+  "product.handoff.arriving": {
+    "message": "Chegando: Codex, como codex@laptop",
+    "description": "Label above the arriving terminal; keep Codex and codex@laptop in English"
+  },
+  "product.handoff.arrivingAria": {
+    "message": "specweave pickup na próxima ferramenta",
+    "description": "Accessible label of a terminal; keep specweave pickup in English"
+  },
+  "product.handoff.caption": {
+    "message": "As linhas do pickup são saída real de um segundo clone executado como Codex. As linhas do handoff são a mensagem exata do CLI para a mesma execução.",
+    "description": "Caption under the handoff terminals; keep Codex in English"
+  },
+  "product.limits.heading": {
+    "message": "Limites de uso tratados antes de chegarem",
+    "description": "Section heading"
+  },
+  "product.limits.lead": {
+    "message": "{cmd} adiciona hooks ao Claude Code, ao Codex e ao Grok Build. Cada hook salva um checkpoint local, e em 95% de qualquer janela de uso o modo decide o que acontece (o Grok não informa porcentagem, então o hook dele age quando um turno atinge o limite de taxa).",
+    "description": "Section lead; {cmd} is a command. Keep product names in English"
+  },
+  "product.limits.capture.alt": {
+    "message": "Painel de uso do SpecWithCode: Codex semanal com 10% restantes, Claude sessão com 2% restantes, semanal com 54% restantes e semanal Fable com 84% restantes, cada um com seu horário de renovação",
+    "description": "Alt text of the usage panel screenshot; keep product names in English"
+  },
+  "product.limits.capture.label": {
+    "message": "Captura real · painel de uso do SpecWithCode, as janelas que um hook observa",
+    "description": "Label under the usage panel screenshot; keep SpecWithCode in English"
+  },
+  "product.limits.modesAria": {
+    "message": "Modos no limite",
+    "description": "Accessible label of the list of auto-handoff modes"
+  },
+  "product.limits.defaultChip": {
+    "message": "Padrão",
+    "description": "Chip marking the default mode"
+  },
+  "product.limits.atThreshold": {
+    "message": "No limite",
+    "description": "Label: what the mode does at the threshold"
+  },
+  "product.limits.useFor": {
+    "message": "Use para",
+    "description": "Label: when to use the mode"
+  },
+  "product.limits.flag.at": {
+    "message": "Move o limite; o padrão é 95.",
+    "description": "Explains the --at flag"
+  },
+  "product.limits.flag.waitUnder": {
+    "message": "Não faz nada quando todas as janelas cheias são renovadas em até essa quantidade de minutos; o padrão é 30.",
+    "description": "Explains the --wait-under flag"
+  },
+  "product.limits.flag.autocompact": {
+    "message": "Compacta o Claude Code em 400K tokens em vez de perto de um milhão, para os turnos finais continuarem pequenos.",
+    "description": "Explains autocompact on; keep Claude Code in English"
+  },
+  "product.limits.note": {
+    "message": "Executando agentes em {link}? Use uma máquina por assinatura de provedor: mantenha cada máquina conectada a uma conta por provedor de forma permanente, e adicione uma máquina quando precisar de mais capacidade em vez de trocar de assinatura manualmente.",
+    "description": "Note; {link} is a link labelled SpecWithCode"
+  },
+  "product.limits.guideLink": {
+    "message": "Guia do handoff automático",
+    "description": "Link to the auto-handoff guide"
+  },
+  "product.skills.heading": {
+    "message": "Sete skills por padrão, quatro quando você precisar",
+    "description": "Section heading"
+  },
+  "product.skills.intro": {
+    "message": "Skills são instruções curtas que o seu agente carrega sob demanda. Desde a {version}, as opcionais são ativadas quando o seu projeto pede. {list} mostra por que cada uma está ativa, e {enable} ou {disable} altera isso.",
+    "description": "Section intro; {version} is the CLI version; {list}, {enable}, {disable} are commands"
+  },
+  "product.skills.core.title": {
+    "message": "Em todo projeto",
+    "description": "Heading of the default skills list"
+  },
+  "product.skills.optional.title": {
+    "message": "Quando o projeto pede",
+    "description": "Heading of the optional skills list"
+  },
+  "product.skills.referenceLink": {
+    "message": "Referência de skills",
+    "description": "Link to the skills reference"
+  },
+  "product.record.heading": {
+    "message": "Um registro que você pode inspecionar",
+    "description": "Section heading"
+  },
+  "product.record.intro": {
+    "message": "Tudo acima são arquivos comuns no seu repositório. A revisão no git e os controles de acesso protegem o histórico; esses arquivos não são um sistema de auditoria à prova de adulteração.",
+    "description": "Section intro"
+  },
+  "product.record.boardTitle": {
+    "message": "O que o painel lê para o exemplo",
+    "description": "Heading above the dashboard table"
+  },
+  "product.record.boardCaption": {
+    "message": "Montado a partir da mesma execução de {pickup} mostrada no topo desta página. Execute {dashboard} no seu projeto para ver o seu.",
+    "description": "Caption under the dashboard table; {pickup} and {dashboard} are commands"
+  },
+  "product.integrations.heading": {
+    "message": "Conectado às ferramentas que você já usa",
+    "description": "Section heading"
+  },
+  "product.integrations.intro": {
+    "message": "Cada uma é opcional e fica desligada até você configurá-la.",
+    "description": "Section intro"
+  },
+  "product.integrations.allLink": {
+    "message": "Todas as integrações",
+    "description": "Link to the integrations page"
+  },
+  "product.specwithcode.heading": {
+    "message": "Execute os mesmos incrementos em um app de desktop",
+    "description": "Section heading"
+  },
+  "product.specwithcode.body": {
+    "message": "Uma thread de worker do SpecWithCode trabalha em uma branch e abre um pull request, que é exatamente o formato de um incremento. A checklist dela é a lista de tarefas do incremento, e as escritas dela no ledger são os comandos desta página. As threads deixam notas umas para as outras no ledger em vez de editar os arquivos umas das outras.",
+    "description": "Section body; keep SpecWithCode in English"
+  },
+  "product.specwithcode.link": {
+    "message": "Conheça o SpecWithCode",
+    "description": "Link to the SpecWithCode page; keep SpecWithCode in English"
+  },
+  "product.specwithcode.windowLabel": {
+    "message": "Thread de worker",
+    "description": "Window title bar label"
+  },
+  "product.specwithcode.imageAlt": {
+    "message": "Uma thread de worker do SpecWithCode relatando seu resultado, o comando que executou com a saída que imprimiu, nenhum bloqueio e dois arquivos alterados",
+    "description": "Alt text of the worker thread screenshot; keep SpecWithCode in English"
+  },
+  "product.specwithcode.caption": {
+    "message": "Uma thread de worker relata seu resultado, suas evidências e os arquivos que alterou. SpecWithCode 1.0.21, 15 de outubro de 2026.",
+    "description": "Screenshot caption; keep SpecWithCode and the version in English"
+  },
+  "product.final.heading": {
+    "message": "Escreva o que significa concluído e troque de ferramenta à vontade",
+    "description": "Final call-to-action heading"
+  },
+  "product.final.quickStart": {
+    "message": "Início rápido",
+    "description": "Final call-to-action button"
+  },
+  "product.final.changelog": {
+    "message": "O que mudou na 3.1",
+    "description": "Link to the changelog; keep the version in English"
+  },
+  "tutorials.filter.all": {
+    "message": "Todos",
+    "description": "Product filter button showing guides for every product"
+  },
+  "tutorials.path.external": {
+    "message": "Estes guias ficam no registro.",
+    "description": "Shown when a path's guides live on another site"
+  },
+  "tutorials.path.externalLink": {
+    "message": "Assista aos tutoriais do Verified Skill",
+    "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
+  },
+  "tutorials.path.railAria": {
+    "message": "{title}, em ordem",
+    "description": "Accessible label of the ordered list of guides in a learning path; {title} is the path title"
+  },
+  "tutorials.path.step": {
+    "message": "Passo {number}: ",
+    "description": "Screen-reader prefix before a guide title in a path; keep the trailing space"
+  },
+  "tutorials.row.audio.silent": {
+    "message": "Legendas, sem som",
+    "description": "Guide meta: the video has captions and no audio"
+  },
+  "tutorials.row.audio.narrated": {
+    "message": "Narrado",
+    "description": "Guide meta: the video has a voiceover"
+  },
+  "tutorials.row.recordedOn": {
+    "message": "Gravado em {testedOn}, adicionado em {date}",
+    "description": "Guide meta; {testedOn} is a product and version, {date} the date it was added"
+  },
+  "tutorials.row.olderInterface": {
+    "message": "Interface antiga, adicionada em {date}",
+    "description": "Guide meta for older recordings; {date} is the date it was added"
+  },
+  "tutorials.meta.title": {
+    "message": "Tutoriais: guias do CLI do SpecWeave e do SpecWithCode",
+    "description": "Page title of /tutorials; keep product names in English"
+  },
+  "tutorials.meta.description": {
+    "message": "Guias curtos com gravações reais do CLI do SpecWeave e do SpecWithCode: planejar e passar o trabalho adiante, conduzir um projeto com coordenador e workers, manter memória, verificar e agendar. Cada guia tem passos, capítulos, legendas e transcrição.",
+    "description": "Meta description of /tutorials; keep product names in English"
+  },
+  "tutorials.hero.title": {
+    "message": "Aprenda uma tarefa de cada vez",
+    "description": "Hero headline of /tutorials"
+  },
+  "tutorials.hero.lead": {
+    "message": "Guias curtos baseados em gravações reais do CLI do SpecWeave e do SpecWithCode. Cada um nomeia o resultado, mostra o vídeo com capítulos, lista os passos e traz a transcrição.",
+    "description": "Hero lead paragraph; keep product names in English"
+  },
+  "tutorials.hero.stats.guides": {
+    "message": "{count} guias",
+    "description": "Hero stat; {count} is the number of guides"
+  },
+  "tutorials.hero.stats.paths": {
+    "message": "{count} trilhas de aprendizado",
+    "description": "Hero stat; {count} is the number of learning paths"
+  },
+  "tutorials.hero.browseAll": {
+    "message": "Ver todos os guias",
+    "description": "Link that jumps to the list of all guides"
+  },
+  "tutorials.paths.heading.one": {
+    "message": "Trilha de aprendizado",
+    "description": "Section heading when there is one learning path"
+  },
+  "tutorials.paths.heading.other": {
+    "message": "Trilhas de aprendizado",
+    "description": "Section heading when there are several learning paths"
+  },
+  "tutorials.paths.intro": {
+    "message": "Siga uma trilha do primeiro passo até um resultado pronto. Cada passo é um guia próprio; uma trilha aparece aqui quando tem pelo menos dois.",
+    "description": "Learning paths section intro"
+  },
+  "tutorials.all.heading": {
+    "message": "Todos os guias",
+    "description": "Section heading of the full guide list"
+  },
+  "tutorials.search.label": {
+    "message": "Buscar guias",
+    "description": "Label of the guide search box"
+  },
+  "tutorials.search.placeholder": {
+    "message": "handoff, uso, Codex",
+    "description": "Example search words in the guide search box; keep Codex in English"
+  },
+  "tutorials.filter.groupAria": {
+    "message": "Produto",
+    "description": "Accessible label of the product filter buttons"
+  },
+  "tutorials.results.all": {
+    "message": "{count} guias",
+    "description": "Result count when every guide is shown"
+  },
+  "tutorials.results.some": {
+    "message": "{count} de {total} guias",
+    "description": "Result count when a filter or search is active"
+  },
+  "tutorials.results.empty": {
+    "message": "Nenhum guia corresponde ainda. Tente outra palavra ou {reset}.",
+    "description": "Shown when no guide matches; {reset} is a button that clears the search"
+  },
+  "tutorials.results.emptyReset": {
+    "message": "mostre todos os guias",
+    "description": "Button text that clears the search and filter"
+  },
+  "tutorials.other.heading": {
+    "message": "Dos outros produtos",
+    "description": "Section heading"
+  },
+  "tutorials.other.body": {
+    "message": "Os guias para encontrar, testar e publicar skills de agentes ficam em verified-skill.com.",
+    "description": "Points to tutorials on another site; keep verified-skill.com in English"
+  },
+  "tutorials.other.link": {
+    "message": "Tutoriais do Verified Skill",
+    "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
+  },
+  "tutorials.standards.heading": {
+    "message": "O que todo guia inclui",
+    "description": "Section heading"
+  },
+  "tutorials.standards.recording.title": {
+    "message": "Uma gravação real",
+    "description": "Standard card title"
+  },
+  "tutorials.standards.recording.body": {
+    "message": "Imagens do app em execução ou saída real de comandos, com projetos de exemplo. Cada guia diz qual versão mostra e quando foi adicionado; as gravações da versão atual vêm primeiro.",
+    "description": "Standard card body"
+  },
+  "tutorials.standards.captions.title": {
+    "message": "Legendas, capítulos e transcrição",
+    "description": "Standard card title"
+  },
+  "tutorials.standards.captions.body": {
+    "message": "Uma faixa de legendas WebVTT, capítulos para os quais você pode pular pelo teclado e uma transcrição gerada a partir das legendas.",
+    "description": "Standard card body; keep WebVTT in English"
+  },
+  "tutorials.standards.hosted.title": {
+    "message": "Hospedado neste site",
+    "description": "Standard card title"
+  },
+  "tutorials.standards.hosted.body": {
+    "message": "Vídeos e pôsteres são carregados de spec-weave.com, sem player nem rastreamento de terceiros.",
+    "description": "Standard card body; keep spec-weave.com in English"
+  },
+  "builtWithItself.stat.prs": {
+    "message": "pull requests do SpecWithCode abertos por threads de worker e mesclados, de 15 a 29 de outubro de 2026",
+    "description": "Label under the number 367. Keep product names in English"
+  },
+  "builtWithItself.stat.threads": {
+    "message": "threads de worker por trás deles: 100 no Claude Code, 65 no Codex, o resto no Gemini CLI e no Copilot",
+    "description": "Label under the number 167. Keep product names in English"
+  },
+  "builtWithItself.stat.allThreads": {
+    "message": "threads no Mac principal do mantenedor desde 9 de outubro, em seis projetos",
+    "description": "Label under the number 2,473"
+  },
+  "builtWithItself.pr.961": {
+    "message": "Manter abertos os objetivos do usuário além dos marcos de código concluídos",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.pr.954": {
+    "message": "Skills desta sessão no popover do compositor",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.pr.927": {
+    "message": "Preferir rotas de frota do Connect e oferecer capacidade de contas ilimitada",
+    "description": "Title of a real merged pull request. \"Connect\" is a product name; keep it in English"
+  },
+  "builtWithItself.pr.880": {
+    "message": "Apontar o chip de máquina da thread para Passar para",
+    "description": "Title of a real merged pull request; \"Hand off to\" is a menu item name in the app"
+  },
+  "builtWithItself.pr.873": {
+    "message": "Perguntar ao voltar por padrão; compactação ociosa opcional",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.pr.837": {
+    "message": "Artefatos PPTX abrem com uma prévia dos slides",
+    "description": "Title of a real merged pull request"
+  },
+  "builtWithItself.kicker": {
+    "message": "SpecWithCode · grátis, acesso antecipado",
+    "description": "Small label above the heading. Keep product names in English"
+  },
+  "builtWithItself.title": {
+    "message": "O SpecWithCode é construído com o SpecWithCode",
+    "description": "Section heading. Keep product names in English"
+  },
+  "builtWithItself.lead": {
+    "message": "Construímos o app dentro do app. Um coordenador mantém o briefing de cada projeto, threads de worker no Claude Code, no Codex e em outros agentes escrevem as mudanças e abrem os pull requests, e o trabalho roda em um Mac e em um worker Linux unidos pelo SpecWithCode Connect.",
+    "description": "Section lead paragraph. Keep product names in English"
+  },
+  "builtWithItself.statsSource": {
+    "message": "Contado a partir dos registros de threads do próprio app em 30 de outubro de 2026.",
+    "description": "Source note under the numbers"
+  },
+  "builtWithItself.window.title": {
+    "message": "Coordenador no Mac, worker no Linux",
+    "description": "Window title bar label of the screenshot"
+  },
+  "builtWithItself.shot.ariaLabel": {
+    "message": "Abrir a captura de tela em tamanho real de uma thread de worker no ministorm",
+    "description": "Accessible label of the screenshot link; \"ministorm\" is a machine name, keep it"
+  },
+  "builtWithItself.shot.alt": {
+    "message": "Projeto real do SpecWithCode: o coordenador no Mac m4 inicia a thread de prova e2e do Ministorm no ministorm, uma máquina Linux; o worker responde com a saída do uname Linux ministorm 7.0.0-38-generic x86_64 e Hello, ministorm, e salva e2e-proof.txt",
+    "description": "Alt text of the screenshot. Keep product names, machine names, command output and file names in English"
+  },
+  "builtWithItself.shot.caption": {
+    "message": "Captura real, 30 de outubro de 2026, do nosso teste de ponta a ponta. O coordenador no Mac inicia um worker no ministorm, uma máquina Linux, e o worker relata de lá. Quando o Claude Code atingiu o limite, o coordenador seguiu com o Grok.",
+    "description": "Caption of the screenshot. Keep product names and the machine name ministorm in English"
+  },
+  "builtWithItself.merged.title": {
+    "message": "Mesclados recentemente a partir de threads",
+    "description": "Heading of the list of merged pull requests"
+  },
+  "builtWithItself.merged.ariaLabel": {
+    "message": "Pull requests mesclados a partir de threads de worker",
+    "description": "Accessible label of the list of merged pull requests"
+  },
+  "builtWithItself.merged.agentThread": {
+    "message": "Thread do {agent}",
+    "description": "Which agent thread opened the pull request; {agent} is a product name such as Codex or Claude Code"
+  },
+  "builtWithItself.merged.state": {
+    "message": "Mesclado",
+    "description": "State chip of a merged pull request"
+  },
+  "builtWithItself.merged.source": {
+    "message": "Dos registros de threads: cada pull request foi aberto e vinculado pela thread de worker indicada ao lado. Eles chegam ao nosso repositório de desenvolvimento; o {link} público recebe snapshots regulares.",
+    "description": "Source note under the merged pull requests; {link} is a link labelled 'source repository'"
+  },
+  "builtWithItself.merged.source.link": {
+    "message": "repositório de código-fonte",
+    "description": "Link text to the public GitHub source repository"
+  },
+  "builtWithItself.more": {
+    "message": "Veja como o SpecWithCode se constrói sozinho",
+    "description": "Link to the SpecWithCode page section. Keep product names in English"
+  },
+  "code.flow.message.free.handoff": {
+    "message": "Claude Code em {threshold}%. O Codex, na sua conta gratuita do ChatGPT, continua a thread com o histórico mantido.",
+    "description": "Hero diagram, coordinator line: Claude Code reached the handoff point ({threshold} is a number) and Codex continues. Keep product names in English"
+  },
+  "code.flow.message.subs.routed": {
+    "message": "Claude Max em {threshold}%. Reembolsos vai para o Copilot, que tem folga.",
+    "description": "Hero diagram, coordinator line: Claude Max reached the handoff point ({threshold} is a number) and the Refunds task moves to Copilot. Keep product names in English"
+  },
+  "code.flow.machine.windows": {
+    "message": "PC com Windows",
+    "description": "Hero diagram, machine name"
+  },
+  "code.flow.machine.linux": {
+    "message": "Servidor Linux",
+    "description": "Hero diagram, machine name"
+  },
+  "code.flow.goal.free": {
+    "message": "Construir o fluxo de cadastro",
+    "description": "Hero diagram, the goal you give in the free scene"
+  },
+  "code.flow.goal.subs": {
+    "message": "Entregar o checkout v2",
+    "description": "Hero diagram, the goal you give in the paid plans scene"
+  },
+  "code.flow.plan.yours": {
+    "message": "Seu plano",
+    "description": "Hero diagram, coordinator plan label"
+  },
+  "code.flow.plan.yourClaude": {
+    "message": "Seu plano do Claude",
+    "description": "Hero diagram, plan label. Keep product names in English"
+  },
+  "code.flow.plan.freeChatGpt": {
+    "message": "Conta gratuita do ChatGPT",
+    "description": "Hero diagram, plan label. Keep product names in English"
+  },
+  "code.flow.plan.apiKey": {
+    "message": "Sua chave de API",
+    "description": "Hero diagram, plan label for DeepSeek with your own API key"
+  },
+  "code.flow.task.signup": {
+    "message": "Página de cadastro",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.emails": {
+    "message": "Modelos de e-mail",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.tests": {
+    "message": "Testes e CI",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.payments": {
+    "message": "API de pagamentos",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.checkout": {
+    "message": "Tela de checkout",
+    "description": "Hero diagram, thread task"
+  },
+  "code.flow.task.refunds": {
+    "message": "Reembolsos",
+    "description": "Hero diagram, a task that moves to another thread"
+  },
+  "code.flow.step.read14": {
+    "message": "Leu 14 arquivos",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteSignupForm": {
+    "message": "Escreveu SignupForm.tsx",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.tests18": {
+    "message": "Testes: 18 passaram",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.historyKept": {
+    "message": "Histórico mantido",
+    "description": "Hero diagram, thread label at the handoff point"
+  },
+  "code.flow.step.pickedUp": {
+    "message": "Retomado com o histórico completo",
+    "description": "Hero diagram, thread progress step after the handoff"
+  },
+  "code.flow.step.emailValidation": {
+    "message": "Adicionou validação de e-mail",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.tests24": {
+    "message": "Testes: 24 passaram",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.read6Templates": {
+    "message": "Leu 6 modelos",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteWelcome": {
+    "message": "Escreveu welcome.mjml",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.previews": {
+    "message": "Prévias geradas",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.added30": {
+    "message": "Adicionou 30 testes",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.flakyE2e": {
+    "message": "Corrigiu e2e instável",
+    "description": "Hero diagram, thread progress step; e2e means end-to-end tests"
+  },
+  "code.flow.step.ciGreen": {
+    "message": "CI verde",
+    "description": "Hero diagram, thread progress step: continuous integration passed"
+  },
+  "code.flow.step.planned6": {
+    "message": "Planejou 6 tarefas",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteCharge": {
+    "message": "Escreveu charge.ts",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.tests31": {
+    "message": "Testes: 31 passaram",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.doneMoved": {
+    "message": "Concluído · próxima tarefa movida",
+    "description": "Hero diagram, thread label at the handoff point"
+  },
+  "code.flow.step.read22": {
+    "message": "Leu 22 arquivos",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.wroteCheckout": {
+    "message": "Escreveu Checkout.tsx",
+    "description": "Hero diagram, thread progress step; keep the file name"
+  },
+  "code.flow.step.tests12": {
+    "message": "Testes: 12 passaram",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.step.added40": {
+    "message": "Adicionou 40 testes",
+    "description": "Hero diagram, thread progress step"
+  },
+  "code.flow.machine.connected": {
+    "message": "conectada",
+    "description": "Hero diagram, tag on a machine that just joined"
+  },
+  "code.flow.step.starting": {
+    "message": "Iniciando",
+    "description": "Hero diagram, thread status before it starts"
+  },
+  "code.flow.badge.handedOff": {
+    "message": "Handoff em {threshold}%",
+    "description": "Hero diagram, badge on a thread handed to the next agent; {threshold} is a number"
+  },
+  "code.flow.badge.next": {
+    "message": "Próxima: {task}",
+    "description": "Hero diagram, badge for the task a thread will take next; {task} is the task name"
+  },
+  "code.flow.tiers.ariaLabel": {
+    "message": "Duas formas de usar",
+    "description": "Hero diagram, accessible label of the two scene tabs"
+  },
+  "code.flow.tier.free.long": {
+    "message": "Contas gratuitas",
+    "description": "Hero diagram, tab for the free scene (wide screens)"
+  },
+  "code.flow.tier.free.short": {
+    "message": "Grátis",
+    "description": "Hero diagram, tab for the free scene (narrow screens)"
+  },
+  "code.flow.tier.subs.long": {
+    "message": "Planos que você paga",
+    "description": "Hero diagram, tab for the paid plans scene (wide screens)"
+  },
+  "code.flow.tier.subs.short": {
+    "message": "Seus planos",
+    "description": "Hero diagram, tab for the paid plans scene (narrow screens)"
+  },
+  "code.flow.coordinator": {
+    "message": "Coordenador",
+    "description": "Hero diagram, label of the coordinator agent"
+  },
+  "code.flow.threads.ariaLabel": {
+    "message": "Threads de worker",
+    "description": "Hero diagram, accessible label of the thread list"
+  },
+  "code.flow.caption": {
+    "message": "Handoff em {threshold}%, histórico mantido. Defina o ponto de 50% a 100% por projeto.",
+    "description": "Caption under the hero diagram; {threshold} is the default handoff percentage"
+  },
+  "studioWindow.alt": {
+    "message": "A janela inteira do SpecWithCode: o projeto trip-budget na barra lateral, o coordenador do Claude Code informando que as duas mudanças estão prontas e que todos os 23 testes passam, e o painel de Threads com um worker do Claude Code e um do Codex em execução e sete threads concluídas",
+    "description": "Alt text of the full SpecWithCode app screenshot. Keep product names and \"trip-budget\" in English"
+  },
+  "studioWindow.caption": {
+    "message": "Um coordenador do Claude Code relata o resultado enquanto um worker do Claude Code e um do Codex rodam no painel de Threads. SpecWithCode 1.0.103, 27 de outubro de 2026.",
+    "description": "Caption of the full SpecWithCode app screenshot. Keep product names and the version in English"
+  },
+  "studioWindow.open.ariaLabel": {
+    "message": "Abrir a captura de tela em tamanho real",
+    "description": "Accessible label of the link that opens the full-size app screenshot"
+  },
+  "home.handoff.beat.spec": {
+    "message": "A spec",
+    "description": "Progress rail label for beat 1 of the handoff story"
+  },
+  "home.handoff.beat.agents": {
+    "message": "Os agentes",
+    "description": "Progress rail label for beat 2 of the handoff story"
+  },
+  "home.handoff.beat.ledger": {
+    "message": "O ledger",
+    "description": "Progress rail label for beat 3 of the handoff story"
+  },
+  "home.handoff.beat.handoff": {
+    "message": "O handoff",
+    "description": "Progress rail label for beat 4 of the handoff story"
+  },
+  "home.handoff.diagram.ariaLabel": {
+    "message": "Ilustração: o Claude Code escreve no repositório até o limite de uso; o Codex lê do git a mesma spec, o mesmo ledger e o mesmo handoff e termina a tarefa.",
+    "description": "Accessible label of the handoff diagram. Keep product names in English"
+  },
+  "home.handoff.chip.usageLimit": {
+    "message": "Limite de uso",
+    "description": "Warning chip: the agent hit its usage limit"
+  },
+  "home.handoff.diagram.repo": {
+    "message": "Seu repositório, no git",
+    "description": "Diagram node title for the git repository"
+  },
+  "home.handoff.diagram.verifyPass": {
+    "message": "verify: Aprovado",
+    "description": "Pass chip in the diagram; 'verify' is the CLI command name, keep it in English"
+  },
+  "home.handoff.diagram.caption": {
+    "message": "Ilustração",
+    "description": "Caption marking a picture as an illustration, not a real capture"
+  },
+  "home.handoff.beats.ariaLabel": {
+    "message": "Quatro camadas de um handoff",
+    "description": "Accessible label of the list of the four handoff beats"
+  },
+  "home.handoff.spec.title": {
+    "message": "A spec",
+    "description": "Heading of beat 1"
+  },
+  "home.handoff.spec.body": {
+    "message": "O que significa concluído, escrito uma vez antes de qualquer agente começar. {file}",
+    "description": "Beat 1 text; {file} is the file name spec.md"
+  },
+  "home.handoff.spec.ariaLabel": {
+    "message": "Trecho do spec.md",
+    "description": "Accessible label of the spec.md excerpt; keep the file name"
+  },
+  "home.handoff.agents.title": {
+    "message": "Os agentes",
+    "description": "Heading of beat 2"
+  },
+  "home.handoff.agents.body": {
+    "message": "Qualquer ferramenta que leia os arquivos assume uma tarefa, comprova e segue em frente.",
+    "description": "Beat 2 text"
+  },
+  "home.handoff.agents.claim": {
+    "message": "O Claude Code pega a primeira tarefa aberta. O claim é uma linha no ledger, então nenhum outro agente a pega também.",
+    "description": "Explains specweave task claim T-01. Keep product names in English"
+  },
+  "home.handoff.agents.done": {
+    "message": "Executa o teste da tarefa. A saída 0 é a evidência, e a saída completa fica guardada em {file}.",
+    "description": "Explains specweave task done; {file} is a file path"
+  },
+  "home.handoff.agents.limit": {
+    "message": "O Claude Code assume a T-02 e atinge o limite de uso no meio dela.",
+    "description": "Explains the second claim. Keep product names and T-02 in English"
+  },
+  "home.handoff.ledger.title": {
+    "message": "O ledger no git",
+    "description": "Heading of beat 3"
+  },
+  "home.handoff.ledger.body": {
+    "message": "Cada claim, conclusão e release é uma linha, commitada junto com o código. {file}",
+    "description": "Beat 3 text; {file} is the file name ledger.jsonl"
+  },
+  "home.handoff.ledger.ariaLabel": {
+    "message": "Linhas do ledger.jsonl depois dos dois agentes",
+    "description": "Accessible label of the ledger excerpt; keep the file name"
+  },
+  "home.handoff.handoff.title": {
+    "message": "O handoff",
+    "description": "Heading of beat 4"
+  },
+  "home.handoff.handoff.body": {
+    "message": "Outra ferramenta continua a partir dos mesmos arquivos, não de uma janela de chat.",
+    "description": "Beat 4 text"
+  },
+  "home.handoff.switch.srOnly": {
+    "message": "passa a T-02 para",
+    "description": "Screen-reader text between claude@cloud and codex@laptop; keep T-02"
+  },
+  "home.handoff.handoff.release": {
+    "message": "Libera o claim, grava {file} com o que vem a seguir e envia um snapshot para {ref} e {branch}.",
+    "description": "Explains specweave handoff; {file} is handoff.md, {ref} and {branch} are git ref names, keep them"
+  },
+  "home.handoff.handoff.pickup": {
+    "message": "No Codex: busca o handoff, aplica as edições e mostra a T-02 com seus dois critérios.",
+    "description": "Explains specweave pickup. Keep Codex and T-02 in English"
+  },
+  "home.handoff.handoff.done": {
+    "message": "O Codex termina a T-02 contra os mesmos critérios, e o ledger cita a saída do teste.",
+    "description": "Explains the second task done. Keep Codex and T-02 in English"
+  },
+  "home.handoff.handoff.verify": {
+    "message": "Executa test, lint e build, confere cada critério e grava {file}.",
+    "description": "Explains specweave verify; {file} is a file path"
+  },
+  "home.handoff.chip.pass": {
+    "message": "Aprovado",
+    "description": "Pass chip after a successful verify"
+  },
+  "install.copy.ariaLabel": {
+    "message": "Copiar o comando de instalação",
+    "description": "Accessible label of the button that copies the npm install command"
+  },
+  "install.copy.done": {
+    "message": "Copiado",
+    "description": "Copy button text after the install command was copied"
+  },
+  "install.copy.button": {
+    "message": "Copiar",
+    "description": "Copy button text next to the install command"
+  },
+  "install.copy.error": {
+    "message": "Não foi possível copiar. Selecione o comando acima.",
+    "description": "Status line when copying the install command to the clipboard failed"
+  },
+  "install.copy.success": {
+    "message": "Comando de instalação copiado.",
+    "description": "Status line after the install command was copied to the clipboard"
+  },
+  "home.family.app.crop.alt": {
+    "message": "Recorte do painel de Threads do SpecWithCode: nada aguardando você, 2 em andamento: README docs for --json and --people no Claude Code, e split.py --people option no Codex",
+    "description": "Alt text of a screenshot crop. Keep product and file names and command flags in English"
+  },
+  "home.family.skill.row.source": {
+    "message": "Origem",
+    "description": "Row label in the illustrated skill page"
+  },
+  "home.family.skill.row.source.value": {
+    "message": "Link do repositório",
+    "description": "Row value in the illustrated skill page, next to Source"
+  },
+  "home.family.skill.row.scan": {
+    "message": "Varredura de segurança",
+    "description": "Row label in the illustrated skill page"
+  },
+  "home.family.skill.row.scan.value": {
+    "message": "Todos os arquivos verificados",
+    "description": "Row value in the illustrated skill page, next to Security scan"
+  },
+  "home.family.skill.row.eval": {
+    "message": "Avaliação",
+    "description": "Row label in the illustrated skill page"
+  },
+  "home.family.skill.row.eval.value": {
+    "message": "Quando existe uma",
+    "description": "Row value in the illustrated skill page, next to Evaluation"
+  },
+  "home.family.cli.terminal.ariaLabel": {
+    "message": "Saída do specweave pickup em um segundo clone executado como Codex",
+    "description": "Accessible label of the terminal output. Keep \"specweave pickup\" and \"Codex\" in English"
+  },
+  "home.family.cli.source": {
+    "message": "Saída real · specweave {version}",
+    "description": "Caption of the terminal output; {version} is the CLI version"
+  },
+  "home.family.cli.kind": {
+    "message": "Código aberto no npm, MIT. Versão {version}, {date}.",
+    "description": "CLI card subtitle; {version} is the CLI version, {date} its release date. Keep npm and MIT in English"
+  },
+  "home.family.cli.body": {
+    "message": "Grava a spec, o ledger de tarefas e as evidências dos testes no seu repositório, e passa o trabalho à próxima ferramenta com {command}. Comece por aqui se você trabalha no terminal com Claude Code, Codex ou qualquer agente que lê arquivos.",
+    "description": "CLI card body; {command} is the shell command specweave handoff. Keep product names in English"
+  },
+  "home.family.cli.install.hint": {
+    "message": "Depois execute specweave init no seu projeto.",
+    "description": "Hint under the npm install command; keep \"specweave init\" in English"
+  },
+  "home.family.cli.link": {
+    "message": "Como o CLI funciona",
+    "description": "Link from the CLI card to the CLI page"
+  },
+  "home.family.app.source": {
+    "message": "Captura real · SpecWithCode 1.0.103, 27 de out. de 2026",
+    "description": "Caption of the app screenshot crop. Keep product names and the version in English"
+  },
+  "home.family.app.kind": {
+    "message": "App gratuito para Mac, Windows e Linux. Versão {version}.",
+    "description": "App card subtitle; {version} is the app version. Keep OS names in English"
+  },
+  "home.family.app.body": {
+    "message": "Um coordenador por projeto inicia threads de worker nos agentes que você já paga, nas suas próprias máquinas. Cada thread mostra o incremento do SpecWeave e o progresso das tarefas, e seus relatórios ficam salvos junto ao incremento. Comece por aqui se você quer uma só janela para vários agentes.",
+    "description": "App card body. Keep product names in English"
+  },
+  "home.family.app.chrome": {
+    "message": "Os agentes também podem abrir, ler, clicar e tirar capturas de páginas no seu próprio perfil do Chrome, em um grupo de abas que você pode fechar: {link}, pareado em Configurações, Chrome.",
+    "description": "App card extra line; {link} is a link to the Chrome extension labelled 'SpecWithCode Browser for Chrome'. 'Settings, Chrome' names the app's settings section. Keep product names in English"
+  },
+  "home.family.app.chrome.link": {
+    "message": "SpecWithCode Browser para Chrome",
+    "description": "Link text to the Chrome Web Store extension. Keep product names in English"
+  },
+  "home.family.app.link": {
+    "message": "Conheça o SpecWithCode",
+    "description": "Link from the app card to the SpecWithCode page. Keep product names in English"
+  },
+  "home.family.skill.illustration.ariaLabel": {
+    "message": "Ilustração dos três fatos que toda página de skill mostra",
+    "description": "Accessible label of the skill page illustration"
+  },
+  "home.family.skill.illustration.title": {
+    "message": "Uma página de skill",
+    "description": "Title inside the skill page illustration"
+  },
+  "home.family.skill.illustration.caption": {
+    "message": "Ilustração",
+    "description": "Caption marking a picture as an illustration, not a real capture"
+  },
+  "home.family.skill.kind": {
+    "message": "Navegação grátis em verified-skill.com.",
+    "description": "Verified Skill card subtitle; keep the domain verified-skill.com"
+  },
+  "home.family.skill.body": {
+    "message": "Um registro de skills de agentes. Cada uma mostra sua origem, sua varredura de segurança e, quando existe, sua avaliação, para você saber o que instala antes de os agentes usarem.",
+    "description": "Verified Skill card body"
+  },
+  "home.family.skill.details.summary": {
+    "message": "O que toda página de skill mostra",
+    "description": "Expandable details summary in the Verified Skill card"
+  },
+  "home.family.skill.details.source": {
+    "message": "Origem",
+    "description": "Term in the skill page details list"
+  },
+  "home.family.skill.details.source.body": {
+    "message": "O repositório de onde a skill vem, para você poder lê-lo antes.",
+    "description": "Definition of Source in the skill page details list"
+  },
+  "home.family.skill.details.scan": {
+    "message": "Varredura de segurança",
+    "description": "Term in the skill page details list"
+  },
+  "home.family.skill.details.scan.body": {
+    "message": "O que a varredura de todos os arquivos encontrou, antes de você instalar.",
+    "description": "Definition of Security scan in the skill page details list"
+  },
+  "home.family.skill.details.eval": {
+    "message": "Avaliação, quando existe",
+    "description": "Term in the skill page details list"
+  },
+  "home.family.skill.details.eval.body": {
+    "message": "Se a skill ajudou em uma tarefa real. Nem toda skill tem uma ainda.",
+    "description": "Definition of Evaluation in the skill page details list"
+  },
+  "home.family.skill.link": {
+    "message": "Explore skills em verified-skill.com",
+    "description": "Link to verified-skill.com; keep the domain"
+  },
+  "home.hero.crop.tests.alt": {
+    "message": "Recorte do relatório do coordenador: testes, 23 passaram em 0,09s",
+    "description": "Alt text of a screenshot crop"
+  },
+  "home.hero.crop.threads.alt": {
+    "message": "Recorte do painel de Threads: Working 2, README docs for --json and --people no Claude Code Opus 5.5, e split.py --people option no Codex GPT-6.1-Sol",
+    "description": "Alt text of a screenshot crop. Keep product, model and file names and command flags in English"
+  },
+  "home.hero.crop.dispatch.alt": {
+    "message": "Recorte de uma mensagem do coordenador: Write tip.py CLI, aprovação solicitada, e README usage for tip.py, em andamento, cada um com Ver thread",
+    "description": "Alt text of a screenshot crop. Keep file names in English"
+  },
+  "home.hero.crop.usage.alt": {
+    "message": "Recorte de Uso e limites: sessão do Claude, 2% restantes",
+    "description": "Alt text of a screenshot crop. Keep \"Claude\" in English"
+  },
+  "home.hero.pill.new": {
+    "message": "Novo",
+    "description": "Chip on the announcement pill above the hero headline"
+  },
+  "home.hero.pill.text": {
+    "message": "SpecWithCode Browser: deixe o Claude Code, o Codex, o GitHub Copilot ou o Grok usarem o seu próprio Chrome",
+    "description": "Announcement pill above the hero headline. Keep product names in English"
+  },
+  "home.hero.title": {
+    "message": "Troque de ferramenta de IA sem perder o fio.",
+    "description": "Home page main headline"
+  },
+  "home.hero.lead": {
+    "message": "O SpecWeave grava o plano e cada tarefa concluída no git, para o Claude Code, o Codex ou qualquer outro agente retomar o mesmo trabalho. {specwithcode} (pronuncia-se “Spec with Code”) é uma interface sobre os harnesses nativos desses agentes, nas suas máquinas e assinaturas.",
+    "description": "Hero lead paragraph; {specwithcode} is a link with the product name SpecWithCode. Keep product names in English"
+  },
+  "home.hero.getCli": {
+    "message": "Obter o CLI",
+    "description": "Secondary hero button linking to the CLI page"
+  },
+  "home.hero.requirements": {
+    "message": "Os dois são grátis. O app roda em Macs com Apple silicon e macOS 13 ou posterior, Windows 10 e 11 e Linux: {link}.",
+    "description": "System requirements line; {link} is a link labelled 'download SpecWithCode'. Keep product and OS names in English"
+  },
+  "home.hero.requirements.link": {
+    "message": "baixar o SpecWithCode",
+    "description": "Link text to the download page. Keep product names in English"
+  },
+  "home.hero.install.hint": {
+    "message": "O CLI de código aberto: licença MIT, local primeiro, sem conta.",
+    "description": "Hint under the npm install command in the hero"
+  },
+  "home.hero.tag.threads": {
+    "message": "Painel de Threads · 27 de out. de 2026",
+    "description": "Small tag on a floating screenshot crop"
+  },
+  "home.hero.tag.dispatch": {
+    "message": "Workers em paralelo · 15 de out. de 2026",
+    "description": "Small tag on a floating screenshot crop"
+  },
+  "home.hero.tag.usage": {
+    "message": "Limite de uso · 10 de out. de 2026",
+    "description": "Small tag on a floating screenshot crop"
+  },
+  "home.hero.caption": {
+    "message": "Capturas reais, recortadas. {windowCaption} Recortes flutuantes: a mesma janela e gravações do SpecWithCode de 15 e 10 de outubro de 2026. {fullSize}",
+    "description": "Caption of the hero screenshots; {windowCaption} is the main screenshot's own caption, {fullSize} a 'View full size' link. Keep product names in English"
+  },
+  "home.planning.stat.prs": {
+    "message": "pull requests mesclados medidos ao longo de quatro semanas, ao lado de 1.142 threads de agentes que executaram trabalho",
+    "description": "Label under the number 1,476"
+  },
+  "home.planning.stat.share": {
+    "message": "deles estavam ligados a um incremento; o resto foi feito diretamente",
+    "description": "Label under the number 35%"
+  },
+  "home.planning.stat.small": {
+    "message": "horas em aberto e tokens de saída abaixo de 300 linhas alteradas, com ou sem incremento",
+    "description": "Label under the value ≈ 1x"
+  },
+  "home.planning.stat.large": {
+    "message": "as mensagens e os tokens de saída em threads com incremento que entregaram um pull request com mais de 1.000 linhas alteradas (17 contra 11 threads)",
+    "description": "Label under the value ≈ 2x"
+  },
+  "home.planning.skip.small": {
+    "message": "Um pull request com menos de cerca de 300 linhas alteradas",
+    "description": "When to skip planning an increment, list item"
+  },
+  "home.planning.skip.fix": {
+    "message": "Uma correção de acompanhamento ou um ajuste de interface",
+    "description": "When to skip planning an increment, list item"
+  },
+  "home.planning.skip.investigation": {
+    "message": "Uma investigação",
+    "description": "When to skip planning an increment, list item"
+  },
+  "home.planning.plan.multiDay": {
+    "message": "Trabalho de vários dias, um incremento por pull request",
+    "description": "When to plan an increment, list item"
+  },
+  "home.planning.plan.risky": {
+    "message": "Multiplataforma, autenticação, pagamentos, migrações",
+    "description": "When to plan an increment, list item"
+  },
+  "home.planning.plan.handoff": {
+    "message": "Trabalho que outra ferramenta ou máquina vai retomar",
+    "description": "When to plan an increment, list item"
+  },
+  "home.planning.kicker": {
+    "message": "Medido no nosso próprio trabalho",
+    "description": "Small label above the 'when to plan' heading"
+  },
+  "home.planning.title": {
+    "message": "Planeje quando compensa, pule quando não",
+    "description": "Heading of the 'when to plan an increment' section"
+  },
+  "home.planning.lead": {
+    "message": "Construímos estes produtos com o SpecWeave, então olhamos onde uma spec se paga. Mudanças pequenas ficaram parecidas nos dois casos. As grandes, com incremento, exigiram mais mensagens, então reservamos incrementos para trabalho que o Codex, outra conta ou outra máquina vai continuar.",
+    "description": "Lead paragraph of the 'when to plan' section. Keep product names in English"
+  },
+  "home.planning.skip.title": {
+    "message": "Pule o incremento",
+    "description": "Column heading: when to skip an increment"
+  },
+  "home.planning.skip.command": {
+    "message": "{command} e entregue.",
+    "description": "{command} is the shell command specweave small-fix; keep it as is"
+  },
+  "home.planning.plan.title": {
+    "message": "Planeje um incremento",
+    "description": "Column heading: when to plan an increment"
+  },
+  "home.planning.plan.command": {
+    "message": "{command}. Estes casos valem mais que o tamanho.",
+    "description": "{command} is the shell command specweave create-increment; keep it as is"
+  },
+  "home.planning.source": {
+    "message": "Pull requests mesclados, registros de threads do SpecWithCode e sessões do Claude Code, de 6 de outubro a 3 de novembro de 2026.",
+    "description": "Source note for the measurement. Keep product names in English"
+  },
+  "home.planning.source.link": {
+    "message": "Leia a medição",
+    "description": "Link to the guide with the full measurement"
+  },
+  "continuityBoard.increment.label": {
+    "message": "Incremento",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.increment.value": {
+    "message": "{id} Checkout retomável",
+    "description": "Dashboard row value; {id} is the increment id, followed by the example increment title"
+  },
+  "continuityBoard.state.label": {
+    "message": "Estado",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.state.value": {
+    "message": "Ativo",
+    "description": "Increment state chip"
+  },
+  "continuityBoard.tasks.label": {
+    "message": "Tarefas",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.tasks.value": {
+    "message": "{done} de {total} concluídas",
+    "description": "Task progress"
+  },
+  "continuityBoard.next.label": {
+    "message": "Próxima tarefa",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.next.value": {
+    "message": "{id} Restaurar o rascunho na volta",
+    "description": "Dashboard row value; {id} is a task id, followed by the example task title"
+  },
+  "continuityBoard.criteria.label": {
+    "message": "Critérios",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.criteria.value": {
+    "message": "{ac1} Voltar em até 24 horas restaura o carrinho e a opção de entrega. {ac2} Um pedido pago nunca é restaurado.",
+    "description": "Dashboard row value; {ac1} and {ac2} are acceptance criterion ids"
+  },
+  "continuityBoard.files.label": {
+    "message": "Arquivos e teste",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.handoff.label": {
+    "message": "Último handoff",
+    "description": "Dashboard table row label"
+  },
+  "continuityBoard.handoff.value": {
+    "message": "{from}, sem tokens. Retomado por {to}.",
+    "description": "Dashboard row value; {from} and {to} are agent identities"
+  },
+  "continuityBoard.caption": {
+    "message": "O que o painel lê para o incremento {id}",
+    "description": "Screen-reader caption of the dashboard table; {id} is the increment id"
+  },
+  "motion.extension.aria": {
+    "message": "SpecWithCode Browser para Chrome",
+    "description": "Accessible label of the browser extension banner; keep product names in English"
+  },
+  "motion.extension.title": {
+    "message": "Novo: SpecWithCode Browser para Chrome.",
+    "description": "Bold lead of the browser extension banner; keep product names in English"
+  },
+  "motion.extension.body": {
+    "message": "Deixe o Claude Code, o Codex, o GitHub Copilot, o Grok ou qualquer agente no SpecWithCode abrir, ler, clicar e tirar capturas de páginas no seu próprio Chrome, dentro de um grupo de abas que você pode fechar.",
+    "description": "Browser extension banner text; keep product names in English"
+  },
+  "motion.extension.cta": {
+    "message": "Adicionar ao Chrome",
+    "description": "Button to install the browser extension; keep Chrome in English"
+  },
+  "motion.extension.ctaHint": {
+    "message": " (abre a Chrome Web Store)",
+    "description": "Screen-reader hint after the Add to Chrome button; keep the leading space and Chrome Web Store in English"
+  },
+  "footer.column.start": {
+    "message": "Primeiros passos",
+    "description": "Footer column title"
+  },
+  "footer.link.start.whatIsSpecweave": {
+    "message": "O que é o SpecWeave?",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.start.quickStart": {
+    "message": "Início rápido",
+    "description": "Footer link label"
+  },
+  "footer.link.start.tutorials": {
+    "message": "Tutoriais",
+    "description": "Footer link label"
+  },
+  "footer.link.start.howItWorks": {
+    "message": "Como funciona",
+    "description": "Footer link label"
+  },
+  "footer.link.start.whatChangedIn31": {
+    "message": "O que mudou na 3.1",
+    "description": "Footer link label"
+  },
+  "footer.column.switchTools": {
+    "message": "Trocar de ferramenta",
+    "description": "Footer column title"
+  },
+  "footer.link.switchTools.handoffAndPickup": {
+    "message": "Handoff e retomada",
+    "description": "Footer link label"
+  },
+  "footer.link.switchTools.whatGoesInHandoffMd": {
+    "message": "O que vai no handoff.md",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.claudeCodeToCodex": {
+    "message": "Do Claude Code para o Codex",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.usageLimitReached": {
+    "message": "Limite de uso atingido",
+    "description": "Footer link label"
+  },
+  "footer.link.switchTools.claudeCodeProjects": {
+    "message": "Claude Code Projects",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.codexGrokAndOthers": {
+    "message": "Codex, Grok e outros",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.switchTools.integrations": {
+    "message": "Integrações",
+    "description": "Footer link label"
+  },
+  "footer.column.compare": {
+    "message": "Comparar",
+    "description": "Footer column title"
+  },
+  "footer.link.compare.specweaveVsOpenspec": {
+    "message": "SpecWeave vs OpenSpec",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.specweaveVsSpecKit": {
+    "message": "SpecWeave vs Spec Kit",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.specweaveVsBmad": {
+    "message": "SpecWeave vs BMAD",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.allSpecDrivenTools": {
+    "message": "Todas as ferramentas guiadas por spec",
+    "description": "Footer link label"
+  },
+  "footer.link.compare.claudeCodeVsCodex": {
+    "message": "Claude Code vs Codex",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.agentsMdVsClaudeMd": {
+    "message": "AGENTS.md vs CLAUDE.md",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.compare.allComparisons": {
+    "message": "Todas as comparações",
+    "description": "Footer link label"
+  },
+  "footer.column.reference": {
+    "message": "Referência",
+    "description": "Footer column title"
+  },
+  "footer.link.reference.commands": {
+    "message": "Comandos",
+    "description": "Footer link label"
+  },
+  "footer.link.reference.skills": {
+    "message": "Skills",
+    "description": "Footer link label"
+  },
+  "footer.link.reference.troubleshooting": {
+    "message": "Solução de problemas",
+    "description": "Footer link label"
+  },
+  "footer.link.reference.changelog": {
+    "message": "Changelog",
+    "description": "Footer link label"
+  },
+  "footer.column.project": {
+    "message": "Projeto",
+    "description": "Footer column title"
+  },
+  "footer.link.project.downloadSpecwithcode": {
+    "message": "Baixar o SpecWithCode",
+    "description": "Footer link label. Keep product names in English"
+  },
+  "footer.link.project.pricing": {
+    "message": "Preços",
+    "description": "Footer link label"
+  },
+  "footer.link.project.blog": {
+    "message": "Blog",
+    "description": "Footer link label"
+  },
+  "footer.link.project.privacy": {
+    "message": "Privacidade",
+    "description": "Footer link label"
+  },
+  "footer.link.project.support": {
+    "message": "Suporte",
+    "description": "Footer link label"
+  },
+  "footer.social.githubIssues": {
+    "message": "GitHub Issues",
+    "description": "Accessible label for the GitHub Issues icon link in the footer. Keep product names in English"
+  },
+  "footer.copyright": {
+    "message": "© {year} SpecWeave. CLI do SpecWeave: licença MIT. SpecWithCode: grátis, código-fonte disponível.",
+    "description": "Footer copyright line; {year} is the current year. Keep product names in English"
+  },
+  "navbar.family.ariaLabel": {
+    "message": "Produtos",
+    "description": "Accessible label for the product family bar at the top of every page"
+  },
+  "navbar.family.specweave.what": {
+    "message": "CLI de spec e handoff",
+    "description": "Short description shown after the product name SpecWeave in the family bar"
+  },
+  "navbar.family.specwithcode.what": {
+    "message": "workspace de desktop",
+    "description": "Short description shown after the product name SpecWithCode in the family bar"
+  },
+  "navbar.family.verifiedSkill.what": {
+    "message": "registro de skills",
+    "description": "Short description shown after the product name Verified Skill in the family bar"
+  },
+  "code.download.meta.title": {
+    "message": "Baixe o SpecWithCode para Mac, Windows e Linux (grátis)",
+    "description": "Download page title. Keep product names in English"
+  },
+  "code.download.meta.description": {
+    "message": "Baixe o SpecWithCode (Spec with Code), o workspace gratuito de agentes de código com IA, para Macs com Apple silicon, Windows 10 e 11 e Linux.",
+    "description": "Download page meta description. Keep product names in English"
+  },
+  "code.download.steps.download.title": {
+    "message": "Baixe o .dmg",
+    "description": "Mac install step 1 title"
+  },
+  "code.download.steps.download.body": {
+    "message": "Clique em Baixar para Mac. Você recebe {file}, da versão indicada nesta página.",
+    "description": "Mac install step 1 body; {file} is the installer file name. Keep product names in English"
+  },
+  "code.download.steps.drag.title": {
+    "message": "Arraste o SpecWithCode para Aplicativos",
+    "description": "Mac install step 2 title. Keep product names in English"
+  },
+  "code.download.steps.drag.body": {
+    "message": "Abra o .dmg e arraste o app para Aplicativos. Ele é assinado com um Apple Developer ID e notarizado, então abre sem precisar liberar nada na segurança.",
+    "description": "Mac install step 2 body. Keep product names in English"
+  },
+  "code.download.steps.open.title": {
+    "message": "Abra e adicione um provedor",
+    "description": "Mac install step 3 title"
+  },
+  "code.download.steps.open.body": {
+    "message": "O app inicia o serviço local por você. Entre em um agente de código que você já usa, como o Claude Code ou o Codex, e comece a sua primeira thread.",
+    "description": "Mac install step 3 body. Keep product names in English"
+  },
+  "code.download.desktopNotes.whichFile.name": {
+    "message": "Qual arquivo",
+    "description": "Windows/Linux install note label: which installer file to pick"
+  },
+  "code.download.desktopNotes.whichFile.detail": {
+    "message": "A maioria dos PCs com Windows e das máquinas Linux é x64. Escolha arm64 para um dispositivo Arm, como um notebook Windows com Snapdragon ou uma máquina Linux Arm; no Linux, {uname} mostra {aarch64} nelas e {x86_64} em x64.",
+    "description": "Which installer to pick; {uname}, {aarch64} and {x86_64} are code. Keep product names in English"
+  },
+  "code.download.desktopNotes.windows.detail": {
+    "message": "Execute {exe}, ou {exeArm64} em Arm. Ele instala só para o seu usuário, sem pedir senha de administrador. O instalador ainda não tem assinatura de código, então o SmartScreen mostra {protected} na primeira vez: escolha {moreInfo} e depois {runAnyway}.",
+    "description": "Windows install note; {exe} and {exeArm64} are file names; {protected}, {moreInfo} and {runAnyway} are the bold Windows SmartScreen dialog texts. Keep product names in English"
+  },
+  "code.download.desktopNotes.windows.smartscreenTitle": {
+    "message": "O Windows protegeu o computador",
+    "description": "Title of the Windows SmartScreen dialog, as Windows shows it"
+  },
+  "code.download.desktopNotes.windows.moreInfo": {
+    "message": "Mais informações",
+    "description": "Windows SmartScreen dialog link text, as Windows shows it"
+  },
+  "code.download.desktopNotes.windows.runAnyway": {
+    "message": "Executar assim mesmo",
+    "description": "Windows SmartScreen dialog button text, as Windows shows it"
+  },
+  "code.download.desktopNotes.debian.name": {
+    "message": "Debian e Ubuntu",
+    "description": "Install note label for Debian and Ubuntu. Keep product names in English"
+  },
+  "code.download.desktopNotes.debian.detail": {
+    "message": "{x64Command} (x64) ou {arm64Command} (arm64) instala o app com uma entrada no menu.",
+    "description": "Debian/Ubuntu install note; {x64Command} and {arm64Command} are shell commands. Keep product names in English"
+  },
+  "code.download.desktopNotes.otherLinux.name": {
+    "message": "Outros Linux",
+    "description": "Install note label for other Linux distributions. Keep product names in English"
+  },
+  "code.download.desktopNotes.otherLinux.detail": {
+    "message": "Torne o AppImage da sua arquitetura executável com {chmod} e execute-o. O app precisa de uma distribuição baseada em glibc.",
+    "description": "Other Linux install note; {chmod} is a shell command. Keep product names in English"
+  },
+  "code.download.desktopNotes.servers.name": {
+    "message": "Servidores Linux",
+    "description": "Install note label for headless Linux servers. Keep product names in English"
+  },
+  "code.download.desktopNotes.servers.detail": {
+    "message": "Uma máquina sem desktop executa o servidor a partir do arquivo {x64Archive} ou {arm64Archive} da versão, como worker. Veja {link}.",
+    "description": "Linux server note; {x64Archive} and {arm64Archive} are archive names, {link} links to the Linux worker guide. Keep product names in English"
+  },
+  "code.download.desktopNotes.servers.link": {
+    "message": "Worker Linux",
+    "description": "Link text to the Linux worker guide. Keep product names in English"
+  },
+  "code.download.desktopNotes.differs.name": {
+    "message": "O que muda",
+    "description": "Install note label: what differs from the Mac app"
+  },
+  "code.download.desktopNotes.differs.detail": {
+    "message": "O controle do computador comanda a tela de um Mac e existe só no macOS. O app se atualiza sozinho a partir das novas versões também no Windows e no Linux; a atualização do .deb pede a sua senha.",
+    "description": "What differs on Windows and Linux. Keep product names in English"
+  },
+  "code.download.next.firstTask.name": {
+    "message": "Execute a sua primeira tarefa",
+    "description": "After-install item label"
+  },
+  "code.download.next.firstTask.detail": {
+    "message": "Os {link} curtos percorrem projetos, threads e máquinas; os vídeos de primeira tarefa por agente estão sendo regravados.",
+    "description": "After-install item; {link} links to the video tutorials"
+  },
+  "code.download.next.firstTask.link": {
+    "message": "tutoriais em vídeo",
+    "description": "Link text to the video tutorials"
+  },
+  "code.download.next.usageLimit.name": {
+    "message": "Nunca espere por um limite de uso",
+    "description": "After-install item label"
+  },
+  "code.download.next.usageLimit.detail": {
+    "message": "Quando um provedor esgota, a mesma thread continua em outro com o seu contexto. Veja {link}.",
+    "description": "After-install item; {link} links to a tutorial"
+  },
+  "code.download.next.usageLimit.link": {
+    "message": "Continue trabalhando quando um provedor esgotar",
+    "description": "Link text: tutorial title"
+  },
+  "code.download.next.chrome.name": {
+    "message": "Deixe os agentes usarem o seu Chrome",
+    "description": "After-install item label. Keep product names in English"
+  },
+  "code.download.next.chrome.detail": {
+    "message": "Adicione a extensão gratuita do SpecWithCode pela {link} e pareie em Configurações › Chrome. Os agentes passam a trabalhar no seu próprio Chrome, em um grupo de abas que você pode ver.",
+    "description": "After-install item; {link} is the Chrome Web Store link; Settings › Chrome is a menu path in the app. Keep product names in English"
+  },
+  "code.download.next.machine.name": {
+    "message": "Adicione outra máquina",
+    "description": "After-install item label"
+  },
+  "code.download.next.machine.detail": {
+    "message": "Adicione um segundo Mac ou um worker Linux pelo SpecWithCode Connect. Veja {link}.",
+    "description": "After-install item; {link} links to a tutorial. Keep product names in English"
+  },
+  "code.download.next.machine.link": {
+    "message": "Adicionar uma segunda máquina",
+    "description": "Link text: tutorial title"
+  },
+  "code.download.faq.free.q": {
+    "message": "O SpecWithCode é grátis?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.free.a": {
+    "message": "Sim. O SpecWithCode é grátis. O uso local não exige uma conta no SpecWithCode. Você traz as suas próprias assinaturas ou chaves de API dos provedores e paga diretamente quaisquer cobranças deles.",
+    "description": "FAQ answer. Keep product names in English"
+  },
+  "code.download.faq.macs.q": {
+    "message": "Em quais Macs o SpecWithCode roda?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.macs.a": {
+    "message": "Macs com Apple silicon (M1 ou posterior) e macOS 13 ou posterior. Macs Intel não são compatíveis.",
+    "description": "FAQ answer. Keep product names in English"
+  },
+  "code.download.faq.windowsLinux.q": {
+    "message": "Existe download para Windows ou Linux?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.windowsLinux.a": {
+    "message": "Sim. O SpecWithCode {version} tem instaladores para Windows 10 e 11 em x64 e arm64, e um AppImage e um .deb para Linux em x64 e arm64, em distribuições baseadas em glibc. Os instaladores do Windows ainda não têm assinatura de código, então o Windows pede que você confirme a primeira execução. O controle do computador existe só no macOS.",
+    "description": "FAQ answer; {version} is the release version. Keep product names in English"
+  },
+  "code.download.faq.safe.q": {
+    "message": "O download é seguro?",
+    "description": "FAQ question"
+  },
+  "code.download.faq.safe.a": {
+    "message": "Toda versão é compilada no GitHub Actions. O app para Mac é assinado com um Apple Developer ID e notarizado pela Apple. O instalador do Windows e o AppImage e o .deb do Linux ainda não têm assinatura de código; confira-os com o arquivo SHA256SUMS-windows-linux publicado com cada versão. O download do Mac tem o próprio arquivo SHA256SUMS.",
+    "description": "FAQ answer; SHA256SUMS file names stay as is. Keep product names in English"
+  },
+  "code.download.faq.update.q": {
+    "message": "Como atualizo o SpecWithCode?",
+    "description": "FAQ question. Keep product names in English"
+  },
+  "code.download.faq.update.a": {
+    "message": "Baixe o .dmg mais recente nas versões do SpecWithCode no GitHub e substitua o app em Aplicativos. Quando uma máquina roda um servidor mais antigo que o seu app, o SpecWithCode mostra um aviso de atualização na conversa e em Configurações › Conexões.",
+    "description": "FAQ answer; Settings › Connections is a menu path in the app. Keep product names in English"
+  },
+  "code.download.ld.breadcrumb.download": {
+    "message": "Download",
+    "description": "Breadcrumb name of the download page (structured data)"
+  },
+  "code.download.ld.howto.name": {
+    "message": "Instalar o SpecWithCode em um Mac",
+    "description": "Structured-data how-to name. Keep product names in English"
+  },
+  "code.download.ld.howto.step1": {
+    "message": "Baixe o SpecWithCode-arm64.dmg em spec-weave.com/code/download.",
+    "description": "Structured-data how-to step 1 text; keep the file name and address as is"
+  },
+  "code.download.ld.howto.step2": {
+    "message": "Abra o .dmg e arraste o SpecWithCode para Aplicativos. Ele é assinado e notarizado, então abre sem precisar liberar nada na segurança.",
+    "description": "Structured-data how-to step 2 text. Keep product names in English"
+  },
+  "code.download.ld.howto.step3": {
+    "message": "Abra o SpecWithCode, entre em um agente de código que você já usa, como o Claude Code ou o Codex, e comece uma thread.",
+    "description": "Structured-data how-to step 3 text. Keep product names in English"
+  },
+  "code.download.hero.windowsLinuxButton": {
+    "message": "Windows e Linux",
+    "description": "Button that jumps to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.hero.requirements": {
+    "message": "SpecWithCode {version}, {file}, {size}.",
+    "description": "Installer facts under the download button; {version} is the version, {file} the file name, {size} the download size. Keep product names in English"
+  },
+  "code.download.hero.macRequirements": {
+    "message": "Apple silicon, macOS 13 ou posterior.",
+    "description": "Mac system requirements. Keep product names in English"
+  },
+  "code.download.hero.platformSentence": {
+    "message": "{platform}.",
+    "description": "Who the installer is for, as a sentence; {platform} is a phrase such as Windows 10 and 11 on x64"
+  },
+  "code.download.hero.pickedArmGuess": {
+    "message": "Escolhido para o seu computador; em uma máquina Arm, escolha arm64 abaixo. {link}.",
+    "description": "Shown when the installer was picked for the visitor but the CPU is unknown; {link} jumps to other platforms"
+  },
+  "code.download.hero.otherPlatforms": {
+    "message": "Outras plataformas",
+    "description": "Link to the downloads for other platforms"
+  },
+  "code.download.hero.picked": {
+    "message": "Escolhido para o seu computador. {link}.",
+    "description": "Shown when the installer was picked for the visitor; {link} jumps to other platforms"
+  },
+  "code.download.releaseNotes": {
+    "message": "Notas da versão",
+    "description": "Link to the release notes"
+  },
+  "code.download.intelMac.title": {
+    "message": "Parece um Mac Intel.",
+    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
+  },
+  "code.download.intelMac.body": {
+    "message": "O SpecWithCode para macOS exige Apple silicon (M1 ou posterior); não existe build para Intel. Uma máquina Linux ou Windows pode rodá-lo no lugar, veja {link}.",
+    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.intelMac.link": {
+    "message": "Windows e Linux",
+    "description": "Link to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.mobile.title": {
+    "message": "O SpecWithCode é um app de desktop.",
+    "description": "Bold lead of the phone visitor notice. Keep product names in English"
+  },
+  "code.download.mobile.body": {
+    "message": "Abra esta página no seu Mac, Windows ou Linux para baixá-lo.",
+    "description": "Phone visitor notice. Keep product names in English"
+  },
+  "code.download.signed.title": {
+    "message": "Assinado com um Apple Developer ID e notarizado pela Apple.",
+    "description": "Bold lead of the Mac signing notice. Keep product names in English"
+  },
+  "code.download.signed.body": {
+    "message": "O download vem direto das versões do projeto no GitHub.",
+    "description": "Mac signing notice. Keep product names in English"
+  },
+  "code.download.unsigned.title": {
+    "message": "Ainda sem assinatura de código.",
+    "description": "Bold lead of the Windows/Linux signing notice"
+  },
+  "code.download.unsigned.body": {
+    "message": "O download vem direto das versões do projeto no GitHub; compare-o com o SHA256SUMS. As notas de instalação estão em {link}.",
+    "description": "Windows/Linux signing notice; {link} jumps to the Windows and Linux install notes. Keep product names in English"
+  },
+  "code.download.unsigned.link": {
+    "message": "Windows e Linux",
+    "description": "Link to the Windows and Linux install notes. Keep product names in English"
+  },
+  "code.download.footer.windowsLinuxDownloads": {
+    "message": "Downloads para Windows e Linux",
+    "description": "Footer link to the Windows and Linux downloads. Keep product names in English"
+  },
+  "code.download.footer.allPlatforms": {
+    "message": "Todas as plataformas",
+    "description": "Footer link to the downloads for every platform"
+  },
+  "code.download.meta.ogImageAlt": {
+    "message": "SpecWithCode: execute agentes Claude Code e Codex nos seus próprios computadores. macOS, Windows e Linux. Grátis, código-fonte disponível.",
+    "description": "Social share image alt text. Keep product names in English"
+  },
+  "code.download.meta.twitterImageAlt": {
+    "message": "SpecWithCode: agentes nos seus próprios computadores. macOS, Windows e Linux.",
+    "description": "Twitter share image alt text. Keep product names in English"
+  },
+  "code.download.hero.productNote": {
+    "message": "Grátis, código-fonte disponível",
+    "description": "Short note next to the product name"
+  },
+  "code.download.hero.title": {
+    "message": "Baixe o SpecWithCode",
+    "description": "Download page headline. Keep product names in English"
+  },
+  "code.download.hero.pronounced": {
+    "message": "SpecWithCode, pronuncia-se “Spec with Code”, reúne os seus agentes de código com IA em um só workspace.",
+    "description": "Hero sentence explaining the product name; keep SpecWithCode and Spec with Code in English"
+  },
+  "code.download.hero.lead": {
+    "message": "Um app gratuito para {providers}, nas suas próprias máquinas e nas assinaturas que você já paga.",
+    "description": "Hero lead; {providers} is a list of coding agent product names"
+  },
+  "code.download.hero.shot.bar": {
+    "message": "Thread de worker",
+    "description": "Title bar label of the app screenshot"
+  },
+  "code.download.hero.shot.alt": {
+    "message": "SpecWithCode em um Mac: uma thread de worker do Codex relatando o comando que executou e os arquivos que alterou",
+    "description": "Alt text of the app screenshot. Keep product names in English"
+  },
+  "code.download.hero.shot.caption": {
+    "message": "SpecWithCode no macOS. Captura do app, 15 de outubro de 2026. {link}",
+    "description": "Screenshot caption; {link} links to the SpecWithCode page. Keep product names in English"
+  },
+  "code.download.hero.shot.captionLink": {
+    "message": "Veja tudo o que ele faz",
+    "description": "Link from the screenshot caption to the SpecWithCode page"
+  },
+  "code.download.windowsLinux.title": {
+    "message": "Windows e Linux",
+    "description": "Section heading. Keep product names in English"
+  },
+  "code.download.windowsLinux.body": {
+    "message": "SpecWithCode {version} para Windows 10 e 11 em x64 e arm64, e para Linux em x64 e arm64 (glibc). Os instaladores ainda não têm assinatura de código. A paridade com o macOS em provedores ao vivo e recursos nativos não está estabelecida, e os builds de desktop para Windows e Linux podem ficar atrás das versões do Mac.",
+    "description": "Windows and Linux section intro; {version} is the release version. Keep product names in English"
+  },
+  "code.download.install.title": {
+    "message": "Instale no Mac em três passos",
+    "description": "Section heading. Keep product names in English"
+  },
+  "code.download.install.body": {
+    "message": "Cerca de um minuto em um Mac recente. Nada para configurar antes da primeira abertura.",
+    "description": "Mac install section intro. Keep product names in English"
+  },
+  "code.download.next.title": {
+    "message": "Depois de instalar",
+    "description": "Section heading"
+  },
+  "code.download.next.body": {
+    "message": "Vídeos e guias curtos para a primeira hora.",
+    "description": "After-install section intro"
+  },
+  "code.download.faq.title": {
+    "message": "Perguntas sobre o download",
+    "description": "FAQ section heading"
+  },
+  "code.download.final.title": {
+    "message": "Baixe o SpecWithCode para o seu computador",
+    "description": "Closing section heading. Keep product names in English"
+  },
+  "code.download.final.body": {
+    "message": "Grátis, código-fonte disponível, sem conta. Escolha macOS em Apple silicon, Windows 10 e 11 (x64 ou arm64) ou Linux (x64 ou arm64).",
+    "description": "Closing section text. Keep product names in English"
+  },
+  "code.download.final.viewSource": {
+    "message": "Ver o código no GitHub",
+    "description": "Link to the source code. Keep product names in English"
+  },
+  "theme.ErrorPageContent.title": {
+    "message": "Esta página deu erro.",
+    "description": "The title of the fallback page when the page crashed"
+  },
+  "theme.BackToTopButton.buttonAriaLabel": {
+    "message": "Voltar para o topo",
+    "description": "The ARIA label for the back to top button"
+  },
+  "theme.blog.archive.title": {
+    "message": "Arquivo",
+    "description": "The page & hero title of the blog archive page"
+  },
+  "theme.blog.archive.description": {
+    "message": "Arquivo",
+    "description": "The page & hero description of the blog archive page"
+  },
+  "theme.blog.paginator.navAriaLabel": {
+    "message": "Navegação da página de listagem do blog",
+    "description": "The ARIA label for the blog pagination"
+  },
+  "theme.blog.paginator.newerEntries": {
+    "message": "Publicações mais recentes",
+    "description": "The label used to navigate to the newer blog posts page (previous page)"
+  },
+  "theme.blog.paginator.olderEntries": {
+    "message": "Publicações mais antigas",
+    "description": "The label used to navigate to the older blog posts page (next page)"
+  },
+  "theme.blog.post.paginator.navAriaLabel": {
+    "message": "Navegação da página de publicação do blog",
+    "description": "The ARIA label for the blog posts pagination"
+  },
+  "theme.blog.post.paginator.newerPost": {
+    "message": "Publicação mais recente",
+    "description": "The blog post button label to navigate to the newer/previous post"
+  },
+  "theme.blog.post.paginator.olderPost": {
+    "message": "Publicação mais antiga",
+    "description": "The blog post button label to navigate to the older/next post"
+  },
+  "theme.tags.tagsPageLink": {
+    "message": "Ver todas as etiquetas",
+    "description": "The label of the link targeting the tag list page"
+  },
+  "theme.colorToggle.ariaLabel.mode.system": {
+    "message": "modo do sistema",
+    "description": "The name for the system color mode"
+  },
+  "theme.colorToggle.ariaLabel.mode.light": {
+    "message": "modo claro",
+    "description": "The name for the light color mode"
+  },
+  "theme.colorToggle.ariaLabel.mode.dark": {
+    "message": "modo escuro",
+    "description": "The name for the dark color mode"
+  },
+  "theme.colorToggle.ariaLabel": {
+    "message": "Mudar entre modo claro e escuro ({mode} está ativo)",
+    "description": "The ARIA label for the color mode toggle"
+  },
+  "theme.docs.breadcrumbs.navAriaLabel": {
+    "message": "Trilha",
+    "description": "The ARIA label for the breadcrumbs"
+  },
+  "theme.docs.DocCard.categoryDescription.plurals": {
+    "message": "1 item|{count} itens",
+    "description": "The default description for a category card in the generated index about how many items this category includes"
+  },
+  "theme.docs.paginator.navAriaLabel": {
+    "message": "Páginas de documento",
+    "description": "The ARIA label for the docs pagination"
+  },
+  "theme.docs.paginator.previous": {
+    "message": "Anterior",
+    "description": "The label used to navigate to the previous doc"
+  },
+  "theme.docs.paginator.next": {
+    "message": "Próxima",
+    "description": "The label used to navigate to the next doc"
+  },
+  "theme.docs.tagDocListPageTitle.nDocsTagged": {
+    "message": "Um documento marcado|{count} documentos marcados",
+    "description": "Pluralized label for \"{count} docs tagged\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.docs.tagDocListPageTitle": {
+    "message": "{nDocsTagged} com \"{tagName}\"",
+    "description": "The title of the page for a docs tag"
+  },
+  "theme.docs.versionBadge.label": {
+    "message": "Versão: {versionLabel}"
+  },
+  "theme.docs.versions.unreleasedVersionLabel": {
+    "message": "Esta é uma documentação não lançada da versão {versionLabel} para {siteTitle}.",
+    "description": "The label used to tell the user that he's browsing an unreleased doc version"
+  },
+  "theme.docs.versions.unmaintainedVersionLabel": {
+    "message": "Esta é a documentação para {siteTitle} {versionLabel}, que não é mais mantida ativamente.",
+    "description": "The label used to tell the user that he's browsing an unmaintained doc version"
+  },
+  "theme.docs.versions.latestVersionSuggestionLabel": {
+    "message": "Para a documentação atualizada, consulte a {latestVersionLink} ({versionLabel}).",
+    "description": "The label used to tell the user to check the latest version"
+  },
+  "theme.docs.versions.latestVersionLinkLabel": {
+    "message": "versão mais recente",
+    "description": "The label used for the latest version suggestion link label"
+  },
+  "theme.common.editThisPage": {
+    "message": "Editar esta página",
+    "description": "The link label to edit the current page"
+  },
+  "theme.common.headingLinkTitle": {
+    "message": "Link direto para {heading}",
+    "description": "Title for link to heading"
+  },
+  "theme.lastUpdated.atDate": {
+    "message": " em {date}",
+    "description": "The words used to describe on which date a page has been last updated"
+  },
+  "theme.lastUpdated.byUser": {
+    "message": " por {user}",
+    "description": "The words used to describe by who the page has been last updated"
+  },
+  "theme.lastUpdated.lastUpdatedAtBy": {
+    "message": "Última atualização{atDate}{byUser}",
+    "description": "The sentence used to display when a page has been last updated, and by who"
+  },
+  "theme.NotFound.title": {
+    "message": "Página não encontrada",
+    "description": "The title of the 404 page"
+  },
+  "theme.navbar.mobileVersionsDropdown.label": {
+    "message": "Versões",
+    "description": "The label for the navbar versions dropdown on mobile view"
+  },
+  "theme.tags.tagsListLabel": {
+    "message": "Etiquetas:",
+    "description": "The label alongside a tag list"
+  },
+  "theme.admonition.caution": {
+    "message": "cuidado",
+    "description": "The default label used for the Caution admonition (:::caution)"
+  },
+  "theme.admonition.danger": {
+    "message": "perigo",
+    "description": "The default label used for the Danger admonition (:::danger)"
+  },
+  "theme.admonition.info": {
+    "message": "informação",
+    "description": "The default label used for the Info admonition (:::info)"
+  },
+  "theme.admonition.note": {
+    "message": "observação",
+    "description": "The default label used for the Note admonition (:::note)"
+  },
+  "theme.admonition.tip": {
+    "message": "dica",
+    "description": "The default label used for the Tip admonition (:::tip)"
+  },
+  "theme.admonition.warning": {
+    "message": "aviso",
+    "description": "The default label used for the Warning admonition (:::warning)"
+  },
+  "theme.AnnouncementBar.closeButtonAriaLabel": {
+    "message": "Fechar",
+    "description": "The ARIA label for close button of announcement bar"
+  },
+  "theme.blog.sidebar.navAriaLabel": {
+    "message": "Navegação das publicações recentes do blog",
+    "description": "The ARIA label for recent posts in the blog sidebar"
+  },
+  "theme.DocSidebarItem.expandCategoryAriaLabel": {
+    "message": "Expandir a categoria '{label}'",
+    "description": "The ARIA label to expand the sidebar category"
+  },
+  "theme.DocSidebarItem.collapseCategoryAriaLabel": {
+    "message": "Recolher a categoria '{label}'",
+    "description": "The ARIA label to collapse the sidebar category"
+  },
+  "theme.IconExternalLink.ariaLabel": {
+    "message": "(abre em uma nova aba)",
+    "description": "The ARIA label for the external link icon"
+  },
+  "theme.NavBar.navAriaLabel": {
+    "message": "Navegação principal",
+    "description": "The ARIA label for the main navigation"
+  },
+  "theme.NotFound.p1": {
+    "message": "Não foi possível encontrar o que você está procurando.",
+    "description": "The first paragraph of the 404 page"
+  },
+  "theme.NotFound.p2": {
+    "message": "Por favor, entre em contato com o dono do site que ligou você à URL original e informe que o link está quebrado.",
+    "description": "The 2nd paragraph of the 404 page"
+  },
+  "theme.navbar.mobileLanguageDropdown.label": {
+    "message": "Idiomas",
+    "description": "The label for the mobile language switcher dropdown"
+  },
+  "theme.TOCCollapsible.toggleButtonLabel": {
+    "message": "Nesta página",
+    "description": "The label used by the button on the collapsible TOC component"
+  },
+  "theme.blog.post.readMore": {
+    "message": "Ler mais",
+    "description": "The label used in blog post item excerpts to link to full blog posts"
+  },
+  "theme.blog.post.readMoreLabel": {
+    "message": "Ler mais sobre {title}",
+    "description": "The ARIA label for the link to full blog posts from excerpts"
+  },
+  "theme.blog.post.readingTime.plurals": {
+    "message": "Um minuto para ler|{readingTime} min para ler",
+    "description": "Pluralized label for \"{readingTime} min read\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.CodeBlock.copy": {
+    "message": "Copiar",
+    "description": "The copy button label on code blocks"
+  },
+  "theme.CodeBlock.copied": {
+    "message": "Copiado",
+    "description": "The copied button label on code blocks"
+  },
+  "theme.CodeBlock.copyButtonAriaLabel": {
+    "message": "Copiar código para a área de transferência",
+    "description": "The ARIA label for copy code blocks button"
+  },
+  "theme.CodeBlock.wordWrapToggle": {
+    "message": "Alternar quebra de linha",
+    "description": "The title attribute for toggle word wrapping button of code block lines"
+  },
+  "theme.docs.breadcrumbs.home": {
+    "message": "Página Inicial",
+    "description": "The ARIA label for the home page in the breadcrumbs"
+  },
+  "theme.docs.sidebar.collapseButtonTitle": {
+    "message": "Recolher painel lateral",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.collapseButtonAriaLabel": {
+    "message": "Recolher painel lateral",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.navAriaLabel": {
+    "message": "Painel lateral de documentos",
+    "description": "The ARIA label for the sidebar navigation"
+  },
+  "theme.docs.sidebar.closeSidebarButtonAriaLabel": {
+    "message": "Fechar painel de navegação",
+    "description": "The ARIA label for close button of mobile sidebar"
+  },
+  "theme.navbar.mobileSidebarSecondaryMenu.backButtonLabel": {
+    "message": "← Voltar para o menu principal",
+    "description": "The label of the back button to return to main menu, inside the mobile navbar sidebar secondary menu (notably used to display the docs sidebar)"
+  },
+  "theme.docs.sidebar.toggleSidebarButtonAriaLabel": {
+    "message": "Alternar painel de navegação",
+    "description": "The ARIA label for hamburger menu button of mobile navigation"
+  },
+  "theme.navbar.mobileDropdown.collapseButton.expandAriaLabel": {
+    "message": "Expandir a seleção",
+    "description": "The ARIA label of the button to expand the mobile dropdown navbar item"
+  },
+  "theme.navbar.mobileDropdown.collapseButton.collapseAriaLabel": {
+    "message": "Recolher a seleção",
+    "description": "The ARIA label of the button to collapse the mobile dropdown navbar item"
+  },
+  "theme.docs.sidebar.expandButtonTitle": {
+    "message": "Expandir painel lateral",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.docs.sidebar.expandButtonAriaLabel": {
+    "message": "Expandir painel lateral",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.SearchBar.noResultsText": {
+    "message": "Nenhum resultado"
+  },
+  "theme.SearchBar.seeAllOutsideContext": {
+    "message": "Ver todos os resultados fora de \"{context}\""
+  },
+  "theme.SearchBar.searchInContext": {
+    "message": "Ver todos os resultados em \"{context}\""
+  },
+  "theme.SearchBar.seeAll": {
+    "message": "Ver todos os resultados"
+  },
+  "theme.SearchBar.label": {
+    "message": "Buscar",
+    "description": "The ARIA label and placeholder for search button"
+  },
+  "theme.SearchPage.existingResultsTitle": {
+    "message": "Resultados da busca por \"{query}\"",
+    "description": "The search page title for non-empty query"
+  },
+  "theme.SearchPage.emptyResultsTitle": {
+    "message": "Buscar na documentação",
+    "description": "The search page title for empty query"
+  },
+  "theme.SearchPage.searchContext.everywhere": {
+    "message": "Em todo o site"
+  },
+  "theme.SearchPage.documentsFound.plurals": {
+    "message": "1 documento encontrado|{count} documentos encontrados",
+    "description": "Pluralized label for \"{count} documents found\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.SearchPage.noResultsText": {
+    "message": "Nenhum documento foi encontrado",
+    "description": "The paragraph for empty search result"
+  },
+  "theme.blog.post.plurals": {
+    "message": "Uma publicação|{count} publicações",
+    "description": "Pluralized label for \"{count} posts\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.blog.tagTitle": {
+    "message": "{nPosts} com a etiqueta \"{tagName}\"",
+    "description": "The title of the page for a blog tag"
+  },
+  "theme.blog.author.pageTitle": {
+    "message": "{authorName} - {nPosts}",
+    "description": "The title of the page for a blog author"
+  },
+  "theme.blog.authorsList.pageTitle": {
+    "message": "Autores",
+    "description": "The title of the authors page"
+  },
+  "theme.blog.authorsList.viewAll": {
+    "message": "Ver todos os autores",
+    "description": "The label of the link targeting the blog authors page"
+  },
+  "theme.blog.author.noPosts": {
+    "message": "Este autor ainda não escreveu nenhuma publicação.",
+    "description": "The text for authors with 0 blog post"
+  },
+  "theme.contentVisibility.unlistedBanner.title": {
+    "message": "Página não listada",
+    "description": "The unlisted content banner title"
+  },
+  "theme.contentVisibility.unlistedBanner.message": {
+    "message": "Esta página não está listada. Mecanismos de busca não irão indexá-la, e somente usuários que possuam o link direto poderão acessá-la",
+    "description": "The unlisted content banner message"
+  },
+  "theme.contentVisibility.draftBanner.title": {
+    "message": "Página de rascunho",
+    "description": "The draft content banner title"
+  },
+  "theme.contentVisibility.draftBanner.message": {
+    "message": "Esta página é um rascunho. Ela estará visível apenas no desenvolvimento e será excluída da compilação de produção.",
+    "description": "The draft content banner message"
+  },
+  "theme.ErrorPageContent.tryAgain": {
+    "message": "Tentar novamente",
+    "description": "The label of the button to try again rendering when the React error boundary captures an error"
+  },
+  "theme.common.skipToMainContent": {
+    "message": "Pular para o conteúdo principal",
+    "description": "The skip to content label used for accessibility, allowing to rapidly navigate to main content with keyboard tab/enter navigation"
+  },
+  "theme.tags.tagsPageTitle": {
+    "message": "Etiquetas",
+    "description": "The title of the tag list page"
+  },
+  "code.flow.message.free.plan": {
+    "message": "Plano: 3 tarefas. Começando no seu Mac.",
+    "description": "Hero diagram, coordinator line: the plan has 3 tasks and starts on the Mac"
+  },
+  "code.flow.message.free.joinedMachines": {
+    "message": "PC com Windows e servidor Linux conectados.",
+    "description": "Hero diagram, coordinator line: two more machines connected"
+  },
+  "code.flow.message.free.needs": {
+    "message": "2 de 3 concluídas. Testes e CI precisa de você: 2 testes falham no servidor Linux.",
+    "description": "Hero diagram, coordinator line: two tasks finished and the Tests and CI task needs the person, because 2 tests fail"
+  },
+  "code.flow.message.subs.plan": {
+    "message": "Plano: 4 tarefas nos planos que você paga.",
+    "description": "Hero diagram, coordinator line: the plan has 4 tasks on paid subscriptions"
+  },
+  "code.flow.message.subs.allDone": {
+    "message": "As 4 concluídas. {check} 3 pull requests para revisar.",
+    "description": "Hero diagram, coordinator line: all 4 tasks finished; {check} is a check-mark icon"
+  },
+  "code.flow.step.runningCi": {
+    "message": "Executando CI",
+    "description": "Hero diagram, thread progress step: continuous integration is running"
+  },
+  "code.flow.result.prOpened": {
+    "message": "Concluído · pull request aberto",
+    "description": "Hero diagram, thread result: finished and a pull request was opened"
+  },
+  "code.flow.result.needsYou": {
+    "message": "2 testes falham · pediu sua ajuda",
+    "description": "Hero diagram, thread result: 2 tests fail and the agent asked the person for help"
+  },
+  "code.flow.status.pending": {
+    "message": "Aguardando",
+    "description": "Hero diagram, plan task status: not started"
+  },
+  "code.flow.status.running": {
+    "message": "Em andamento",
+    "description": "Hero diagram, plan task status: in progress"
+  },
+  "code.flow.status.done": {
+    "message": "Concluído",
+    "description": "Hero diagram, plan task status: finished"
+  },
+  "code.flow.status.needs": {
+    "message": "Precisa de você",
+    "description": "Hero diagram, plan task status: waiting for the person"
+  },
+  "code.flow.chat.ariaLabel": {
+    "message": "O chat com que você fala",
+    "description": "Hero diagram, accessible label of the chat pane"
+  },
+  "code.flow.plan.progress": {
+    "message": "Plano · {done} de {total} concluídas",
+    "description": "Hero diagram, heading of the coordinator's plan card: {done} of {total} tasks finished"
+  },
+  "tutorials.path.meta": {
+    "message": "{product} · {count} guia · {duration}|{product} · {count} guias · {duration}",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.path.planned": {
+    "message": "Mais um guia está planejado para este caminho.|Mais {count} guias estão planejados para este caminho.",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.filter.aria": {
+    "message": "{label}, {count} guia|{label}, {count} guias",
+    "description": "plural forms separated by \"|\""
+  }
+}

@@ -3,67 +3,154 @@
 
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
+import Translate, {translate} from '@docusaurus/Translate';
 import styles from './Footer.module.css';
 
-const COLUMNS = [
-  {
-    title: 'Start',
-    links: [
-      {label: 'What is SpecWeave?', to: '/docs/overview/introduction'},
-      {label: 'Quick start', to: '/docs/getting-started'},
-      {label: 'Tutorials', to: '/tutorials'},
-      {label: 'How it works', to: '/docs/overview/how-it-works'},
-      {label: 'What changed in 3.1', to: '/docs/reference/changelog#310-17-october-2026'},
-    ],
-  },
-  {
-    title: 'Switch tools',
-    links: [
-      {label: 'Handoff and pickup', to: '/docs/guides/cross-tool-handoff'},
-      {label: 'What goes in handoff.md', to: '/docs/guides/handoff-md/'},
-      {label: 'Claude Code to Codex', to: '/docs/guides/switch-claude-code-to-codex/'},
-      {label: 'Usage limit reached', to: '/docs/guides/claude-code-usage-limit/'},
-      {label: 'Claude Code Projects', to: '/docs/guides/claude-code-projects'},
-      {label: 'Codex, Grok and others', to: '/docs/integrations/generic-ai-tools'},
-      {label: 'Integrations', to: '/integrations'},
-    ],
-  },
-  {
-    title: 'Compare',
-    links: [
-      {label: 'SpecWeave vs OpenSpec', to: '/docs/compare/specweave-vs-openspec/'},
-      {label: 'SpecWeave vs Spec Kit', to: '/docs/compare/specweave-vs-github-spec-kit/'},
-      {label: 'SpecWeave vs BMAD', to: '/docs/compare/specweave-vs-bmad-method/'},
-      {label: 'All spec-driven tools', to: '/docs/compare/spec-driven-development-tools/'},
-      {label: 'Claude Code vs Codex', to: '/docs/guides/claude-code-vs-codex/'},
-      {label: 'AGENTS.md vs CLAUDE.md', to: '/docs/guides/agents-md-vs-claude-md/'},
-      {label: 'All comparisons', to: '/docs/compare/'},
-    ],
-  },
-  {
-    title: 'Reference',
-    links: [
-      {label: 'Commands', to: '/docs/reference/commands'},
-      {label: 'Skills', to: '/docs/reference/skills'},
-      {label: 'Troubleshooting', to: '/docs/guides/troubleshooting'},
-      {label: 'Changelog', to: '/docs/reference/changelog'},
-    ],
-  },
-  {
-    title: 'Project',
-    links: [
-      {label: 'SpecWithCode', to: '/code/'},
-      {label: 'Download SpecWithCode', to: '/code/download/'},
-      {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave'},
-      {label: 'npm', href: 'https://www.npmjs.com/package/specweave'},
-      {label: 'Pricing', to: '/pricing'},
-      {label: 'Verified Skill', href: 'https://verified-skill.com/claude-code-skills'},
-      {label: 'Blog', to: '/blog'},
-      {label: 'Privacy', to: '/privacy'},
-      {label: 'Support', to: '/support'},
-    ],
-  },
-];
+function getColumns() {
+  return [
+    {
+      title: translate({id: 'footer.column.start', message: 'Start', description: 'Footer column title'}),
+      links: [
+        {
+          label: translate({id: 'footer.link.start.whatIsSpecweave', message: 'What is SpecWeave?', description: 'Footer link label. Keep product names in English'}),
+          to: '/docs/overview/introduction',
+        },
+        {
+          label: translate({id: 'footer.link.start.quickStart', message: 'Quick start', description: 'Footer link label'}),
+          to: '/docs/getting-started',
+        },
+        {
+          label: translate({id: 'footer.link.start.tutorials', message: 'Tutorials', description: 'Footer link label'}),
+          to: '/tutorials',
+        },
+        {
+          label: translate({id: 'footer.link.start.howItWorks', message: 'How it works', description: 'Footer link label'}),
+          to: '/docs/overview/how-it-works',
+        },
+        {
+          label: translate({id: 'footer.link.start.whatChangedIn31', message: 'What changed in 3.1', description: 'Footer link label'}),
+          to: '/docs/reference/changelog#310-17-october-2026',
+        },
+      ],
+    },
+    {
+      title: translate({id: 'footer.column.switchTools', message: 'Switch tools', description: 'Footer column title'}),
+      links: [
+        {
+          label: translate({id: 'footer.link.switchTools.handoffAndPickup', message: 'Handoff and pickup', description: 'Footer link label'}),
+          to: '/docs/guides/cross-tool-handoff',
+        },
+        {
+          label: translate({id: 'footer.link.switchTools.whatGoesInHandoffMd', message: 'What goes in handoff.md', description: 'Footer link label. Keep product names in English'}),
+          to: '/docs/guides/handoff-md/',
+        },
+        {
+          label: translate({id: 'footer.link.switchTools.claudeCodeToCodex', message: 'Claude Code to Codex', description: 'Footer link label. Keep product names in English'}),
+          to: '/docs/guides/switch-claude-code-to-codex/',
+        },
+        {
+          label: translate({id: 'footer.link.switchTools.usageLimitReached', message: 'Usage limit reached', description: 'Footer link label'}),
+          to: '/docs/guides/claude-code-usage-limit/',
+        },
+        {
+          label: translate({id: 'footer.link.switchTools.claudeCodeProjects', message: 'Claude Code Projects', description: 'Footer link label. Keep product names in English'}),
+          to: '/docs/guides/claude-code-projects',
+        },
+        {
+          label: translate({id: 'footer.link.switchTools.codexGrokAndOthers', message: 'Codex, Grok and others', description: 'Footer link label. Keep product names in English'}),
+          to: '/docs/integrations/generic-ai-tools',
+        },
+        {
+          label: translate({id: 'footer.link.switchTools.integrations', message: 'Integrations', description: 'Footer link label'}),
+          to: '/integrations',
+        },
+      ],
+    },
+    {
+      title: translate({id: 'footer.column.compare', message: 'Compare', description: 'Footer column title'}),
+      links: [
+        {
+          label: translate({id: 'footer.link.compare.specweaveVsOpenspec', message: 'SpecWeave vs OpenSpec', description: 'Footer link label. Keep product names in English'}),
+          to: '/docs/compare/specweave-vs-openspec/',
+        },
+        {
+          label: translate({id: 'footer.link.compare.specweaveVsSpecKit', message: 'SpecWeave vs Spec Kit', description: 'Footer link label. Keep product names in English'}),
+          to: '/docs/compare/specweave-vs-github-spec-kit/',
+        },
+        {
+          label: translate({id: 'footer.link.compare.specweaveVsBmad', message: 'SpecWeave vs BMAD', description: 'Footer link label. Keep product names in English'}),
+          to: '/docs/compare/specweave-vs-bmad-method/',
+        },
+        {
+          label: translate({id: 'footer.link.compare.allSpecDrivenTools', message: 'All spec-driven tools', description: 'Footer link label'}),
+          to: '/docs/compare/spec-driven-development-tools/',
+        },
+        {
+          label: translate({id: 'footer.link.compare.claudeCodeVsCodex', message: 'Claude Code vs Codex', description: 'Footer link label. Keep product names in English'}),
+          to: '/docs/guides/claude-code-vs-codex/',
+        },
+        {
+          label: translate({id: 'footer.link.compare.agentsMdVsClaudeMd', message: 'AGENTS.md vs CLAUDE.md', description: 'Footer link label. Keep product names in English'}),
+          to: '/docs/guides/agents-md-vs-claude-md/',
+        },
+        {
+          label: translate({id: 'footer.link.compare.allComparisons', message: 'All comparisons', description: 'Footer link label'}),
+          to: '/docs/compare/',
+        },
+      ],
+    },
+    {
+      title: translate({id: 'footer.column.reference', message: 'Reference', description: 'Footer column title'}),
+      links: [
+        {
+          label: translate({id: 'footer.link.reference.commands', message: 'Commands', description: 'Footer link label'}),
+          to: '/docs/reference/commands',
+        },
+        {
+          label: translate({id: 'footer.link.reference.skills', message: 'Skills', description: 'Footer link label'}),
+          to: '/docs/reference/skills',
+        },
+        {
+          label: translate({id: 'footer.link.reference.troubleshooting', message: 'Troubleshooting', description: 'Footer link label'}),
+          to: '/docs/guides/troubleshooting',
+        },
+        {
+          label: translate({id: 'footer.link.reference.changelog', message: 'Changelog', description: 'Footer link label'}),
+          to: '/docs/reference/changelog',
+        },
+      ],
+    },
+    {
+      title: translate({id: 'footer.column.project', message: 'Project', description: 'Footer column title'}),
+      links: [
+        {label: 'SpecWithCode', to: '/code/'},
+        {
+          label: translate({id: 'footer.link.project.downloadSpecwithcode', message: 'Download SpecWithCode', description: 'Footer link label. Keep product names in English'}),
+          to: '/code/download/',
+        },
+        {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave'},
+        {label: 'npm', href: 'https://www.npmjs.com/package/specweave'},
+        {
+          label: translate({id: 'footer.link.project.pricing', message: 'Pricing', description: 'Footer link label'}),
+          to: '/pricing',
+        },
+        {label: 'Verified Skill', href: 'https://verified-skill.com/claude-code-skills'},
+        {
+          label: translate({id: 'footer.link.project.blog', message: 'Blog', description: 'Footer link label'}),
+          to: '/blog',
+        },
+        {
+          label: translate({id: 'footer.link.project.privacy', message: 'Privacy', description: 'Footer link label'}),
+          to: '/privacy',
+        },
+        {
+          label: translate({id: 'footer.link.project.support', message: 'Support', description: 'Footer link label'}),
+          to: '/support',
+        },
+      ],
+    },
+  ];
+}
 
 function GitHubIcon() {
   return (
@@ -90,13 +177,25 @@ function XTwitterIcon() {
   );
 }
 
-const SOCIAL_LINKS = [
-  {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave', icon: GitHubIcon},
-  {label: 'GitHub Issues', href: 'https://github.com/anton-abyzov/specweave/issues', icon: SupportIcon},
-  {label: 'X / Twitter', href: 'https://x.com/aabyzov', icon: XTwitterIcon},
-];
+function getSocialLinks() {
+  return [
+    {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave', icon: GitHubIcon},
+    {
+      label: translate({
+        id: 'footer.social.githubIssues',
+        message: 'GitHub Issues',
+        description: 'Accessible label for the GitHub Issues icon link in the footer. Keep product names in English',
+      }),
+      href: 'https://github.com/anton-abyzov/specweave/issues',
+      icon: SupportIcon,
+    },
+    {label: 'X / Twitter', href: 'https://x.com/aabyzov', icon: XTwitterIcon},
+  ];
+}
 
 function Footer(): ReactNode {
+  const COLUMNS = getColumns();
+  const SOCIAL_LINKS = getSocialLinks();
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
@@ -146,7 +245,12 @@ function Footer(): ReactNode {
             ))}
           </div>
           <div className={styles.copyright}>
-            &copy; {new Date().getFullYear()} SpecWeave. SpecWeave CLI: MIT licensed. SpecWithCode: free, source available.
+            <Translate
+              id="footer.copyright"
+              description="Footer copyright line; {year} is the current year. Keep product names in English"
+              values={{year: new Date().getFullYear()}}>
+              {'© {year} SpecWeave. SpecWeave CLI: MIT licensed. SpecWithCode: free, source available.'}
+            </Translate>
           </div>
         </div>
       </div>

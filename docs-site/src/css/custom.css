@@ -516,3 +516,13 @@ div[class*='announcementBar'] {
   color: var(--wv-ink);
   font-weight: 500;
 }
+
+/* Translated locales: break Japanese headings at phrase boundaries (Chromium) and keep Korean
+   words whole, so headlines never split a word across lines. */
+html[lang='ja'] :is(h1, h2, h3) {
+  word-break: auto-phrase;
+}
+html[lang='ko'] :is(h1, h2, h3, p, li) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}

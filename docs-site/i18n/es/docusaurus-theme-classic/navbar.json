@@ -1,0 +1,26 @@
+{
+  "title": {
+    "message": "SpecWeave",
+    "description": "The title in the navbar"
+  },
+  "item.label.SpecWithCode": {
+    "message": "SpecWithCode",
+    "description": "Navbar item with label SpecWithCode"
+  },
+  "item.label.CLI": {
+    "message": "CLI",
+    "description": "Navbar item with label CLI"
+  },
+  "item.label.Docs": {
+    "message": "Docs",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Tutorials": {
+    "message": "Tutoriales",
+    "description": "Navbar item with label Tutorials"
+  },
+  "item.label.Verified Skill": {
+    "message": "Verified Skill",
+    "description": "Navbar item with label Verified Skill"
+  }
+}

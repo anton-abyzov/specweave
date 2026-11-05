@@ -76,6 +76,22 @@ describe('SpecWithCode landing page', () => {
     expect(stage.slice(stage.indexOf('export type Flow'))).not.toMatch(/real (run|capture)/i);
   });
 
+  it('has a translation entry for every piece of hero diagram copy', () => {
+    const stage = read('components/code/FlowStage.tsx');
+    const scenes = stage.slice(stage.indexOf('const SCENES'), stage.indexOf('const ease'));
+    const copy = stage.slice(stage.indexOf('function flowCopy'), stage.indexOf('function useFlowText'));
+    const keys = new Set([...copy.matchAll(/^\s*'([^']+)': translate\(/gm)].map(m => m[1]));
+    // Plan names that are product names stay as written.
+    const brands = new Set(['Claude Max', 'Claude Max · Opus 5.5', 'ChatGPT Pro', 'Copilot Free', 'Copilot Pro+']);
+    const texts = [
+      ...[...scenes.matchAll(/\b(?:task|plan|goal|result|atLimit): '([^']+)'/g)].map(m => m[1]),
+      ...[...scenes.matchAll(/steps: \[([^\]]+)\]/g)].flatMap(m => [...m[1].matchAll(/'([^']+)'/g)].map(x => x[1])),
+    ];
+    expect(texts.length).toBeGreaterThan(30);
+    const missing = texts.filter(text => !keys.has(text) && !brands.has(text));
+    expect(missing).toEqual([]);
+  });
+
   it('never compares SpecWithCode with T3 Code or calls it a fork', () => {
     expect(copy).not.toMatch(/T3 Code|t3code/i);
     expect(copy).not.toMatch(/\bfork(ed)? of\b/i);

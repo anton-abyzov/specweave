@@ -1,6 +1,7 @@
 // Weave family bar: the three products, the current one marked. Rendered by ./index.tsx.
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
+import Translate, {translate} from '@docusaurus/Translate';
 
 export type FamilyProduct = 'specweave' | 'specwithcode';
 
@@ -13,15 +14,15 @@ export default function FamilyBar({pathname}: {pathname: string}): ReactNode {
   const current = currentProduct(pathname);
   return (
     <div className="sw-family">
-      <nav className="wv-family sw-family__inner" aria-label="Products">
+      <nav className="wv-family sw-family__inner" aria-label={translate({id: 'navbar.family.ariaLabel', message: 'Products', description: 'Accessible label for the product family bar at the top of every page'})}>
         <Link to="/" aria-current={current === 'specweave' ? 'true' : undefined}>
-          SpecWeave <span className="wv-family__what">spec and handoff CLI</span>
+          SpecWeave <span className="wv-family__what"><Translate id="navbar.family.specweave.what" description="Short description shown after the product name SpecWeave in the family bar">spec and handoff CLI</Translate></span>
         </Link>
         <Link to="/code/" aria-current={current === 'specwithcode' ? 'true' : undefined}>
-          SpecWithCode <span className="wv-family__what">desktop workspace</span>
+          SpecWithCode <span className="wv-family__what"><Translate id="navbar.family.specwithcode.what" description="Short description shown after the product name SpecWithCode in the family bar">desktop workspace</Translate></span>
         </Link>
         <a href="https://verified-skill.com">
-          Verified Skill <span className="wv-family__what">skill registry</span>
+          Verified Skill <span className="wv-family__what"><Translate id="navbar.family.verifiedSkill.what" description="Short description shown after the product name Verified Skill in the family bar">skill registry</Translate></span>
         </a>
       </nav>
     </div>

@@ -34,7 +34,8 @@ jobs:
   build:
     name: Build Documentation
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Nine locales (en + 8 translated) build one after another.
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository

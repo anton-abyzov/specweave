@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+import Translate, {translate} from '@docusaurus/Translate';
 import m from './Motion.module.css';
 
 /*
@@ -128,16 +129,16 @@ const CHROME_EXTENSION = 'https://chromewebstore.google.com/detail/specwithcode-
 
 /** The SpecWithCode Browser extension, offered near the top of the marketing pages. */
 export function ExtensionStrip({className}: {className?: string}) {
-  return <aside className={`${m.extension} ${className ?? ''}`} aria-label="SpecWithCode Browser for Chrome">
+  return <aside className={`${m.extension} ${className ?? ''}`} aria-label={translate({id: 'motion.extension.aria', message: 'SpecWithCode Browser for Chrome', description: 'Accessible label of the browser extension banner; keep product names in English'})}>
     <span className={m.extensionIcon} aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3.5" /><path d="M12 8.5h8.2M8.97 13.75 4.9 6.7M15.03 13.75l-4.1 7.1" /></svg>
     </span>
     <p className={m.extensionText}>
-      <strong>New: SpecWithCode Browser for Chrome.</strong>{' '}
-      Let Claude Code, Codex, GitHub Copilot, Grok or any agent in SpecWithCode open, read, click and screenshot pages in your own Chrome, inside a tab group you can close.
+      <strong><Translate id="motion.extension.title" description="Bold lead of the browser extension banner; keep product names in English">New: SpecWithCode Browser for Chrome.</Translate></strong>{' '}
+      <Translate id="motion.extension.body" description="Browser extension banner text; keep product names in English">Let Claude Code, Codex, GitHub Copilot, Grok or any agent in SpecWithCode open, read, click and screenshot pages in your own Chrome, inside a tab group you can close.</Translate>
     </p>
     <a className={`wv-btn wv-btn--secondary ${m.extensionCta}`} href={CHROME_EXTENSION} target="_blank" rel="noopener noreferrer">
-      Add to Chrome<span className={m.srOnly}> (opens the Chrome Web Store)</span>
+      <Translate id="motion.extension.cta" description="Button to install the browser extension; keep Chrome in English">Add to Chrome</Translate><span className={m.srOnly}>{translate({id: 'motion.extension.ctaHint', message: ' (opens the Chrome Web Store)', description: 'Screen-reader hint after the Add to Chrome button; keep the leading space and Chrome Web Store in English'})}</span>
     </a>
   </aside>;
 }

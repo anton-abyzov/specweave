@@ -9,6 +9,8 @@
  *   (GitHub Copilot CLI and Gemini CLI, plus any other registry agent)
  * When a release adds or drops a driver, change it here and nowhere else.
  */
+import {translate} from '@docusaurus/Translate';
+
 export type Provider = {
   name: string;
   /** How SpecWithCode runs it: its own built-in driver, or through the ACP registry. */
@@ -37,7 +39,13 @@ export const providerNames: string[] = SPECWITHCODE_PROVIDERS.map(p => p.name);
 export function providerSummary(lead = 3): string {
   const rest = providerNames.length - lead;
   const head = providerNames.slice(0, lead).join(', ');
-  return rest > 0 ? `${head} and ${rest} more` : head;
+  return rest > 0
+    ? translate({
+      id: 'providers.summary.andMore',
+      message: '{names} and {count} more',
+      description: 'Short provider list: {names} is a comma-separated list of coding agent product names (keep in English), {count} is how many more providers there are',
+    }, {names: head, count: rest})
+    : head;
 }
 
 /** A list as one sentence fragment: "Claude Code, Codex, ... and Pi". */

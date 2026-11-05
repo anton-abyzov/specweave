@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import clsx from 'clsx';
+import Translate, { translate } from '@docusaurus/Translate';
 import s from './HomeHandoff.module.css';
 
 /**
@@ -43,7 +44,17 @@ const LEDGER = [
   '{"t":"T-02","e":"done","by":"codex@laptop","at":"2026-10-15T15:22:51Z","evidence":"npm test → exit 0\\nlog: .specweave/increments/0001-resumable-checkout/reports/task-T-02.txt\\nHEAD 7d03b1f"}',
 ];
 
-const BEATS = ['The spec', 'The agents', 'The ledger', 'The handoff'];
+/** Beat labels for the progress rail, in the active locale; called during render. */
+function beatLabels(): string[] {
+  return [
+    translate({ id: 'home.handoff.beat.spec', message: 'The spec', description: 'Progress rail label for beat 1 of the handoff story' }),
+    translate({ id: 'home.handoff.beat.agents', message: 'The agents', description: 'Progress rail label for beat 2 of the handoff story' }),
+    translate({ id: 'home.handoff.beat.ledger', message: 'The ledger', description: 'Progress rail label for beat 3 of the handoff story' }),
+    translate({ id: 'home.handoff.beat.handoff', message: 'The handoff', description: 'Progress rail label for beat 4 of the handoff story' }),
+  ];
+}
+
+const BEAT_COUNT = 4;
 
 // Very tall viewports (full-page captures, which grow the viewport to the page) get the static layout.
 const LIVE_QUERY = '(min-width: 960px) and (min-height: 680px) and (max-height: 1600px) and (prefers-reduced-motion: no-preference)';
@@ -60,7 +71,7 @@ function useStage(root: React.RefObject<HTMLDivElement | null>, pin: React.RefOb
       frame = 0;
       const range = el.offsetHeight - stage.offsetHeight;
       const p = range > 0 ? Math.min(1, Math.max(0, -el.getBoundingClientRect().top / range)) : 1;
-      const beat = String(Math.min(BEATS.length - 1, Math.floor(p * BEATS.length)));
+      const beat = String(Math.min(BEAT_COUNT - 1, Math.floor(p * BEAT_COUNT)));
       if (el.dataset.beat !== beat) el.dataset.beat = beat;
       el.style.setProperty('--progress', p.toFixed(3));
     };
@@ -71,7 +82,7 @@ function useStage(root: React.RefObject<HTMLDivElement | null>, pin: React.RefOb
       const i = Number(li.dataset.i);
       if (el.dataset.beat === String(i)) return;
       const range = el.offsetHeight - stage.offsetHeight;
-      const top = window.scrollY + el.getBoundingClientRect().top + ((i + 0.5) / BEATS.length) * range;
+      const top = window.scrollY + el.getBoundingClientRect().top + ((i + 0.5) / BEAT_COUNT) * range;
       window.scrollTo({ top, behavior: 'instant' as ScrollBehavior });
     };
     const setup = () => {
@@ -101,15 +112,15 @@ function useStage(root: React.RefObject<HTMLDivElement | null>, pin: React.RefOb
 }
 
 function Diagram() {
-  return <figure className={s.diagram} aria-label="Illustration: Claude Code writes to the repository until its usage limit; Codex reads the same spec, ledger and handoff from git and finishes the task.">
+  return <figure className={s.diagram} aria-label={translate({ id: 'home.handoff.diagram.ariaLabel', message: 'Illustration: Claude Code writes to the repository until its usage limit; Codex reads the same spec, ledger and handoff from git and finishes the task.', description: 'Accessible label of the handoff diagram. Keep product names in English' })}>
     <div className={clsx(s.node, s.claude)} aria-hidden="true">
       <span className={s.plateLight}><img src="/img/studio/providers/claude.svg" alt="" width="22" height="22" /></span>
       <span className={s.nodeText}><strong>Claude Code</strong><span>claude@cloud</span></span>
-      <span className={clsx('wv-chip', 'wv-chip--warn', s.limit)}>Usage limit</span>
+      <span className={clsx('wv-chip', 'wv-chip--warn', s.limit)}><Translate id="home.handoff.chip.usageLimit" description="Warning chip: the agent hit its usage limit">Usage limit</Translate></span>
     </div>
     <span className={clsx(s.wire, s.w1)} aria-hidden="true"><span className={s.fill} /><span className={s.packet} /></span>
     <div className={clsx(s.node, s.repo)} aria-hidden="true">
-      <span className={s.repoTitle}>Your repository, in git</span>
+      <span className={s.repoTitle}><Translate id="home.handoff.diagram.repo" description="Diagram node title for the git repository">Your repository, in git</Translate></span>
       <span className={s.files}>
         <span className={s.file} data-f="spec">spec.md</span>
         <span className={s.file} data-f="ledger">ledger.jsonl</span>
@@ -120,9 +131,9 @@ function Diagram() {
     <div className={clsx(s.node, s.codex)} aria-hidden="true">
       <span className={s.plateDark}><img src="/img/studio/providers/openai.svg" alt="" width="22" height="22" /></span>
       <span className={s.nodeText}><strong>Codex</strong><span>codex@laptop</span></span>
-      <span className={clsx('wv-chip', 'wv-chip--pass', s.done)}>verify: Pass</span>
+      <span className={clsx('wv-chip', 'wv-chip--pass', s.done)}><Translate id="home.handoff.diagram.verifyPass" description="Pass chip in the diagram; 'verify' is the CLI command name, keep it in English">verify: Pass</Translate></span>
     </div>
-    <figcaption className={s.tag}>Illustration</figcaption>
+    <figcaption className={s.tag}><Translate id="home.handoff.diagram.caption" description="Caption marking a picture as an illustration, not a real capture">Illustration</Translate></figcaption>
   </figure>;
 }
 
@@ -130,79 +141,80 @@ export default function HomeHandoff({ head }: { head?: React.ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
   const pin = useRef<HTMLDivElement>(null);
   useStage(root, pin);
+  const BEATS = beatLabels();
   return <div className={s.root} ref={root}>
     <div className={s.pin} ref={pin}>
       {head}
       <Diagram />
       <ol className={s.progress} aria-hidden="true">
-        {BEATS.map((b, i) => <li key={b} data-n={i}><span className={s.bar} /><span>{String(i + 1).padStart(2, '0')} {b}</span></li>)}
+        {BEATS.map((b, i) => <li key={i} data-n={i}><span className={s.bar} /><span>{String(i + 1).padStart(2, '0')} {b}</span></li>)}
       </ol>
-      <ol className={s.beats} aria-label="Four layers of one handoff">
+      <ol className={s.beats} aria-label={translate({ id: 'home.handoff.beats.ariaLabel', message: 'Four layers of one handoff', description: 'Accessible label of the list of the four handoff beats' })}>
         <li className={s.beat} data-i="0">
           <div className={s.label}>
-            <h3>The spec</h3>
-            <p>What done means, written once before any agent starts. <code>spec.md</code></p>
+            <h3><Translate id="home.handoff.spec.title" description="Heading of beat 1">The spec</Translate></h3>
+            <p><Translate id="home.handoff.spec.body" description="Beat 1 text; {file} is the file name spec.md" values={{ file: <code>spec.md</code> }}>{'What done means, written once before any agent starts. {file}'}</Translate></p>
           </div>
-          <pre className={clsx('wv-code', s.body, s.code)} aria-label="Excerpt of spec.md">{SPEC}</pre>
+          <pre className={clsx('wv-code', s.body, s.code)} aria-label={translate({ id: 'home.handoff.spec.ariaLabel', message: 'Excerpt of spec.md', description: 'Accessible label of the spec.md excerpt; keep the file name' })}>{SPEC}</pre>
         </li>
 
         <li className={s.beat} data-i="1">
           <div className={s.label}>
-            <h3>The agents</h3>
-            <p>Any tool that can read the files claims a task, proves it and moves on.</p>
+            <h3><Translate id="home.handoff.agents.title" description="Heading of beat 2">The agents</Translate></h3>
+            <p><Translate id="home.handoff.agents.body" description="Beat 2 text">Any tool that can read the files claims a task, proves it and moves on.</Translate></p>
           </div>
           <ol className={clsx('wv-thread', 'wv-thread--across', s.body, s.thread)}>
             <li style={{ '--k': 0 } as React.CSSProperties}>
               <p className="wv-thread__title"><code>specweave task claim T-01</code></p>
-              <p className="wv-thread__body">Claude Code takes the first open task. The claim is a line in the ledger, so no other agent takes it too.</p>
+              <p className="wv-thread__body"><Translate id="home.handoff.agents.claim" description="Explains specweave task claim T-01. Keep product names in English">Claude Code takes the first open task. The claim is a line in the ledger, so no other agent takes it too.</Translate></p>
             </li>
             <li style={{ '--k': 1 } as React.CSSProperties}>
               <p className="wv-thread__title"><code>specweave task done T-01 --run "npm test"</code></p>
-              <p className="wv-thread__body">Runs the task’s test. Exit 0 is the evidence, and the full output is saved in <code>reports/task-T-01.txt</code>.</p>
+              <p className="wv-thread__body"><Translate id="home.handoff.agents.done" description="Explains specweave task done; {file} is a file path" values={{ file: <code>reports/task-T-01.txt</code> }}>{'Runs the task’s test. Exit 0 is the evidence, and the full output is saved in {file}.'}</Translate></p>
             </li>
             <li aria-current="step" style={{ '--k': 2 } as React.CSSProperties}>
               <p className="wv-thread__title"><code>specweave task claim T-02</code></p>
-              <p className="wv-thread__body">Claude Code claims T-02 and hits its usage limit halfway through.</p>
-              <span className={clsx('wv-chip', 'wv-chip--warn', s.chip)}>Usage limit</span>
+              <p className="wv-thread__body"><Translate id="home.handoff.agents.limit" description="Explains the second claim. Keep product names and T-02 in English">Claude Code claims T-02 and hits its usage limit halfway through.</Translate></p>
+              <span className={clsx('wv-chip', 'wv-chip--warn', s.chip)}><Translate id="home.handoff.chip.usageLimit" description="Warning chip: the agent hit its usage limit">Usage limit</Translate></span>
             </li>
           </ol>
         </li>
 
         <li className={s.beat} data-i="2">
           <div className={s.label}>
-            <h3>The ledger in git</h3>
-            <p>Every claim, finish and release is one line, committed with the code. <code>ledger.jsonl</code></p>
+            <h3><Translate id="home.handoff.ledger.title" description="Heading of beat 3">The ledger in git</Translate></h3>
+            <p><Translate id="home.handoff.ledger.body" description="Beat 3 text; {file} is the file name ledger.jsonl" values={{ file: <code>ledger.jsonl</code> }}>{'Every claim, finish and release is one line, committed with the code. {file}'}</Translate></p>
           </div>
-          <pre className={clsx('wv-code', s.body, s.code, s.ledgerCode)} tabIndex={0} role="region" aria-label="Lines from ledger.jsonl after both agents">{LEDGER.map((l, i) => <React.Fragment key={i}><span className={s.line} style={{ '--k': i } as React.CSSProperties}>{l}</span>{i < LEDGER.length - 1 ? '\n' : ''}</React.Fragment>)}</pre>
+          <pre className={clsx('wv-code', s.body, s.code, s.ledgerCode)} tabIndex={0} role="region" aria-label={translate({ id: 'home.handoff.ledger.ariaLabel', message: 'Lines from ledger.jsonl after both agents', description: 'Accessible label of the ledger excerpt; keep the file name' })}>{LEDGER.map((l, i) => <React.Fragment key={i}><span className={s.line} style={{ '--k': i } as React.CSSProperties}>{l}</span>{i < LEDGER.length - 1 ? '\n' : ''}</React.Fragment>)}</pre>
         </li>
 
         <li className={s.beat} data-i="3">
           <div className={s.label}>
-            <h3>The handoff</h3>
-            <p>Another tool continues from the same files, not from a chat window.</p>
+            <h3><Translate id="home.handoff.handoff.title" description="Heading of beat 4">The handoff</Translate></h3>
+            <p><Translate id="home.handoff.handoff.body" description="Beat 4 text">Another tool continues from the same files, not from a chat window.</Translate></p>
             <p className={s.switch}>
               <span className={s.from}>claude@cloud</span>
-              <span className={s.switchRule}><span className={s.srOnly}> hands T-02 to </span></span>
+              <span className={s.switchRule}><span className={s.srOnly}>{' '}{translate({ id: 'home.handoff.switch.srOnly', message: 'hands T-02 to', description: 'Screen-reader text between claude@cloud and codex@laptop; keep T-02' })}{' '}</span></span>
               <span className={s.to}>codex@laptop</span>
             </p>
           </div>
           <ol className={clsx('wv-thread', 'wv-thread--across', s.body, s.thread)}>
             <li style={{ '--k': 0 } as React.CSSProperties}>
               <p className="wv-thread__title"><code>specweave handoff</code></p>
-              <p className="wv-thread__body">Releases the claim, writes <code>handoff.md</code> with what is next and pushes a snapshot to <code>specweave-handoff</code> and <code>wip/&lt;branch&gt;</code>.</p>
+              <p className="wv-thread__body"><Translate id="home.handoff.handoff.release" description="Explains specweave handoff; {file} is handoff.md, {ref} and {branch} are git ref names, keep them" values={{ file: <code>handoff.md</code>, ref: <code>specweave-handoff</code>, branch: <code>wip/&lt;branch&gt;</code> }}>{'Releases the claim, writes {file} with what is next and pushes a snapshot to {ref} and {branch}.'}</Translate></p>
             </li>
             <li style={{ '--k': 1 } as React.CSSProperties}>
               <p className="wv-thread__title"><code>specweave pickup</code></p>
-              <p className="wv-thread__body">In Codex: fetches the handoff, applies the edits and prints T-02 with its two criteria.</p>
+              <p className="wv-thread__body"><Translate id="home.handoff.handoff.pickup" description="Explains specweave pickup. Keep Codex and T-02 in English">In Codex: fetches the handoff, applies the edits and prints T-02 with its two criteria.</Translate></p>
             </li>
             <li style={{ '--k': 2 } as React.CSSProperties}>
               <p className="wv-thread__title"><code>specweave task done T-02 --run "npm test"</code></p>
-              <p className="wv-thread__body">Codex finishes T-02 against the same criteria, and the ledger cites the test output.</p>
+              <p className="wv-thread__body"><Translate id="home.handoff.handoff.done" description="Explains the second task done. Keep Codex and T-02 in English">Codex finishes T-02 against the same criteria, and the ledger cites the test output.</Translate></p>
             </li>
             <li aria-current="step" style={{ '--k': 3 } as React.CSSProperties}>
               <p className="wv-thread__title"><code>specweave verify</code></p>
-              <p className="wv-thread__body">Runs test, lint and build, checks every criterion and writes <code>reports/verify.json</code>.</p>
-              <span className={clsx('wv-chip', 'wv-chip--pass', s.chip)}>Pass</span>
+              <p className="wv-thread__body"><Translate id="home.handoff.handoff.verify" description="Explains specweave verify; {file} is a file path" values={{ file: <code>reports/verify.json</code> }}>{'Runs test, lint and build, checks every criterion and writes {file}.'}</Translate></p>
+              <span className={clsx('wv-chip', 'wv-chip--pass', s.chip)}><Translate id="home.handoff.chip.pass" description="Pass chip after a successful verify">Pass</Translate></span>
             </li>
           </ol>
         </li>

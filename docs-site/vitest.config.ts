@@ -20,6 +20,7 @@ export default defineConfig({
       '@theme': path.resolve(__dirname, 'src/theme'),
       '@theme-original': path.resolve(__dirname, 'src/theme'),
       '@docusaurus/Link': path.resolve(__dirname, 'src/__mocks__/docusaurus-link.tsx'),
+      '@docusaurus/Translate': path.resolve(__dirname, 'src/__mocks__/docusaurus-Translate.tsx'),
       '@docusaurus/useBaseUrl': path.resolve(__dirname, 'src/__mocks__/docusaurus-useBaseUrl.ts'),
       '@docusaurus/useBrokenLinks': path.resolve(__dirname, 'src/__mocks__/docusaurus-useBrokenLinks.ts'),
       '@theme/Layout': path.resolve(__dirname, 'src/__mocks__/docusaurus-layout.tsx'),
