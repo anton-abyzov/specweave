@@ -13,7 +13,7 @@ import styles from './FlowStage.module.css';
   - Free: you start on one Mac. Claude Code reaches the handoff point and Codex on a free ChatGPT
     account continues the same thread with its history (tested on 1.0.191 on 4 November 2026,
     Claude limit triggered by the test switch). Meanwhile a Windows PC and a Linux server connect
-    and take threads on DeepSeek (your own API key) and Gemini CLI (free Google account).
+    and take threads on DeepSeek (your own API key) and GitHub Copilot on its free plan.
     One free Codex account, no rotation.
   - Plans you pay for: the same picture on Claude Max (Opus 5.5), ChatGPT Pro and GitHub Copilot.
     When Claude Max nears its limit, the next task moves to a plan with room. No thread is handed
@@ -76,7 +76,7 @@ const SCENES: Record<Flow, Scene> = {
         then: {mark: 'openai', dark: true, agent: 'Codex', plan: 'Free ChatGPT account', price: '$0', rest: 36, steps: ['Picked up with full history', 'Added email validation', 'Tests: 24 passed']}},
       {id: 'emails', task: 'Email templates', machine: 'windows', connect: 2600, start: 3200, rest: 58, mark: 'deepseek', agent: 'DeepSeek', plan: 'Your API key', price: '',
         steps: ['Read 6 templates', 'Wrote welcome.mjml', 'Previews rendered']},
-      {id: 'tests', task: 'Tests and CI', machine: 'linux', connect: 4200, start: 4800, rest: 44, mark: 'gemini', agent: 'Gemini CLI', plan: 'Free Google account', price: '$0',
+      {id: 'tests', task: 'Tests and CI', machine: 'linux', connect: 4200, start: 4800, rest: 44, mark: 'copilot', dark: true, agent: 'GitHub Copilot', plan: 'Copilot Free', price: '$0',
         steps: ['Added 30 tests', 'Fixed flaky e2e', 'CI green']},
     ],
     messages: [
