@@ -1,8 +1,8 @@
-/* Hero diagram for /code: one SpecWithCode window, on Weave tokens so it follows light and dark. */
+/* Hero diagram for /code: a self-running flow on Weave tokens, so it follows light and dark. */
 .stage {
   position: relative;
   min-width: 0;
-  padding: 16px;
+  padding: 14px;
   border-radius: 20px;
   background: var(--wv-panel);
   color: var(--wv-ink);
@@ -12,105 +12,106 @@
   line-height: 20px;
 }
 
-.controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
-.steps, .threshold { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; background: var(--wv-sunken); }
-.steps button, .threshold button {
-  display: inline-flex; align-items: center; gap: 6px;
+/* ---------- Free / paid strip: fills on its own, click only to jump ---------- */
+.tiers { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--wv-sunken); }
+.tier {
+  position: relative; flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 0;
   border: 0; border-radius: 999px; background: transparent; color: var(--wv-muted);
-  font: 600 14px/20px var(--wv-font-sans); padding: 6px 12px; cursor: pointer;
-  transition: background .2s, color .2s;
+  font: 600 14px/20px var(--wv-font-sans); padding: 6px 12px; cursor: pointer; overflow: hidden;
+  transition: background .3s, color .3s;
 }
-.steps button.stepOn { background: var(--wv-ink); color: var(--wv-panel); }
-.stepNo { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--wv-line); font-size: 11px; line-height: 1; }
-.stepOn .stepNo { background: var(--wv-iris); color: var(--wv-on-iris); }
-.tag { padding: 0 6px; border-radius: 999px; background: var(--wv-iris-tint); color: var(--wv-iris-strong); font-size: 12px; }
-.stepArrow { color: var(--wv-control); flex: none; }
-.threshold > span { padding: 0 6px 0 10px; color: var(--wv-muted); font-size: 13px; }
-.threshold button { padding: 4px 10px; font-size: 13px; }
-.threshold button.thOn { background: var(--wv-panel); color: var(--wv-ink); box-shadow: 0 1px 2px rgba(36, 21, 35, .15); }
-.steps button:focus-visible, .threshold button:focus-visible { outline: 2px solid var(--wv-iris); outline-offset: 2px; }
+.tier em { font-style: normal; padding: 0 7px; border-radius: 999px; background: var(--wv-line); color: var(--wv-muted); font-size: 12px; transition: background .3s, color .3s; }
+.tierOn { background: var(--wv-ink); color: var(--wv-panel); }
+.tierOn em { background: var(--wv-iris); color: var(--wv-on-iris); }
+.tierDot { width: 7px; height: 7px; border-radius: 50%; background: var(--wv-control); flex: none; }
+.tierOn .tierDot { background: var(--wv-pass); animation: wvPulse 1.6s ease-in-out infinite; }
+.tierProgress { position: absolute; left: 12px; right: 12px; bottom: 3px; height: 2px; border-radius: 2px; background: var(--wv-iris); transform-origin: left center; }
+.tier:focus-visible { outline: 2px solid var(--wv-iris); outline-offset: 2px; }
+.short { display: none; }
 
-/* The app window */
-.window { margin-top: 14px; border: 1px solid var(--wv-line); border-radius: 14px; background: var(--wv-panel); overflow: hidden; }
-.titlebar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--wv-line); background: var(--wv-canvas); font-size: 12px; }
-.titlebar > span { width: 10px; height: 10px; border-radius: 50%; background: var(--wv-line); }
-.titlebar b { margin-left: 8px; font-weight: 700; }
-.titlebar em { color: var(--wv-control); font-style: normal; }
-.titlebar em::before { content: "· "; }
+/* ---------- The flow: you, the coordinator, then the threads ---------- */
+.flow { position: relative; margin-top: 14px; }
+.you { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.youChip { flex: none; padding: 2px 9px; border-radius: 999px; background: var(--wv-ink); color: var(--wv-panel); font-size: 12px; font-weight: 700; }
+.goal { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); min-height: 300px; }
-.chat { min-width: 0; padding: 12px; border-right: 1px solid var(--wv-line); background: var(--wv-canvas); }
-.threads { min-width: 0; padding: 12px; }
-.paneTitle { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 !important; font-weight: 700; font-size: 13px; }
-.paneTitle small { color: var(--wv-muted); font-weight: 500; font-size: 12px; }
-.paneTitle small::before { content: "· "; }
-.oneWindow { display: inline-block; margin: 6px 0 0 !important; padding: 1px 8px; border-radius: 999px; background: var(--wv-iris-tint); color: var(--wv-iris-strong); font-size: 11px; font-weight: 700; letter-spacing: .02em; }
+.coordinator {
+  position: relative; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 10px; row-gap: 4px; align-items: center;
+  margin-top: 10px; padding: 10px 12px; border: 1px solid var(--wv-iris); border-radius: 12px; background: var(--wv-iris-tint);
+}
+.coordinator::after { content: ""; position: absolute; left: 50%; bottom: -14px; width: 2px; height: 14px; margin-left: -1px; background: var(--wv-iris); }
+.coordinator .mark { grid-row: 1 / span 2; }
+.coordName { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; min-width: 0; font-weight: 700; font-size: 13px; line-height: 18px; }
+.coordName small { color: var(--wv-muted); font-weight: 500; font-size: 12px; }
+.coordName small em { font-style: normal; font-weight: 700; color: var(--wv-iris-strong); margin-right: 4px; }
+.coordSays { grid-column: 2; display: block; min-height: 36px; font-size: 13px; line-height: 18px; }
+.coordSays > span { display: block; }
+.coordSays svg { vertical-align: -2px; color: var(--wv-pass); }
 
-.messages, .threadList, .machines { margin: 0; padding: 0; list-style: none; }
-.messages { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-.msg { max-width: 92%; padding: 6px 10px; border-radius: 12px; font-size: 13px; line-height: 18px; }
-.msg svg { vertical-align: -2px; }
-.you { align-self: flex-end; background: var(--wv-ink); color: var(--wv-panel); border-bottom-right-radius: 4px; }
-.coord { align-self: flex-start; background: var(--wv-panel); border: 1px solid var(--wv-line); border-bottom-left-radius: 4px; }
-
-.threadList { display: grid; gap: 8px; margin-top: 10px; }
-.thread { position: relative; padding: 9px 10px; border: 1px solid var(--wv-line); border-radius: 10px; background: var(--wv-canvas); }
+/* ---------- Threads, one per machine, wired to the coordinator ---------- */
+.threads { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; padding: 24px 0 0; list-style: none; }
+.threads::before { content: ""; position: absolute; top: 0; left: calc(100% / 6); right: calc(100% / 6); height: 2px; background: var(--wv-iris); border-radius: 2px; }
+.thread { position: relative; min-width: 0; padding: 10px 10px 9px; border: 1px solid var(--wv-line); border-radius: 12px; background: var(--wv-canvas); transition: opacity .3s, border-color .3s; }
+.thread::before {
+  content: ""; position: absolute; top: -24px; left: 50%; width: 2px; height: 24px; margin-left: -1px;
+  background: repeating-linear-gradient(to bottom, var(--wv-iris) 0 4px, transparent 4px 8px);
+  opacity: .45;
+}
+.threadBusy::before { opacity: 1; animation: wvDashY .6s linear infinite; }
+.threadBusy::after {
+  content: ""; position: absolute; top: -24px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%;
+  background: var(--wv-iris); box-shadow: 0 0 0 3px color-mix(in srgb, var(--wv-iris) 25%, transparent);
+  animation: wvPacketY 1.4s ease-in infinite;
+}
+.threadQueued { opacity: .55; }
+.threadDone { opacity: .7; }
 .threadDone .pct { color: var(--wv-fail); }
 .threadHanded { border-color: var(--wv-iris); }
-.threadTitle s { color: var(--wv-control); }
-.handed { position: absolute; top: -9px; right: 10px; padding: 1px 8px; border-radius: 999px; background: var(--wv-iris); color: var(--wv-on-iris); font-size: 11px; font-weight: 700; box-shadow: var(--wv-shadow-overlay); }
-.threadHead { display: flex; align-items: center; gap: 8px; }
-.mark { flex: none; width: 20px; height: 20px; padding: 3px; border-radius: 6px; background: var(--wv-sunken); box-sizing: content-box; }
-.paneTitle .mark { width: 16px; height: 16px; padding: 2px; }
+
+.machine { display: inline-flex; align-items: center; gap: 4px; padding: 0 7px; border-radius: 999px; background: var(--wv-sunken); color: var(--wv-muted); font-size: 11px; line-height: 18px; font-weight: 700; }
+.who { display: flex; align-items: center; gap: 8px; margin-top: 8px; min-width: 0; }
+.mark { flex: none; padding: 4px; border-radius: 8px; background: var(--wv-sunken); box-sizing: content-box; }
 .darkPlate { background: #241523; }
-.threadTitle { display: flex; flex-direction: column; min-width: 0; font-weight: 700; font-size: 13px; line-height: 17px; }
-.threadTitle small { color: var(--wv-muted); font-weight: 500; font-size: 12px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pct { margin-left: auto; font: 700 14px/1 var(--wv-font-mono); font-variant-numeric: tabular-nums; }
-.meter { height: 5px; margin-top: 7px; border-radius: 999px; background: var(--wv-sunken); overflow: hidden; }
+.coordinator .mark { padding: 3px; border-radius: 7px; background: var(--wv-panel); }
+.agent { display: flex; flex-direction: column; min-width: 0; }
+.agent b { font-size: 14px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agent small { color: var(--wv-muted); font-size: 12px; line-height: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.agent small em { font-style: normal; font-weight: 700; color: var(--wv-iris-strong); margin-right: 4px; }
+.task { display: flex; align-items: baseline; gap: 6px; margin: 8px 0 0 !important; font-size: 13px; line-height: 18px; font-weight: 600; min-width: 0; }
+.task > span:first-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pct { margin-left: auto; flex: none; font: 700 13px/1 var(--wv-font-mono); font-variant-numeric: tabular-nums; }
+.meter { height: 5px; margin-top: 6px; border-radius: 999px; background: var(--wv-sunken); overflow: hidden; }
 .meter span { display: block; height: 100%; border-radius: inherit; background: var(--wv-iris); transition: width .12s linear; }
-.threadFoot { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; line-height: 16px; min-width: 0; }
-.machineChip { display: inline-flex; align-items: center; gap: 4px; flex: none; padding: 0 7px; border-radius: 999px; background: var(--wv-sunken); color: var(--wv-muted); font-weight: 600; }
-.step { min-width: 0; color: var(--wv-muted); font-family: var(--wv-font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.step { display: block; margin-top: 6px; color: var(--wv-muted); font-family: var(--wv-font-mono); font-size: 11px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .step::before { content: "› "; }
-.routed { position: absolute; top: -9px; right: 10px; display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; background: var(--wv-iris); color: var(--wv-on-iris); font-size: 11px; font-weight: 700; box-shadow: var(--wv-shadow-overlay); }
+.badge { position: absolute; top: -10px; right: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; background: var(--wv-iris); color: var(--wv-on-iris); font-size: 11px; line-height: 18px; font-weight: 700; white-space: nowrap; box-shadow: var(--wv-shadow-overlay); }
+.badgeWaiting { background: var(--wv-panel); color: var(--wv-iris-strong); border: 1px solid var(--wv-iris); }
 
-.machines { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--wv-line); background: var(--wv-canvas); }
-.machine { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--wv-line); border-radius: 999px; background: var(--wv-panel); color: var(--wv-muted); font-size: 12px; font-weight: 600; }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--wv-control); transition: background .3s; }
-.machineBusy { border-color: var(--wv-iris); }
-.machineBusy .dot { background: var(--wv-pass); box-shadow: 0 0 0 3px rgba(47, 158, 90, .18); }
+.caption { margin: 12px 2px 0 !important; color: var(--wv-muted); font-size: 13px; line-height: 18px; }
 
-@media (max-width: 700px) {
-  .stage { padding: 12px; }
-  .controls { justify-content: flex-start; }
-  .body { grid-template-columns: minmax(0, 1fr); min-height: 0; }
-  .chat { border-right: 0; border-bottom: 1px solid var(--wv-line); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .meter span, .dot { transition: none; }
-}
-.chat .paneTitle small { flex-basis: 100%; }
-.chat .paneTitle small::before { content: none; }
-@media (min-width: 701px) { .body { min-height: 340px; } }
-.note { margin: 10px 2px 0 !important; color: var(--wv-muted); font-size: 13px; line-height: 18px; }
-.threadTitle { flex: 1 1 auto; overflow: hidden; }
-.threadTitle small { display: block; }
-.thread { min-width: 0; }
-.steps button { position: relative; overflow: hidden; }
-.tabProgress { position: absolute; left: 10px; right: 10px; bottom: 3px; height: 2px; border-radius: 2px; background: var(--wv-iris); transform-origin: left center; opacity: .9; }
-.machineBusy .dot { animation: wvPulse 1.6s ease-in-out infinite; }
+@keyframes wvDashY { from { background-position: 0 0; } to { background-position: 0 8px; } }
+@keyframes wvDashX { from { background-position: 0 0; } to { background-position: 8px 0; } }
+@keyframes wvPacketY { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(22px); opacity: 0; } }
+@keyframes wvPacketX { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(16px); opacity: 0; } }
 @keyframes wvPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: .7; } }
-@media (prefers-reduced-motion: reduce) { .machineBusy .dot { animation: none; } .tabProgress { display: none; } }
-.short { display: none; }
-@media (max-width: 700px) {
-  /* Stacked panes: reserve the chat's full height so the threads below never jump as messages arrive. */
-  .messages { min-height: 200px; }
-}
-@media (max-width: 480px) {
+
+/* ---------- Narrow: threads stack on a left rail ---------- */
+@media (max-width: 560px) {
+  .stage { padding: 12px; }
   .long { display: none; }
   .short { display: inline; }
-  .steps button { padding: 6px 10px; }
-  .titlebar em { display: none; }
-  .messages { min-height: 236px; }
+  .tier { padding: 6px 8px; }
+  .threads { grid-template-columns: minmax(0, 1fr); padding: 0 0 0 20px; margin-top: 12px; }
+  .threads::before { top: -12px; bottom: 50%; left: 9px; right: auto; width: 2px; height: auto; }
+  .coordinator::after { left: 10px; margin-left: 0; bottom: -12px; height: 12px; }
+  .thread::before { top: 50%; left: -20px; width: 20px; height: 2px; margin: -1px 0 0; background: repeating-linear-gradient(to right, var(--wv-iris) 0 4px, transparent 4px 8px); }
+  .threadBusy::before { animation-name: wvDashX; }
+  .threadBusy::after { top: 50%; left: -20px; margin: -4px 0 0; animation-name: wvPacketX; }
+  .coordSays { min-height: 54px; }
 }
-@media (max-width: 360px) { .messages { min-height: 280px; } }
+@media (prefers-reduced-motion: reduce) {
+  .meter span { transition: none; }
+  .tierDot, .threadBusy::before, .threadBusy::after { animation: none; }
+  .threadBusy::after { display: none; }
+  .tierProgress { display: none; }
+}

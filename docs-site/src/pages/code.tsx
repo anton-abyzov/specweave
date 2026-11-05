@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
@@ -8,15 +8,15 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
 import {useSpecWithCodeInstaller} from '../data/specwithcodeInstaller';
-import FlowStage, {type Flow} from '../components/code/FlowStage';
-import {AnimatePresence, motion} from 'motion/react';
+import FlowStage from '../components/code/FlowStage';
 import styles from '../components/code/FreeLanding.module.css';
 
 /*
-  /code (specwithcode.com): two flows for the free campaign that starts 4 November 2026.
+  /code (specwithcode.com): the free campaign that starts 4 November 2026.
 
-  Free: Codex on a free ChatGPT account, then DeepSeek (your own API key) at the handoff point.
-  Subscriptions: the paid plans you already have, in parallel on your own machines.
+  The hero leads with Claude Code and Codex. Free: Codex on a free ChatGPT account, with DeepSeek
+  (your own API key) on another machine. Subscriptions: the paid plans you already have, in parallel
+  on your own machines. The hero diagram plays both on its own.
   Both were tested on 4 November 2026 on the maintainer's M4 Mac: Codex on a free account ran,
   and Claude Code and Codex threads continued on DeepSeek with their context. The Claude limit in
   that handoff test was triggered with the app's test switch.
@@ -26,8 +26,8 @@ import styles from '../components/code/FreeLanding.module.css';
 
 const SITE = 'https://spec-weave.com';
 const PAGE_URL = `${SITE}/code/`;
-const TITLE = 'OpenAI Codex, free: SpecWithCode (Spec with Code) on your own computers, never stuck on a limit';
-const DESCRIPTION = 'SpecWithCode (Spec with Code): Codex on a free ChatGPT account. At a limit, DeepSeek picks up the same chat. Free, source available. macOS, Windows, Linux.';
+const TITLE = 'Claude Code and Codex on your own computers, never stuck on a limit: SpecWithCode (Spec with Code)';
+const DESCRIPTION = 'SpecWithCode (Spec with Code): Claude Code and Codex in one chat on every machine. At a limit, the next agent picks it up. Free. macOS, Windows, Linux.';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 
 type Os = 'mac' | 'windows' | 'linux';
@@ -170,11 +170,9 @@ const SPECWITHCODE_LD = {
 };
 
 export default function Code() {
-  const [flow, setFlow] = useState<Flow>('free');
-  useEffect(() => { if (window.location.hash === '#subscriptions') setFlow('subs'); }, []);
   const icon28 = useBaseUrl('/img/studio/specwithcode-icon.png');
   const providerBase = useBaseUrl('/img/studio/providers/');
-  const logo = (file: string) => `${providerBase}${file}.svg`;
+  const logo = (file: string) => `${providerBase}${file}.svg?v=2`;
   const marks = {claude: logo('claude'), openai: logo('openai'), deepseek: logo('deepseek'), copilot: logo('copilot'), gemini: logo('gemini'), cursor: logo('cursor'), opencode: logo('opencode')};
   // Other pages link to /code/#harnesses and #built-with-itself; section ids on a custom page must be declared to the link checker.
   const brokenLinks = useBrokenLinks();
@@ -208,23 +206,12 @@ export default function Code() {
               <span className={styles.productName}>SpecWithCode</span>
               <span className={styles.badge}>Free · source available</span>
             </p>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div key={flow} initial={{opacity: 0, y: 16}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -16}} transition={{duration: 0.3, ease: 'easeOut'}}>
-              {flow === 'free'
-              ? <>
-                <h1><span className={styles.h1Top}><img className={styles.h1Mark} src={marks.openai} alt="" width="48" height="48" />OpenAI Codex.</span> <em>Free.</em></h1>
-                <p className={styles.lead}>Sign in with a free ChatGPT account: no card, no Codex API key. When Claude Code nears its limit, Codex picks up the same thread with its history, and DeepSeek takes more threads on your other machines.</p>
-              </>
-              : <>
-                <h1>Your AI plans. <em>Used to the last token.</em></h1>
-                <p className={styles.lead}>Already pay for Claude Max, ChatGPT Pro or Copilot? SpecWithCode stays free and runs them side by side on your Mac, Windows PC and Linux server, from one chat. When a plan nears 98%, the next task goes to one with room.</p>
-              </>}
-              </motion.div>
-            </AnimatePresence>
+            <h1><span className={styles.h1Top}><img className={styles.h1Mark} src={marks.claude} alt="" width="48" height="48" /><img className={clsx(styles.h1Mark, styles.h1MarkDark)} src={marks.openai} alt="" width="48" height="48" />Claude Code and Codex.</span> <em>Never stuck on a limit.</em></h1>
+            <p className={styles.lead}>One chat, every machine, every plan. Start with Codex on a free ChatGPT account, or add the Claude Max and ChatGPT Pro you already pay for. When Claude Code nears its limit, Codex picks up the same thread with its history.</p>
             <HeroDownload />
           </div>
           <div className={styles.heroMedia}>
-            <FlowStage flow={flow} onFlow={setFlow} />
+            <FlowStage />
           </div>
         </div>
       </header>

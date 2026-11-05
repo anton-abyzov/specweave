@@ -163,3 +163,9 @@
 }
 
 
+
+/* Two marks in the headline, inline so the text wraps around them: Claude on a light plate, OpenAI on the dark one. */
+.hero .h1Top { display: inline; }
+.page img.h1Mark { vertical-align: -0.06em; margin-right: .12em; background: var(--wv-panel); border: 1px solid var(--wv-line); }
+.page img.h1Mark + .h1Mark { margin-right: .2em; }
+.page img.h1MarkDark { background: #241523; border-color: #241523; }
