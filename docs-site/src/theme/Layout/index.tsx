@@ -5,6 +5,7 @@ import type {Props} from '@theme/Layout';
 import {useLocation} from '@docusaurus/router';
 import {PageMetadata} from '@docusaurus/theme-common';
 import Head from '@docusaurus/Head';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 
 const archiveMetadata: Record<string, {title: string; description: string}> = {
   '/blog/authors/': {
@@ -31,7 +32,12 @@ const archiveMetadata: Record<string, {title: string; description: string}> = {
 
 export default function LayoutWrapper(props: Props): ReactNode {
   const {pathname} = useLocation();
-  const path = `${pathname.replace(/\/$/, '')}/`;
+  const {siteConfig, i18n} = useDocusaurusContext();
+  // Paths below are written without the locale prefix (/ru/, /ja/ ...).
+  const unprefixed = pathname.startsWith(siteConfig.baseUrl) ? `/${pathname.slice(siteConfig.baseUrl.length)}` : pathname;
+  const path = `${unprefixed.replace(/\/$/, '')}/`;
+  // Docs, blog and search are English in every locale; their canonical is the English page.
+  const englishOnly = i18n.currentLocale !== i18n.defaultLocale && /^\/(docs|blog|search)\//.test(path);
   let metadata = archiveMetadata[path];
   const docTag = path.match(/^\/docs\/tags\/([^/]+)\/$/);
   if (docTag) {
@@ -46,6 +52,9 @@ export default function LayoutWrapper(props: Props): ReactNode {
     <>
       <OriginalLayout {...props} />
       {metadata && <PageMetadata {...metadata} />}
+      {englishOnly && (
+        <Head><link rel="canonical" href={`${siteConfig.url}${path}`} /></Head>
+      )}
       {path === '/search/' && (
         <Head><meta name="robots" content="noindex, follow" /></Head>
       )}

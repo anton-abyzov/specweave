@@ -19,6 +19,9 @@ const weavePrismTheme: PrismTheme = {
   ],
 };
 
+// Same set the SpecWithCode app ships. English is the default and the fallback.
+const TRANSLATED_LOCALES = ['de', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-CN'];
+
 const config: Config = {
   title: 'SpecWeave',
   tagline: 'Change agents. Keep the thread.',
@@ -145,9 +148,23 @@ const config: Config = {
 
   onBrokenLinks: 'throw',
 
+  // Landing pages and navigation are translated. Docs and blog are not: every
+  // locale builds them from the English source, and their canonical URL points
+  // at the English page (src/theme/Layout) so search engines index one copy.
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', ...TRANSLATED_LOCALES],
+    localeConfigs: {
+      en: {label: 'English', htmlLang: 'en'},
+      de: {label: 'Deutsch', htmlLang: 'de'},
+      es: {label: 'Español', htmlLang: 'es'},
+      fr: {label: 'Français', htmlLang: 'fr'},
+      ja: {label: '日本語', htmlLang: 'ja'},
+      ko: {label: '한국어', htmlLang: 'ko'},
+      'pt-BR': {label: 'Português (Brasil)', htmlLang: 'pt-BR'},
+      ru: {label: 'Русский', htmlLang: 'ru'},
+      'zh-CN': {label: '简体中文', htmlLang: 'zh-CN'},
+    },
   },
 
   // Mermaid diagrams support
@@ -212,7 +229,11 @@ const config: Config = {
           // Search results are navigational, not a page we want indexed.
           // Keep this explicit as well as the rendered noindex directive.
           // Tag, archive and author lists are thin pages, so they stay out too.
-          ignorePatterns: ['/search', '/search/**', '/docs/tags/**', '/blog/tags/**', '/blog/archive/**', '/blog/authors/**'],
+          ignorePatterns: [
+            '/search', '/search/**', '/docs/tags/**', '/blog/tags/**', '/blog/archive/**', '/blog/authors/**',
+            // Untranslated docs and blog copies in other locales canonicalize to English.
+            ...TRANSLATED_LOCALES.flatMap((l) => [`/${l}/docs/**`, `/${l}/blog`, `/${l}/blog/**`, `/${l}/search`, `/${l}/search/**`]),
+          ],
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -357,6 +378,7 @@ const config: Config = {
           className: 'header-github-link',
           'aria-label': 'SpecWeave on GitHub',
         },
+        {type: 'localeDropdown', position: 'right'},
         {type: 'search', position: 'right'},
       ],
     },

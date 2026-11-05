@@ -4,10 +4,12 @@ import OriginalBlogLayout from '@theme-original/BlogLayout';
 import type {Props} from '@theme/BlogLayout';
 import Heading from '@theme/Heading';
 import {useLocation} from '@docusaurus/router';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
 export default function BlogLayoutWrapper({children, ...props}: Props): ReactNode {
   const {pathname} = useLocation();
-  const isIndex = /^\/blog\/?$/.test(pathname);
+  // Match /blog in every locale (/ru/blog ...).
+  const isIndex = pathname.replace(/\/$/, '') === useBaseUrl('/blog');
   return (
     <OriginalBlogLayout {...props}>
       {isIndex && <header className="margin-bottom--lg">
