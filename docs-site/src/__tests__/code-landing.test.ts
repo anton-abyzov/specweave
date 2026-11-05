@@ -76,6 +76,17 @@ describe('SpecWithCode landing page', () => {
     expect(stage.slice(stage.indexOf('export type Flow'))).not.toMatch(/real (run|capture)/i);
   });
 
+  it('keeps the hero flow running under reduced motion', () => {
+    // The scene clock and the beaded connectors are the explanation; only decorative motion may stop.
+    const stage = read('components/code/FlowStage.tsx');
+    expect(stage).not.toMatch(/matchMedia/);
+    const css = read('components/code/FlowStage.module.css');
+    const reduced = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+    for (const flowing of ['.chat::after', '.threads::before', '.threads li::before', '.threadBusy::after', '.segDot', '.spin']) {
+      expect(reduced).not.toMatch(new RegExp(`${flowing.replace(/[.:]/g, '\\$&')}[^{]*\{[^}]*animation: none`));
+    }
+  });
+
   it('has a translation entry for every piece of hero diagram copy', () => {
     const stage = read('components/code/FlowStage.tsx');
     const scenes = stage.slice(stage.indexOf('const SCENES'), stage.indexOf('const ease'));

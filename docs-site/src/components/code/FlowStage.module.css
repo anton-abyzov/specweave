@@ -136,7 +136,13 @@
   .threadBusy::after { left: -22px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .meter span { transition: none; }
-  .segDot, .seg em, .chat::before, .chat::after, .threads::before, .threads li::before, .threadBusy::after, .badgeBeam, .mark, .you, .caret, .spin { animation: none; }
-  .threadBusy::after { display: none; }
+  /* weave.css stops every animation under reduced motion. The flow itself keeps going here, slower: beads, packets,
+     the running spinner and the scene change are the explanation. Decorative float, breathe, sweep and shimmer stop. */
+  .stage .chat::after, .stage .threads li::before { animation: wvBeadRight 1.6s linear infinite !important; }
+  .stage .threads::before { animation: wvBeadDown 1.6s linear infinite !important; }
+  .stage .threadBusy::after { animation: wvPacketX 3s ease-in infinite !important; }
+  .stage .segOn .segDot { animation: wvPulse 2.4s ease-in-out infinite !important; }
+  .stage .spin { animation: wvSpin 1.5s linear infinite !important; }
+  .stage .caret { animation: wvBlink 1s steps(2) infinite !important; }
+  .stage .meter span, .stage .segFill { transition: width .4s ease, transform .4s linear !important; }
 }

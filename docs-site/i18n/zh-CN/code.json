@@ -256,7 +256,7 @@
     "description": "Badge next to the product name in the hero"
   },
   "code.hero.title.top": {
-    "message": "Claude Code 与 Codex。",
+    "message": "Claude Code、Codex 等。",
     "description": "First line of the hero headline. Keep product names in English"
   },
   "code.hero.title.emphasis": {
@@ -264,7 +264,7 @@
     "description": "Second, emphasized part of the hero headline"
   },
   "code.hero.lead": {
-    "message": "一个对话，所有机器，所有套餐。从免费 ChatGPT 账号的 Codex 起步，或加入你已在付费的 Claude Max 和 ChatGPT Pro。Claude Code 快到上限时，Codex 带着历史记录接手同一个线程。",
+    "message": "一个聊天窗口，管理你所有的编码代理，覆盖每台机器和每个套餐。先用免费 ChatGPT 账号上的 Codex 开始。当 Claude Code 接近限额时，Codex 会带着历史记录接续同一个线程。",
     "description": "Hero lead paragraph. Keep product names in English"
   },
   "code.stats.title.main": {
@@ -3760,5 +3760,9 @@
   "tutorials.filter.aria": {
     "message": "{label}，{count} 篇指南",
     "description": "plural forms separated by \"|\""
+  },
+  "code.hero.marks.label": {
+    "message": "同样支持",
+    "description": "Accessible label of the row of other supported agents under the hero lead"
   }
 }

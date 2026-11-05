@@ -218,8 +218,15 @@ export default function Code() {
               <span className={styles.productName}>SpecWithCode</span>
               <span className={styles.badge}><Translate id="code.hero.badge" description="Badge next to the product name in the hero">Free · source available</Translate></span>
             </p>
-            <h1><span className={styles.h1Top}><img className={styles.h1Mark} src={marks.claude} alt="" width="48" height="48" /><img className={clsx(styles.h1Mark, styles.h1MarkDark)} src={marks.openai} alt="" width="48" height="48" /><Translate id="code.hero.title.top" description="First line of the hero headline. Keep product names in English">Claude Code and Codex.</Translate></span> <em><Translate id="code.hero.title.emphasis" description="Second, emphasized part of the hero headline">Never stuck on a limit.</Translate></em></h1>
-            <p className={styles.lead}><Translate id="code.hero.lead" description="Hero lead paragraph. Keep product names in English">One chat, every machine, every plan. Start with Codex on a free ChatGPT account, or add the Claude Max and ChatGPT Pro you already pay for. When Claude Code nears its limit, Codex picks up the same thread with its history.</Translate></p>
+            <h1><span className={styles.h1Top}><img className={styles.h1Mark} src={marks.claude} alt="" width="48" height="48" /><img className={clsx(styles.h1Mark, styles.h1MarkDark)} src={marks.openai} alt="" width="48" height="48" /><Translate id="code.hero.title.top" description="First line of the hero headline. Keep product names in English">Claude Code, Codex and more.</Translate></span> <em><Translate id="code.hero.title.emphasis" description="Second, emphasized part of the hero headline">Never stuck on a limit.</Translate></em></h1>
+            <p className={styles.lead}><Translate id="code.hero.lead" description="Hero lead paragraph. Keep product names in English">One chat for all your coding agents, on every machine and every plan. Start with Codex on a free ChatGPT account. When Claude Code nears its limit, Codex picks up the same thread with its history.</Translate></p>
+            <ul className={styles.heroMarks} aria-label={translate({id: 'code.hero.marks.label', message: 'Also runs', description: 'Accessible label of the row of other supported agents under the hero lead'})}>
+              <li><img className={styles.darkPlate} src={marks.copilot} alt="" width="18" height="18" />Copilot</li>
+              <li><img src={marks.gemini} alt="" width="18" height="18" />Gemini CLI</li>
+              <li><img className={styles.darkPlate} src={marks.cursor} alt="" width="18" height="18" />Cursor</li>
+              <li><img src={marks.deepseek} alt="" width="18" height="18" />DeepSeek</li>
+              <li><Link className="wv-link" to="/docs/studio/harnesses/"><Translate id="code.more.agents.andMore" description="Last item of the agent list, links to all harnesses">and more</Translate></Link></li>
+            </ul>
             <HeroDownload />
           </div>
           <div className={styles.heroMedia}>

@@ -22,7 +22,9 @@ import styles from './FlowStage.module.css';
     When Claude Max nears its limit, the next task moves to a plan with room. No thread is handed
     from Claude Code to Codex here (not retested), and no provider has more than one account.
   The handoff point is the default, 98%. Task text is illustrative; there are no dated "real run"
-  labels on this drawing. Server render and reduced motion show the free scene's finished state.
+  labels on this drawing. The server render shows the free scene's finished state. The scene clock
+  and the beaded connectors run under prefers-reduced-motion too (the picture is the explanation;
+  without them it reads as broken); only the decorative float, breathe, sweep and shimmer stop.
 */
 
 export type Flow = 'free' | 'subs';
@@ -206,17 +208,13 @@ const TYPE_MS = 55;
 
 const ease = (x: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 
-function prefersReduced() {
-  return typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-}
-
 /** Scene clock: ms into the scene, and ms including the hold before the next one. The server render rests on the end. */
 function useSceneClock(flow: Flow, playing: boolean, run: number, onEnd: () => void): [number, number] {
   const [[t, el], setT] = useState<[number, number]>([SCENES[flow].length, 0]);
   const endRef = useRef(onEnd);
   endRef.current = onEnd;
   useEffect(() => {
-    if (!playing || prefersReduced()) { setT([SCENES[flow].length, 0]); return; }
+    if (!playing) { setT([SCENES[flow].length, 0]); return; }
     const len = SCENES[flow].length;
     let raf = 0;
     let last = 0;
@@ -240,7 +238,7 @@ function useOnScreen<T extends Element>(): [React.RefObject<T>, boolean] {
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === 'undefined') { setOn(true); return; }
-    const io = new IntersectionObserver(([e]) => setOn(e.isIntersecting), {threshold: 0.25});
+    const io = new IntersectionObserver(([e]) => setOn(e.isIntersecting), {threshold: 0.1});
     io.observe(el);
     return () => io.disconnect();
   }, []);
@@ -338,7 +336,7 @@ export default function FlowStage() {
   const tx = useFlowText();
   const scene = SCENES[flow];
   const goal = tx(scene.goal);
-  const live = mounted && onScreen && !prefersReduced();
+  const live = mounted && onScreen;
   const sceneProgress = live ? Math.min(1, elapsed / (scene.length + HOLD)) : 1;
   const typed = live ? goal.slice(0, Math.floor(t / TYPE_MS)) : goal;
   const typing = live && t < goal.length * TYPE_MS + 500;
