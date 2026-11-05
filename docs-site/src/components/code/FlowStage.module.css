@@ -10,108 +10,133 @@
   box-shadow: var(--wv-shadow-window);
   font-size: 14px;
   line-height: 20px;
+  --bead: radial-gradient(circle, var(--wv-iris) 1.7px, transparent 2.3px);
 }
 
-/* ---------- Free / paid strip: fills on its own, click only to jump ---------- */
-.tiers { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--wv-sunken); }
-.tier {
-  position: relative; flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 0;
-  border: 0; border-radius: 999px; background: transparent; color: var(--wv-muted);
-  font: 600 14px/20px var(--wv-font-sans); padding: 6px 12px; cursor: pointer; overflow: hidden;
-  transition: background .3s, color .3s;
-}
-.tier em { font-style: normal; padding: 0 7px; border-radius: 999px; background: var(--wv-line); color: var(--wv-muted); font-size: 12px; transition: background .3s, color .3s; }
-.tierOn { background: var(--wv-ink); color: var(--wv-panel); }
-.tierOn em { background: var(--wv-iris); color: var(--wv-on-iris); }
-.tierDot { width: 7px; height: 7px; border-radius: 50%; background: var(--wv-control); flex: none; }
-.tierOn .tierDot { background: var(--wv-pass); animation: wvPulse 1.6s ease-in-out infinite; }
-.tierProgress { position: absolute; left: 12px; right: 12px; bottom: 3px; height: 2px; border-radius: 2px; background: var(--wv-iris); transform-origin: left center; }
-.tier:focus-visible { outline: 2px solid var(--wv-iris); outline-offset: 2px; }
+/* ---------- Story bar: two chapters that play on their own; click only to jump ---------- */
+.story { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.seg { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--wv-muted); font: 600 14px/20px var(--wv-font-sans); cursor: pointer; text-align: left; transition: color .3s; }
+.segOn { color: var(--wv-ink); }
+.segLabel { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.segLabel > span:not(.segDot) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.seg em { font-style: normal; padding: 0 7px; border-radius: 999px; background: var(--wv-sunken); color: var(--wv-muted); font-size: 12px; transition: background .3s, color .3s; }
+.segOn em { background: var(--wv-iris); color: var(--wv-on-iris); animation: wvBreathe 2.4s ease-in-out infinite; }
+.segDot { width: 7px; height: 7px; border-radius: 50%; background: var(--wv-control); flex: none; }
+.segOn .segDot { background: var(--wv-pass); animation: wvPulse 1.6s ease-in-out infinite; }
+.segTrack { display: block; height: 4px; border-radius: 4px; background: var(--wv-sunken); overflow: hidden; }
+.segFill { display: block; height: 100%; border-radius: inherit; background: var(--wv-iris); transform-origin: left center; }
+.seg:focus-visible { outline: 2px solid var(--wv-iris); outline-offset: 4px; border-radius: 6px; }
 .short { display: none; }
 
-/* ---------- The flow: you, the coordinator, then the threads ---------- */
-.flow { position: relative; margin-top: 14px; }
-.you { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.youChip { flex: none; padding: 2px 9px; border-radius: 999px; background: var(--wv-ink); color: var(--wv-panel); font-size: 12px; font-weight: 700; }
-.goal { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ---------- Body: the chat on the left, the threads on the right ---------- */
+.body { position: relative; display: grid; grid-template-columns: minmax(0, 15fr) minmax(0, 22fr); column-gap: 30px; margin-top: 14px; }
 
-.coordinator {
-  position: relative; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 10px; row-gap: 4px; align-items: center;
-  margin-top: 10px; padding: 10px 12px; border: 1px solid var(--wv-iris); border-radius: 12px; background: var(--wv-iris-tint);
-}
-.coordinator::after { content: ""; position: absolute; left: 50%; bottom: -14px; width: 2px; height: 14px; margin-left: -1px; background: var(--wv-iris); }
-.coordinator .mark { grid-row: 1 / span 2; }
-.coordName { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; min-width: 0; font-weight: 700; font-size: 13px; line-height: 18px; }
-.coordName small { color: var(--wv-muted); font-weight: 500; font-size: 12px; }
-.coordName small em { font-style: normal; font-weight: 700; color: var(--wv-iris-strong); margin-right: 4px; }
-.coordSays { grid-column: 2; display: block; min-height: 36px; font-size: 13px; line-height: 18px; }
-.coordSays > span { display: block; }
-.coordSays svg { vertical-align: -2px; color: var(--wv-pass); }
+.chat { position: relative; min-width: 0; padding: 10px 12px 12px; border: 1px solid var(--wv-line); border-radius: 14px; background: var(--wv-canvas); }
+/* The chat is the one window you talk to: a light sweeps along its border, and beads leave it towards the threads. */
+.chat::before { content: ""; position: absolute; inset: -1px; border-radius: 14px; padding: 1.5px; background: conic-gradient(from var(--sweep), transparent 0 300deg, var(--wv-iris) 345deg, transparent 360deg); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: wvSweep 4s linear infinite; pointer-events: none; }
+.chat::after { content: ""; position: absolute; top: 46px; right: -30px; width: 30px; height: 4px; background: var(--bead) 0 0 / 9px 4px repeat-x; animation: wvBeadRight .8s linear infinite; }
+.paneTitle { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 !important; font-weight: 700; font-size: 13px; line-height: 18px; }
+.paneTitle small { color: var(--wv-muted); font-weight: 500; font-size: 12px; }
+.paneTitle small em { font-style: normal; font-weight: 700; color: var(--wv-iris-strong); margin-right: 4px; }
+.messages { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; min-height: 318px; }
+.msg { max-width: 94%; padding: 6px 10px; border-radius: 12px; font-size: 13px; line-height: 18px; }
+.msg svg { vertical-align: -2px; }
+.you { align-self: flex-end; background: var(--wv-ink); color: var(--wv-panel); border-bottom-right-radius: 4px; font-weight: 600; animation: wvFloat 3.6s ease-in-out infinite; }
+.caret { display: inline-block; width: 2px; height: 14px; margin-left: 2px; vertical-align: -2px; background: currentColor; animation: wvBlink 1s steps(2) infinite; }
+.coord { align-self: flex-start; background: var(--wv-panel); border: 1px solid var(--wv-line); border-bottom-left-radius: 4px; }
+.coord svg { color: var(--wv-pass); }
+.planCard { width: 100%; max-width: 100%; }
+.planCard > b { display: block; font-size: 12px; line-height: 16px; color: var(--wv-muted); }
+.plan { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.planItem { display: flex; align-items: center; gap: 6px; min-width: 0; font-weight: 600; transition: color .3s; }
+.planItem > span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.planItem small { margin-left: auto; flex: none; font-size: 11px; font-weight: 600; color: var(--wv-muted); }
+.planItem svg { flex: none; }
+.status_pending { color: var(--wv-muted); }
+.status_pending svg { color: var(--wv-control); }
+.status_running svg { color: var(--wv-iris); }
+.status_done svg, .status_done small { color: var(--wv-pass); }
+.status_needs svg, .status_needs small { color: var(--wv-fail); }
+.spin { animation: wvSpin 1s linear infinite; }
 
-/* ---------- Threads, one per machine, wired to the coordinator ---------- */
-.threads { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; padding: 24px 0 0; list-style: none; }
-.threads::before { content: ""; position: absolute; top: 0; left: calc(100% / 6); right: calc(100% / 6); height: 2px; background: var(--wv-iris); border-radius: 2px; }
-.thread { position: relative; min-width: 0; padding: 10px 10px 9px; border: 1px solid var(--wv-line); border-radius: 12px; background: var(--wv-canvas); transition: opacity .3s, border-color .3s; }
-.thread::before {
-  content: ""; position: absolute; top: -24px; left: 50%; width: 2px; height: 24px; margin-left: -1px;
-  background: repeating-linear-gradient(to bottom, var(--wv-iris) 0 4px, transparent 4px 8px);
-  opacity: .45;
-}
-.threadBusy::before { opacity: 1; animation: wvDashY .6s linear infinite; }
+/* Beaded connectors that always flow away from the chat: down the bus, then into each card. */
+.threads { position: relative; display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.threads::before { content: ""; position: absolute; top: 46px; bottom: 50px; left: -18px; width: 4px; background: var(--bead) center / 4px 9px repeat-y; animation: wvBeadDown .8s linear infinite; }
+.threads li::before { content: ""; position: absolute; top: 44px; left: -16px; width: 16px; height: 4px; background: var(--bead) 0 0 / 9px 4px repeat-x; animation: wvBeadRight .8s linear infinite; opacity: .5; }
+.threadBusy::before { opacity: 1; }
 .threadBusy::after {
-  content: ""; position: absolute; top: -24px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%;
-  background: var(--wv-iris); box-shadow: 0 0 0 3px color-mix(in srgb, var(--wv-iris) 25%, transparent);
-  animation: wvPacketY 1.4s ease-in infinite;
+  content: ""; position: absolute; top: 41px; left: -16px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--wv-iris); box-shadow: 0 0 0 4px color-mix(in srgb, var(--wv-iris) 25%, transparent);
+  animation: wvPacketX 1.5s ease-in infinite;
 }
-.threadQueued { opacity: .55; }
-.threadDone { opacity: .7; }
-.threadDone .pct { color: var(--wv-fail); }
+.thread { position: relative; min-width: 0; padding: 9px 10px 8px; border: 1px solid var(--wv-line); border-radius: 12px; background: var(--wv-canvas); transition: opacity .3s, border-color .3s; }
+.threadQueued { opacity: .6; }
+.threadDone { border-color: color-mix(in srgb, var(--wv-pass) 50%, var(--wv-line)); }
+.threadNeeds { border-color: var(--wv-fail); }
+.threadNeeds .step, .threadNeeds .pct { color: var(--wv-fail); }
 .threadHanded { border-color: var(--wv-iris); }
 
-.machine { display: inline-flex; align-items: center; gap: 4px; padding: 0 7px; border-radius: 999px; background: var(--wv-sunken); color: var(--wv-muted); font-size: 11px; line-height: 18px; font-weight: 700; }
-.who { display: flex; align-items: center; gap: 8px; margin-top: 8px; min-width: 0; }
-.mark { flex: none; padding: 4px; border-radius: 8px; background: var(--wv-sunken); box-sizing: content-box; }
+.who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.mark { flex: none; padding: 4px; border-radius: 8px; background: var(--wv-sunken); box-sizing: content-box; animation: wvFloat 3.2s ease-in-out infinite; }
+.thread:nth-child(2) .mark { animation-delay: -1.1s; }
+.thread:nth-child(3) .mark { animation-delay: -2.2s; }
 .darkPlate { background: #241523; }
-.coordinator .mark { padding: 3px; border-radius: 7px; background: var(--wv-panel); }
-.agent { display: flex; flex-direction: column; min-width: 0; }
+.paneTitle .mark { padding: 2px; border-radius: 5px; background: var(--wv-panel); animation: none; }
+.agent { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
 .agent b { font-size: 14px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.agent small { color: var(--wv-muted); font-size: 12px; line-height: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.agent small { color: var(--wv-muted); font-size: 12px; line-height: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .agent small em { font-style: normal; font-weight: 700; color: var(--wv-iris-strong); margin-right: 4px; }
-.task { display: flex; align-items: baseline; gap: 6px; margin: 8px 0 0 !important; font-size: 13px; line-height: 18px; font-weight: 600; min-width: 0; }
+.machine { display: inline-flex; align-items: center; gap: 4px; flex: none; padding: 0 7px; border-radius: 999px; background: var(--wv-sunken); color: var(--wv-muted); font-size: 11px; line-height: 18px; font-weight: 700; transition: background .3s, color .3s; }
+.machine i { font-style: normal; font-weight: 600; opacity: .9; }
+.machine i::before { content: "· "; }
+.machineNew { background: var(--wv-pass-tint); color: var(--wv-pass); }
+.task { display: flex; align-items: center; gap: 6px; margin: 7px 0 0 !important; font-size: 13px; line-height: 18px; font-weight: 600; min-width: 0; }
 .task > span:first-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.status { display: inline-flex; flex: none; }
 .pct { margin-left: auto; flex: none; font: 700 13px/1 var(--wv-font-mono); font-variant-numeric: tabular-nums; }
 .meter { height: 5px; margin-top: 6px; border-radius: 999px; background: var(--wv-sunken); overflow: hidden; }
 .meter span { display: block; height: 100%; border-radius: inherit; background: var(--wv-iris); transition: width .12s linear; }
-.step { display: block; margin-top: 6px; color: var(--wv-muted); font-family: var(--wv-font-mono); font-size: 11px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.threadDone .meter span { background: var(--wv-pass); }
+.threadNeeds .meter span { background: var(--wv-fail); }
+.step { display: block; margin-top: 5px; color: var(--wv-muted); font-family: var(--wv-font-mono); font-size: 11px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .step::before { content: "› "; }
-.badge { position: absolute; top: -10px; right: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; background: var(--wv-iris); color: var(--wv-on-iris); font-size: 11px; line-height: 18px; font-weight: 700; white-space: nowrap; box-shadow: var(--wv-shadow-overlay); }
+.badge { position: absolute; top: -10px; right: 8px; display: inline-flex; padding: 1px 8px; border-radius: 999px; background: var(--wv-iris); color: var(--wv-on-iris); font-size: 11px; line-height: 18px; font-weight: 700; white-space: nowrap; box-shadow: var(--wv-shadow-overlay); }
+.badge > span { display: inline-flex; align-items: center; gap: 4px; }
 .badgeWaiting { background: var(--wv-panel); color: var(--wv-iris-strong); border: 1px solid var(--wv-iris); }
+.badgeBeam { background: linear-gradient(110deg, var(--wv-iris) 35%, color-mix(in srgb, var(--wv-iris) 55%, white) 50%, var(--wv-iris) 65%) 0 0 / 250% 100%; animation: wvShimmer 1.8s linear infinite; }
 
 .caption { margin: 12px 2px 0 !important; color: var(--wv-muted); font-size: 13px; line-height: 18px; }
 
-@keyframes wvDashY { from { background-position: 0 0; } to { background-position: 0 8px; } }
-@keyframes wvDashX { from { background-position: 0 0; } to { background-position: 8px 0; } }
-@keyframes wvPacketY { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(22px); opacity: 0; } }
-@keyframes wvPacketX { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(16px); opacity: 0; } }
+@keyframes wvBeadDown { from { background-position-y: 0; } to { background-position-y: 9px; } }
+@keyframes wvBeadRight { from { background-position-x: 0; } to { background-position-x: 9px; } }
+@keyframes wvPacketX { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(14px); opacity: 0; } }
 @keyframes wvPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: .7; } }
+@keyframes wvSpin { to { transform: rotate(360deg); } }
+@property --sweep { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes wvSweep { to { --sweep: 360deg; } }
+@keyframes wvShimmer { from { background-position-x: 100%; } to { background-position-x: -100%; } }
+@keyframes wvFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes wvBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes wvBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-/* ---------- Narrow: threads stack on a left rail ---------- */
-@media (max-width: 560px) {
+/* The sweep animates the gradient angle, never the box, so nothing leaks outside the rounded frame. */
+@supports not (mask-composite: exclude) { .chat::before { display: none; } }
+
+/* ---------- Narrow: the chat on top, threads below on a left rail ---------- */
+@media (max-width: 700px) {
   .stage { padding: 12px; }
   .long { display: none; }
   .short { display: inline; }
-  .tier { padding: 6px 8px; }
-  .threads { grid-template-columns: minmax(0, 1fr); padding: 0 0 0 20px; margin-top: 12px; }
-  .threads::before { top: -12px; bottom: 50%; left: 9px; right: auto; width: 2px; height: auto; }
-  .coordinator::after { left: 10px; margin-left: 0; bottom: -12px; height: 12px; }
-  .thread::before { top: 50%; left: -20px; width: 20px; height: 2px; margin: -1px 0 0; background: repeating-linear-gradient(to right, var(--wv-iris) 0 4px, transparent 4px 8px); }
-  .threadBusy::before { animation-name: wvDashX; }
-  .threadBusy::after { top: 50%; left: -20px; margin: -4px 0 0; animation-name: wvPacketX; }
-  .coordSays { min-height: 54px; }
+  .body { grid-template-columns: minmax(0, 1fr); row-gap: 12px; }
+  .chat::after { top: auto; right: auto; bottom: -12px; left: 18px; width: 4px; height: 12px; background: var(--bead) center / 4px 9px repeat-y; animation-name: wvBeadDown; }
+  .messages { min-height: 0; }
+  .threads { padding-left: 22px; }
+  .threads::before { top: 0; bottom: 50px; left: 8px; }
+  .threads li::before { left: -22px; width: 22px; }
+  .threadBusy::after { left: -22px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .meter span { transition: none; }
-  .tierDot, .threadBusy::before, .threadBusy::after { animation: none; }
+  .segDot, .seg em, .chat::before, .chat::after, .threads::before, .threads li::before, .threadBusy::after, .badgeBeam, .mark, .you, .caret, .spin { animation: none; }
   .threadBusy::after { display: none; }
-  .tierProgress { display: none; }
 }
