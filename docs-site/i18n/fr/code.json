@@ -2155,33 +2155,13 @@
     "message": "Voir comment SpecWithCode se construit lui-même",
     "description": "Link to the SpecWithCode page section. Keep product names in English"
   },
-  "code.flow.message.free.started": {
-    "message": "Démarré sur votre Mac.",
-    "description": "Hero diagram, coordinator line: the free scene starts on the Mac. Keep product names in English"
-  },
-  "code.flow.message.free.joined": {
-    "message": "Un PC Windows et un serveur Linux ont rejoint : 3 threads.",
-    "description": "Hero diagram, coordinator line: two more machines connected. Keep product names in English"
-  },
   "code.flow.message.free.handoff": {
     "message": "Claude Code à {threshold} %. Codex, sur votre compte ChatGPT gratuit, continue le thread, historique conservé.",
     "description": "Hero diagram, coordinator line: Claude Code reached the handoff point ({threshold} is a number) and Codex continues. Keep product names in English"
   },
-  "code.flow.message.free.done": {
-    "message": "Parcours d’inscription terminé. {check} 24 tests réussis.",
-    "description": "Hero diagram, coordinator line: the free scene finished; {check} is a check-mark icon"
-  },
-  "code.flow.message.subs.started": {
-    "message": "3 threads sur les forfaits que vous payez.",
-    "description": "Hero diagram, coordinator line: the paid plans scene starts"
-  },
   "code.flow.message.subs.routed": {
     "message": "Claude Max à {threshold} %. Remboursements passe sur Copilot, qui a de la marge.",
     "description": "Hero diagram, coordinator line: Claude Max reached the handoff point ({threshold} is a number) and the Refunds task moves to Copilot. Keep product names in English"
-  },
-  "code.flow.message.subs.done": {
-    "message": "Tout est terminé. {check} 3 pull requests à relire.",
-    "description": "Hero diagram, coordinator line: the paid plans scene finished; {check} is a check-mark icon"
   },
   "code.flow.machine.windows": {
     "message": "PC Windows",
@@ -2358,10 +2338,6 @@
   "code.flow.tier.subs.short": {
     "message": "Vos forfaits",
     "description": "Hero diagram, tab for the paid plans scene (narrow screens)"
-  },
-  "code.flow.you": {
-    "message": "Vous",
-    "description": "Hero diagram, chip for the person giving the goal"
   },
   "code.flow.coordinator": {
     "message": "Coordinateur",
@@ -3740,5 +3716,61 @@
   "theme.tags.tagsPageTitle": {
     "message": "Tags",
     "description": "The title of the tag list page"
+  },
+  "code.flow.message.free.plan": {
+    "message": "Plan : 3 tâches. Démarrage sur votre Mac.",
+    "description": "Hero diagram, coordinator line: the plan has 3 tasks and starts on the Mac"
+  },
+  "code.flow.message.free.joinedMachines": {
+    "message": "PC Windows et serveur Linux connectés.",
+    "description": "Hero diagram, coordinator line: two more machines connected"
+  },
+  "code.flow.message.free.needs": {
+    "message": "2 sur 3 terminées. Tests et CI a besoin de vous : 2 tests échouent sur le serveur Linux.",
+    "description": "Hero diagram, coordinator line: two tasks finished and the Tests and CI task needs the person, because 2 tests fail"
+  },
+  "code.flow.message.subs.plan": {
+    "message": "Plan : 4 tâches avec les abonnements que vous payez.",
+    "description": "Hero diagram, coordinator line: the plan has 4 tasks on paid subscriptions"
+  },
+  "code.flow.message.subs.allDone": {
+    "message": "Les 4 sont terminées. {check} 3 pull requests à relire.",
+    "description": "Hero diagram, coordinator line: all 4 tasks finished; {check} is a check-mark icon"
+  },
+  "code.flow.step.runningCi": {
+    "message": "CI en cours",
+    "description": "Hero diagram, thread progress step: continuous integration is running"
+  },
+  "code.flow.result.prOpened": {
+    "message": "Terminé · pull request ouverte",
+    "description": "Hero diagram, thread result: finished and a pull request was opened"
+  },
+  "code.flow.result.needsYou": {
+    "message": "2 tests échouent · vous a sollicité",
+    "description": "Hero diagram, thread result: 2 tests fail and the agent asked the person for help"
+  },
+  "code.flow.status.pending": {
+    "message": "En attente",
+    "description": "Hero diagram, plan task status: not started"
+  },
+  "code.flow.status.running": {
+    "message": "En cours",
+    "description": "Hero diagram, plan task status: in progress"
+  },
+  "code.flow.status.done": {
+    "message": "Terminé",
+    "description": "Hero diagram, plan task status: finished"
+  },
+  "code.flow.status.needs": {
+    "message": "Besoin de vous",
+    "description": "Hero diagram, plan task status: waiting for the person"
+  },
+  "code.flow.chat.ariaLabel": {
+    "message": "Le chat avec lequel vous parlez",
+    "description": "Hero diagram, accessible label of the chat pane"
+  },
+  "code.flow.plan.progress": {
+    "message": "Plan · {done} sur {total} terminées",
+    "description": "Hero diagram, heading of the coordinator's plan card: {done} of {total} tasks finished"
   }
 }

@@ -48,7 +48,7 @@
     "description": "Short provider list: {names} is a comma-separated list of coding agent product names (keep in English), {count} is how many more providers there are"
   },
   "code.meta.title": {
-    "message": "Claude CodeとCodexを自分のPCで。上限で止まらない:SpecWithCode(Spec with Code)",
+    "message": "Claude CodeとCodexを自分のPCで。上限知らず:SpecWithCode(Spec with Code)",
     "description": "Page title of the SpecWithCode landing page. Keep product names in English"
   },
   "code.meta.description": {
@@ -260,7 +260,7 @@
     "description": "First line of the hero headline. Keep product names in English"
   },
   "code.hero.title.emphasis": {
-    "message": "上限で止まらない。",
+    "message": "上限​知らず。",
     "description": "Second, emphasized part of the hero headline"
   },
   "code.hero.lead": {
@@ -400,7 +400,7 @@
     "description": "Heading of the FAQ section"
   },
   "code.final.title": {
-    "message": "Codexが無料。上限で止まらない。",
+    "message": "Codexが無料。上限知らず。",
     "description": "Heading of the closing call to action. Keep product names in English"
   },
   "code.final.body": {
@@ -2667,33 +2667,13 @@
     "message": "SpecWithCodeが自分自身を作るしくみを見る",
     "description": "Link to the SpecWithCode page section. Keep product names in English"
   },
-  "code.flow.message.free.started": {
-    "message": "あなたのMacで開始。",
-    "description": "Hero diagram, coordinator line: the free scene starts on the Mac. Keep product names in English"
-  },
-  "code.flow.message.free.joined": {
-    "message": "Windows PCとLinuxサーバーが加わり、スレッドは3つに。",
-    "description": "Hero diagram, coordinator line: two more machines connected. Keep product names in English"
-  },
   "code.flow.message.free.handoff": {
     "message": "Claude Codeが{threshold}%に到達。無料ChatGPTアカウントのCodexが履歴を保ったままスレッドを続行。",
     "description": "Hero diagram, coordinator line: Claude Code reached the handoff point ({threshold} is a number) and Codex continues. Keep product names in English"
   },
-  "code.flow.message.free.done": {
-    "message": "サインアップフローが完成。{check}24件のテストに合格。",
-    "description": "Hero diagram, coordinator line: the free scene finished; {check} is a check-mark icon"
-  },
-  "code.flow.message.subs.started": {
-    "message": "契約中のプランで3スレッドを実行。",
-    "description": "Hero diagram, coordinator line: the paid plans scene starts"
-  },
   "code.flow.message.subs.routed": {
     "message": "Claude Maxが{threshold}%に到達。返金処理は、余裕のあるCopilotへ。",
     "description": "Hero diagram, coordinator line: Claude Max reached the handoff point ({threshold} is a number) and the Refunds task moves to Copilot. Keep product names in English"
-  },
-  "code.flow.message.subs.done": {
-    "message": "すべて完了。{check}レビュー待ちのプルリクエストは3件。",
-    "description": "Hero diagram, coordinator line: the paid plans scene finished; {check} is a check-mark icon"
   },
   "code.flow.machine.windows": {
     "message": "Windows PC",
@@ -2870,10 +2850,6 @@
   "code.flow.tier.subs.short": {
     "message": "契約プラン",
     "description": "Hero diagram, tab for the paid plans scene (narrow screens)"
-  },
-  "code.flow.you": {
-    "message": "あなた",
-    "description": "Hero diagram, chip for the person giving the goal"
   },
   "code.flow.coordinator": {
     "message": "コーディネーター",
@@ -3740,5 +3716,61 @@
   "theme.tags.tagsPageTitle": {
     "message": "タグ",
     "description": "The title of the tag list page"
+  },
+  "code.flow.message.free.plan": {
+    "message": "プラン:3件のタスク。Macで開始します。",
+    "description": "Hero diagram, coordinator line: the plan has 3 tasks and starts on the Mac"
+  },
+  "code.flow.message.free.joinedMachines": {
+    "message": "Windows PCとLinuxサーバーが参加しました。",
+    "description": "Hero diagram, coordinator line: two more machines connected"
+  },
+  "code.flow.message.free.needs": {
+    "message": "3件中2件が完了。テストとCIはあなたの対応待ち:Linuxサーバーでテスト2件が失敗しています。",
+    "description": "Hero diagram, coordinator line: two tasks finished and the Tests and CI task needs the person, because 2 tests fail"
+  },
+  "code.flow.message.subs.plan": {
+    "message": "プラン:契約中のプランで4件のタスク。",
+    "description": "Hero diagram, coordinator line: the plan has 4 tasks on paid subscriptions"
+  },
+  "code.flow.message.subs.allDone": {
+    "message": "4件すべて完了。{check} レビュー待ちのプルリクエストが3件あります。",
+    "description": "Hero diagram, coordinator line: all 4 tasks finished; {check} is a check-mark icon"
+  },
+  "code.flow.step.runningCi": {
+    "message": "CIを実行中",
+    "description": "Hero diagram, thread progress step: continuous integration is running"
+  },
+  "code.flow.result.prOpened": {
+    "message": "完了・プルリクエストを作成",
+    "description": "Hero diagram, thread result: finished and a pull request was opened"
+  },
+  "code.flow.result.needsYou": {
+    "message": "テスト2件が失敗・確認を依頼",
+    "description": "Hero diagram, thread result: 2 tests fail and the agent asked the person for help"
+  },
+  "code.flow.status.pending": {
+    "message": "待機中",
+    "description": "Hero diagram, plan task status: not started"
+  },
+  "code.flow.status.running": {
+    "message": "実行中",
+    "description": "Hero diagram, plan task status: in progress"
+  },
+  "code.flow.status.done": {
+    "message": "完了",
+    "description": "Hero diagram, plan task status: finished"
+  },
+  "code.flow.status.needs": {
+    "message": "対応待ち",
+    "description": "Hero diagram, plan task status: waiting for the person"
+  },
+  "code.flow.chat.ariaLabel": {
+    "message": "あなたが話しかけるチャット",
+    "description": "Hero diagram, accessible label of the chat pane"
+  },
+  "code.flow.plan.progress": {
+    "message": "プラン・{total}件中{done}件完了",
+    "description": "Hero diagram, heading of the coordinator's plan card: {done} of {total} tasks finished"
   }
 }
