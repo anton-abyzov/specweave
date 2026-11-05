@@ -256,7 +256,7 @@
     "description": "Badge next to the product name in the hero"
   },
   "code.hero.title.top": {
-    "message": "Claude Code e Codex.",
+    "message": "Claude Code, Codex e mais.",
     "description": "First line of the hero headline. Keep product names in English"
   },
   "code.hero.title.emphasis": {
@@ -264,7 +264,7 @@
     "description": "Second, emphasized part of the hero headline"
   },
   "code.hero.lead": {
-    "message": "Um chat, todas as máquinas, todos os planos. Comece com o Codex em uma conta gratuita do ChatGPT ou adicione o Claude Max e o ChatGPT Pro que você já paga. Quando o Claude Code chega perto do limite, o Codex continua a mesma thread com o histórico.",
+    "message": "Um chat para todos os seus agentes de código, em todas as máquinas e todos os planos. Comece com o Codex em uma conta gratuita do ChatGPT. Quando o Claude Code chega perto do limite, o Codex continua a mesma thread com o histórico.",
     "description": "Hero lead paragraph. Keep product names in English"
   },
   "code.stats.title.main": {
@@ -3760,5 +3760,9 @@
   "tutorials.filter.aria": {
     "message": "{label}, {count} guia|{label}, {count} guias",
     "description": "plural forms separated by \"|\""
+  },
+  "code.hero.marks.label": {
+    "message": "Também roda",
+    "description": "Accessible label of the row of other supported agents under the hero lead"
   }
 }

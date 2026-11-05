@@ -40,7 +40,7 @@
     linear-gradient(180deg, var(--wv-iris-tint), var(--wv-canvas));
   border-bottom: 1px solid var(--wv-line);
 }
-.heroGrid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: var(--wv-space-12); align-items: center; }
+.heroGrid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--wv-space-12); align-items: center; }
 .heroCopy { min-width: 0; }
 .product { display: flex; align-items: center; flex-wrap: wrap; gap: var(--wv-space-3); margin-bottom: var(--wv-space-6); font-size: 15px; line-height: 22px; }
 .product img { display: block; border-radius: var(--wv-radius-sm); }
@@ -114,7 +114,7 @@
 .finalActions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--wv-space-3); margin-top: var(--wv-space-6); }
 
 /* ---------- Narrow screens ---------- */
-@media (max-width: 1000px) {
+@media (max-width: 1100px) {
   .heroGrid { grid-template-columns: minmax(0, 1fr); }
   .steps { grid-template-columns: minmax(0, 1fr); }
   .more { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -132,13 +132,13 @@
 
 /* ---------- Hero on Weave: tint field, ink type, iris as the one accent ---------- */
 .hero { background: linear-gradient(180deg, var(--wv-iris-tint), var(--wv-canvas)); }
-.hero h1 { font-size: clamp(44px, 6vw, 72px); line-height: 1.02; font-weight: 750; letter-spacing: -0.045em; }
+.hero h1 { font-size: clamp(38px, 4.6vw, 64px); line-height: 1.02; font-weight: 750; letter-spacing: -0.045em; }
 .hero h1 em { color: var(--wv-iris); }
 .h1Top { display: inline-flex; align-items: center; gap: .2em; }
 .page img.h1Mark { width: .56em; height: .56em; padding: .1em; border-radius: .16em; background: #241523; box-sizing: content-box; }
-.hero .lead { max-width: 30em; font-size: 21px; line-height: 32px; }
+.hero .lead { max-width: 30em; font-size: 19px; line-height: 29px; margin-top: var(--wv-space-5) !important; }
 .heroMedia { position: relative; min-width: 0; }
-.heroDownload { margin-top: var(--wv-space-8); }
+.heroDownload { margin-top: var(--wv-space-6); }
 .page a.bigButton { min-height: 60px; gap: 14px; padding-inline: 22px 28px; box-shadow: var(--wv-shadow-overlay); }
 .bigButton .osText { font-size: 18px; font-weight: 700; }
 .heroNote { margin-top: var(--wv-space-4) !important; font-size: 14px; line-height: 22px; color: var(--wv-muted); }
@@ -175,3 +175,12 @@
 .page img.h1Mark + .h1Mark { animation-delay: -2.2s; }
 @keyframes wvH1Float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 @media (prefers-reduced-motion: reduce) { .page img.h1Mark { animation: none; } }
+
+/* The agents beyond the two in the headline, in one quiet row. */
+.heroMarks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: var(--wv-space-4) 0 0 !important; padding: 0; list-style: none; font-size: 13px; line-height: 20px; color: var(--wv-muted); }
+.heroMarks li { display: flex; align-items: center; gap: 6px; }
+.heroMarks img { flex: none; padding: 2px; border-radius: 5px; background: var(--wv-panel); border: 1px solid var(--wv-line); box-sizing: content-box; }
+.heroMarks img.darkPlate { background: #241523; border-color: #241523; }
+.hero { padding-top: 44px; }
+.hero .product { margin-bottom: var(--wv-space-4); }
+@media (max-width: 600px) { .hero { padding-top: 32px; } .hero .lead { font-size: 17px; line-height: 26px; } .heroMarks { gap: 4px 12px; font-size: 13px; } }

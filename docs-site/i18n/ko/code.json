@@ -208,7 +208,7 @@
     "description": "Badge next to the product name in the hero"
   },
   "code.hero.title.top": {
-    "message": "Claude Code와 Codex.",
+    "message": "Claude Code, Codex 그리고 더.",
     "description": "First line of the hero headline. Keep product names in English"
   },
   "code.hero.title.emphasis": {
@@ -216,7 +216,7 @@
     "description": "Second, emphasized part of the hero headline"
   },
   "code.hero.lead": {
-    "message": "하나의 채팅, 모든 머신, 모든 요금제. 무료 ChatGPT 계정의 Codex로 시작하거나, 이미 결제 중인 Claude Max와 ChatGPT Pro를 추가하세요. Claude Code가 한도에 가까워지면 Codex가 같은 스레드를 기록과 함께 이어받아요.",
+    "message": "모든 머신과 모든 플랜에서 쓰는 코딩 에이전트를 위한 하나의 채팅. 무료 ChatGPT 계정으로 Codex부터 시작하세요. Claude Code가 한도에 가까워지면 Codex가 기록과 함께 같은 스레드를 이어받습니다.",
     "description": "Hero lead paragraph. Keep product names in English"
   },
   "code.stats.title.main": {
@@ -3760,5 +3760,9 @@
   "tutorials.filter.aria": {
     "message": "{label}, 가이드 {count}개",
     "description": "plural forms separated by \"|\""
+  },
+  "code.hero.marks.label": {
+    "message": "함께 지원",
+    "description": "Accessible label of the row of other supported agents under the hero lead"
   }
 }
