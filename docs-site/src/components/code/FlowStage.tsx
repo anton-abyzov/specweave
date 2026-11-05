@@ -205,6 +205,8 @@ const FLOWS: Flow[] = ['free', 'subs'];
 const NEXT: Record<Flow, Flow> = {free: 'subs', subs: 'free'};
 const HOLD = 2200;
 const TYPE_MS = 55;
+/** Scene times are authored at 1x; the clock runs faster so a scene lasts about 11 seconds and the change is seen. */
+const SPEED = 1.4;
 
 const ease = (x: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 
@@ -221,7 +223,7 @@ function useSceneClock(flow: Flow, playing: boolean, run: number, onEnd: () => v
     const start = performance.now();
     setT([0, 0]);
     const tick = (now: number) => {
-      const e = now - start;
+      const e = (now - start) * SPEED;
       if (e >= len + HOLD) { endRef.current(); return; }
       if (now - last > 40) { last = now; setT([Math.min(e, len), e]); }
       raf = requestAnimationFrame(tick);
@@ -290,6 +292,8 @@ function ThreadCard({flow, th, t, base, routed}: {flow: Flow; th: Thread; t: num
   const who: Agent = next ?? th;
   const M = MACHINES[th.machine];
   const busy = status === 'running';
+  // The handoff is the moment to see: the card flashes while the next agent takes over.
+  const handing = !!next && since < 1400 * SPEED;
   const label = queued ? translate({id: 'code.flow.step.starting', message: 'Starting', description: 'Hero diagram, thread status before it starts'}) : tx(status !== 'running' ? th.result : atLimit && th.atLimit && (!next || since < 900) ? th.atLimit : steps[Math.max(0, shown - 1)]);
   return <motion.li
     layout
@@ -297,7 +301,7 @@ function ThreadCard({flow, th, t, base, routed}: {flow: Flow; th: Thread; t: num
     animate={{opacity: 1, x: 0, scale: 1}}
     exit={{opacity: 0, x: 12, scale: 0.96, transition: {duration: 0.25}}}
     transition={spring}
-    className={clsx(styles.thread, queued && styles.threadQueued, busy && styles.threadBusy, status === 'done' && styles.threadDone, status === 'needs' && styles.threadNeeds, next && styles.threadHanded)}
+    className={clsx(styles.thread, queued && styles.threadQueued, busy && styles.threadBusy, status === 'done' && styles.threadDone, status === 'needs' && styles.threadNeeds, next && styles.threadHanded, handing && styles.threadHandoff)}
   >
     <div className={styles.who}>
       <AnimatePresence mode="popLayout" initial={false}><Mark mark={who.mark} dark={who.dark} size={26} base={base} /></AnimatePresence>

@@ -25,6 +25,7 @@
 .segOn .segDot { background: var(--wv-pass); animation: wvPulse 1.6s ease-in-out infinite; }
 .segTrack { display: block; height: 4px; border-radius: 4px; background: var(--wv-sunken); overflow: hidden; }
 .segFill { display: block; height: 100%; border-radius: inherit; background: var(--wv-iris); transform-origin: left center; }
+.segOn .segFill { animation: wvBarGlow 1.6s ease-in-out infinite; }
 .seg:focus-visible { outline: 2px solid var(--wv-iris); outline-offset: 4px; border-radius: 6px; }
 .short { display: none; }
 
@@ -75,6 +76,8 @@
 .threadNeeds { border-color: var(--wv-fail); }
 .threadNeeds .step, .threadNeeds .pct { color: var(--wv-fail); }
 .threadHanded { border-color: var(--wv-iris); }
+.threadHandoff { animation: wvHandoff 1.4s ease-out 1; }
+.threadHandoff::after { animation: wvPacketX .45s ease-in 3; }
 
 .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .mark { flex: none; padding: 4px; border-radius: 8px; background: var(--wv-sunken); box-sizing: content-box; animation: wvFloat 3.2s ease-in-out infinite; }
@@ -117,6 +120,8 @@
 @keyframes wvShimmer { from { background-position-x: 100%; } to { background-position-x: -100%; } }
 @keyframes wvFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
 @keyframes wvBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes wvHandoff { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--wv-iris) 55%, transparent); transform: scale(1); } 30% { transform: scale(1.025); } 100% { box-shadow: 0 0 0 16px transparent; transform: scale(1); } }
+@keyframes wvBarGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
 @keyframes wvBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
 /* The sweep animates the gradient angle, never the box, so nothing leaks outside the rounded frame. */
@@ -141,6 +146,7 @@
   .stage .chat::after, .stage .threads li::before { animation: wvBeadRight 1.6s linear infinite !important; }
   .stage .threads::before { animation: wvBeadDown 1.6s linear infinite !important; }
   .stage .threadBusy::after { animation: wvPacketX 3s ease-in infinite !important; }
+  .stage .threadHandoff { animation: wvHandoff 1.4s ease-out 1 !important; }
   .stage .segOn .segDot { animation: wvPulse 2.4s ease-in-out infinite !important; }
   .stage .spin { animation: wvSpin 1.5s linear infinite !important; }
   .stage .caret { animation: wvBlink 1s steps(2) infinite !important; }
