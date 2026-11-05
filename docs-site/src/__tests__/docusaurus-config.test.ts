@@ -36,4 +36,14 @@ describe('docusaurus.config.ts (AC-US7-03)', () => {
   it('does not use warn for onBrokenLinks', () => {
     expect(configContent).not.toMatch(/onBrokenLinks:\s*['"]warn['"]/);
   });
+
+  it('ships the eight SpecWithCode app languages with a locale switcher', () => {
+    expect(config.i18n.defaultLocale).toBe('en');
+    expect(config.i18n.locales).toEqual(['en', 'de', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-CN']);
+    for (const locale of config.i18n.locales) {
+      expect(config.i18n.localeConfigs?.[locale]?.htmlLang).toBe(locale);
+    }
+    const items = (config.themeConfig as {navbar: {items: {type?: string}[]}}).navbar.items;
+    expect(items.some(item => item.type === 'localeDropdown')).toBe(true);
+  });
 });
