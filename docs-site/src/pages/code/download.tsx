@@ -8,6 +8,7 @@ import Translate, {translate} from '@docusaurus/Translate';
 import {ChevronDown, Download, Info, ShieldCheck} from 'lucide-react';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../../data/specwithcodeRelease';
 import {providerSummary} from '../../data/tools';
+import MobileStores from '../../components/code/MobileStores';
 import {ALL_DOWNLOADS_ANCHOR, MAC_INSTALLER, useSpecWithCodeInstaller} from '../../data/specwithcodeInstaller';
 import styles from '../code.module.css';
 
@@ -317,6 +318,14 @@ export default function CodeDownload() {
             <span className="wv-evidence__detail">{item.detail}</span>
           </li>)}
         </ul>
+      </section>
+
+      <section className={clsx(styles.shell, styles.section)} aria-labelledby="phones-title">
+        <div className={styles.sectionHead}>
+          <h2 id="phones-title"><Translate id="code.download.phones.title" description="Section heading for the phone apps. Keep product names in English">On your phone</Translate></h2>
+          <p><Translate id="code.download.phones.body" description="Phone apps section intro. Keep product names in English">SpecWithCode for Android is on Google Play. The iPhone app is on its way; its App Store card becomes a link the day the listing goes live.</Translate></p>
+          <MobileStores placement="download-page" kicker={false} />
+        </div>
       </section>
 
       <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="install-title">

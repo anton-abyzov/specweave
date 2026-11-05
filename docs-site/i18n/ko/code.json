@@ -3772,5 +3772,29 @@
   "code.hero.marks.label": {
     "message": "함께 지원",
     "description": "Accessible label of the row of other supported agents under the hero lead"
+  },
+  "code.mobile.title": {
+    "message": "iPhone 및 Android용 SpecWithCode",
+    "description": "Heading of the phone apps row under the desktop downloads. Keep product names in English"
+  },
+  "code.mobile.ariaLabel": {
+    "message": "휴대폰 앱",
+    "description": "Accessible label of the list of phone app store cards"
+  },
+  "code.mobile.soon": {
+    "message": "곧 출시",
+    "description": "Tag on a phone app store card whose listing is not live yet"
+  },
+  "code.mobile.getOn": {
+    "message": "다운로드",
+    "description": "Small line above the store name on a live store card"
+  },
+  "code.download.phones.title": {
+    "message": "휴대폰에서",
+    "description": "Section heading for the phone apps. Keep product names in English"
+  },
+  "code.download.phones.body": {
+    "message": "Android용 SpecWithCode는 Google Play에 있습니다. iPhone 앱은 준비 중이며, App Store 카드는 게시되는 날 링크로 바뀝니다.",
+    "description": "Phone apps section intro. Keep product names in English"
   }
 }

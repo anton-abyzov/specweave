@@ -3772,5 +3772,29 @@
   "code.hero.marks.label": {
     "message": "Также работает",
     "description": "Accessible label of the row of other supported agents under the hero lead"
+  },
+  "code.mobile.title": {
+    "message": "SpecWithCode для iPhone и Android",
+    "description": "Heading of the phone apps row under the desktop downloads. Keep product names in English"
+  },
+  "code.mobile.ariaLabel": {
+    "message": "Приложения для телефона",
+    "description": "Accessible label of the list of phone app store cards"
+  },
+  "code.mobile.soon": {
+    "message": "Скоро",
+    "description": "Tag on a phone app store card whose listing is not live yet"
+  },
+  "code.mobile.getOn": {
+    "message": "Скачать в",
+    "description": "Small line above the store name on a live store card"
+  },
+  "code.download.phones.title": {
+    "message": "На вашем телефоне",
+    "description": "Section heading for the phone apps. Keep product names in English"
+  },
+  "code.download.phones.body": {
+    "message": "SpecWithCode для Android уже в Google Play. Приложение для iPhone на подходе: карточка App Store станет ссылкой в день публикации.",
+    "description": "Phone apps section intro. Keep product names in English"
   }
 }

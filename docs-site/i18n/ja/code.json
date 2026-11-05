@@ -3772,5 +3772,29 @@
   "code.hero.marks.label": {
     "message": "対応エージェント",
     "description": "Accessible label of the row of other supported agents under the hero lead"
+  },
+  "code.mobile.title": {
+    "message": "iPhone と Android 向け SpecWithCode",
+    "description": "Heading of the phone apps row under the desktop downloads. Keep product names in English"
+  },
+  "code.mobile.ariaLabel": {
+    "message": "スマートフォンアプリ",
+    "description": "Accessible label of the list of phone app store cards"
+  },
+  "code.mobile.soon": {
+    "message": "近日公開",
+    "description": "Tag on a phone app store card whose listing is not live yet"
+  },
+  "code.mobile.getOn": {
+    "message": "入手先",
+    "description": "Small line above the store name on a live store card"
+  },
+  "code.download.phones.title": {
+    "message": "スマートフォンで",
+    "description": "Section heading for the phone apps. Keep product names in English"
+  },
+  "code.download.phones.body": {
+    "message": "Android 向け SpecWithCode は Google Play で公開中です。iPhone アプリは準備中で、App Store のカードは公開された日からリンクになります。",
+    "description": "Phone apps section intro. Keep product names in English"
   }
 }

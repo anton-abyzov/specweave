@@ -3772,5 +3772,29 @@
   "code.hero.marks.label": {
     "message": "同样支持",
     "description": "Accessible label of the row of other supported agents under the hero lead"
+  },
+  "code.mobile.title": {
+    "message": "SpecWithCode iPhone 和 Android 版",
+    "description": "Heading of the phone apps row under the desktop downloads. Keep product names in English"
+  },
+  "code.mobile.ariaLabel": {
+    "message": "手机应用",
+    "description": "Accessible label of the list of phone app store cards"
+  },
+  "code.mobile.soon": {
+    "message": "即将推出",
+    "description": "Tag on a phone app store card whose listing is not live yet"
+  },
+  "code.mobile.getOn": {
+    "message": "前往下载",
+    "description": "Small line above the store name on a live store card"
+  },
+  "code.download.phones.title": {
+    "message": "在你的手机上",
+    "description": "Section heading for the phone apps. Keep product names in English"
+  },
+  "code.download.phones.body": {
+    "message": "SpecWithCode Android 版已在 Google Play 上架。iPhone 版正在路上，App Store 卡片会在上架当天变成链接。",
+    "description": "Phone apps section intro. Keep product names in English"
   }
 }
