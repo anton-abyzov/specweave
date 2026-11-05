@@ -1843,14 +1843,6 @@
     "message": "Todos",
     "description": "Product filter button showing guides for every product"
   },
-  "tutorials.path.meta.one": {
-    "message": "{product} · {count} guía · {duration}",
-    "description": "Learning path meta line with one guide; {product} is a product name, {duration} a m:ss total length"
-  },
-  "tutorials.path.meta.other": {
-    "message": "{product} · {count} guías · {duration}",
-    "description": "Learning path meta line with several guides; {product} is a product name, {duration} a m:ss total length"
-  },
   "tutorials.path.external": {
     "message": "Estas guías viven junto al registro.",
     "description": "Shown when a path's guides live on another site"
@@ -1858,14 +1850,6 @@
   "tutorials.path.externalLink": {
     "message": "Ver los tutoriales de Verified Skill",
     "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
-  },
-  "tutorials.path.planned.one": {
-    "message": "Hay una guía más prevista para esta ruta.",
-    "description": "One planned guide in a learning path"
-  },
-  "tutorials.path.planned.other": {
-    "message": "Hay {count} guías más previstas para esta ruta.",
-    "description": "Several planned guides in a learning path"
   },
   "tutorials.path.railAria": {
     "message": "{title}, en orden",
@@ -1946,14 +1930,6 @@
   "tutorials.filter.groupAria": {
     "message": "Producto",
     "description": "Accessible label of the product filter buttons"
-  },
-  "tutorials.filter.aria.one": {
-    "message": "{label}, {count} guía",
-    "description": "Accessible label of a filter button with one guide; {label} is the filter name"
-  },
-  "tutorials.filter.aria.other": {
-    "message": "{label}, {count} guías",
-    "description": "Accessible label of a filter button with several guides; {label} is the filter name"
   },
   "tutorials.results.all": {
     "message": "{count} guías",
@@ -3772,5 +3748,17 @@
   "code.flow.plan.progress": {
     "message": "Plan · {done} de {total} hechas",
     "description": "Hero diagram, heading of the coordinator's plan card: {done} of {total} tasks finished"
+  },
+  "tutorials.path.meta": {
+    "message": "{product} · {count} guía · {duration}|{product} · {count} guías · {duration}",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.path.planned": {
+    "message": "Hay una guía más prevista para esta ruta.|Hay {count} guías más previstas para esta ruta.",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.filter.aria": {
+    "message": "{label}, {count} guía|{label}, {count} guías",
+    "description": "plural forms separated by \"|\""
   }
 }

@@ -2,11 +2,11 @@
 import React, {type ReactNode} from 'react';
 import OriginalLayout from '@theme-original/Layout';
 import type {Props} from '@theme/Layout';
-import {useLocation} from '@docusaurus/router';
 import {PageMetadata} from '@docusaurus/theme-common';
 import Head from '@docusaurus/Head';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import {isEnglishOnlyPath} from '@site/src/data/englishOnlyPaths';
+import useUnprefixedPathname from '@site/src/hooks/useUnprefixedPathname';
 
 const archiveMetadata: Record<string, {title: string; description: string}> = {
   '/blog/authors/': {
@@ -32,11 +32,9 @@ const archiveMetadata: Record<string, {title: string; description: string}> = {
 };
 
 export default function LayoutWrapper(props: Props): ReactNode {
-  const {pathname} = useLocation();
   const {siteConfig, i18n} = useDocusaurusContext();
   // Paths below are written without the locale prefix (/ru/, /ja/ ...).
-  const unprefixed = pathname.startsWith(siteConfig.baseUrl) ? `/${pathname.slice(siteConfig.baseUrl.length)}` : pathname;
-  const path = `${unprefixed.replace(/\/$/, '')}/`;
+  const path = `${useUnprefixedPathname().replace(/\/$/, '')}/`;
   // Untranslated sections are English in every locale; their canonical is the English page.
   const englishOnly = i18n.currentLocale !== i18n.defaultLocale && isEnglishOnlyPath(path);
   let metadata = archiveMetadata[path];
@@ -54,7 +52,13 @@ export default function LayoutWrapper(props: Props): ReactNode {
       <OriginalLayout {...props} />
       {metadata && <PageMetadata {...metadata} />}
       {englishOnly && (
-        <Head><link rel="canonical" href={`${siteConfig.url}${path}`} /></Head>
+        <Head>
+          {/* The content is English: say so, and point canonical and og:url at the English page. */}
+          <html lang="en" />
+          <link rel="canonical" href={`${siteConfig.url}${path}`} />
+          <meta property="og:url" content={`${siteConfig.url}${path}`} />
+          <meta property="og:locale" content="en" />
+        </Head>
       )}
       {path === '/search/' && (
         <Head><meta name="robots" content="noindex, follow" /></Head>

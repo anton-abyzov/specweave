@@ -1843,14 +1843,6 @@
     "message": "전체",
     "description": "Product filter button showing guides for every product"
   },
-  "tutorials.path.meta.one": {
-    "message": "{product} · 가이드 {count}개 · {duration}",
-    "description": "Learning path meta line with one guide; {product} is a product name, {duration} a m:ss total length"
-  },
-  "tutorials.path.meta.other": {
-    "message": "{product} · 가이드 {count}개 · {duration}",
-    "description": "Learning path meta line with several guides; {product} is a product name, {duration} a m:ss total length"
-  },
   "tutorials.path.external": {
     "message": "이 가이드는 레지스트리에 있어요.",
     "description": "Shown when a path's guides live on another site"
@@ -1858,14 +1850,6 @@
   "tutorials.path.externalLink": {
     "message": "Verified Skill 튜토리얼 보기",
     "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
-  },
-  "tutorials.path.planned.one": {
-    "message": "이 학습 경로에 가이드가 하나 더 추가될 예정이에요.",
-    "description": "One planned guide in a learning path"
-  },
-  "tutorials.path.planned.other": {
-    "message": "이 학습 경로에 가이드 {count}개가 더 추가될 예정이에요.",
-    "description": "Several planned guides in a learning path"
   },
   "tutorials.path.railAria": {
     "message": "{title}, 순서대로",
@@ -1946,14 +1930,6 @@
   "tutorials.filter.groupAria": {
     "message": "제품",
     "description": "Accessible label of the product filter buttons"
-  },
-  "tutorials.filter.aria.one": {
-    "message": "{label}, 가이드 {count}개",
-    "description": "Accessible label of a filter button with one guide; {label} is the filter name"
-  },
-  "tutorials.filter.aria.other": {
-    "message": "{label}, 가이드 {count}개",
-    "description": "Accessible label of a filter button with several guides; {label} is the filter name"
   },
   "tutorials.results.all": {
     "message": "가이드 {count}개",
@@ -3772,5 +3748,17 @@
   "code.flow.plan.progress": {
     "message": "계획 · {total}개 중 {done}개 완료",
     "description": "Hero diagram, heading of the coordinator's plan card: {done} of {total} tasks finished"
+  },
+  "tutorials.path.meta": {
+    "message": "{product} · 가이드 {count}개 · {duration}",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.path.planned": {
+    "message": "이 학습 경로에 가이드 {count}개가 더 추가될 예정이에요.",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.filter.aria": {
+    "message": "{label}, 가이드 {count}개",
+    "description": "plural forms separated by \"|\""
   }
 }

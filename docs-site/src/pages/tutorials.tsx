@@ -6,6 +6,7 @@ import Link from '@docusaurus/Link';
 import Translate, {translate} from '@docusaurus/Translate';
 import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import {usePluralForm} from '@docusaurus/theme-common';
 import {
   PATHS,
   TUTORIALS,
@@ -52,6 +53,7 @@ const ORDERED = byRecency(TUTORIALS);
 
 function PathColumn({path}: {path: LearningPath}) {
   const {published, planned} = resolvePath(path);
+  const {selectMessage} = usePluralForm();
   // Guide pages link /tutorials/#path-<id>.
   useBrokenLinks().collectAnchor(`path-${path.id}`);
   return (
@@ -59,9 +61,7 @@ function PathColumn({path}: {path: LearningPath}) {
       <div className={styles.pathHead}>
         <h3 className={styles.pathTitle}>{path.title}</h3>
         <p className={styles.pathProduct}>
-          {published.length === 1
-            ? translate({id: 'tutorials.path.meta.one', message: '{product} · {count} guide · {duration}', description: 'Learning path meta line with one guide; {product} is a product name, {duration} a m:ss total length'}, {product: productLabel(path.product), count: published.length, duration: formatDuration(published.reduce((n, t) => n + t.durationSeconds, 0))})
-            : translate({id: 'tutorials.path.meta.other', message: '{product} · {count} guides · {duration}', description: 'Learning path meta line with several guides; {product} is a product name, {duration} a m:ss total length'}, {product: productLabel(path.product), count: published.length, duration: formatDuration(published.reduce((n, t) => n + t.durationSeconds, 0))})}
+          {selectMessage(published.length, translate({id: 'tutorials.path.meta', message: '{product} · {count} guide · {duration}|{product} · {count} guides · {duration}', description: 'Learning path meta line, plural forms separated by "|" (see https://docusaurus.io/docs/i18n/tutorial#plurals); {product} is a product name, {duration} a m:ss total length'}, {product: productLabel(path.product), count: published.length, duration: formatDuration(published.reduce((n, t) => n + t.durationSeconds, 0))}))}
         </p>
         <p className={styles.pathSummary}>{path.summary}</p>
         {path.url ? (
@@ -71,9 +71,7 @@ function PathColumn({path}: {path: LearningPath}) {
           </p>
         ) : planned.length > 0 && (
           <p className={styles.pathMore}>
-            {planned.length === 1
-              ? translate({id: 'tutorials.path.planned.one', message: 'One more guide is planned for this path.', description: 'One planned guide in a learning path'})
-              : translate({id: 'tutorials.path.planned.other', message: '{count} more guides are planned for this path.', description: 'Several planned guides in a learning path'}, {count: planned.length})}
+            {selectMessage(planned.length, translate({id: 'tutorials.path.planned', message: 'One more guide is planned for this path.|{count} more guides are planned for this path.', description: 'Planned guides in a learning path, plural forms separated by "|"'}, {count: planned.length}))}
           </p>
         )}
       </div>
@@ -135,6 +133,7 @@ const STANDARD_ICONS = [
 const HERO_POSTERS = ORDERED.slice(0, 3);
 
 export default function Tutorials() {
+  const {selectMessage} = usePluralForm();
   const {siteConfig} = useDocusaurusContext();
   const searchId = useId();
   const [filter, setFilter] = useState<ProductFilter>('all');
@@ -164,7 +163,7 @@ export default function Tutorials() {
     [],
   );
   const glow = useGlow<HTMLUListElement>();
-  const jsonLd = useMemo(() => JSON.stringify(buildHubJsonLd(TUTORIALS, siteConfig.url)), [siteConfig.url]);
+  const jsonLd = useMemo(() => JSON.stringify(buildHubJsonLd(TUTORIALS, siteConfig.url, siteConfig.baseUrl)), [siteConfig.url, siteConfig.baseUrl]);
 
   return (
     <Layout
@@ -233,9 +232,7 @@ export default function Tutorials() {
                   type="button"
                   className={styles.filter}
                   aria-pressed={filter === f.id}
-                  aria-label={counts[f.id] === 1
-                    ? translate({id: 'tutorials.filter.aria.one', message: '{label}, {count} guide', description: 'Accessible label of a filter button with one guide; {label} is the filter name'}, {label: f.label, count: counts[f.id]})
-                    : translate({id: 'tutorials.filter.aria.other', message: '{label}, {count} guides', description: 'Accessible label of a filter button with several guides; {label} is the filter name'}, {label: f.label, count: counts[f.id]})}
+                  aria-label={selectMessage(counts[f.id], translate({id: 'tutorials.filter.aria', message: '{label}, {count} guide|{label}, {count} guides', description: 'Accessible label of a filter button, plural forms separated by "|"; {label} is the filter name'}, {label: f.label, count: counts[f.id]}))}
                   onClick={() => choose(f.id)}
                 >
                   {f.label}<span className={styles.count} aria-hidden="true">{counts[f.id]}</span>

@@ -26,7 +26,6 @@ import styles from '../components/code/FreeLanding.module.css';
 */
 
 const SITE = 'https://spec-weave.com';
-const PAGE_URL = `${SITE}/code/`;
 const pageTitle = () => translate({id: 'code.meta.title', message: 'Claude Code and Codex on your own computers, never stuck on a limit: SpecWithCode (Spec with Code)', description: 'Page title of the SpecWithCode landing page. Keep product names in English'});
 const pageDescription = () => translate({id: 'code.meta.description', message: 'SpecWithCode (Spec with Code): Claude Code and Codex in one chat on every machine. At a limit, the next agent picks it up. Free. macOS, Windows, Linux.', description: 'Meta description of the SpecWithCode landing page. Keep product names in English'});
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
@@ -109,9 +108,6 @@ const getSubs = (): {icon: typeof Layers; title: string; body: React.ReactNode}[
   {icon: GitMerge, title: translate({id: 'code.subs.usage.title', message: 'Usage for every account', description: 'Card title in the paid plans section'}), body: <>{translate({id: 'code.subs.usage.body', message: 'Usage › Limits shows each account, the machine it is signed in on, and what is left in every session and weekly window.', description: 'Card text in the paid plans section; "Usage › Limits" is a menu path in the app, translate it as the app labels it'})}</>},
 ];
 
-/** Section ids other pages link to (#harnesses, #built-with-itself). */
-const MORE_IDS = ['harnesses', 'coordinator', 'machines', 'built-with-itself'];
-
 const getMore = (): {id: string; icon: typeof Layers; title: string; body: React.ReactNode; to: string; link: string}[] => [
   {id: 'harnesses', icon: Layers, title: translate({id: 'code.more.harnesses.title', message: 'Each agent in its own harness', description: 'Card title in the "more" section'}), body: <>{translate({id: 'code.more.harnesses.body', message: 'Claude Code, Codex, GitHub Copilot, Cursor, OpenCode and more run the way their vendors ship them, on your own sign-ins.', description: 'Card text in the "more" section. Keep product names in English'})}</>, to: '/docs/studio/harnesses/', link: translate({id: 'code.more.harnesses.link', message: 'Harnesses and models', description: 'Card link to the harnesses docs'})},
   {id: 'coordinator', icon: Users, title: translate({id: 'code.more.coordinator.title', message: 'A coordinator for bigger jobs', description: 'Card title in the "more" section'}), body: <>{translate({id: 'code.more.coordinator.body', message: 'Give one goal. A coordinator splits it into worker threads on different agents, and you review the result.', description: 'Card text in the "more" section'})}</>, to: '/docs/overview/studio', link: translate({id: 'code.more.coordinator.link', message: 'How projects work', description: 'Card link to the projects docs'})},
@@ -130,25 +126,26 @@ const getFaq = (): {q: string; a: string}[] => [
   {q: translate({id: 'code.faq.harness.q', message: 'Is SpecWithCode a coding-agent harness?', description: 'FAQ question. Keep product names in English'}), a: translate({id: 'code.faq.harness.a', message: 'No. A harness is the agent loop, tools, permissions and sign-in a vendor builds around its model, and Claude Code, Codex and GitHub Copilot CLI are harnesses. SpecWithCode is an interface to those native harnesses: each one keeps running its own agent, and the app adds projects, worker threads, usage limits, machines and context handoffs on top.', description: 'FAQ answer, also used in the FAQPage structured data. Keep product names in English'})},
 ];
 
-const buildLd = (TITLE: string, DESCRIPTION: string, FAQ: {q: string; a: string}[]) => ({
+/** pageUrl includes the locale base (/ru/code/), matching the page's canonical. */
+const buildLd = (pageUrl: string, TITLE: string, DESCRIPTION: string, FAQ: {q: string; a: string}[]) => ({
   '@context': 'https://schema.org',
   '@graph': [
     {
       '@type': 'WebPage',
-      '@id': PAGE_URL,
-      url: PAGE_URL,
+      '@id': pageUrl,
+      url: pageUrl,
       name: TITLE,
       description: DESCRIPTION,
       isPartOf: {'@id': `${SITE}/#website`},
-      mainEntity: {'@id': `${PAGE_URL}#app`},
+      mainEntity: {'@id': `${pageUrl}#app`},
     },
     {
       '@type': 'SoftwareApplication',
-      '@id': `${PAGE_URL}#app`,
+      '@id': `${pageUrl}#app`,
       name: 'SpecWithCode',
       alternateName: 'Spec with Code',
       description: DESCRIPTION,
-      url: PAGE_URL,
+      url: pageUrl,
       applicationCategory: 'DeveloperApplication',
       applicationSubCategory: 'Agentic development environment',
       // Same wording as /code/download/, which offers the Mac, Windows and Linux builds.
@@ -172,7 +169,7 @@ const buildLd = (TITLE: string, DESCRIPTION: string, FAQ: {q: string; a: string}
     },
     {
       '@type': 'FAQPage',
-      '@id': `${PAGE_URL}#faq`,
+      '@id': `${pageUrl}#faq`,
       mainEntity: FAQ.map(({q, a}) => ({'@type': 'Question', name: q, acceptedAnswer: {'@type': 'Answer', text: a}})),
     },
   ],
@@ -184,17 +181,17 @@ export default function Code() {
   const logo = (file: string) => `${providerBase}${file}.svg?v=2`;
   const marks = {claude: logo('claude'), openai: logo('openai'), deepseek: logo('deepseek'), copilot: logo('copilot'), gemini: logo('gemini'), cursor: logo('cursor'), opencode: logo('opencode')};
   // Other pages link to /code/#harnesses and #built-with-itself; section ids on a custom page must be declared to the link checker.
+  const MORE = getMore();
   const brokenLinks = useBrokenLinks();
-  for (const id of MORE_IDS) brokenLinks.collectAnchor(id);
+  for (const {id} of MORE) brokenLinks.collectAnchor(id);
   brokenLinks.collectAnchor('start');
   brokenLinks.collectAnchor('questions');
   brokenLinks.collectAnchor('subscriptions');
   const TITLE = pageTitle();
   const DESCRIPTION = pageDescription();
   const SUBS = getSubs();
-  const MORE = getMore();
   const FAQ = getFaq();
-  const SPECWITHCODE_LD = buildLd(TITLE, DESCRIPTION, FAQ);
+  const SPECWITHCODE_LD = buildLd(`${SITE}${useBaseUrl('/code/')}`, TITLE, DESCRIPTION, FAQ);
 
   return <Layout title={TITLE} description={DESCRIPTION}>
     <Head>

@@ -1891,14 +1891,6 @@
     "message": "すべて",
     "description": "Product filter button showing guides for every product"
   },
-  "tutorials.path.meta.one": {
-    "message": "{product}・{count}本のガイド・{duration}",
-    "description": "Learning path meta line with one guide; {product} is a product name, {duration} a m:ss total length"
-  },
-  "tutorials.path.meta.other": {
-    "message": "{product}・{count}本のガイド・{duration}",
-    "description": "Learning path meta line with several guides; {product} is a product name, {duration} a m:ss total length"
-  },
   "tutorials.path.external": {
     "message": "これらのガイドはレジストリ側にあります。",
     "description": "Shown when a path's guides live on another site"
@@ -1906,14 +1898,6 @@
   "tutorials.path.externalLink": {
     "message": "Verified Skillのチュートリアルを見る",
     "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
-  },
-  "tutorials.path.planned.one": {
-    "message": "このパスには、ガイドをあと1本追加予定です。",
-    "description": "One planned guide in a learning path"
-  },
-  "tutorials.path.planned.other": {
-    "message": "このパスには、ガイドをあと{count}本追加予定です。",
-    "description": "Several planned guides in a learning path"
   },
   "tutorials.path.railAria": {
     "message": "{title}(順番どおり)",
@@ -1994,14 +1978,6 @@
   "tutorials.filter.groupAria": {
     "message": "製品",
     "description": "Accessible label of the product filter buttons"
-  },
-  "tutorials.filter.aria.one": {
-    "message": "{label}、{count}本のガイド",
-    "description": "Accessible label of a filter button with one guide; {label} is the filter name"
-  },
-  "tutorials.filter.aria.other": {
-    "message": "{label}、{count}本のガイド",
-    "description": "Accessible label of a filter button with several guides; {label} is the filter name"
   },
   "tutorials.results.all": {
     "message": "{count}本のガイド",
@@ -3772,5 +3748,17 @@
   "code.flow.plan.progress": {
     "message": "プラン・{total}件中{done}件完了",
     "description": "Hero diagram, heading of the coordinator's plan card: {done} of {total} tasks finished"
+  },
+  "tutorials.path.meta": {
+    "message": "{product}・{count}本のガイド・{duration}",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.path.planned": {
+    "message": "このパスには、ガイドをあと{count}本追加予定です。",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.filter.aria": {
+    "message": "{label}、{count}本のガイド",
+    "description": "plural forms separated by \"|\""
   }
 }

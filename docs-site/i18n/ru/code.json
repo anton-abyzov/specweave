@@ -1891,14 +1891,6 @@
     "message": "Все",
     "description": "Product filter button showing guides for every product"
   },
-  "tutorials.path.meta.one": {
-    "message": "{product} · руководств: {count} · {duration}",
-    "description": "Learning path meta line with one guide; {product} is a product name, {duration} a m:ss total length"
-  },
-  "tutorials.path.meta.other": {
-    "message": "{product} · руководств: {count} · {duration}",
-    "description": "Learning path meta line with several guides; {product} is a product name, {duration} a m:ss total length"
-  },
   "tutorials.path.external": {
     "message": "Эти руководства размещены вместе с реестром.",
     "description": "Shown when a path's guides live on another site"
@@ -1906,14 +1898,6 @@
   "tutorials.path.externalLink": {
     "message": "Смотреть уроки по Verified Skill",
     "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
-  },
-  "tutorials.path.planned.one": {
-    "message": "В этот маршрут планируется добавить ещё одно руководство.",
-    "description": "One planned guide in a learning path"
-  },
-  "tutorials.path.planned.other": {
-    "message": "В этот маршрут планируется добавить ещё руководств: {count}.",
-    "description": "Several planned guides in a learning path"
   },
   "tutorials.path.railAria": {
     "message": "{title}, по порядку",
@@ -1994,14 +1978,6 @@
   "tutorials.filter.groupAria": {
     "message": "Продукт",
     "description": "Accessible label of the product filter buttons"
-  },
-  "tutorials.filter.aria.one": {
-    "message": "{label}, руководств: {count}",
-    "description": "Accessible label of a filter button with one guide; {label} is the filter name"
-  },
-  "tutorials.filter.aria.other": {
-    "message": "{label}, руководств: {count}",
-    "description": "Accessible label of a filter button with several guides; {label} is the filter name"
   },
   "tutorials.results.all": {
     "message": "Руководств: {count}",
@@ -3772,5 +3748,17 @@
   "code.flow.plan.progress": {
     "message": "План · готово {done} из {total}",
     "description": "Hero diagram, heading of the coordinator's plan card: {done} of {total} tasks finished"
+  },
+  "tutorials.path.meta": {
+    "message": "{product} · {count} руководство · {duration}|{product} · {count} руководства · {duration}|{product} · {count} руководств · {duration}",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.path.planned": {
+    "message": "В этот маршрут планируется добавить ещё {count} руководство.|В этот маршрут планируется добавить ещё {count} руководства.|В этот маршрут планируется добавить ещё {count} руководств.",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.filter.aria": {
+    "message": "{label}, {count} руководство|{label}, {count} руководства|{label}, {count} руководств",
+    "description": "plural forms separated by \"|\""
   }
 }

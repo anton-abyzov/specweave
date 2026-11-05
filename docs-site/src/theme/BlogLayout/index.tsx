@@ -3,13 +3,11 @@ import React, {type ReactNode} from 'react';
 import OriginalBlogLayout from '@theme-original/BlogLayout';
 import type {Props} from '@theme/BlogLayout';
 import Heading from '@theme/Heading';
-import {useLocation} from '@docusaurus/router';
-import useBaseUrl from '@docusaurus/useBaseUrl';
+import useUnprefixedPathname from '@site/src/hooks/useUnprefixedPathname';
 
 export default function BlogLayoutWrapper({children, ...props}: Props): ReactNode {
-  const {pathname} = useLocation();
   // Match /blog in every locale (/ru/blog ...).
-  const isIndex = pathname.replace(/\/$/, '') === useBaseUrl('/blog');
+  const isIndex = /^\/blog\/?$/.test(useUnprefixedPathname());
   return (
     <OriginalBlogLayout {...props}>
       {isIndex && <header className="margin-bottom--lg">

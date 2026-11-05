@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import Translate, {translate} from '@docusaurus/Translate';
 import {ChevronDown, Download, Info, ShieldCheck} from 'lucide-react';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../../data/specwithcodeRelease';
@@ -20,7 +21,6 @@ const icon = {size: 20, strokeWidth: 1.5, 'aria-hidden': true} as const;
 const btnIcon = {size: 16, strokeWidth: 1.5, 'aria-hidden': true} as const;
 
 const SITE = 'https://spec-weave.com';
-const PAGE_URL = `${SITE}/code/download/`;
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 const CHROME_URL = 'https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb';
 
@@ -140,26 +140,27 @@ function getFaq(): {q: string; a: string}[] {
   ];
 }
 
-function downloadLd(title: string, description: string, steps: {title: string}[], faq: {q: string; a: string}[]) {
+/** pageUrl and codeUrl include the locale base (/ru/code/download/), matching each page's canonical. */
+function downloadLd(pageUrl: string, codeUrl: string, title: string, description: string, steps: {title: string}[], faq: {q: string; a: string}[]) {
   return {
     '@context': 'https://schema.org',
     '@graph': [
       {
         '@type': 'WebPage',
-        '@id': PAGE_URL,
-        url: PAGE_URL,
+        '@id': pageUrl,
+        url: pageUrl,
         name: title,
         description,
         isPartOf: {'@id': `${SITE}/#website`},
         about: {'@id': `${SITE}/code/#app`},
-        breadcrumb: {'@id': `${PAGE_URL}#breadcrumb`},
+        breadcrumb: {'@id': `${pageUrl}#breadcrumb`},
       },
       {
         '@type': 'BreadcrumbList',
-        '@id': `${PAGE_URL}#breadcrumb`,
+        '@id': `${pageUrl}#breadcrumb`,
         itemListElement: [
-          {'@type': 'ListItem', position: 1, name: 'SpecWithCode', item: `${SITE}/code/`},
-          {'@type': 'ListItem', position: 2, name: translate({id: 'code.download.ld.breadcrumb.download', message: 'Download', description: 'Breadcrumb name of the download page (structured data)'}), item: PAGE_URL},
+          {'@type': 'ListItem', position: 1, name: 'SpecWithCode', item: codeUrl},
+          {'@type': 'ListItem', position: 2, name: translate({id: 'code.download.ld.breadcrumb.download', message: 'Download', description: 'Breadcrumb name of the download page (structured data)'}), item: pageUrl},
         ],
       },
       {
@@ -173,14 +174,14 @@ function downloadLd(title: string, description: string, steps: {title: string}[]
         softwareVersion: release.version,
         fileSize: release.size,
         downloadUrl: release.dmgUrl,
-        installUrl: PAGE_URL,
+        installUrl: pageUrl,
         releaseNotes: release.notesUrl,
         isAccessibleForFree: true,
         offers: {'@type': 'Offer', price: '0', priceCurrency: 'USD'},
       },
       {
         '@type': 'HowTo',
-        '@id': `${PAGE_URL}#install`,
+        '@id': `${pageUrl}#install`,
         name: translate({id: 'code.download.ld.howto.name', message: 'Install SpecWithCode on a Mac', description: 'Structured-data how-to name. Keep product names in English'}),
         step: [
           {'@type': 'HowToStep', position: 1, name: steps[0].title, text: translate({id: 'code.download.ld.howto.step1', message: 'Download SpecWithCode-arm64.dmg from spec-weave.com/code/download.', description: 'Structured-data how-to step 1 text; keep the file name and address as is'}), url: release.dmgUrl},
@@ -190,7 +191,7 @@ function downloadLd(title: string, description: string, steps: {title: string}[]
       },
       {
         '@type': 'FAQPage',
-        '@id': `${PAGE_URL}#faq`,
+        '@id': `${pageUrl}#faq`,
         mainEntity: faq.map(({q, a}) => ({'@type': 'Question', name: q, acceptedAnswer: {'@type': 'Answer', text: a}})),
       },
     ],
@@ -256,7 +257,9 @@ export default function CodeDownload() {
   const DESKTOP_NOTES = getDesktopNotes();
   const NEXT = getNext();
   const FAQ_TEXT = getFaq();
-  const DOWNLOAD_LD = downloadLd(TITLE, DESCRIPTION, STEPS, FAQ_TEXT);
+  const pageBase = useBaseUrl('/code/download/');
+  const codeBase = useBaseUrl('/code/');
+  const DOWNLOAD_LD = downloadLd(`${SITE}${pageBase}`, `${SITE}${codeBase}`, TITLE, DESCRIPTION, STEPS, FAQ_TEXT);
   return <Layout title={TITLE} description={DESCRIPTION}>
     <Head>
       <title>{TITLE}</title>

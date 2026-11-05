@@ -1891,14 +1891,6 @@
     "message": "全部",
     "description": "Product filter button showing guides for every product"
   },
-  "tutorials.path.meta.one": {
-    "message": "{product} · {count} 篇指南 · {duration}",
-    "description": "Learning path meta line with one guide; {product} is a product name, {duration} a m:ss total length"
-  },
-  "tutorials.path.meta.other": {
-    "message": "{product} · {count} 篇指南 · {duration}",
-    "description": "Learning path meta line with several guides; {product} is a product name, {duration} a m:ss total length"
-  },
   "tutorials.path.external": {
     "message": "这些指南位于注册表站点。",
     "description": "Shown when a path's guides live on another site"
@@ -1906,14 +1898,6 @@
   "tutorials.path.externalLink": {
     "message": "观看 Verified Skill 教程",
     "description": "Link to the Verified Skill tutorials; keep Verified Skill in English"
-  },
-  "tutorials.path.planned.one": {
-    "message": "这条学习路径还计划再增加一篇指南。",
-    "description": "One planned guide in a learning path"
-  },
-  "tutorials.path.planned.other": {
-    "message": "这条学习路径还计划再增加 {count} 篇指南。",
-    "description": "Several planned guides in a learning path"
   },
   "tutorials.path.railAria": {
     "message": "{title}，按顺序排列",
@@ -1994,14 +1978,6 @@
   "tutorials.filter.groupAria": {
     "message": "产品",
     "description": "Accessible label of the product filter buttons"
-  },
-  "tutorials.filter.aria.one": {
-    "message": "{label}，{count} 篇指南",
-    "description": "Accessible label of a filter button with one guide; {label} is the filter name"
-  },
-  "tutorials.filter.aria.other": {
-    "message": "{label}，{count} 篇指南",
-    "description": "Accessible label of a filter button with several guides; {label} is the filter name"
   },
   "tutorials.results.all": {
     "message": "{count} 篇指南",
@@ -3772,5 +3748,17 @@
   "code.flow.plan.progress": {
     "message": "计划 · 已完成 {done}/{total}",
     "description": "Hero diagram, heading of the coordinator's plan card: {done} of {total} tasks finished"
+  },
+  "tutorials.path.meta": {
+    "message": "{product} · {count} 篇指南 · {duration}",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.path.planned": {
+    "message": "这条学习路径还计划再增加 {count} 篇指南。",
+    "description": "plural forms separated by \"|\""
+  },
+  "tutorials.filter.aria": {
+    "message": "{label}，{count} 篇指南",
+    "description": "plural forms separated by \"|\""
   }
 }

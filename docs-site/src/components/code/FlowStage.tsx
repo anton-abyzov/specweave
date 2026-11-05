@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import clsx from 'clsx';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Translate, {translate} from '@docusaurus/Translate';
@@ -139,9 +139,10 @@ function flowCopy(): Record<string, string> {
   };
 }
 
-/** Translates a piece of scene copy; brand names and anything not listed render as written. */
+/** Translates a piece of scene copy; brand names render as written. code-landing.test.ts checks every scene string has an entry. */
 function useFlowText(): (text: string) => string {
-  const copy = flowCopy();
+  // The locale is fixed for a page load, so build the map once per component, not every frame.
+  const copy = useMemo(flowCopy, []);
   return (text) => copy[text] ?? text;
 }
 

@@ -410,14 +410,15 @@ export function buildGuideJsonLd(t: Tutorial, origin: string, transcript: readon
 }
 
 /** Hub page: the list of guide pages, plus breadcrumbs. Each video is described on its own guide page. */
-export function buildHubJsonLd(tutorials: readonly Tutorial[], origin: string) {
+/** base is the locale base ('/', '/ru/' ...) of the hub page; guide pages are English-only, so their URLs stay unprefixed. */
+export function buildHubJsonLd(tutorials: readonly Tutorial[], origin: string, base = '/') {
   return {
     '@context': 'https://schema.org',
     '@graph': [
       {
         '@type': 'CollectionPage',
-        '@id': `${origin}/tutorials/#page`,
-        url: `${origin}/tutorials/`,
+        '@id': `${origin}${base}tutorials/#page`,
+        url: `${origin}${base}tutorials/`,
         name: 'Tutorials',
         mainEntity: {
           '@type': 'ItemList',
@@ -425,8 +426,8 @@ export function buildHubJsonLd(tutorials: readonly Tutorial[], origin: string) {
         },
       },
       breadcrumbs([
-        {name: 'Home', url: `${origin}/`},
-        {name: 'Tutorials', url: `${origin}/tutorials/`},
+        {name: 'Home', url: `${origin}${base}`},
+        {name: 'Tutorials', url: `${origin}${base}tutorials/`},
       ]),
     ],
   };
