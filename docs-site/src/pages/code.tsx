@@ -31,7 +31,7 @@ import {SPECWITHCODE_MOBILE} from '../data/specwithcodeMobile';
 const APP_STORE_URL = SPECWITHCODE_MOBILE.ios.url;
 const SITE = 'https://spec-weave.com';
 const pageTitle = () => translate({id: 'code.meta.title', message: 'Claude Code and Codex on your own computers, never stuck on a limit: SpecWithCode (Spec with Code)', description: 'Page title of the SpecWithCode landing page. Keep product names in English'});
-const pageDescription = () => translate({id: 'code.meta.description', message: 'SpecWithCode (Spec with Code): Claude Code and Codex in one chat on every machine. At a limit, the next agent picks it up. Free for macOS, Windows and Linux, with mobile companion apps for iPhone and Android.', description: 'Meta description of the SpecWithCode landing page. Keep product names in English'});
+const pageDescription = () => translate({id: 'code.meta.description', message: 'SpecWithCode (Spec with Code): Claude Code and Codex on macOS, Windows and Linux. Free mobile companion apps for iPhone and Android.', description: 'Meta description of the SpecWithCode landing page. Keep product names in English'});
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 
 type Os = 'mac' | 'windows' | 'linux';
@@ -98,6 +98,7 @@ function HeroDownload() {
       <span className={styles.osText}><span><Translate id="code.hero.download.button" description="Main hero download button; {os} is Mac, Windows or Linux" values={{os: main.label}}>{'Get it free for {os}'}</Translate></span><small>{note}</small></span>
     </a>
     <MobileStores placement="hero" />
+    <p className={styles.heroNote}><Translate id="code.hero.mobile.description">Mobile companion apps to follow your projects and answer approvals from your phone.</Translate></p>
     <a className={styles.companion} href={CHROME_EXTENSION_URL} target="_blank" rel="noopener" data-track="chrome_extension_click" data-placement="hero">
       <span className={styles.companionMark} aria-hidden="true"><ChromeMark /></span>
       <span className={styles.companionText}>
