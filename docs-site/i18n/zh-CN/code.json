@@ -84,7 +84,7 @@
     "description": "Download button label; {os} is Mac, Windows or Linux"
   },
   "code.downloads.more": {
-    "message": "免费，源码可见。{link}",
+    "message": "免费，开源（MIT）。{link}",
     "description": "Line under the download buttons; {link} links to the download page"
   },
   "code.downloads.more.link": {
@@ -200,7 +200,7 @@
     "description": "FAQ question. Keep product names in English"
   },
   "code.faq.free.a": {
-    "message": "是的。SpecWithCode 免费，源码可见，支持 Mac、Windows 和 Linux。它从不转售 token，也不加价：你用自己的账号登录即可。Codex 可使用免费的 ChatGPT 账号，受该套餐用量上限的约束。DeepSeek 使用你自己的 DeepSeek API 密钥，费用由 DeepSeek 直接向你计费。",
+    "message": "是的。SpecWithCode 免费，开源（MIT），支持 Mac、Windows 和 Linux。它从不转售 token，也不加价：你用自己的账号登录即可。Codex 可使用免费的 ChatGPT 账号，受该套餐用量上限的约束。DeepSeek 使用你自己的 DeepSeek API 密钥，费用由 DeepSeek 直接向你计费。",
     "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
   },
   "code.faq.limit.q": {
@@ -252,7 +252,7 @@
     "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
   },
   "code.meta.ogImageAlt": {
-    "message": "SpecWithCode：在 macOS、Windows 和 Linux 上统一使用你的编码智能体。免费，源码可见。",
+    "message": "SpecWithCode：在 macOS、Windows 和 Linux 上统一使用你的编码智能体。免费，开源（MIT）。",
     "description": "Alt text of the social preview image. Keep product names in English"
   },
   "code.meta.twitterImageAlt": {
@@ -260,7 +260,7 @@
     "description": "Alt text of the X/Twitter preview image. Keep product names in English"
   },
   "code.hero.badge": {
-    "message": "免费 · 源码可见",
+    "message": "免费 · 开源（MIT）",
     "description": "Badge next to the product name in the hero"
   },
   "code.hero.title.top": {
@@ -412,7 +412,7 @@
     "description": "Heading of the closing call to action. Keep product names in English"
   },
   "code.final.body": {
-    "message": "免费，源码可见。你的账号，你的机器。再加上可选的 SpecWeave CLI，{link}。",
+    "message": "免费，开源（MIT）。你的账号，你的机器。再加上可选的 SpecWeave CLI，{link}。",
     "description": "Closing paragraph; {link} links to the spec-as-code comparison. Keep product names in English"
   },
   "code.final.body.link": {
@@ -424,8 +424,8 @@
     "description": "Closing call-to-action button. Keep product names in English"
   },
   "code.final.source": {
-    "message": "在 GitHub 查看源码",
-    "description": "Closing link to the source repository. Keep product names in English"
+    "message": "在 GitHub 上点星",
+    "description": "Closing link to the source repository, asking visitors to star it. Keep product names in English"
   },
   "home.proof.folder.spec": {
     "message": "计划及其验收标准",
@@ -3104,7 +3104,7 @@
     "description": "Footer link to the downloads for every platform"
   },
   "code.download.meta.ogImageAlt": {
-    "message": "SpecWithCode：在你自己的电脑上运行 Claude Code 和 Codex 智能体。支持 macOS、Windows 和 Linux。免费，源码可见。",
+    "message": "SpecWithCode：在你自己的电脑上运行 Claude Code 和 Codex 智能体。支持 macOS、Windows 和 Linux。免费，开源（MIT）。",
     "description": "Social share image alt text. Keep product names in English"
   },
   "code.download.meta.twitterImageAlt": {
@@ -3112,7 +3112,7 @@
     "description": "Twitter share image alt text. Keep product names in English"
   },
   "code.download.hero.productNote": {
-    "message": "免费，源码可见",
+    "message": "免费，开源（MIT）",
     "description": "Short note next to the product name"
   },
   "code.download.hero.title": {
@@ -3176,7 +3176,7 @@
     "description": "Closing section heading. Keep product names in English"
   },
   "code.download.final.body": {
-    "message": "免费，源码可见，无需账号。可选 Apple silicon 的 macOS、Windows 10 和 11（x64 或 arm64），或 Linux（x64 或 arm64）。",
+    "message": "免费，开源（MIT），无需账号。可选 Apple silicon 的 macOS、Windows 10 和 11（x64 或 arm64），或 Linux（x64 或 arm64）。",
     "description": "Closing section text. Keep product names in English"
   },
   "code.download.final.viewSource": {
@@ -3320,7 +3320,7 @@
     "description": "Accessible label for the GitHub Issues icon link in the footer. Keep product names in English"
   },
   "footer.copyright": {
-    "message": "© {year} SpecWeave。SpecWeave CLI：MIT 许可。SpecWithCode：免费，源码可见。",
+    "message": "© {year} SpecWeave。SpecWeave CLI：MIT 许可。SpecWithCode：免费，开源（MIT）。",
     "description": "Footer copyright line; {year} is the current year. Keep product names in English"
   },
   "navbar.family.ariaLabel": {

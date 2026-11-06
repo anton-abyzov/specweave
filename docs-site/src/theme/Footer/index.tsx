@@ -249,7 +249,7 @@ function Footer(): ReactNode {
               id="footer.copyright"
               description="Footer copyright line; {year} is the current year. Keep product names in English"
               values={{year: new Date().getFullYear()}}>
-              {'© {year} SpecWeave. SpecWeave CLI: MIT licensed. SpecWithCode: free, source available.'}
+              {'© {year} SpecWeave. SpecWeave CLI: MIT licensed. SpecWithCode: free, MIT licensed.'}
             </Translate>
           </div>
         </div>

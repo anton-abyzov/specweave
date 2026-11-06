@@ -270,7 +270,7 @@ export default function CodeDownload() {
       <meta property="og:image" content={OG_IMAGE} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content={translate({id: 'code.download.meta.ogImageAlt', message: 'SpecWithCode: run Claude Code and Codex agents on your own computers. macOS, Windows and Linux. Free, source available.', description: 'Social share image alt text. Keep product names in English'})} />
+      <meta property="og:image:alt" content={translate({id: 'code.download.meta.ogImageAlt', message: 'SpecWithCode: run Claude Code and Codex agents on your own computers. macOS, Windows and Linux. Free and open source (MIT).', description: 'Social share image alt text. Keep product names in English'})} />
       <meta name="twitter:image" content={OG_IMAGE} />
       <meta name="twitter:image:alt" content={translate({id: 'code.download.meta.twitterImageAlt', message: 'SpecWithCode: agents on your own computers. macOS, Windows and Linux.', description: 'Twitter share image alt text. Keep product names in English'})} />
       <script type="application/ld+json">{JSON.stringify(DOWNLOAD_LD)}</script>
@@ -281,7 +281,7 @@ export default function CodeDownload() {
           <p className={styles.product}>
             <img src="/img/studio/specwithcode-icon.png" alt="" width="28" height="28" />
             <span className={styles.productName}><Link to="/code/">SpecWithCode</Link></span>
-            <span className={styles.productNote}><Translate id="code.download.hero.productNote" description="Short note next to the product name">Free, source available</Translate></span>
+            <span className={styles.productNote}><Translate id="code.download.hero.productNote" description="Short note next to the product name">Free and open source (MIT)</Translate></span>
           </p>
           <h1><Translate id="code.download.hero.title" description="Download page headline. Keep product names in English">Download SpecWithCode</Translate></h1>
           <p><Translate id="code.download.hero.pronounced" description="Hero sentence explaining the product name; keep SpecWithCode and Spec with Code in English">SpecWithCode, pronounced “Spec with Code”, brings your AI coding agents into one workspace.</Translate></p>
@@ -366,7 +366,7 @@ export default function CodeDownload() {
 
       <section className={clsx(styles.shell, styles.final)} aria-labelledby="download-final-title">
         <h2 id="download-final-title"><Translate id="code.download.final.title" description="Closing section heading. Keep product names in English">Get SpecWithCode for your computer</Translate></h2>
-        <p><Translate id="code.download.final.body" description="Closing section text. Keep product names in English">Free, source available, no account. Choose macOS on Apple silicon, Windows 10 and 11 (x64 or arm64), or Linux (x64 or arm64).</Translate></p>
+        <p><Translate id="code.download.final.body" description="Closing section text. Keep product names in English">Free, open source (MIT), no account. Choose macOS on Apple silicon, Windows 10 and 11 (x64 or arm64), or Linux (x64 or arm64).</Translate></p>
         <div className={styles.actions}>
           <FooterDownload />
           <a className={clsx('wv-link', styles.finalLink)} href={release.repoUrl}><Translate id="code.download.final.viewSource" description="Link to the source code. Keep product names in English">View source on GitHub</Translate></a>

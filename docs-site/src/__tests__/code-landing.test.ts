@@ -30,9 +30,14 @@ describe('SpecWithCode landing page', () => {
     for (const img of imgs) expect(fs.existsSync(path.resolve(__dirname, '../../static/img/studio', img))).toBe(true);
   });
 
-  it('says source available, never open source', () => {
-    expect(copy).toMatch(/source available/i);
-    expect(copy).not.toMatch(/open[- ]source/i);
+  it('says open source under MIT, never source available', () => {
+    expect(copy).toMatch(/open source \(MIT\)/i);
+    expect(copy).not.toMatch(/source available/i);
+    expect(copy).not.toMatch(/built on T3|T3 Code/i);
+  });
+
+  it('asks for a GitHub star once, in the closing section', () => {
+    expect(copy.match(/Star on GitHub/g)).toHaveLength(1);
   });
 
   it('never implies token resale or free Claude Code', () => {

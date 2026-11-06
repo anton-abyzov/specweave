@@ -7,7 +7,7 @@ keywords: [opencode alternative, codex cloud alternative, claude max for coding 
 
 # SpecWithCode vs OpenCode and cloud agents
 
-SpecWithCode is a free desktop app for macOS, Windows and Linux with source available for inspection. It is one interface over the coding agents' own harnesses (Claude Code, Codex, GitHub Copilot, Cursor and more) on your own machines, signed in with the plans you already pay for. A coordinator splits work across worker threads, and the app tracks each subscription's limits where the provider reports them.
+SpecWithCode is a free desktop app for macOS, Windows and Linux, open source under the MIT license. It is one interface over the coding agents' own harnesses (Claude Code, Codex, GitHub Copilot, Cursor and more) on your own machines, signed in with the plans you already pay for. A coordinator splits work across worker threads, and the app tracks each subscription's limits where the provider reports them.
 
 The facts about other products below come from their own sites, docs and GitHub repositories, checked on 16 October 2026. They change quickly, so follow the links for the current state. SpecWithCode is our product, so read this page with that in mind.
 
@@ -24,7 +24,7 @@ A harness is the agent loop, tools, permissions and sign-in that a vendor builds
 | **Claude Pro, Max or Ultra plan** | Through Claude Code's own sign-in on each machine | Its docs say Anthropic prohibits this and the plugin has not been bundled since v1.3.0 ([providers](https://opencode.ai/docs/providers/)) | Billed through each vendor's own plan |
 | **Other machines** | Pair supported machines over SpecWithCode Connect (default), your network or SSH, with Tailscale as an optional direct route; move a project or continue a thread on another machine | `opencode serve` and `opencode web` listen on 127.0.0.1 by default and can bind a network address ([server](https://opencode.ai/docs/server/), [web](https://opencode.ai/docs/web/)) | Runs in the vendor's cloud |
 | **Apps** | macOS on Apple silicon, Windows 10/11 (x64, arm64), Linux (x64, arm64); Mac signed/notarized, Windows/Linux unsigned | Terminal, desktop for macOS, Windows and Linux, IDE extension ([download](https://opencode.ai/download)) | Web, IDE and GitHub |
-| **Price and license** | Free for every developer and team; no seat, agent or hour fees; Connect relay included for 3 machines ([pricing](/pricing)); source available, no new project-wide license grant | Open source (MIT) ([license](https://github.com/anomalyco/opencode/blob/dev/LICENSE)) | Included in or billed by each vendor's plan |
+| **Price and license** | Free for every developer and team; no seat, agent or hour fees; Connect relay included for 3 machines ([pricing](/pricing)); open source (MIT) ([license](https://github.com/anton-abyzov/specwithcode/blob/main/LICENSE)) | Open source (MIT) ([license](https://github.com/anomalyco/opencode/blob/dev/LICENSE)) | Included in or billed by each vendor's plan |
 
 Cloud agents here means:
 
