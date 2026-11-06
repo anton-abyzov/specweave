@@ -27,9 +27,11 @@ import styles from '../components/code/FreeLanding.module.css';
   or one free account per machine. The hero diagram (FlowStage) is an illustration, not a capture.
 */
 
+import {SPECWITHCODE_MOBILE} from '../data/specwithcodeMobile';
+const APP_STORE_URL = SPECWITHCODE_MOBILE.ios.url;
 const SITE = 'https://spec-weave.com';
 const pageTitle = () => translate({id: 'code.meta.title', message: 'Claude Code and Codex on your own computers, never stuck on a limit: SpecWithCode (Spec with Code)', description: 'Page title of the SpecWithCode landing page. Keep product names in English'});
-const pageDescription = () => translate({id: 'code.meta.description', message: 'SpecWithCode (Spec with Code): Claude Code and Codex in one chat on every machine. At a limit, the next agent picks it up. Free. macOS, Windows, Linux.', description: 'Meta description of the SpecWithCode landing page. Keep product names in English'});
+const pageDescription = () => translate({id: 'code.meta.description', message: 'SpecWithCode (Spec with Code): Claude Code and Codex in one chat on every machine. At a limit, the next agent picks it up. Free for macOS, Windows and Linux, with mobile companion apps for iPhone and Android.', description: 'Meta description of the SpecWithCode landing page. Keep product names in English'});
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 
 type Os = 'mac' | 'windows' | 'linux';
@@ -41,7 +43,7 @@ const getDownloads = (): {os: Os; label: string; note: string; url: string}[] =>
 
 const getUnsupported = () => ({
   'intel-mac': translate({id: 'code.downloads.unsupported.intelMac', message: 'This Mac has an Intel chip. SpecWithCode for Mac needs Apple silicon; use a Windows or Linux machine instead.', description: 'Shown when the visitor uses an Intel Mac. Keep product names in English'}),
-  mobile: translate({id: 'code.downloads.unsupported.mobile', message: 'SpecWithCode runs on a Mac, Windows PC or Linux machine. Open this page there to download it.', description: 'Shown when the visitor is on a phone or tablet. Keep product names in English'}),
+  mobile: translate({id: 'code.downloads.unsupported.mobile', message: 'SpecWithCode runs on a Mac, Windows PC or Linux machine. The mobile apps below connect to your computer.', description: 'Shown when the visitor is on a phone or tablet. Keep product names in English'}),
 } as const);
 
 const OS_ICON: Record<Os, React.ReactNode> = {
@@ -95,6 +97,7 @@ function HeroDownload() {
       <span className={styles.osIcon}>{OS_ICON[os]}</span>
       <span className={styles.osText}><span><Translate id="code.hero.download.button" description="Main hero download button; {os} is Mac, Windows or Linux" values={{os: main.label}}>{'Get it free for {os}'}</Translate></span><small>{note}</small></span>
     </a>
+    <MobileStores placement="hero" />
     <a className={styles.companion} href={CHROME_EXTENSION_URL} target="_blank" rel="noopener" data-track="chrome_extension_click" data-placement="hero">
       <span className={styles.companionMark} aria-hidden="true"><ChromeMark /></span>
       <span className={styles.companionText}>
@@ -152,6 +155,8 @@ const getFaq = (): {q: string; a: string}[] => [
 const buildLd = (pageUrl: string, TITLE: string, DESCRIPTION: string, FAQ: {q: string; a: string}[]) => ({
   '@context': 'https://schema.org',
   '@graph': [
+    {'@type': 'MobileApplication', name: 'SpecWithCode for Android', operatingSystem: 'Android', applicationCategory: 'DeveloperApplication', installUrl: SPECWITHCODE_MOBILE.android.url, url: SPECWITHCODE_MOBILE.android.url},
+    {'@type': 'MobileApplication', name: 'SpecWithCode for iPhone', operatingSystem: 'iOS', applicationCategory: 'DeveloperApplication', installUrl: APP_STORE_URL, url: APP_STORE_URL, description: 'Mobile companion to SpecWithCode on your computers.'},
     {
       '@type': 'WebPage',
       '@id': pageUrl,

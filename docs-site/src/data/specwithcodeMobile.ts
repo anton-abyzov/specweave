@@ -4,6 +4,6 @@
  */
 export type MobileStoreKey = 'ios' | 'android';
 export const SPECWITHCODE_MOBILE: Record<MobileStoreKey, {url: string | null}> = {
-  ios: {url: null},      // https://apps.apple.com/app/specwithcode/id...
+  ios: {url: 'https://apps.apple.com/app/specwithcode/id6824245458'},
   android: {url: 'https://play.google.com/store/apps/details?id=com.specwithcode.android'},
 };
