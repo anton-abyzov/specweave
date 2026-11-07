@@ -76,6 +76,33 @@ describe('resolveFileOwner (1251)', () => {
     expect(resolveFileOwner(root, '../elsewhere/x.ts', repos)).toHaveProperty('error');
   });
 
+  it('normalizes separators, ./ and trailing slashes, and never matches a sibling prefix', () => {
+    const { root } = mkProject(['src/a.ts']);
+    const repos = registeredRepositoryEntries(root);
+    expect(resolveFileOwner(root, 'libs\\core\\src\\a.ts', repos)).toEqual({ owner: 'libs/core', id: 'core' });
+    expect(resolveFileOwner(root, './libs/core/', repos)).toEqual({ owner: 'libs/core', id: 'core' });
+    expect(resolveFileOwner(root, 'libs/core2/a.ts', repos)).toBeUndefined();
+  });
+
+  it('refuses a glob that hides which registered repository owns the file', () => {
+    const { root } = mkProject(['src/a.ts']);
+    const repos = registeredRepositoryEntries(root);
+    expect(resolveFileOwner(root, 'libs/*/src/a.ts', repos)).toHaveProperty('error');
+    expect(resolveFileOwner(root, 'libs/**', repos)).toHaveProperty('error');
+    expect(resolveFileOwner(root, '**/*.test.ts', repos)).toBeUndefined();
+    expect(resolveFileOwner(root, 'src/*.ts', repos)).toBeUndefined();
+  });
+
+  it('matches an absolute registered path reached through a symlink', () => {
+    const { base, root } = mkProject(['src/a.ts']);
+    const link = path.join(base, 'mobile-link');
+    fs.symlinkSync(path.join(base, 'mobile'), link);
+    const config = JSON.parse(fs.readFileSync(path.join(root, '.specweave', 'config.json'), 'utf-8'));
+    config.workspace.repos = [{ id: 'mobile', path: link, prefix: 'MOB' }];
+    fs.writeFileSync(path.join(root, '.specweave', 'config.json'), JSON.stringify(config));
+    expect(resolveFileOwner(fs.realpathSync(root), '../mobile/App.tsx', registeredRepositoryEntries(fs.realpathSync(root)))).toEqual({ owner: '../mobile', id: 'mobile' });
+  });
+
   it('reads umbrella.childRepos too', () => {
     const { root } = mkProject(['src/a.ts'], { workspace: undefined, umbrella: { enabled: true, childRepos: [{ id: 'svc', path: 'services/svc', prefix: 'SVC' }] } });
     expect(resolveFileOwner(root, 'services/svc/main.ts', registeredRepositoryEntries(root))).toEqual({ owner: 'services/svc', id: 'svc' });
@@ -121,6 +148,16 @@ describe('metadata.repositories (1251 AC-01)', () => {
     expect(await taskCommand('repos', undefined, undefined, { cwd: root, agent: 'a@h', set: '/abs/path' })).toBe(2);
     expect(await taskCommand('repos', undefined, undefined, { cwd: root, agent: 'a@h', set: '' })).toBe(0);
     expect(meta().repositories).toEqual(['../web', 'libs/core']);
+  });
+
+  it('a bad hand-declared entry never fails a task command', async () => {
+    const { root, inc } = mkProject(['libs/core/a.ts']);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    const file = path.join(inc, 'metadata.json');
+    fs.writeFileSync(file, JSON.stringify({ ...JSON.parse(fs.readFileSync(file, 'utf-8')), repositories: ['/abs/path'] }));
+    expect(await taskCommand('claim', 'T-01', undefined, { cwd: root, agent: 'a@h', commit: false })).toBe(0);
+    expect(JSON.parse(fs.readFileSync(file, 'utf-8')).repositories).toEqual(['/abs/path']);
   });
 
   it('an id and its path collapse to one entry, and an empty list is omitted', () => {

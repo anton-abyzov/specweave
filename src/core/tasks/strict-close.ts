@@ -56,10 +56,18 @@ export function registeredRepositoryEntries(root: string, config?: Record<string
   return entries;
 }
 
-/** POSIX path relative to `root` ('' for the root itself). */
+/** Real location of `p`, resolving its nearest existing ancestor when `p` does not exist yet. */
+function realLocation(p: string): string {
+  try { return fs.realpathSync.native(p); } catch {
+    const parent = path.dirname(p);
+    return parent === p ? p : path.join(realLocation(parent), path.basename(p));
+  }
+}
+
+/** POSIX path relative to `root` ('' for the root itself), compared by real location. */
 export function toProjectPath(root: string, value: string): string {
   const absolute = path.resolve(root, value.replace(/\\/g, '/'));
-  return path.relative(path.resolve(root), absolute).split(path.sep).join('/');
+  return path.relative(realLocation(path.resolve(root)), realLocation(absolute)).split(path.sep).join('/');
 }
 
 export type FileOwner = { owner: string; id?: string } | { error: string } | undefined;
@@ -76,6 +84,13 @@ export function resolveFileOwner(root: string, file: string, repos: RepositoryEn
     .filter((repo) => normalized === repo.path || normalized.startsWith(`${repo.path}/`))
     .sort((a, b) => b.path.length - a.path.length)[0];
   if (match) return { owner: match.path, id: match.id };
+  // A glob inside a folder that holds registered repositories (`libs/*/a.ts`) hides the owner.
+  // Globs from the root (`*.md`, `**/*.ts`) stay root-owned, as before.
+  const glob = normalized.search(/[*?\[\]{}]/);
+  const literal = glob >= 0 ? normalized.slice(0, glob).replace(/[^/]*$/, '') : '';
+  if (literal && repos.some((repo) => repo.path.startsWith(literal))) {
+    return { error: `declare the owning repository explicitly in Files: ${file}` };
+  }
   if (normalized.startsWith('../') || normalized === '..') return { error: `declare a project-relative Files path or register its repository: ${file}` };
   if (!normalized.startsWith('repositories/')) return undefined;
   const parts = normalized.split('/');
