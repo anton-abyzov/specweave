@@ -144,7 +144,7 @@ program
 // Task command - multi-vendor task ledger (claim / done / release / block / skip)
 program
   .command('task <action> [taskOrIncrement] [increment]')
-  .description('Task ledger: list | next | claim | done | release | block | skip | render | whoami')
+  .description('Task ledger: list | next | claim | done | release | block | skip | render | repos | whoami')
   .option('-f, --force', 'Override a live claim, unmet deps or a Files overlap')
   .option('-e, --evidence <text>', 'Evidence for `done` (commit sha, test output)')
   .option('--run <cmd>', 'Run <cmd> through the OS shell; exit 0 required, output stored as evidence')
@@ -152,6 +152,7 @@ program
   .option('--reason <text>', 'Reason (required for skip / block)')
   .option('--all-mine', 'With `release`: release every task claimed by this agent')
   .option('--write', 'With `render`: refresh a legacy tasks.md from the ledger')
+  .option('--set <repos>', 'With `repos`: comma-separated repository paths (relative to the project root) or registered ids')
   .option('--line <text>', 'Card text for claim/done/block (max 100 chars, longer text is truncated)')
   .option('--link <url>', 'Card link for claim/done/block (PR URL, report path, artifact URL)')
   .option('--no-commit', 'Skip the git.autoCommitIncrement commit of the increment files')

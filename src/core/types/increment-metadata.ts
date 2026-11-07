@@ -160,6 +160,19 @@ export interface IncrementMetadata {
    * reopened increment keeps its history without showing a completion date.
    */
   reopened?: ReopenRecord[];
+
+  /**
+   * Repositories this increment changes, beyond the project root's own
+   * repository (which is implied and never listed). Each entry is either a
+   * POSIX path relative to the project root (`repositories/acme/api`,
+   * `../web`) or the `id` of a repository registered in `workspace.repos` /
+   * `umbrella.childRepos`. Sorted, unique, never empty (omitted instead).
+   *
+   * Task commands add the owners of every task `Files` entry; `specweave task
+   * repos --set` replaces the hand-declared rest. Readers such as SpecWithCode
+   * create one worktree per entry at the same relative path.
+   */
+  repositories?: string[];
 }
 
 /** One `specweave reopen`: completed → planned, never active. */
