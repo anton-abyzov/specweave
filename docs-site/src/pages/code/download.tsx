@@ -23,6 +23,9 @@ const btnIcon = {size: 16, strokeWidth: 1.5, 'aria-hidden': true} as const;
 
 const SITE = 'https://spec-weave.com';
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
+const VERIFY_ANCHOR = '#verify-title';
+const VERIFY_DOCS_URL = 'https://github.com/anton-abyzov/specwithcode/blob/main/docs/user/install.md#verify-a-download';
+const RELEASE_KEY_FINGERPRINT = 'B10C BBD0 F489 3ACD 3FF6  F256 563A 3A09 8EE4 C0D7';
 const CHROME_URL = 'https://chromewebstore.google.com/detail/specwithcode-browser/okoinngelinfjfkmkcnbgndapeiofgbb';
 
 function pageTitle(): string {
@@ -59,15 +62,14 @@ function getDesktopNotes(): {name: string; detail: React.ReactNode}[] {
     {
       name: 'Windows',
       detail: <Translate
-        id="code.download.desktopNotes.windows.detail"
-        description="Windows install note; {exe} and {exeArm64} are file names; {protected}, {moreInfo} and {runAnyway} are the bold Windows SmartScreen dialog texts. Keep product names in English"
+        id="code.download.desktopNotes.windows.signedDetail"
+        description="Windows install note; {exe} and {exeArm64} are file names; {publisher} is the company name, {tab} is a Windows file Properties tab name. Keep product names in English"
         values={{
           exe: <code>{desktop.exe.name}</code>,
           exeArm64: <code>{desktop.exeArm64.name}</code>,
-          protected: <strong><Translate id="code.download.desktopNotes.windows.smartscreenTitle" description="Title of the Windows SmartScreen dialog, as Windows shows it">Windows protected your PC</Translate></strong>,
-          moreInfo: <strong><Translate id="code.download.desktopNotes.windows.moreInfo" description="Windows SmartScreen dialog link text, as Windows shows it">More info</Translate></strong>,
-          runAnyway: <strong><Translate id="code.download.desktopNotes.windows.runAnyway" description="Windows SmartScreen dialog button text, as Windows shows it">Run anyway</Translate></strong>,
-        }}>{'Run {exe}, or {exeArm64} on Arm. It installs for your user only, with no administrator prompt. The installer is not code-signed yet, so SmartScreen shows {protected} the first time: choose {moreInfo}, then {runAnyway}.'}</Translate>,
+          publisher: <strong>EasyChamp, Inc.</strong>,
+          tab: <strong><Translate id="code.download.desktopNotes.windows.signaturesTab" description="Name of the Windows file Properties tab, as Windows shows it">Digital Signatures</Translate></strong>,
+        }}>{'Run {exe}, or {exeArm64} on Arm. It installs for your user only, with no administrator prompt. The installer is signed by {publisher}; its {tab} tab names the publisher.'}</Translate>,
     },
     {
       name: translate({id: 'code.download.desktopNotes.debian.name', message: 'Debian and Ubuntu', description: 'Install note label for Debian and Ubuntu. Keep product names in English'}),
@@ -91,6 +93,27 @@ function getDesktopNotes(): {name: string; detail: React.ReactNode}[] {
     {
       name: translate({id: 'code.download.desktopNotes.differs.name', message: 'What differs', description: 'Install note label: what differs from the Mac app'}),
       detail: <Translate id="code.download.desktopNotes.differs.detail" description="What differs on Windows and Linux. Keep product names in English">Computer use controls a Mac screen and is macOS only. The app updates itself from new releases on Windows and Linux too; the .deb update asks for your password.</Translate>,
+    },
+  ];
+}
+
+function getVerify(): {name: string; detail: React.ReactNode}[] {
+  return [
+    {
+      name: 'macOS',
+      detail: <Translate id="code.download.verify.mac" description="How to verify the Mac app; {command} is a terminal command. Keep product names in English" values={{command: <code>spctl -a -vv /Applications/SpecWithCode.app</code>}}>{'Signed with an Apple Developer ID and notarized. {command} prints "Notarized Developer ID".'}</Translate>,
+    },
+    {
+      name: 'Windows',
+      detail: <Translate id="code.download.verify.windows" description="How to verify the Windows installer; {command} is a PowerShell command, {valid} a status value, {publisher} the company name. Keep product names in English" values={{command: <code>Get-AuthenticodeSignature .\{desktop.exe.name}</code>, valid: <code>Valid</code>, publisher: <strong>EasyChamp, Inc.</strong>}}>{'In PowerShell, {command} must report {valid}, signed by {publisher}.'}</Translate>,
+    },
+    {
+      name: 'Linux',
+      detail: <Translate id="code.download.verify.linux" description="How to verify the Linux packages; {key} is a file name, {fingerprint} the key fingerprint, {command} a shell command. Keep product names in English" values={{key: <code>specwithcode-release-key.asc</code>, fingerprint: <code>{RELEASE_KEY_FINGERPRINT}</code>, command: <code>gpg --verify {desktop.deb.name}.asc {desktop.deb.name}</code>}}>{'Each AppImage and .deb has a .asc signature beside it. Import {key} from the release (fingerprint {fingerprint}), then run {command}.'}</Translate>,
+    },
+    {
+      name: translate({id: 'code.download.verify.any.name', message: 'Any file', description: 'Label: verification that works for every downloaded file'}),
+      detail: <Translate id="code.download.verify.any" description="Checksums and provenance for any file; {sums} are file names, {command} a shell command, {link} links to the full steps. Keep product names in English" values={{sums: <code>SHA256SUMS</code>, command: <code>gh attestation verify FILE --repo anton-abyzov/specwithcode</code>, link: <a className="wv-link" href={VERIFY_DOCS_URL}><Translate id="code.download.verify.link" description="Link text to the full verification steps">Full steps</Translate></a>}}>{'Release notes and the {sums} files list every SHA-256. {command} checks that GitHub Actions built the file from the public source. {link}.'}</Translate>,
     },
   ];
 }
@@ -128,11 +151,11 @@ function getFaq(): {q: string; a: string}[] {
     },
     {
       q: translate({id: 'code.download.faq.windowsLinux.q', message: 'Is there a Windows or Linux download?', description: 'FAQ question. Keep product names in English'}),
-      a: translate({id: 'code.download.faq.windowsLinux.a', message: 'Yes. SpecWithCode {version} has Windows installers for Windows 10 and 11 on x64 and arm64, and a Linux AppImage and .deb for x64 and arm64 on glibc-based distributions. The Windows installers are not code-signed yet, so Windows asks you to confirm the first run. Computer use is macOS only.', description: 'FAQ answer; {version} is the release version. Keep product names in English'}, {version: desktop.version}),
+      a: translate({id: 'code.download.faq.windowsLinux.signedA', message: 'Yes. SpecWithCode {version} has Windows installers for Windows 10 and 11 on x64 and arm64, signed by EasyChamp, Inc., and a Linux AppImage and .deb for x64 and arm64 on glibc-based distributions, each with a GPG signature. Computer use is macOS only.', description: 'FAQ answer; {version} is the release version. Keep product and company names in English'}, {version: desktop.version}),
     },
     {
       q: translate({id: 'code.download.faq.safe.q', message: 'Is the download safe?', description: 'FAQ question'}),
-      a: translate({id: 'code.download.faq.safe.a', message: 'Every release is built in GitHub Actions. The Mac app is signed with an Apple Developer ID and notarized by Apple. The Windows installer and the Linux AppImage and .deb are not code-signed yet; check them against the SHA256SUMS-windows-linux file published with each release. The Mac download has its own SHA256SUMS file.', description: 'FAQ answer; SHA256SUMS file names stay as is. Keep product names in English'}),
+      a: translate({id: 'code.download.faq.safe.signedA', message: 'Every release is built in GitHub Actions from the public source, and each file has a build provenance attestation that ties it to that build. The Mac app is signed with an Apple Developer ID and notarized by Apple. The Windows installers are signed by EasyChamp, Inc. with Azure Trusted Signing. The Linux AppImage and .deb have GPG signatures. Every file is listed with its SHA-256 in the release notes. See Verify your download below.', description: 'FAQ answer; "Verify your download" is the heading of a section on this page. Keep product and company names in English'}),
     },
     {
       q: translate({id: 'code.download.faq.update.q', message: 'How do I update SpecWithCode?', description: 'FAQ question. Keep product names in English'}),
@@ -235,8 +258,8 @@ function HeroDownload() {
         <p><strong><Translate id="code.download.signed.title" description="Bold lead of the Mac signing notice. Keep product names in English">Signed with an Apple Developer ID and notarized by Apple.</Translate></strong>{' '}<Translate id="code.download.signed.body" description="Mac signing notice. Keep product names in English">{"The download comes straight from the project's GitHub releases."}</Translate></p>
       </div>
       : <div className={clsx('wv-note', styles.qualification)}>
-        <Info {...icon} />
-        <p><strong><Translate id="code.download.unsigned.title" description="Bold lead of the Windows/Linux signing notice">Not code-signed yet.</Translate></strong>{' '}<Translate id="code.download.unsigned.body" description="Windows/Linux signing notice; {link} jumps to the Windows and Linux install notes. Keep product names in English" values={{link: <a className="wv-link" href={ALL_DOWNLOADS_ANCHOR}><Translate id="code.download.unsigned.link" description="Link to the Windows and Linux install notes. Keep product names in English">Windows and Linux</Translate></a>}}>{"The download comes straight from the project's GitHub releases; compare it with SHA256SUMS. Install notes are under {link}."}</Translate></p>
+        <ShieldCheck {...icon} />
+        <p><strong><Translate id="code.download.signedWindowsLinux.title" description="Bold lead of the Windows/Linux signing notice. Keep the company name in English">Windows: signed by EasyChamp, Inc. Linux: GPG-signed.</Translate></strong>{' '}<Translate id="code.download.signedWindowsLinux.body" description="Windows/Linux signing notice; {link} jumps to the verification steps on this page" values={{link: <a className="wv-link" href={VERIFY_ANCHOR}><Translate id="code.download.signedWindowsLinux.link" description="Link to the download verification steps">Verify your download</Translate></a>}}>{"The download comes straight from the project's GitHub releases. {link}."}</Translate></p>
       </div>}
   </>;
 }
@@ -300,7 +323,7 @@ export default function CodeDownload() {
       <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="windows-linux-title">
         <div className={styles.sectionHead}>
           <h2 id="windows-linux-title"><Translate id="code.download.windowsLinux.title" description="Section heading. Keep product names in English">Windows and Linux</Translate></h2>
-          <p><Translate id="code.download.windowsLinux.body" description="Windows and Linux section intro; {version} is the release version. Keep product names in English" values={{version: desktop.version}}>{'SpecWithCode {version} for Windows 10 and 11 on x64 and arm64, and for Linux on x64 and arm64 (glibc). The installers are not code-signed yet. Live-provider and native-feature parity with macOS is not established, and Windows and Linux desktop builds may trail Mac releases.'}</Translate>{' '}<a className="wv-link" href={desktop.notesUrl}><Translate id="code.download.releaseNotes" description="Link to the release notes">Release notes</Translate></a> · <a className="wv-link" href={desktop.sumsUrl}>SHA256SUMS</a></p>
+          <p><Translate id="code.download.windowsLinux.signedBody" description="Windows and Linux section intro; {version} is the release version. Keep product names in English" values={{version: desktop.version}}>{'SpecWithCode {version} for Windows 10 and 11 on x64 and arm64, and for Linux on x64 and arm64 (glibc). Live-provider and native-feature parity with macOS is not established, and Windows and Linux desktop builds may trail Mac releases.'}</Translate>{' '}<a className="wv-link" href={desktop.notesUrl}><Translate id="code.download.releaseNotes" description="Link to the release notes">Release notes</Translate></a> · <a className="wv-link" href={desktop.sumsUrl}>SHA256SUMS</a></p>
           <div className={styles.actions}>
             <a className="wv-btn wv-btn--primary" href={desktop.exe.url} data-track="download_click" data-placement="download-page-windows"><Download {...btnIcon} />Windows x64 ({desktop.exe.size})</a>
             <a className="wv-btn wv-btn--secondary" href={desktop.exeArm64.url} data-track="download_click" data-placement="download-page-windows-arm64"><Download {...btnIcon} />Windows arm64 ({desktop.exeArm64.size})</a>
@@ -314,6 +337,19 @@ export default function CodeDownload() {
         </div>
         <ul className={clsx('wv-evidence', styles.list)}>
           {DESKTOP_NOTES.map(item => <li key={item.name}>
+            <span className="wv-evidence__name">{item.name}</span>
+            <span className="wv-evidence__detail">{item.detail}</span>
+          </li>)}
+        </ul>
+      </section>
+
+      <section className={clsx(styles.shell, styles.section, styles.split)} aria-labelledby="verify-title">
+        <div className={styles.sectionHead}>
+          <h2 id="verify-title"><Translate id="code.download.verify.title" description="Section heading">Verify your download</Translate></h2>
+          <p><Translate id="code.download.verify.body" description="Verify section intro">Every installer is signed, and every file has a SHA-256 and a build provenance attestation.</Translate></p>
+        </div>
+        <ul className={clsx('wv-evidence', styles.list)}>
+          {getVerify().map(item => <li key={item.name}>
             <span className="wv-evidence__name">{item.name}</span>
             <span className="wv-evidence__detail">{item.detail}</span>
           </li>)}
