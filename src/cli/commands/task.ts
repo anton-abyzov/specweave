@@ -13,6 +13,7 @@
  *   task block T-01 [inc] --note "…"
  *   task skip T-01 [inc] --reason "…"   (terminal; reason mandatory)
  *   task render [inc] [--write]         print the board; --write refreshes a legacy tasks.md
+ *   task repos [inc] [--set "a,b"]      metadata.repositories: Files owners plus declared entries
  *
  * `claim`, `done` and `block` accept `--line "<card text>"` (max 100 chars,
  * longer text is truncated with a warning) and `--link <url or path>`; they
@@ -51,6 +52,7 @@ import { resolveIncrement, readLeaseHours, ensureIncrementStarted, IncrementReso
 import { readSpecAcs, deriveAcStatus, type AcEntry } from '../../core/tasks/verify-runner.js';
 import { acJson, deriveAcAcceptance } from '../../core/tasks/accepted-skip.js';
 import { tasksFileName } from '../../core/tasks/tasks-source.js';
+import { readIncrementRepositories, refreshIncrementRepositories, writeIncrementRepositories } from '../../core/tasks/increment-repositories.js';
 import { autoCommitIncrement, describeAutoCommit, isAutoCommitSubject, type AutoCommitRequest, type AutoCommitResult } from '../../core/increment/auto-commit.js';
 
 export interface TaskCommandOptions {
@@ -74,6 +76,8 @@ export interface TaskCommandOptions {
   link?: string;
   /** `--no-commit` → false: skip the `git.autoCommitIncrement` commit. */
   commit?: boolean;
+  /** `repos --set`: comma-separated repository paths or registered ids (replaces the declared entries). */
+  set?: string;
 }
 
 export const EXIT_LOST_RACE = 3;
@@ -83,7 +87,7 @@ export const EXIT_DEPS_UNMET = 6;
 /** `next` / `claim` on a task still holding create-increment's bracketed placeholders. */
 export const EXIT_TEMPLATE_TASK = 7;
 
-const ACTIONS = new Set(['whoami', 'list', 'next', 'claim', 'done', 'release', 'block', 'skip', 'render']);
+const ACTIONS = new Set(['whoami', 'list', 'next', 'claim', 'done', 'release', 'block', 'skip', 'render', 'repos']);
 
 /** Entry point. Returns the process exit code (the bin sets process.exitCode). */
 export async function taskCommand(action: string, a?: string, b?: string, opts: TaskCommandOptions = {}): Promise<number> {
@@ -169,6 +173,19 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
 
   // Headings the parser could not read are reported, never dropped in silence.
   for (const w of board.warnings) err(`warning: ${w}`);
+
+  // Task writes keep metadata.repositories in step with the Files owners.
+  if (needsTask) refreshIncrementRepositories(projectRoot, inc.dir, board);
+
+  if (action === 'repos') {
+    let repositories: string[];
+    try {
+      const declared = opts.set === undefined ? readIncrementRepositories(inc.dir) : opts.set.split(',').map((r) => r.trim()).filter(Boolean);
+      repositories = writeIncrementRepositories(projectRoot, inc.dir, declared, board) ?? readIncrementRepositories(inc.dir);
+    } catch (e) { err((e as Error).message); return 2; }
+    out(opts.json ? JSON.stringify({ increment: inc.id, repositories }) : (repositories.join('\n') || '(no repositories beyond the project root)'));
+    return 0;
+  }
 
   if (action === 'list') {
     if (opts.json) {

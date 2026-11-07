@@ -16,7 +16,7 @@ commands=(
     'reopen:Correct a completed increment back to planned (never active); needs --reason and --workspace'
     'abandon:Abandon an increment'
     'complete:Complete one or more increments (triggers GitHub/JIRA/ADO sync)'
-    'task:Task ledger\: list | next | claim | done | release | block | skip | render | whoami'
+    'task:Task ledger\: list | next | claim | done | release | block | skip | render | repos | whoami'
     'ac:Acceptance criteria\: accept-skip <AC-id> [inc] (a person accepted skipping one named check; never verification) | list [inc]'
     'card:Cards\: add "<text>" | start <id> | done <id> | wait <id> | list. T-NN ids alias `task`; C-NN cards live in .specweave/cards/<branch>.jsonl'
     'cards:Print the card checklist\: a header, a blank line, then one ✓ / ✱ / ○ line per card with its link'
@@ -131,6 +131,7 @@ _specweave() {
                         '--reason[Reason (required for skip / block)]' \
                         '--all-mine[With `release`\: release every task claimed by this agent]' \
                         '--write[With `render`\: refresh a legacy tasks.md from the ledger]' \
+                        '--set[With `repos`\: comma-separated repository paths (relative to the project root) or registered ids]' \
                         '--line[Card text for claim/done/block (max 100 chars, longer text is truncated)]' \
                         '--link[Card link for claim/done/block (PR URL, report path, artifact URL)]' \
                         '--no-commit[Skip the git.autoCommitIncrement commit of the increment files]' \
