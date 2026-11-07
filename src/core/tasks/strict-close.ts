@@ -64,10 +64,18 @@ function realLocation(p: string): string {
   }
 }
 
-/** POSIX path relative to `root` ('' for the root itself), compared by real location. */
+/**
+ * POSIX path relative to `root` ('' for the root itself). A relative value
+ * stays lexical, so a symlinked checkout keeps the name it is registered
+ * under. An absolute value is compared from real locations (`/tmp` is
+ * `/private/tmp` on macOS), keeping its last segment as written.
+ */
 export function toProjectPath(root: string, value: string): string {
-  const absolute = path.resolve(root, value.replace(/\\/g, '/'));
-  return path.relative(realLocation(path.resolve(root)), realLocation(absolute)).split(path.sep).join('/');
+  const slashed = value.replace(/\\/g, '/');
+  const relative = path.isAbsolute(slashed) || path.win32.isAbsolute(value)
+    ? path.relative(realLocation(path.resolve(root)), path.join(realLocation(path.dirname(path.resolve(slashed))), path.basename(slashed)))
+    : path.relative(path.resolve(root), path.resolve(root, slashed));
+  return relative.split(path.sep).join('/');
 }
 
 export type FileOwner = { owner: string; id?: string } | { error: string } | undefined;

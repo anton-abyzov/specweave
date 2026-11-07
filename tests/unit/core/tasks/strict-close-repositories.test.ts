@@ -100,7 +100,17 @@ describe('resolveFileOwner (1251)', () => {
     const config = JSON.parse(fs.readFileSync(path.join(root, '.specweave', 'config.json'), 'utf-8'));
     config.workspace.repos = [{ id: 'mobile', path: link, prefix: 'MOB' }];
     fs.writeFileSync(path.join(root, '.specweave', 'config.json'), JSON.stringify(config));
-    expect(resolveFileOwner(fs.realpathSync(root), '../mobile/App.tsx', registeredRepositoryEntries(fs.realpathSync(root)))).toEqual({ owner: '../mobile', id: 'mobile' });
+    expect(resolveFileOwner(fs.realpathSync(root), '../mobile-link/App.tsx', registeredRepositoryEntries(fs.realpathSync(root)))).toEqual({ owner: '../mobile-link', id: 'mobile' });
+  });
+
+  it('keeps a symlinked checkout inside the root under its registered path', () => {
+    const { base, root } = mkProject(['src/a.ts']);
+    fs.mkdirSync(path.join(base, 'shared', 'core'), { recursive: true });
+    fs.rmSync(path.join(root, 'libs', 'core'), { recursive: true });
+    fs.symlinkSync(path.join(base, 'shared', 'core'), path.join(root, 'libs', 'core'));
+    const repos = registeredRepositoryEntries(root);
+    expect(repos.find((r) => r.id === 'core')?.path).toBe('libs/core');
+    expect(resolveFileOwner(root, 'libs/core/a.ts', repos)).toEqual({ owner: 'libs/core', id: 'core' });
   });
 
   it('reads umbrella.childRepos too', () => {
