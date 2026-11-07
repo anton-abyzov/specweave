@@ -4,7 +4,7 @@ import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
 import Translate, {translate} from '@docusaurus/Translate';
-import {ArrowRight, ArrowUpRight, ChevronDown, Gauge, GitMerge, Info, Layers, Network, Users} from 'lucide-react';
+import {ArrowRight, ArrowUpRight, ChevronDown, Gauge, GitMerge, Info, Layers, Network, Star, Users} from 'lucide-react';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
@@ -79,7 +79,7 @@ function Downloads({placement}: {placement: string}) {
       </li>)}
     </ul>
     {unsupported && <p className={styles.downloadsMore} role="note">{UNSUPPORTED[unsupported]}</p>}
-    <p className={styles.downloadsMore}><Translate id="code.downloads.more" description="Line under the download buttons; {link} links to the download page" values={{link: <Link className="wv-link" to="/code/download/"><Translate id="code.downloads.more.link" description="Link to the download page with Arm builds, .deb packages and install steps">Arm builds, .deb and install steps</Translate></Link>}}>{'Free, source available. {link}'}</Translate></p>
+    <p className={styles.downloadsMore}><Translate id="code.downloads.more" description="Line under the download buttons; {link} links to the download page" values={{link: <Link className="wv-link" to="/code/download/"><Translate id="code.downloads.more.link" description="Link to the download page with Arm builds, .deb packages and install steps">Arm builds, .deb and install steps</Translate></Link>}}>{'Free and open source (MIT). {link}'}</Translate></p>
   </div>;
 }
 
@@ -143,7 +143,7 @@ const getMore = (): {id: string; icon: typeof Layers; title: string; body: React
 
 /** Shown on the page and, as plain text, in the FAQPage structured data. */
 const getFaq = (): {q: string; a: string}[] => [
-  {q: translate({id: 'code.faq.free.q', message: 'Is SpecWithCode really free?', description: 'FAQ question. Keep product names in English'}), a: translate({id: 'code.faq.free.a', message: 'Yes. SpecWithCode is free, with source available, on Mac, Windows and Linux. It never resells tokens or adds a markup: you sign in with your own accounts. Codex works on a free ChatGPT account within that plan\'s usage limits. DeepSeek uses your own DeepSeek API key, and DeepSeek bills that usage directly.', description: 'FAQ answer, also used in the FAQPage structured data. Keep product names in English'})},
+  {q: translate({id: 'code.faq.free.q', message: 'Is SpecWithCode really free?', description: 'FAQ question. Keep product names in English'}), a: translate({id: 'code.faq.free.a', message: 'Yes. SpecWithCode is free and open source under the MIT license, on Mac, Windows and Linux. It never resells tokens or adds a markup: you sign in with your own accounts. Codex works on a free ChatGPT account within that plan\'s usage limits. DeepSeek uses your own DeepSeek API key, and DeepSeek bills that usage directly.', description: 'FAQ answer, also used in the FAQPage structured data. Keep product names in English'})},
   {q: translate({id: 'code.faq.limit.q', message: 'What happens when Claude Code hits its usage limit?', description: 'FAQ question. Keep product names in English'}), a: translate({id: 'code.faq.limit.a', message: 'The chat continues on the next agent you set up, such as Codex on a free ChatGPT account or DeepSeek, in the same thread and with its history. In our tests on 4 November 2026, with the Claude limit triggered by a test switch, Codex (SpecWithCode 1.0.191) and DeepSeek each still knew a code word given to Claude before the switch. For each project you choose whether SpecWithCode switches automatically, offers the switch, or waits for the limit to reset.', description: 'FAQ answer, also used in the FAQPage structured data. Keep product names in English'})},
   {q: translate({id: 'code.faq.paid.q', message: 'Do I need a paid Claude or ChatGPT plan?', description: 'FAQ question. Keep product names in English'}), a: translate({id: 'code.faq.paid.a', message: 'No. You can start with Codex on a free ChatGPT account and add DeepSeek as the fallback. If you already pay for Claude Code or ChatGPT, sign in to those too and keep DeepSeek as the fallback.', description: 'FAQ answer, also used in the FAQPage structured data. Keep product names in English'})},
   {q: translate({id: 'code.faq.local.q', message: 'Does everything stay on my machine?', description: 'FAQ question. Keep product names in English'}), a: translate({id: 'code.faq.local.a', message: 'No. Agent processes and project files live on your machine, but cloud models receive prompts and relevant context, which can include code and file contents, through the provider you chose.', description: 'FAQ answer, also used in the FAQPage structured data. Keep product names in English'})},
@@ -230,7 +230,7 @@ export default function Code() {
       <meta property="og:image" content={OG_IMAGE} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content={translate({id: 'code.meta.ogImageAlt', message: 'SpecWithCode: one interface for your coding agents on macOS, Windows and Linux. Free, source available.', description: 'Alt text of the social preview image. Keep product names in English'})} />
+      <meta property="og:image:alt" content={translate({id: 'code.meta.ogImageAlt', message: 'SpecWithCode: one interface for your coding agents on macOS, Windows and Linux. Free and open source (MIT).', description: 'Alt text of the social preview image. Keep product names in English'})} />
       <meta name="twitter:image" content={OG_IMAGE} />
       <meta name="twitter:image:alt" content={translate({id: 'code.meta.twitterImageAlt', message: 'SpecWithCode: one interface for your coding agents. macOS, Windows and Linux.', description: 'Alt text of the X/Twitter preview image. Keep product names in English'})} />
       <script type="application/ld+json">{JSON.stringify(SPECWITHCODE_LD)}</script>
@@ -244,7 +244,7 @@ export default function Code() {
             <p className={styles.product}>
               <img src={icon28} alt="" width="28" height="28" />
               <span className={styles.productName}>SpecWithCode</span>
-              <span className={styles.badge}><Translate id="code.hero.badge" description="Badge next to the product name in the hero">Free · source available</Translate></span>
+              <span className={styles.badge}><Translate id="code.hero.badge" description="Badge next to the product name in the hero">Free · open source (MIT)</Translate></span>
             </p>
             <h1><span className={styles.h1Top}><img className={styles.h1Mark} src={marks.claude} alt="" width="48" height="48" /><img className={clsx(styles.h1Mark, styles.h1MarkDark)} src={marks.openai} alt="" width="48" height="48" /><Translate id="code.hero.title.top" description="First line of the hero headline. Keep product names in English">Claude Code, Codex and more.</Translate></span> <em><Translate id="code.hero.title.emphasis" description="Second, emphasized part of the hero headline">Never stuck on a limit.</Translate></em></h1>
             <p className={styles.lead}><Translate id="code.hero.lead" description="Hero lead paragraph. Keep product names in English">One chat for all your coding agents, on every machine and every plan. Start with Codex on a free ChatGPT account. When Claude Code nears its limit, Codex picks up the same thread with its history.</Translate></p>
@@ -371,10 +371,10 @@ export default function Code() {
 
       <section className={clsx(styles.shell, styles.final)} aria-labelledby="final-title">
         <h2 id="final-title"><Translate id="code.final.title" description="Heading of the closing call to action. Keep product names in English">Codex for free. Never stuck on a limit.</Translate></h2>
-        <p><Translate id="code.final.body" description="Closing paragraph; {link} links to the spec-as-code comparison. Keep product names in English" values={{link: <Link className="wv-link" to="/docs/compare/spec-as-code/"><Translate id="code.final.body.link" description="Link text that ends the closing paragraph, as in keep the spec with the code">the spec with the code</Translate></Link>}}>{'Free and source available. Your accounts, your machines. Add the optional SpecWeave CLI to keep {link}.'}</Translate></p>
+        <p><Translate id="code.final.body" description="Closing paragraph; {link} links to the spec-as-code comparison. Keep product names in English" values={{link: <Link className="wv-link" to="/docs/compare/spec-as-code/"><Translate id="code.final.body.link" description="Link text that ends the closing paragraph, as in keep the spec with the code">the spec with the code</Translate></Link>}}>{'Free and open source (MIT). Your accounts, your machines. Add the optional SpecWeave CLI to keep {link}.'}</Translate></p>
         <div className={styles.finalActions}>
           <a className="wv-btn wv-btn--primary wv-btn--lg" href="#download"><Translate id="code.final.download" description="Closing call-to-action button. Keep product names in English">Download SpecWithCode</Translate></a>
-          <a className="wv-btn wv-btn--secondary wv-btn--lg" href={release.repoUrl}><Translate id="code.final.source" description="Closing link to the source repository. Keep product names in English">View source on GitHub</Translate><ArrowUpRight size={16} strokeWidth={1.5} aria-hidden="true" /></a>
+          <a className="wv-btn wv-btn--secondary wv-btn--lg" href={release.repoUrl} data-track="github_star_click"><Star size={16} strokeWidth={1.5} aria-hidden="true" /><Translate id="code.final.source" description="Closing link to the source repository, asking visitors to star it. Keep product names in English">Star on GitHub</Translate></a>
         </div>
       </section>
     </main>

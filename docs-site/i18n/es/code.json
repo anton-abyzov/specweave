@@ -36,7 +36,7 @@
     "description": "Download button label; {os} is Mac, Windows or Linux"
   },
   "code.downloads.more": {
-    "message": "Gratis, con código fuente disponible. {link}",
+    "message": "Gratis, de código abierto (MIT). {link}",
     "description": "Line under the download buttons; {link} links to the download page"
   },
   "code.downloads.more.link": {
@@ -152,7 +152,7 @@
     "description": "FAQ question. Keep product names in English"
   },
   "code.faq.free.a": {
-    "message": "Sí. SpecWithCode es gratis, con código fuente disponible, en Mac, Windows y Linux. Nunca revende tokens ni añade recargos: inicias sesión con tus propias cuentas. Codex funciona con una cuenta gratuita de ChatGPT dentro de los límites de uso de ese plan. DeepSeek usa tu propia clave de API de DeepSeek, y DeepSeek te factura ese uso directamente.",
+    "message": "Sí. SpecWithCode es gratis, de código abierto (MIT), en Mac, Windows y Linux. Nunca revende tokens ni añade recargos: inicias sesión con tus propias cuentas. Codex funciona con una cuenta gratuita de ChatGPT dentro de los límites de uso de ese plan. DeepSeek usa tu propia clave de API de DeepSeek, y DeepSeek te factura ese uso directamente.",
     "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
   },
   "code.faq.limit.q": {
@@ -204,7 +204,7 @@
     "description": "FAQ answer, also used in the FAQPage structured data. Keep product names in English"
   },
   "code.meta.ogImageAlt": {
-    "message": "SpecWithCode: una interfaz para tus agentes de programación en macOS, Windows y Linux. Gratis, con código fuente disponible.",
+    "message": "SpecWithCode: una interfaz para tus agentes de programación en macOS, Windows y Linux. Gratis, de código abierto (MIT).",
     "description": "Alt text of the social preview image. Keep product names in English"
   },
   "code.meta.twitterImageAlt": {
@@ -212,7 +212,7 @@
     "description": "Alt text of the X/Twitter preview image. Keep product names in English"
   },
   "code.hero.badge": {
-    "message": "Gratis · código fuente disponible",
+    "message": "Gratis · código abierto (MIT)",
     "description": "Badge next to the product name in the hero"
   },
   "code.hero.title.top": {
@@ -364,7 +364,7 @@
     "description": "Heading of the closing call to action. Keep product names in English"
   },
   "code.final.body": {
-    "message": "Gratis y con código fuente disponible. Tus cuentas, tus máquinas. Añade la CLI opcional de SpecWeave para mantener {link}.",
+    "message": "Gratis y de código abierto (MIT). Tus cuentas, tus máquinas. Añade la CLI opcional de SpecWeave para mantener {link}.",
     "description": "Closing paragraph; {link} links to the spec-as-code comparison. Keep product names in English"
   },
   "code.final.body.link": {
@@ -376,8 +376,8 @@
     "description": "Closing call-to-action button. Keep product names in English"
   },
   "code.final.source": {
-    "message": "Ver el código en GitHub",
-    "description": "Closing link to the source repository. Keep product names in English"
+    "message": "Dale una estrella en GitHub",
+    "description": "Closing link to the source repository, asking visitors to star it. Keep product names in English"
   },
   "home.proof.folder.spec": {
     "message": "el plan y sus criterios de aceptación",
@@ -3104,7 +3104,7 @@
     "description": "Footer link to the downloads for every platform"
   },
   "code.download.meta.ogImageAlt": {
-    "message": "SpecWithCode: ejecuta agentes de Claude Code y Codex en tus propios equipos. macOS, Windows y Linux. Gratis, con código fuente disponible.",
+    "message": "SpecWithCode: ejecuta agentes de Claude Code y Codex en tus propios equipos. macOS, Windows y Linux. Gratis, de código abierto (MIT).",
     "description": "Social share image alt text. Keep product names in English"
   },
   "code.download.meta.twitterImageAlt": {
@@ -3112,7 +3112,7 @@
     "description": "Twitter share image alt text. Keep product names in English"
   },
   "code.download.hero.productNote": {
-    "message": "Gratis, con código fuente disponible",
+    "message": "Gratis, de código abierto (MIT)",
     "description": "Short note next to the product name"
   },
   "code.download.hero.title": {
@@ -3176,7 +3176,7 @@
     "description": "Closing section heading. Keep product names in English"
   },
   "code.download.final.body": {
-    "message": "Gratis, con código fuente disponible, sin cuenta. Elige macOS en Apple silicon, Windows 10 y 11 (x64 o arm64), o Linux (x64 o arm64).",
+    "message": "Gratis, de código abierto (MIT), sin cuenta. Elige macOS en Apple silicon, Windows 10 y 11 (x64 o arm64), o Linux (x64 o arm64).",
     "description": "Closing section text. Keep product names in English"
   },
   "code.download.final.viewSource": {
@@ -3320,7 +3320,7 @@
     "description": "Accessible label for the GitHub Issues icon link in the footer. Keep product names in English"
   },
   "footer.copyright": {
-    "message": "© {year} SpecWeave. CLI de SpecWeave: licencia MIT. SpecWithCode: gratis, con código fuente disponible.",
+    "message": "© {year} SpecWeave. CLI de SpecWeave: licencia MIT. SpecWithCode: gratis, de código abierto (MIT).",
     "description": "Footer copyright line; {year} is the current year. Keep product names in English"
   },
   "navbar.family.ariaLabel": {
