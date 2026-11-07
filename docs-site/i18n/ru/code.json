@@ -188,7 +188,7 @@
     "description": "Card title in the \"more\" section"
   },
   "code.more.builtWithItself.body": {
-    "message": "С 9 октября по 7 ноября 2026 года SpecWithCode спланирован в 302 спеках, и в него влито 1 393 пул-реквеста, не меньше 418 из них из его собственных воркер-тредов. Загляните в {link}.",
+    "message": "С 9 октября по 7 ноября 2026 года SpecWithCode спланирован в 302 спеках, и в него влито 1 393 пул-реквеста, не меньше 418 из них из его собственных воркер-тредов. Загляните в {link}.",
     "description": "Card text in the 'more' section; {link} is a link labelled 'source code'. Keep product names in English"
   },
   "code.more.builtWithItself.sourceLink": {
@@ -480,7 +480,7 @@
     "description": "List item under \"Your machines, not a cloud container\""
   },
   "home.builtWith.specwithcode": {
-    "message": "Само приложение, спланированное в 302 инкрементах SpecWeave: с 9 октября по 7 ноября 2026 года влито 1 393 пул-реквеста.",
+    "message": "Само приложение, спланированное в 302 инкрементах SpecWeave: с 9 октября по 7 ноября 2026 года влито 1 393 пул-реквеста.",
     "description": "Description of SpecWithCode in the Built with SpecWeave list. Keep product names in English"
   },
   "home.builtWith.easychamp": {

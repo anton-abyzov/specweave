@@ -2,6 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import Translate, {translate} from '@docusaurus/Translate';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import {GitMerge} from 'lucide-react';
 import styles from './BuiltWithItself.module.css';
 
@@ -19,10 +20,10 @@ import styles from './BuiltWithItself.module.css';
 
 export const SPECS_URL = 'https://github.com/anton-abyzov/specweave-umb/tree/main/.specweave/increments';
 
-function stats(): {value: string; label: string}[] {
+function stats(locale: string): {value: string; label: string}[] {
   return [
     {value: '302', label: translate({id: 'builtWithItself.stat.specs', message: 'SpecWithCode increments, each a spec.md with numbered acceptance criteria and a task ledger; 215 completed', description: 'Label under the number 302. Keep product names and spec.md in English'})},
-    {value: '1,393', label: translate({id: 'builtWithItself.stat.prs', message: 'pull requests merged into the app, including 169 release PRs', description: 'Label under the number 1,393'})},
+    {value: new Intl.NumberFormat(locale).format(1393), label: translate({id: 'builtWithItself.stat.prs', message: 'pull requests merged into the app, including 169 release PRs', description: 'Label under the number 1,393'})},
     {value: '418+', label: translate({id: 'builtWithItself.stat.threadLinked', message: 'of those linked in the app’s own records to 204 worker threads on the main Mac: 278 from Claude Code, 127 from Codex, 13 from GitHub Copilot', description: 'Label under the number 418+ (at least 418). Keep product names in English'})},
   ];
 }
@@ -42,7 +43,8 @@ const SHOT = '/img/studio/built-with-itself-ministorm-20261030.webp';
 
 export default function BuiltWithItself({id = 'built-with-itself', more = true}: {id?: string; more?: boolean}) {
   const titleId = `${id}-title`;
-  const STATS = stats();
+  const {i18n} = useDocusaurusContext();
+  const STATS = stats(i18n.currentLocale);
   const MERGED = merged();
   return <section className={styles.band} id={id} aria-labelledby={titleId}>
     <div className={styles.top}>

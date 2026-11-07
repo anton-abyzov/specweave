@@ -2048,15 +2048,15 @@
     "description": "Short provider list: {names} is a comma-separated list of coding agent product names (keep in English), {count} is how many more providers there are"
   },
   "builtWithItself.stat.specs": {
-    "message": "SpecWithCode 인크리먼트. 각각 spec.md, 번호를 붙인 수용 기준, 태스크 원장이 있고 215건 완료",
+    "message": "개의 SpecWithCode 인크리먼트. 각각 spec.md, 번호를 붙인 수용 기준, 태스크 원장이 있고 215개 완료",
     "description": "Label under the number 302. Keep product names and spec.md in English"
   },
   "builtWithItself.stat.prs": {
-    "message": "앱에 병합된 풀 리퀘스트, 릴리스 PR 169건 포함",
+    "message": "건의 풀 리퀘스트가 앱에 병합됨, 릴리스 PR 169건 포함",
     "description": "Label under the number 1,393"
   },
   "builtWithItself.stat.threadLinked": {
-    "message": "그중 앱 자체 기록에서 메인 Mac의 워커 스레드 204개와 연결된 건수: Claude Code 278건, Codex 127건, GitHub Copilot 13건",
+    "message": "건이 앱 자체 기록에서 메인 Mac의 워커 스레드 204개와 연결됨: Claude Code 278건, Codex 127건, GitHub Copilot 13건",
     "description": "Label under the number 418+ (at least 418). Keep product names in English"
   },
   "builtWithItself.pr.961": {
