@@ -11,6 +11,7 @@ import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, 
 import {useSpecWithCodeInstaller} from '../data/specwithcodeInstaller';
 import FlowStage from '../components/code/FlowStage';
 import MobileStores from '../components/code/MobileStores';
+import {SPECS_URL} from '../components/code/BuiltWithItself';
 import {CHROME_EXTENSION_URL} from '../components/home/chrome';
 import styles from '../components/code/FreeLanding.module.css';
 
@@ -138,7 +139,12 @@ const getMore = (): {id: string; icon: typeof Layers; title: string; body: React
   {id: 'harnesses', icon: Layers, title: translate({id: 'code.more.harnesses.title', message: 'Each agent in its own harness', description: 'Card title in the "more" section'}), body: <>{translate({id: 'code.more.harnesses.body', message: 'Claude Code, Codex, GitHub Copilot, Cursor, OpenCode and more run the way their vendors ship them, on your own sign-ins.', description: 'Card text in the "more" section. Keep product names in English'})}</>, to: '/docs/studio/harnesses/', link: translate({id: 'code.more.harnesses.link', message: 'Harnesses and models', description: 'Card link to the harnesses docs'})},
   {id: 'coordinator', icon: Users, title: translate({id: 'code.more.coordinator.title', message: 'A coordinator for bigger jobs', description: 'Card title in the "more" section'}), body: <>{translate({id: 'code.more.coordinator.body', message: 'Give one goal. A coordinator splits it into worker threads on different agents, and you review the result.', description: 'Card text in the "more" section'})}</>, to: '/docs/overview/studio', link: translate({id: 'code.more.coordinator.link', message: 'How projects work', description: 'Card link to the projects docs'})},
   {id: 'machines', icon: Network, title: translate({id: 'code.more.machines.title', message: 'All your machines', description: 'Card title in the "more" section'}), body: <>{translate({id: 'code.more.machines.body', message: 'Add a spare laptop, a Windows PC or a small Linux server as a worker, each signed in to its own accounts.', description: 'Card text in the "more" section. Keep product names in English'})}</>, to: '/tutorials/add-a-machine/', link: translate({id: 'code.more.machines.link', message: 'Add a machine', description: 'Card link to the add-a-machine tutorial'})},
-  {id: 'built-with-itself', icon: GitMerge, title: translate({id: 'code.more.builtWithItself.title', message: 'Built with itself', description: 'Card title in the "more" section'}), body: <>{translate({id: 'code.more.builtWithItself.body', message: '367 pull requests to SpecWithCode were opened by its own worker threads and merged in the second half of October 2026.', description: 'Card text in the "more" section. Keep product names in English'})}</>, to: release.repoUrl, link: translate({id: 'code.more.builtWithItself.link', message: 'View the source', description: 'Card link to the source repository on GitHub'})},
+  {id: 'built-with-itself', icon: GitMerge, title: translate({id: 'code.more.builtWithItself.title', message: 'Built with itself', description: 'Card title in the "more" section'}), body: <Translate
+    id="code.more.builtWithItself.body"
+    description="Card text in the 'more' section; {link} is a link labelled 'source code'. Keep product names in English"
+    values={{link: <a className="wv-link" href={release.repoUrl}><Translate id="code.more.builtWithItself.sourceLink" description="Inline link to the source repository on GitHub">source code</Translate></a>}}>
+    {'From 9 October to 7 November 2026, SpecWithCode was planned in 302 specs and got 1,393 merged pull requests, at least 418 of them from its own worker threads. Read the {link}.'}
+  </Translate>, to: SPECS_URL, link: translate({id: 'code.more.builtWithItself.link', message: 'See the specs', description: 'Card link to the public folder of SpecWeave increments (specs) on GitHub'})},
 ];
 
 /** Shown on the page and, as plain text, in the FAQPage structured data. */

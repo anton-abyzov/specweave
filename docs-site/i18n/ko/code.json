@@ -140,12 +140,16 @@
     "description": "Card title in the \"more\" section"
   },
   "code.more.builtWithItself.body": {
-    "message": "SpecWithCode의 풀 리퀘스트 367건을 자체 워커 스레드가 열었고, 2026년 10월 하반기에 병합됐어요.",
-    "description": "Card text in the \"more\" section. Keep product names in English"
+    "message": "2026년 10월 9일부터 11월 7일까지 SpecWithCode는 스펙 302개로 계획됐고 풀 리퀘스트 1,393건이 병합됐어요. 그중 최소 418건은 자체 워커 스레드에서 나왔어요. {link}도 살펴보세요.",
+    "description": "Card text in the 'more' section; {link} is a link labelled 'source code'. Keep product names in English"
+  },
+  "code.more.builtWithItself.sourceLink": {
+    "message": "소스 코드",
+    "description": "Inline link to the source repository on GitHub"
   },
   "code.more.builtWithItself.link": {
-    "message": "소스 보기",
-    "description": "Card link to the source repository on GitHub"
+    "message": "스펙 보기",
+    "description": "Card link to the public folder of SpecWeave increments (specs) on GitHub"
   },
   "code.faq.free.q": {
     "message": "SpecWithCode는 정말 무료인가요?",
@@ -428,7 +432,7 @@
     "description": "List item under \"Your machines, not a cloud container\""
   },
   "home.builtWith.specwithcode": {
-    "message": "SpecWeave 인크리먼트로 계획한 앱 자체: 2026년 10월에 자체 워커 스레드에서 병합된 풀 리퀘스트 367건.",
+    "message": "SpecWeave 인크리먼트 302개로 계획한 앱 자체: 2026년 10월 9일부터 11월 7일까지 풀 리퀘스트 1,393건 병합.",
     "description": "Description of SpecWithCode in the Built with SpecWeave list. Keep product names in English"
   },
   "home.builtWith.easychamp": {
@@ -2043,17 +2047,17 @@
     "message": "{names} 외 {count}개",
     "description": "Short provider list: {names} is a comma-separated list of coding agent product names (keep in English), {count} is how many more providers there are"
   },
+  "builtWithItself.stat.specs": {
+    "message": "SpecWithCode 인크리먼트. 각각 spec.md, 번호를 붙인 수용 기준, 태스크 원장이 있고 215건 완료",
+    "description": "Label under the number 302. Keep product names and spec.md in English"
+  },
   "builtWithItself.stat.prs": {
-    "message": "워커 스레드가 열고 병합한 SpecWithCode 풀 리퀘스트, 2026년 10월 15일~29일",
-    "description": "Label under the number 367. Keep product names in English"
+    "message": "앱에 병합된 풀 리퀘스트, 릴리스 PR 169건 포함",
+    "description": "Label under the number 1,393"
   },
-  "builtWithItself.stat.threads": {
-    "message": "그 뒤의 워커 스레드: Claude Code 100개, Codex 65개, 나머지는 Gemini CLI와 Copilot",
-    "description": "Label under the number 167. Keep product names in English"
-  },
-  "builtWithItself.stat.allThreads": {
-    "message": "10월 9일 이후 메인테이너의 주 Mac에서 프로젝트 여섯 개에 걸쳐 진행된 스레드",
-    "description": "Label under the number 2,473"
+  "builtWithItself.stat.threadLinked": {
+    "message": "그중 앱 자체 기록에서 메인 Mac의 워커 스레드 204개와 연결된 건수: Claude Code 278건, Codex 127건, GitHub Copilot 13건",
+    "description": "Label under the number 418+ (at least 418). Keep product names in English"
   },
   "builtWithItself.pr.961": {
     "message": "사용자 목표를 완료된 소스 마일스톤 이후에도 열어 두기",
@@ -2092,8 +2096,12 @@
     "description": "Section lead paragraph. Keep product names in English"
   },
   "builtWithItself.statsSource": {
-    "message": "2026년 10월 30일 앱의 스레드 기록을 기준으로 집계했어요.",
+    "message": "2026년 10월 9일부터 11월 7일까지 집계했어요. 418건은 최소치예요. Linux 워커 스레드, 삭제된 스레드, 릴리스 자동화에서 나온 풀 리퀘스트는 빠져 있고, 일부 작업은 앱 밖에서 했어요.",
     "description": "Source note under the numbers"
+  },
+  "builtWithItself.specsLink": {
+    "message": "스펙 보기",
+    "description": "Link to the public folder of SpecWeave increments (specs) on GitHub"
   },
   "builtWithItself.window.title": {
     "message": "Mac 코디네이터, Linux 워커",

@@ -65,7 +65,7 @@ function machines(): string[] {
 
 function built(): Array<{ name: string; href: string; body: string }> {
   return [
-    { name: 'SpecWithCode', href: '/code/#built-with-itself', body: translate({ id: 'home.builtWith.specwithcode', message: 'The app itself, planned in SpecWeave increments: 367 pull requests merged from its own worker threads in October 2026.', description: 'Description of SpecWithCode in the Built with SpecWeave list. Keep product names in English' }) },
+    { name: 'SpecWithCode', href: '/code/#built-with-itself', body: translate({ id: 'home.builtWith.specwithcode', message: 'The app itself, planned in 302 SpecWeave increments, with 1,393 pull requests merged from 9 October to 7 November 2026.', description: 'Description of SpecWithCode in the Built with SpecWeave list. Keep product names in English' }) },
     { name: 'EasyChamp', href: 'https://easychamp.com', body: translate({ id: 'home.builtWith.easychamp', message: 'League and club tools, built across Claude Code threads, two subscriptions and Codex.', description: 'Description of EasyChamp in the Built with SpecWeave list. Keep product names in English' }) },
     { name: 'JobWeave', href: '/docs/overview/dogfooding/', body: translate({ id: 'home.builtWith.jobweave', message: 'Job search, tailored resumes and interview preparation.', description: 'Description of JobWeave in the Built with SpecWeave list' }) },
     { name: 'Verified Skill', href: 'https://verified-skill.com', body: translate({ id: 'home.builtWith.verifiedSkill', message: 'Skill discovery, source inspection and local evaluations.', description: 'Description of Verified Skill in the Built with SpecWeave list' }) },
