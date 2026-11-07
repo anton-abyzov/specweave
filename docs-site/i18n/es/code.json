@@ -140,12 +140,16 @@
     "description": "Card title in the \"more\" section"
   },
   "code.more.builtWithItself.body": {
-    "message": "Sus propios hilos de trabajo abrieron 367 pull requests de SpecWithCode, integradas en la segunda mitad de octubre de 2026.",
-    "description": "Card text in the \"more\" section. Keep product names in English"
+    "message": "Del 9 de octubre al 7 de noviembre de 2026, SpecWithCode se planificó en 302 specs y recibió 1393 pull requests integradas, al menos 418 de ellas desde sus propios hilos worker. Échale un vistazo al {link}.",
+    "description": "Card text in the 'more' section; {link} is a link labelled 'source code'. Keep product names in English"
+  },
+  "code.more.builtWithItself.sourceLink": {
+    "message": "código fuente",
+    "description": "Inline link to the source repository on GitHub"
   },
   "code.more.builtWithItself.link": {
-    "message": "Ver el código fuente",
-    "description": "Card link to the source repository on GitHub"
+    "message": "Ver las specs",
+    "description": "Card link to the public folder of SpecWeave increments (specs) on GitHub"
   },
   "code.faq.free.q": {
     "message": "¿SpecWithCode es realmente gratis?",
@@ -428,7 +432,7 @@
     "description": "List item under \"Your machines, not a cloud container\""
   },
   "home.builtWith.specwithcode": {
-    "message": "La propia app, planificada en incrementos de SpecWeave: 367 pull requests integradas desde sus propios hilos worker en octubre de 2026.",
+    "message": "La propia app, planificada en 302 incrementos de SpecWeave, con 1393 pull requests integradas del 9 de octubre al 7 de noviembre de 2026.",
     "description": "Description of SpecWithCode in the Built with SpecWeave list. Keep product names in English"
   },
   "home.builtWith.easychamp": {
@@ -2043,17 +2047,17 @@
     "message": "{names} y {count} más",
     "description": "Short provider list: {names} is a comma-separated list of coding agent product names (keep in English), {count} is how many more providers there are"
   },
+  "builtWithItself.stat.specs": {
+    "message": "incrementos de SpecWithCode, cada uno con spec.md, criterios de aceptación numerados y un registro de tareas; 215 completados",
+    "description": "Label under the number 302. Keep product names and spec.md in English"
+  },
   "builtWithItself.stat.prs": {
-    "message": "pull requests de SpecWithCode abiertas por hilos worker e integradas, del 15 al 29 de octubre de 2026",
-    "description": "Label under the number 367. Keep product names in English"
+    "message": "pull requests integradas en la app, incluidas 169 de releases",
+    "description": "Label under the number 1,393"
   },
-  "builtWithItself.stat.threads": {
-    "message": "hilos worker detrás de ellas: 100 en Claude Code, 65 en Codex, el resto en Gemini CLI y Copilot",
-    "description": "Label under the number 167. Keep product names in English"
-  },
-  "builtWithItself.stat.allThreads": {
-    "message": "hilos en el Mac principal del mantenedor desde el 9 de octubre, en seis proyectos",
-    "description": "Label under the number 2,473"
+  "builtWithItself.stat.threadLinked": {
+    "message": "de ellas, vinculadas en los propios registros de la app a 204 hilos worker del Mac principal: 278 de Claude Code, 127 de Codex y 13 de GitHub Copilot",
+    "description": "Label under the number 418+ (at least 418). Keep product names in English"
   },
   "builtWithItself.pr.961": {
     "message": "Mantener abiertos los objetivos del usuario más allá de los hitos de código completados",
@@ -2092,8 +2096,12 @@
     "description": "Section lead paragraph. Keep product names in English"
   },
   "builtWithItself.statsSource": {
-    "message": "Contado a partir de los propios registros de hilos de la app el 30 de octubre de 2026.",
+    "message": "Del 9 de octubre al 7 de noviembre de 2026. Las 418 son un mínimo: no cuentan las pull requests de los hilos del worker Linux, de hilos borrados ni de la automatización de releases, y parte del trabajo se hizo fuera de la app.",
     "description": "Source note under the numbers"
+  },
+  "builtWithItself.specsLink": {
+    "message": "Ver las specs",
+    "description": "Link to the public folder of SpecWeave increments (specs) on GitHub"
   },
   "builtWithItself.window.title": {
     "message": "Coordinador en Mac, worker en Linux",

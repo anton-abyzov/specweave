@@ -133,4 +133,28 @@ describe('SpecWithCode landing page', () => {
   it('redirects /studio to the canonical /code page', () => {
     expect(read('../docusaurus.config.ts')).toMatch(/\{from: \['\/studio'\], to: '\/code'\}/);
   });
+
+  it('shows the verified 30-day Built with itself numbers and links the specs', () => {
+    const band = read('components/code/BuiltWithItself.tsx');
+    for (const src of [band, copy]) expect(src).not.toMatch(/\b367\b|\b2,473\b/);
+    for (const n of ["'302'", "format(1393)", "'418+'", '9 October to 7 November 2026']) expect(band).toContain(n);
+    expect(band).toContain("'https://github.com/anton-abyzov/specweave-umb/tree/main/.specweave/increments'");
+    expect(band).toMatch(/The 418 is a floor/);
+    expect(copy).toMatch(/302 specs and got 1,393 merged pull requests, at least 418/);
+    expect(copy).toMatch(/to: SPECS_URL, link: translate\(\{id: 'code.more.builtWithItself.link', message: 'See the specs'/);
+    expect(copy).toMatch(/href=\{release.repoUrl\}><Translate id="code.more.builtWithItself.sourceLink"/);
+    for (const src of [band, copy]) expect(src.match(/message: '[^']*'/g)?.join('') ?? '').not.toContain('\u2014');
+  });
+
+  it('carries the Built with itself strings in every locale', () => {
+    const keys = ['builtWithItself.stat.specs', 'builtWithItself.stat.prs', 'builtWithItself.stat.threadLinked', 'builtWithItself.statsSource', 'builtWithItself.specsLink', 'code.more.builtWithItself.body', 'code.more.builtWithItself.sourceLink', 'code.more.builtWithItself.link', 'home.builtWith.specwithcode'];
+    for (const loc of ['de', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-CN']) {
+      const msgs = JSON.parse(read(`../i18n/${loc}/code.json`));
+      for (const k of keys) expect(msgs[k]?.message, `${loc} ${k}`).toBeTruthy();
+      expect(msgs['code.more.builtWithItself.body'].message).toContain('{link}');
+      expect(msgs['code.more.builtWithItself.body'].message).toContain('418');
+      expect(msgs['builtWithItself.stat.threads'], loc).toBeUndefined();
+      expect(JSON.stringify(msgs)).not.toMatch(/\b367 /);
+    }
+  });
 });

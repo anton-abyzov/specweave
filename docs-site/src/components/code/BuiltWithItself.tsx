@@ -2,25 +2,29 @@ import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import Translate, {translate} from '@docusaurus/Translate';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import {GitMerge} from 'lucide-react';
 import styles from './BuiltWithItself.module.css';
 
 /*
   "SpecWithCode is built with SpecWithCode", shared by /code and the home page.
-  Numbers come from the thread records (orchestration_v2_projection_threads, pullRequests with
-  source "agent" and state "merged", repository anton-abyzov/specwithcode-dev or its earlier name
-  anton-abyzov/specweave-studio) on the maintainer's main Mac, read on 30 October 2026; merges ran
-  from 15 to 29 October 2026. A pull request linked
-  by two threads counts once in the total and once per provider below it.
+  Numbers cover 9 October to 7 November 2026 and match the "Built with itself" section of the
+  anton-abyzov/specwithcode README (PR #32): increments from .specweave/increments in the public
+  planning repo, merged pull requests from the app's development repository, and thread-linked pull
+  requests from the thread records on the maintainer's main Mac. The 418 is a floor: pull requests
+  from the Linux worker's threads, deleted threads, release automation and work outside the app are
+  not in it. Never claim every change was made in SpecWithCode.
   The screenshot is a crop of the 1144 handoff E2E capture (30-worker-thread-on-ministorm.png),
   with the sidebar (account and personal chats) cut away.
 */
 
-function stats(): {value: string; label: string}[] {
+export const SPECS_URL = 'https://github.com/anton-abyzov/specweave-umb/tree/main/.specweave/increments';
+
+function stats(locale: string): {value: string; label: string}[] {
   return [
-    {value: '367', label: translate({id: 'builtWithItself.stat.prs', message: 'pull requests to SpecWithCode opened by worker threads and merged, 15 to 29 October 2026', description: 'Label under the number 367. Keep product names in English'})},
-    {value: '167', label: translate({id: 'builtWithItself.stat.threads', message: 'worker threads behind them: 100 on Claude Code, 65 on Codex, the rest on Gemini CLI and Copilot', description: 'Label under the number 167. Keep product names in English'})},
-    {value: '2,473', label: translate({id: 'builtWithItself.stat.allThreads', message: 'threads on the maintainer’s main Mac since 9 October, across six projects', description: 'Label under the number 2,473'})},
+    {value: '302', label: translate({id: 'builtWithItself.stat.specs', message: 'SpecWithCode increments, each a spec.md with numbered acceptance criteria and a task ledger; 215 completed', description: 'Label under the number 302. Keep product names and spec.md in English'})},
+    {value: new Intl.NumberFormat(locale).format(1393), label: translate({id: 'builtWithItself.stat.prs', message: 'pull requests merged into the app, including 169 release PRs', description: 'Label under the number 1,393'})},
+    {value: '418+', label: translate({id: 'builtWithItself.stat.threadLinked', message: 'of those linked in the app’s own records to 204 worker threads on the main Mac: 278 from Claude Code, 127 from Codex, 13 from GitHub Copilot', description: 'Label under the number 418+ (at least 418). Keep product names in English'})},
   ];
 }
 
@@ -39,7 +43,8 @@ const SHOT = '/img/studio/built-with-itself-ministorm-20261030.webp';
 
 export default function BuiltWithItself({id = 'built-with-itself', more = true}: {id?: string; more?: boolean}) {
   const titleId = `${id}-title`;
-  const STATS = stats();
+  const {i18n} = useDocusaurusContext();
+  const STATS = stats(i18n.currentLocale);
   const MERGED = merged();
   return <section className={styles.band} id={id} aria-labelledby={titleId}>
     <div className={styles.top}>
@@ -50,7 +55,7 @@ export default function BuiltWithItself({id = 'built-with-itself', more = true}:
         <dl className={styles.stats}>
           {STATS.map(s => <div key={s.value}><dt>{s.value}</dt><dd>{s.label}</dd></div>)}
         </dl>
-        <p className={styles.source}><Translate id="builtWithItself.statsSource" description="Source note under the numbers">Counted from the app’s own thread records on 30 October 2026.</Translate></p>
+        <p className={styles.source}><Translate id="builtWithItself.statsSource" description="Source note under the numbers">From 9 October to 7 November 2026. The 418 is a floor: pull requests from the Linux worker’s threads, deleted threads and release automation are not counted, and some work happened outside the app.</Translate>{' '}<a className={clsx('wv-link', styles.link)} href={SPECS_URL}><Translate id="builtWithItself.specsLink" description="Link to the public folder of SpecWeave increments (specs) on GitHub">See the specs</Translate></a></p>
       </div>
       <figure className={clsx('wv-window', styles.shot)}>
         <div className="wv-window__bar"><span>SpecWithCode</span><span><Translate id="builtWithItself.window.title" description="Window title bar label of the screenshot">Mac coordinator, Linux worker</Translate></span></div>

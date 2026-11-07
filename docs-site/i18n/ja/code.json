@@ -188,12 +188,16 @@
     "description": "Card title in the \"more\" section"
   },
   "code.more.builtWithItself.body": {
-    "message": "2026年10月後半、SpecWithCodeへの367件のプルリクエストが、自身のワーカースレッドによって作成・マージされました。",
-    "description": "Card text in the \"more\" section. Keep product names in English"
+    "message": "2026年10月9日〜11月7日、SpecWithCodeは302件のスペックで計画され、1,393件のプルリクエストがマージされました。少なくとも418件は自身のワーカースレッドからです。{link}もどうぞ。",
+    "description": "Card text in the 'more' section; {link} is a link labelled 'source code'. Keep product names in English"
+  },
+  "code.more.builtWithItself.sourceLink": {
+    "message": "ソースコード",
+    "description": "Inline link to the source repository on GitHub"
   },
   "code.more.builtWithItself.link": {
-    "message": "ソースを見る",
-    "description": "Card link to the source repository on GitHub"
+    "message": "スペックを見る",
+    "description": "Card link to the public folder of SpecWeave increments (specs) on GitHub"
   },
   "code.faq.free.q": {
     "message": "SpecWithCodeは本当に無料ですか?",
@@ -476,7 +480,7 @@
     "description": "List item under \"Your machines, not a cloud container\""
   },
   "home.builtWith.specwithcode": {
-    "message": "アプリ自体。SpecWeaveのインクリメントで計画し、2026年10月に自身のワーカースレッドから367件のプルリクエストをマージしました。",
+    "message": "アプリ自体。302件のSpecWeaveインクリメントで計画し、2026年10月9日〜11月7日に1,393件のプルリクエストをマージしました。",
     "description": "Description of SpecWithCode in the Built with SpecWeave list. Keep product names in English"
   },
   "home.builtWith.easychamp": {
@@ -2555,17 +2559,17 @@
     "message": "スキルレジストリ",
     "description": "Short description shown after the product name Verified Skill in the family bar"
   },
+  "builtWithItself.stat.specs": {
+    "message": "件のSpecWithCodeインクリメント。それぞれにspec.md、番号付きの受け入れ基準、タスク台帳があり、215件が完了",
+    "description": "Label under the number 302. Keep product names and spec.md in English"
+  },
   "builtWithItself.stat.prs": {
-    "message": "ワーカースレッドが作成しマージした、SpecWithCodeへのプルリクエスト(2026年10月15日〜29日)",
-    "description": "Label under the number 367. Keep product names in English"
+    "message": "件のプルリクエストをアプリにマージ(うちリリースPRが169件)",
+    "description": "Label under the number 1,393"
   },
-  "builtWithItself.stat.threads": {
-    "message": "その背後にあるワーカースレッド:Claude Codeが100、Codexが65、残りはGemini CLIとCopilot",
-    "description": "Label under the number 167. Keep product names in English"
-  },
-  "builtWithItself.stat.allThreads": {
-    "message": "10月9日以降、メンテナーのメインMacで6つのプロジェクトにわたって動いたスレッド",
-    "description": "Label under the number 2,473"
+  "builtWithItself.stat.threadLinked": {
+    "message": "件が、アプリ自身の記録でメインMacの204のワーカースレッドに紐づいています:Claude Codeが278件、Codexが127件、GitHub Copilotが13件",
+    "description": "Label under the number 418+ (at least 418). Keep product names in English"
   },
   "builtWithItself.pr.961": {
     "message": "ユーザーの目標を、完了したソースのマイルストーンを越えて開いたままにする",
@@ -2604,8 +2608,12 @@
     "description": "Section lead paragraph. Keep product names in English"
   },
   "builtWithItself.statsSource": {
-    "message": "アプリ自身のスレッド記録から集計、2026年10月30日時点。",
+    "message": "2026年10月9日〜11月7日の集計。418件は下限です。Linuxワーカーのスレッド、削除済みのスレッド、リリース自動化からのプルリクエストは含まず、アプリの外で進めた作業もあります。",
     "description": "Source note under the numbers"
+  },
+  "builtWithItself.specsLink": {
+    "message": "スペックを見る",
+    "description": "Link to the public folder of SpecWeave increments (specs) on GitHub"
   },
   "builtWithItself.window.title": {
     "message": "Macのコーディネーター、Linuxのワーカー",

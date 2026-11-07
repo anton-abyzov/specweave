@@ -188,12 +188,16 @@
     "description": "Card title in the \"more\" section"
   },
   "code.more.builtWithItself.body": {
-    "message": "367 пул-реквестов в SpecWithCode открыли и влили его собственные воркер-треды во второй половине октября 2026 года.",
-    "description": "Card text in the \"more\" section. Keep product names in English"
+    "message": "С 9 октября по 7 ноября 2026 года SpecWithCode спланирован в 302 спеках, и в него влито 1 393 пул-реквеста, не меньше 418 из них из его собственных воркер-тредов. Загляните в {link}.",
+    "description": "Card text in the 'more' section; {link} is a link labelled 'source code'. Keep product names in English"
+  },
+  "code.more.builtWithItself.sourceLink": {
+    "message": "исходный код",
+    "description": "Inline link to the source repository on GitHub"
   },
   "code.more.builtWithItself.link": {
-    "message": "Смотреть исходный код",
-    "description": "Card link to the source repository on GitHub"
+    "message": "Посмотреть спеки",
+    "description": "Card link to the public folder of SpecWeave increments (specs) on GitHub"
   },
   "code.faq.free.q": {
     "message": "SpecWithCode правда бесплатный?",
@@ -476,7 +480,7 @@
     "description": "List item under \"Your machines, not a cloud container\""
   },
   "home.builtWith.specwithcode": {
-    "message": "Само приложение, спланированное в инкрементах SpecWeave: в октябре 2026 влито 367 пул-реквестов из его собственных воркер-тредов.",
+    "message": "Само приложение, спланированное в 302 инкрементах SpecWeave: с 9 октября по 7 ноября 2026 года влито 1 393 пул-реквеста.",
     "description": "Description of SpecWithCode in the Built with SpecWeave list. Keep product names in English"
   },
   "home.builtWith.easychamp": {
@@ -2323,17 +2327,17 @@
     "message": "Читать про измерение",
     "description": "Link to the guide with the full measurement"
   },
+  "builtWithItself.stat.specs": {
+    "message": "инкремента SpecWithCode, у каждого spec.md, пронумерованные критерии приёмки и журнал задач; 215 завершены",
+    "description": "Label under the number 302. Keep product names and spec.md in English"
+  },
   "builtWithItself.stat.prs": {
-    "message": "пул-реквестов в SpecWithCode, открытых воркер-тредами и влитых, с 15 по 29 октября 2026",
-    "description": "Label under the number 367. Keep product names in English"
+    "message": "пул-реквеста влито в приложение, из них 169 релизных",
+    "description": "Label under the number 1,393"
   },
-  "builtWithItself.stat.threads": {
-    "message": "воркер-тредов за ними: 100 на Claude Code, 65 на Codex, остальные на Gemini CLI и Copilot",
-    "description": "Label under the number 167. Keep product names in English"
-  },
-  "builtWithItself.stat.allThreads": {
-    "message": "тредов на основном Mac мейнтейнера с 9 октября по шести проектам",
-    "description": "Label under the number 2,473"
+  "builtWithItself.stat.threadLinked": {
+    "message": "из них, по собственным записям приложения, связаны с 204 воркер-тредами на основном Mac: 278 от Claude Code, 127 от Codex, 13 от GitHub Copilot",
+    "description": "Label under the number 418+ (at least 418). Keep product names in English"
   },
   "builtWithItself.pr.961": {
     "message": "Не закрывать цели пользователя после выполненных этапов по исходникам",
@@ -2372,8 +2376,12 @@
     "description": "Section lead paragraph. Keep product names in English"
   },
   "builtWithItself.statsSource": {
-    "message": "Подсчитано по собственным записям тредов приложения на 30 октября 2026.",
+    "message": "С 9 октября по 7 ноября 2026 года. Число 418 считайте нижней границей: пул-реквесты из тредов Linux-воркера, удалённых тредов и релизной автоматизации сюда не вошли, а часть работы шла вне приложения.",
     "description": "Source note under the numbers"
+  },
+  "builtWithItself.specsLink": {
+    "message": "Посмотреть спеки",
+    "description": "Link to the public folder of SpecWeave increments (specs) on GitHub"
   },
   "builtWithItself.window.title": {
     "message": "Координатор на Mac, воркер на Linux",
