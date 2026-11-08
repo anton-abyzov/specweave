@@ -10,6 +10,7 @@ import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, 
 import {providerSummary} from '../../data/tools';
 import MobileStores from '../../components/code/MobileStores';
 import HowItWorks from '../../components/code/HowItWorks';
+import FeedbackLinks from '../../components/code/FeedbackLinks';
 import {ALL_DOWNLOADS_ANCHOR, MAC_INSTALLER, useSpecWithCodeInstaller} from '../../data/specwithcodeInstaller';
 import styles from '../code.module.css';
 
@@ -396,6 +397,8 @@ export default function CodeDownload() {
           </details>)}
         </div>
       </section>
+
+      <FeedbackLinks className={clsx(styles.shell, styles.section)} />
 
       <section className={clsx(styles.shell, styles.final)} aria-labelledby="download-final-title">
         <h2 id="download-final-title"><Translate id="code.download.final.title" description="Closing section heading. Keep product names in English">Get SpecWithCode for your computer</Translate></h2>

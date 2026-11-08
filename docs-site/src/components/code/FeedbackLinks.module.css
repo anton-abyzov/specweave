@@ -1,0 +1,31 @@
+.feedback {
+  text-align: center;
+}
+
+.feedback > h2,
+.feedback > p {
+  margin-inline: auto;
+}
+
+.feedback > p {
+  margin-top: var(--wv-space-2);
+  max-width: 60ch;
+  color: var(--wv-muted);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--wv-space-3) var(--wv-space-6);
+  margin: var(--wv-space-6) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.feedback > .social {
+  margin-top: var(--wv-space-4);
+  font-size: 14px;
+}
