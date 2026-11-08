@@ -90,6 +90,14 @@
 .request { align-items: center; }
 .beat > .say { align-self: stretch; }
 .request > .pop:first-of-type { width: 100%; }
+.composerNarrow { display: none; }
+.composerBox { display: flex; align-items: flex-end; gap: 10px; padding: 10px 10px 10px 14px; border: 1.5px solid var(--wv-iris); border-radius: 14px; background: var(--wv-canvas); box-shadow: 0 0 0 3px var(--wv-iris-tint); color: var(--wv-ink); font: 400 13px/19px var(--wv-font-sans); text-align: left; overflow-wrap: anywhere; }
+.send { display: inline-grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 8px; background: var(--wv-iris); color: var(--wv-on-iris); }
+.composerNarrow .shot { margin: 8px 0 0; }
+@container (max-width: 759px) {
+  .composerWide { display: none; }
+  .composerNarrow { display: block; }
+}
 .node { position: relative; display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 8px; padding: 8px 16px; border: 1px solid var(--wv-line); border-radius: 999px; background: var(--wv-panel); box-shadow: var(--wv-shadow-overlay); }
 .node b { font-weight: 700; }
 .nodeDot { width: 8px; height: 8px; border-radius: 50%; background: var(--wv-pass); box-shadow: 0 0 0 3px var(--wv-pass-tint); }
@@ -206,6 +214,11 @@
   /* Narrow stage (phones, side columns): one column. */
   /* Hidden without display:none, so the connector keeps its animation at every width. */
   @container (max-width: 759px) {
+    /* The stage keeps the tallest step's height; each shorter step keeps its sentence at the top
+       and centres the rest in the space left, so no step ends in an empty band. */
+    .beat { align-self: stretch; }
+    .beat > .say + * { margin-top: auto; }
+    .beat::after { content: ""; margin-top: auto; margin-bottom: -14px; }
     .beat .link { position: absolute; width: 0; height: 0; overflow: hidden; visibility: hidden; }
     .ticks { gap: 7px; }
     .ticks li { font-size: 13px; line-height: 18px; }
