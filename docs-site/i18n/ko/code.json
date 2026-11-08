@@ -1827,18 +1827,6 @@
     "message": "SpecWithCode 보기",
     "description": "Link to the SpecWithCode page; keep SpecWithCode in English"
   },
-  "product.specwithcode.windowLabel": {
-    "message": "워커 스레드",
-    "description": "Window title bar label"
-  },
-  "product.specwithcode.imageAlt": {
-    "message": "결과를 보고하는 SpecWithCode 워커 스레드: 실행한 명령과 출력, 차단 요소 없음, 변경된 파일 두 개",
-    "description": "Alt text of the worker thread screenshot; keep SpecWithCode in English"
-  },
-  "product.specwithcode.caption": {
-    "message": "워커 스레드가 결과, 증거, 변경한 파일을 보고해요. SpecWithCode 1.0.21, 2026년 10월 15일.",
-    "description": "Screenshot caption; keep SpecWithCode and the version in English"
-  },
   "product.final.heading": {
     "message": "완료의 의미를 적어 두면 도구는 자유롭게 바꿀 수 있어요",
     "description": "Final call-to-action heading"
@@ -3291,21 +3279,109 @@
     "message": "{providers}를 위한 무료 앱 하나. 내 머신에서, 이미 결제 중인 구독으로 실행해요.",
     "description": "Hero lead; {providers} is a list of coding agent product names"
   },
-  "code.download.hero.shot.bar": {
-    "message": "워커 스레드",
-    "description": "Title bar label of the app screenshot"
+  "code.howItWorks.label": {
+    "message": "SpecWithCode 작동 방식: 코디네이터에게 요청을 하나 보내면, 작업을 워커들에게 나누고 각 워커가 자기 파일을 맡아요. 워커들은 고른 모델에서 동시에 실행되고, 실행한 명령과 출력, 바뀐 파일을 보고해요. 마지막으로 검사가 통과하고 풀 리퀘스트가 머지돼요.",
+    "description": "Accessible description of the how it works animation. Keep SpecWithCode in English"
   },
-  "code.download.hero.shot.alt": {
-    "message": "Mac의 SpecWithCode: 실행한 명령과 변경한 파일을 보고하는 Codex 워커 스레드",
-    "description": "Alt text of the app screenshot. Keep product names in English"
+  "code.howItWorks.step.request": {
+    "message": "요청",
+    "description": "How it works animation, step 1 label: the user sends a request"
   },
-  "code.download.hero.shot.caption": {
-    "message": "macOS의 SpecWithCode. 앱 캡처, 2026년 10월 15일. {link}",
-    "description": "Screenshot caption; {link} links to the SpecWithCode page. Keep product names in English"
+  "code.howItWorks.step.split": {
+    "message": "분담",
+    "description": "How it works animation, step 2 label: the work is split between workers"
   },
-  "code.download.hero.shot.captionLink": {
+  "code.howItWorks.step.parallel": {
+    "message": "병렬",
+    "description": "How it works animation, step 3 label: workers run at the same time"
+  },
+  "code.howItWorks.step.evidence": {
+    "message": "증거",
+    "description": "How it works animation, step 4 label: results come back with proof"
+  },
+  "code.howItWorks.step.ships": {
+    "message": "배포",
+    "description": "How it works animation, step 5 label: the change is merged and shipped"
+  },
+  "code.howItWorks.say.request": {
+    "message": "한 번만 요청하세요. 요청은 코디네이터에게 전달돼요.",
+    "description": "How it works animation, step 1 sentence"
+  },
+  "code.howItWorks.say.split": {
+    "message": "코디네이터가 워커들에게 나눠요. 워커마다 자기 파일을 맡아요.",
+    "description": "How it works animation, step 2 sentence"
+  },
+  "code.howItWorks.say.parallel": {
+    "message": "워커들은 동시에 실행돼요. 각자 고른 모델에서요.",
+    "description": "How it works animation, step 3 sentence"
+  },
+  "code.howItWorks.say.evidence": {
+    "message": "각 워커는 실행한 명령, 그 출력, 바뀐 파일을 함께 보고해요.",
+    "description": "How it works animation, step 4 sentence"
+  },
+  "code.howItWorks.say.ships": {
+    "message": "검사가 통과하고, 풀 리퀘스트가 머지되고, 변경이 배포돼요.",
+    "description": "How it works animation, step 5 sentence"
+  },
+  "code.howItWorks.coordinator": {
+    "message": "코디네이터",
+    "description": "How it works animation: the coordinator thread that receives the request"
+  },
+  "code.howItWorks.owns": {
+    "message": "{file} 담당",
+    "description": "How it works animation: which file a worker is responsible for; {file} is a file name"
+  },
+  "code.howItWorks.running": {
+    "message": "실행 중",
+    "description": "How it works animation: worker status while it runs"
+  },
+  "code.howItWorks.done": {
+    "message": "완료",
+    "description": "How it works animation: worker status when finished"
+  },
+  "code.howItWorks.evidence.files": {
+    "message": "바뀐 파일 2개",
+    "description": "How it works animation: number of files the worker changed"
+  },
+  "code.howItWorks.evidence.sent": {
+    "message": "코디네이터에게 보고 전송",
+    "description": "How it works animation: the worker sent its report to the coordinator thread"
+  },
+  "code.howItWorks.ship.pr": {
+    "message": "풀 리퀘스트",
+    "description": "How it works animation: label of the pull request card"
+  },
+  "code.howItWorks.ship.readme": {
+    "message": "README 예제 다시 실행",
+    "description": "How it works animation: a check that re-ran the README examples"
+  },
+  "code.howItWorks.ship.checks": {
+    "message": "모든 검사 통과",
+    "description": "How it works animation: every check on the pull request passed"
+  },
+  "code.howItWorks.ship.merged": {
+    "message": "머지됨",
+    "description": "How it works animation: the pull request was merged"
+  },
+  "code.howItWorks.ship.shipped": {
+    "message": "배포 완료",
+    "description": "How it works animation: final state, the change is live"
+  },
+  "code.howItWorks.caption": {
+    "message": "SpecWithCode {version} 캡처로 만든 그림, 2026년 11월 8일.",
+    "description": "Caption under the how it works animation; {version} is an app version. Keep SpecWithCode in English"
+  },
+  "code.howItWorks.captionLink": {
     "message": "모든 기능 보기",
-    "description": "Link from the screenshot caption to the SpecWithCode page"
+    "description": "Link from the how it works caption to the SpecWithCode page"
+  },
+  "code.howItWorks.pause": {
+    "message": "애니메이션 일시정지",
+    "description": "Button under the how it works animation that pauses it"
+  },
+  "code.howItWorks.play": {
+    "message": "애니메이션 재생",
+    "description": "Button under the how it works animation that resumes it"
   },
   "code.download.windowsLinux.title": {
     "message": "Windows 및 Linux",

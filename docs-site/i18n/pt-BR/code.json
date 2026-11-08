@@ -1875,18 +1875,6 @@
     "message": "Conheça o SpecWithCode",
     "description": "Link to the SpecWithCode page; keep SpecWithCode in English"
   },
-  "product.specwithcode.windowLabel": {
-    "message": "Thread de worker",
-    "description": "Window title bar label"
-  },
-  "product.specwithcode.imageAlt": {
-    "message": "Uma thread de worker do SpecWithCode relatando seu resultado, o comando que executou com a saída que imprimiu, nenhum bloqueio e dois arquivos alterados",
-    "description": "Alt text of the worker thread screenshot; keep SpecWithCode in English"
-  },
-  "product.specwithcode.caption": {
-    "message": "Uma thread de worker relata seu resultado, suas evidências e os arquivos que alterou. SpecWithCode 1.0.21, 15 de outubro de 2026.",
-    "description": "Screenshot caption; keep SpecWithCode and the version in English"
-  },
   "product.final.heading": {
     "message": "Escreva o que significa concluído e troque de ferramenta à vontade",
     "description": "Final call-to-action heading"
@@ -3291,21 +3279,109 @@
     "message": "Um app gratuito para {providers}, nas suas próprias máquinas e nas assinaturas que você já paga.",
     "description": "Hero lead; {providers} is a list of coding agent product names"
   },
-  "code.download.hero.shot.bar": {
-    "message": "Thread de worker",
-    "description": "Title bar label of the app screenshot"
+  "code.howItWorks.label": {
+    "message": "Como o SpecWithCode funciona: você envia um pedido ao coordenador; ele divide o trabalho entre workers, cada um responsável pelos próprios arquivos; os workers rodam ao mesmo tempo nos modelos que você escolheu; cada um relata os comandos que rodou, a saída e os arquivos alterados; então as verificações passam e o pull request é mesclado.",
+    "description": "Accessible description of the how it works animation. Keep SpecWithCode in English"
   },
-  "code.download.hero.shot.alt": {
-    "message": "SpecWithCode em um Mac: uma thread de worker do Codex relatando o comando que executou e os arquivos que alterou",
-    "description": "Alt text of the app screenshot. Keep product names in English"
+  "code.howItWorks.step.request": {
+    "message": "Pedido",
+    "description": "How it works animation, step 1 label: the user sends a request"
   },
-  "code.download.hero.shot.caption": {
-    "message": "SpecWithCode no macOS. Captura do app, 15 de outubro de 2026. {link}",
-    "description": "Screenshot caption; {link} links to the SpecWithCode page. Keep product names in English"
+  "code.howItWorks.step.split": {
+    "message": "Divisão",
+    "description": "How it works animation, step 2 label: the work is split between workers"
   },
-  "code.download.hero.shot.captionLink": {
+  "code.howItWorks.step.parallel": {
+    "message": "Em paralelo",
+    "description": "How it works animation, step 3 label: workers run at the same time"
+  },
+  "code.howItWorks.step.evidence": {
+    "message": "Evidências",
+    "description": "How it works animation, step 4 label: results come back with proof"
+  },
+  "code.howItWorks.step.ships": {
+    "message": "Entrega",
+    "description": "How it works animation, step 5 label: the change is merged and shipped"
+  },
+  "code.howItWorks.say.request": {
+    "message": "Você pede uma vez. O pedido chega ao coordenador.",
+    "description": "How it works animation, step 1 sentence"
+  },
+  "code.howItWorks.say.split": {
+    "message": "O coordenador divide o pedido entre workers. Cada um cuida dos próprios arquivos.",
+    "description": "How it works animation, step 2 sentence"
+  },
+  "code.howItWorks.say.parallel": {
+    "message": "Os workers rodam ao mesmo tempo, cada um no modelo que você escolheu.",
+    "description": "How it works animation, step 3 sentence"
+  },
+  "code.howItWorks.say.evidence": {
+    "message": "Cada um volta com os comandos que rodou, a saída deles e os arquivos alterados.",
+    "description": "How it works animation, step 4 sentence"
+  },
+  "code.howItWorks.say.ships": {
+    "message": "As verificações passam, o pull request é mesclado e a mudança é entregue.",
+    "description": "How it works animation, step 5 sentence"
+  },
+  "code.howItWorks.coordinator": {
+    "message": "Coordenador",
+    "description": "How it works animation: the coordinator thread that receives the request"
+  },
+  "code.howItWorks.owns": {
+    "message": "Responsável por {file}",
+    "description": "How it works animation: which file a worker is responsible for; {file} is a file name"
+  },
+  "code.howItWorks.running": {
+    "message": "Rodando",
+    "description": "How it works animation: worker status while it runs"
+  },
+  "code.howItWorks.done": {
+    "message": "Pronto",
+    "description": "How it works animation: worker status when finished"
+  },
+  "code.howItWorks.evidence.files": {
+    "message": "2 arquivos alterados",
+    "description": "How it works animation: number of files the worker changed"
+  },
+  "code.howItWorks.evidence.sent": {
+    "message": "Relatório enviado ao coordenador",
+    "description": "How it works animation: the worker sent its report to the coordinator thread"
+  },
+  "code.howItWorks.ship.pr": {
+    "message": "Pull request",
+    "description": "How it works animation: label of the pull request card"
+  },
+  "code.howItWorks.ship.readme": {
+    "message": "Exemplos do README rodados de novo",
+    "description": "How it works animation: a check that re-ran the README examples"
+  },
+  "code.howItWorks.ship.checks": {
+    "message": "Todas as verificações passaram",
+    "description": "How it works animation: every check on the pull request passed"
+  },
+  "code.howItWorks.ship.merged": {
+    "message": "Mesclado",
+    "description": "How it works animation: the pull request was merged"
+  },
+  "code.howItWorks.ship.shipped": {
+    "message": "Entregue",
+    "description": "How it works animation: final state, the change is live"
+  },
+  "code.howItWorks.caption": {
+    "message": "Ilustração feita com capturas do SpecWithCode {version}, 8 de novembro de 2026.",
+    "description": "Caption under the how it works animation; {version} is an app version. Keep SpecWithCode in English"
+  },
+  "code.howItWorks.captionLink": {
     "message": "Veja tudo o que ele faz",
-    "description": "Link from the screenshot caption to the SpecWithCode page"
+    "description": "Link from the how it works caption to the SpecWithCode page"
+  },
+  "code.howItWorks.pause": {
+    "message": "Pausar animação",
+    "description": "Button under the how it works animation that pauses it"
+  },
+  "code.howItWorks.play": {
+    "message": "Reproduzir animação",
+    "description": "Button under the how it works animation that resumes it"
   },
   "code.download.windowsLinux.title": {
     "message": "Windows e Linux",

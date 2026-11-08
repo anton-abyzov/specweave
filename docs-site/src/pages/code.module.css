@@ -258,10 +258,6 @@
   min-width: 0;
 }
 
-.heroShot :global(.wv-window__bar) span:last-child {
-  white-space: nowrap;
-}
-
 /* ---------- Heading beside a hairline list ---------- */
 .guidesTitle {
   margin-top: var(--wv-space-8);

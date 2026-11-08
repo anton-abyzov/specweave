@@ -1875,18 +1875,6 @@
     "message": "SpecWithCodeを見る",
     "description": "Link to the SpecWithCode page; keep SpecWithCode in English"
   },
-  "product.specwithcode.windowLabel": {
-    "message": "ワーカースレッド",
-    "description": "Window title bar label"
-  },
-  "product.specwithcode.imageAlt": {
-    "message": "成果を報告するSpecWithCodeのワーカースレッド。実行したコマンドとその出力、ブロッカーなし、変更された2つのファイルを表示",
-    "description": "Alt text of the worker thread screenshot; keep SpecWithCode in English"
-  },
-  "product.specwithcode.caption": {
-    "message": "ワーカースレッドが成果、証跡、変更したファイルを報告します。SpecWithCode 1.0.21、2026年10月15日。",
-    "description": "Screenshot caption; keep SpecWithCode and the version in English"
-  },
   "product.final.heading": {
     "message": "完了の定義を書き留めれば、ツールは自由に乗り換えられる",
     "description": "Final call-to-action heading"
@@ -2347,21 +2335,109 @@
     "message": "{providers}を、お使いのマシンと契約中のサブスクリプションで動かせる、1つの無料アプリ。",
     "description": "Hero lead; {providers} is a list of coding agent product names"
   },
-  "code.download.hero.shot.bar": {
-    "message": "ワーカースレッド",
-    "description": "Title bar label of the app screenshot"
+  "code.howItWorks.label": {
+    "message": "SpecWithCodeのしくみ：コーディネーターにリクエストを1つ送ると、作業をワーカーに分け、各ワーカーが自分のファイルを担当します。ワーカーは選んだモデルで同時に動き、実行したコマンド、その出力、変更したファイルを報告します。最後にチェックが通り、プルリクエストがマージされます。",
+    "description": "Accessible description of the how it works animation. Keep SpecWithCode in English"
   },
-  "code.download.hero.shot.alt": {
-    "message": "MacのSpecWithCode:実行したコマンドと変更したファイルを報告するCodexワーカースレッド",
-    "description": "Alt text of the app screenshot. Keep product names in English"
+  "code.howItWorks.step.request": {
+    "message": "リクエスト",
+    "description": "How it works animation, step 1 label: the user sends a request"
   },
-  "code.download.hero.shot.caption": {
-    "message": "macOSのSpecWithCode。アプリのキャプチャ、2026年10月15日。{link}",
-    "description": "Screenshot caption; {link} links to the SpecWithCode page. Keep product names in English"
+  "code.howItWorks.step.split": {
+    "message": "分担",
+    "description": "How it works animation, step 2 label: the work is split between workers"
   },
-  "code.download.hero.shot.captionLink": {
+  "code.howItWorks.step.parallel": {
+    "message": "並行",
+    "description": "How it works animation, step 3 label: workers run at the same time"
+  },
+  "code.howItWorks.step.evidence": {
+    "message": "証跡",
+    "description": "How it works animation, step 4 label: results come back with proof"
+  },
+  "code.howItWorks.step.ships": {
+    "message": "リリース",
+    "description": "How it works animation, step 5 label: the change is merged and shipped"
+  },
+  "code.howItWorks.say.request": {
+    "message": "頼むのは1回だけ。リクエストはコーディネーターに届きます。",
+    "description": "How it works animation, step 1 sentence"
+  },
+  "code.howItWorks.say.split": {
+    "message": "コーディネーターがワーカーに分担させます。各ワーカーは自分のファイルを担当します。",
+    "description": "How it works animation, step 2 sentence"
+  },
+  "code.howItWorks.say.parallel": {
+    "message": "ワーカーは同時に動きます。それぞれ選んだモデルで。",
+    "description": "How it works animation, step 3 sentence"
+  },
+  "code.howItWorks.say.evidence": {
+    "message": "各ワーカーは、実行したコマンド、その出力、変更したファイルを添えて報告します。",
+    "description": "How it works animation, step 4 sentence"
+  },
+  "code.howItWorks.say.ships": {
+    "message": "チェックが通り、プルリクエストがマージされ、変更がリリースされます。",
+    "description": "How it works animation, step 5 sentence"
+  },
+  "code.howItWorks.coordinator": {
+    "message": "コーディネーター",
+    "description": "How it works animation: the coordinator thread that receives the request"
+  },
+  "code.howItWorks.owns": {
+    "message": "{file} を担当",
+    "description": "How it works animation: which file a worker is responsible for; {file} is a file name"
+  },
+  "code.howItWorks.running": {
+    "message": "実行中",
+    "description": "How it works animation: worker status while it runs"
+  },
+  "code.howItWorks.done": {
+    "message": "完了",
+    "description": "How it works animation: worker status when finished"
+  },
+  "code.howItWorks.evidence.files": {
+    "message": "変更したファイル 2件",
+    "description": "How it works animation: number of files the worker changed"
+  },
+  "code.howItWorks.evidence.sent": {
+    "message": "コーディネーターに報告を送信",
+    "description": "How it works animation: the worker sent its report to the coordinator thread"
+  },
+  "code.howItWorks.ship.pr": {
+    "message": "プルリクエスト",
+    "description": "How it works animation: label of the pull request card"
+  },
+  "code.howItWorks.ship.readme": {
+    "message": "READMEの例を再実行",
+    "description": "How it works animation: a check that re-ran the README examples"
+  },
+  "code.howItWorks.ship.checks": {
+    "message": "すべてのチェックに合格",
+    "description": "How it works animation: every check on the pull request passed"
+  },
+  "code.howItWorks.ship.merged": {
+    "message": "マージ済み",
+    "description": "How it works animation: the pull request was merged"
+  },
+  "code.howItWorks.ship.shipped": {
+    "message": "リリース済み",
+    "description": "How it works animation: final state, the change is live"
+  },
+  "code.howItWorks.caption": {
+    "message": "SpecWithCode {version} のキャプチャから作成した図解、2026年11月8日。",
+    "description": "Caption under the how it works animation; {version} is an app version. Keep SpecWithCode in English"
+  },
+  "code.howItWorks.captionLink": {
     "message": "できることをすべて見る",
-    "description": "Link from the screenshot caption to the SpecWithCode page"
+    "description": "Link from the how it works caption to the SpecWithCode page"
+  },
+  "code.howItWorks.pause": {
+    "message": "アニメーションを一時停止",
+    "description": "Button under the how it works animation that pauses it"
+  },
+  "code.howItWorks.play": {
+    "message": "アニメーションを再生",
+    "description": "Button under the how it works animation that resumes it"
   },
   "code.download.windowsLinux.title": {
     "message": "WindowsとLinux",
