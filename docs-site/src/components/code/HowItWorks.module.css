@@ -1,0 +1,333 @@
+/*
+  How it works: five beats on one CSS timeline. Every animated element runs for --dur and starts
+  at  beat index * --dur / 5 + --o  through a negative delay, so the loop is deterministic and
+  --t (with the animations paused) shows any moment. The default styles are the finished state:
+  under prefers-reduced-motion nothing animates and the beats show as one static summary.
+  Weave tokens only, so light and dark both follow the site theme.
+*/
+
+.figure { margin: 0; min-width: 0; text-align: left; }
+
+.stage {
+  --dur: 16s;
+  --t: 0s;
+  container-type: inline-size;
+  position: relative;
+  min-width: 0;
+  padding: 16px 20px 20px;
+  border: 1px solid var(--wv-line);
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--wv-iris) 7%, transparent), transparent 60%),
+    radial-gradient(90% 70% at 100% 100%, color-mix(in srgb, var(--wv-pass) 5%, transparent), transparent 60%),
+    var(--wv-panel);
+  box-shadow: var(--wv-shadow-window);
+  color: var(--wv-ink);
+  font: 400 14px/20px var(--wv-font-sans);
+  overflow: hidden;
+}
+
+.caption { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 16px; padding-bottom: 2px; margin-top: 10px; font: 400 13px/18px var(--wv-font-sans); color: var(--wv-muted); }
+.caption > span { flex: 1 1 280px; min-width: 0; }
+.toggle { display: none; flex: none; align-items: center; gap: 5px; padding: 3px 10px; border: 1px solid var(--wv-line); border-radius: 999px; background: var(--wv-panel); color: var(--wv-ink); font: 600 12px/16px var(--wv-font-sans); cursor: pointer; }
+.toggle:hover { border-color: var(--wv-iris); color: var(--wv-iris-strong); }
+.toggle:focus-visible { outline: 2px solid var(--wv-iris); outline-offset: 2px; }
+
+.mono { font-family: var(--wv-font-mono); font-size: .9em; overflow-wrap: anywhere; }
+.meta { color: var(--wv-muted); font-size: 12px; line-height: 16px; }
+.plus { color: var(--wv-pass); font: 600 12px/16px var(--wv-font-mono); }
+.minus { color: var(--wv-fail); font: 600 12px/16px var(--wv-font-mono); }
+
+/* ---------- Step indicator (only while the loop plays) ---------- */
+.steps { display: none; }
+.steps ol { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.steps li { display: flex; align-items: center; gap: 7px; min-width: 0; margin: 0; font: 600 13px/18px var(--wv-font-sans); color: var(--wv-muted); }
+.steps li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.steps li b { display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--wv-sunken); color: var(--wv-muted); font: 700 11px/1 var(--wv-font-sans); }
+.track { display: block; height: 3px; margin-top: 10px; border-radius: 3px; background: var(--wv-sunken); overflow: hidden; }
+.fill { display: block; height: 100%; border-radius: inherit; background: var(--wv-iris); transform-origin: left center; }
+
+/* ---------- Beats: the static summary (reduced motion) ---------- */
+.beats { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
+.beat { display: flex; flex-direction: column; justify-content: flex-start; gap: 12px; align-self: start; min-width: 0; padding: 14px; border: 1px solid var(--wv-line); border-radius: 14px; background: var(--wv-canvas); }
+@container (min-width: 760px) {
+  .beats { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .request { grid-column: 1 / -1; }
+}
+
+.say { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font: 500 15px/22px var(--wv-font-sans); color: var(--wv-ink); text-wrap: balance; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/16px var(--wv-font-sans); color: var(--wv-iris-strong); }
+.tag b { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--wv-iris); color: var(--wv-on-iris); font-size: 11px; }
+
+.pop { display: block; min-width: 0; }
+/* The static summary keeps the captures; connectors, the drip and the pulse only exist in the loop. */
+.beat .link, .drop, .ring { display: none; }
+
+/* Captures: native 2x files shown at or below their CSS pixel size, swapped with the theme. */
+.shot {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: calc(var(--w) * 1px);
+  aspect-ratio: var(--w) / var(--h);
+  margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-md);
+  background: var(--wv-canvas);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--wv-ink) 6%, transparent), 0 8px 24px -12px color-mix(in srgb, var(--wv-ink) 18%, transparent);
+}
+.shot img { display: block; width: 100%; max-width: 100%; height: auto; }
+.dark { display: none !important; }
+:global(html[data-theme='dark']) .light { display: none !important; }
+:global(html[data-theme='dark']) .dark { display: block !important; }
+@media (prefers-color-scheme: dark) {
+  :global(html:not([data-theme])) .light { display: none !important; }
+  :global(html:not([data-theme])) .dark { display: block !important; }
+}
+
+/* Beat 1: request to coordinator */
+.request { align-items: center; }
+.beat > .say { align-self: stretch; }
+.request > .pop:first-of-type { width: 100%; }
+.node { position: relative; display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 8px; padding: 8px 16px; border: 1px solid var(--wv-line); border-radius: 999px; background: var(--wv-panel); box-shadow: var(--wv-shadow-overlay); }
+.node b { font-weight: 700; }
+.nodeDot { width: 8px; height: 8px; border-radius: 50%; background: var(--wv-pass); box-shadow: 0 0 0 3px var(--wv-pass-tint); }
+.ring { position: absolute; inset: -3px; border: 2px solid var(--wv-iris); border-radius: inherit; opacity: 0; pointer-events: none; }
+.drop { position: relative; width: 4px; height: 30px; background: radial-gradient(circle, var(--wv-iris) 1.6px, transparent 2.2px) 0 0 / 4px 8px repeat-y; }
+
+/* Beat 2 and 3: workers */
+.pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0; }
+.split .pair { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
+.card, .lane { display: flex; flex-direction: column; gap: 5px; min-width: 0; padding: 11px 13px; border: 1px solid var(--wv-line); border-radius: 12px; background: var(--wv-panel); }
+.card b, .lane b { font-weight: 700; font-size: 14px; line-height: 19px; }
+.owns { display: inline-flex; align-items: center; gap: 6px; width: fit-content; max-width: 100%; padding: 3px 9px; border-radius: var(--wv-radius-sm); background: var(--wv-iris-tint); color: var(--wv-iris-strong); font-size: 12px; line-height: 16px; font-weight: 600; }
+.owns svg { flex: none; }
+.owns .mono { overflow-wrap: normal; white-space: nowrap; }
+.laneHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.laneHead b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip { width: fit-content; max-width: 100%; padding: 2px 9px; border-radius: 999px; background: var(--wv-sunken); color: var(--wv-muted); font: 500 12px/18px var(--wv-font-sans); }
+.bar { position: relative; display: block; height: 6px; margin-top: 3px; border-radius: 6px; background: var(--wv-sunken); overflow: hidden; }
+.barFill { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, var(--wv-iris), color-mix(in srgb, var(--wv-iris) 55%, var(--wv-pass))); transform-origin: left center; }
+.barFill::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, color-mix(in srgb, white 45%, transparent), transparent) 0 0 / 40% 100% no-repeat; background-position: -60% 0; }
+.status { display: inline-grid; flex: none; font: 600 12px/16px var(--wv-font-sans); }
+.status > span { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: 4px; justify-self: end; }
+.running { color: var(--wv-iris-strong); opacity: 0; }
+.done { color: var(--wv-pass); }
+
+/* Connectors: a hairline rail with beads flowing along it. */
+.branch { display: block; width: 100%; height: 100%; overflow: visible; }
+.rail { fill: none; stroke: var(--wv-line); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.beads { fill: none; stroke: var(--wv-iris); stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 0 9; vector-effect: non-scaling-stroke; }
+
+/* Beat 4: evidence */
+.ticks { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; min-width: 0; }
+.ticks li { display: flex; align-items: flex-start; gap: 8px; margin: 0; min-width: 0; font-size: 14px; line-height: 20px; }
+.ticks li > svg { flex: none; margin-top: 2px; color: var(--wv-pass); }
+.ticks .meta { display: block; margin-top: 2px; }
+
+/* Beat 5: ships (drawn, not captured) */
+.ships { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 24px; }
+.ships > .say { flex-basis: 100%; }
+.pr { display: flex; flex-direction: column; gap: 10px; width: min(100%, 520px); min-width: 0; padding: 14px 16px; border: 1px solid var(--wv-line); border-radius: 14px; background: var(--wv-panel); box-shadow: var(--wv-shadow-overlay); }
+.prHead { display: inline-flex; align-items: center; gap: 6px; color: var(--wv-pass); }
+.prTitle { font-size: 15px; line-height: 21px; font-weight: 700; }
+.prFiles, .checks { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid var(--wv-line); }
+.prFiles > span { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
+.prFiles > span > svg { flex: none; color: var(--wv-muted); }
+.prFiles .plus { margin-left: auto; }
+.checks > span { display: flex; align-items: flex-start; gap: 8px; min-width: 0; font-size: 13px; line-height: 18px; }
+.checks svg { flex: none; margin-top: 1px; color: var(--wv-pass); }
+.prFoot { display: flex; flex-wrap: wrap; gap: 8px; }
+.prFoot :global(.wv-chip) { display: inline-flex; align-items: center; gap: 5px; }
+.prFoot :global(.wv-chip)::before { display: none; }
+.stamp { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 2px solid var(--wv-pass); border-radius: 12px; background: var(--wv-pass-tint); color: var(--wv-pass); font: 800 22px/28px var(--wv-font-sans); letter-spacing: -.01em; transform: rotate(-3deg); }
+
+/* ---------- The loop ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .steps { display: block; }
+  .tag { display: none; }
+  .beats { grid-template-columns: minmax(0, 1fr); gap: 0; margin-top: 16px; }
+  .beat { grid-area: 1 / 1; gap: 14px; padding: 0; border: 0; border-radius: 0; background: none; opacity: 0; }
+  .toggle { display: inline-flex; }
+  .say { align-items: center; justify-content: center; text-align: center; min-height: 44px; }
+  .beat .capture, .beat .link { display: block; min-width: 0; }
+  .drop { display: block; }
+  .ring { display: block; }
+
+  .beat, .anim, .steps li, .steps li b {
+    animation-duration: var(--dur);
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+    animation-timing-function: linear;
+    animation-delay: calc(var(--i, 0) * var(--dur) / 5 + var(--o, 0s) - var(--dur) - var(--t));
+  }
+  .beat { animation-name: hiwScene; }
+  .anim { animation-name: hiwPop; }
+  .steps li { animation-name: hiwStep; }
+  .steps li b { animation-name: hiwStepBadge; }
+  .fill { animation: hiwProgress var(--dur) linear infinite both; animation-delay: calc(0s - var(--t)); }
+  .ring { animation-name: hiwRing; }
+  .stamp { animation-name: hiwStamp; }
+  .barFill.fast { animation-name: hiwFillFast; }
+  .barFill.slow { animation-name: hiwFillSlow; }
+  .fast .running { animation-name: hiwRunFast; }
+  .slow .running { animation-name: hiwRunSlow; }
+  .fast .done { animation-name: hiwDoneFast; }
+  .slow .done { animation-name: hiwDoneSlow; }
+
+  /* Loops whose period divides --dur, so they stay on the same timeline. */
+  .beads { animation: hiwBeads calc(var(--dur) / 20) linear infinite; animation-delay: calc(0s - var(--t)); }
+  .drop { background: none; }
+  .drop::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle, var(--wv-iris) 1.6px, transparent 2.2px) 0 0 / 4px 8px repeat-y; animation: hiwFall calc(var(--dur) / 20) linear infinite; animation-delay: calc(0s - var(--t)); }
+  .running svg { animation: hiwSpin calc(var(--dur) / 20) linear infinite; animation-delay: calc(0s - var(--t)); }
+  .barFill::after { animation: hiwShimmer calc(var(--dur) / 16) linear infinite; animation-delay: calc(0s - var(--t)); }
+
+  /* Wide stage: capture beside its live part, joined by beaded connectors. */
+  .ships { align-content: flex-start; }
+  @container (min-width: 760px) {
+    /* Every beat starts at the top with the same sentence row, so the headline never jumps. */
+    .split, .parallel, .ships, .evidence { display: grid; grid-template-rows: auto auto; justify-content: center; align-content: start; align-items: stretch; gap: 14px 0; }
+    .split > :not(.say), .parallel > :not(.say), .ships > :not(.say), .evidence > :not(.say) { grid-row: 2; }
+    .ships { grid-template-columns: auto auto; align-items: center; column-gap: 24px; }
+    .split { grid-template-columns: minmax(0, 703px) 56px minmax(220px, 280px); }
+    .parallel { grid-template-columns: minmax(0, 459px) 56px minmax(260px, 340px); }
+    .split > .say, .parallel > .say, .ships > .say { grid-column: 1 / -1; grid-row: 1; }
+    .split .pair, .parallel .pair { grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr 1fr; gap: 0; align-items: center; }
+    .split .pair > *, .parallel .pair > * { margin-block: 6px; }
+    .link { align-self: stretch; }
+    .evidence { grid-template-columns: minmax(0, 440px) minmax(240px, 400px); align-items: center; column-gap: 32px; }
+    .evidence > .say { grid-column: 1 / -1; }
+    /* Beat 2 stops above the capture's Done rows: the workers only finish in beat 3. */
+    .wideCrop { max-width: calc(var(--ww) * 1px); aspect-ratio: var(--ww) / var(--wh); }
+    .wideCrop img { position: absolute; left: calc(-100% * var(--wx) / var(--ww)); top: calc(-100% * var(--wy) / var(--wh)); width: calc(100% * var(--w) / var(--ww)); max-width: none; }
+  }
+
+  /* Narrow stage (phones, side columns): one column. */
+  /* Hidden without display:none, so the connector keeps its animation at every width. */
+  @container (max-width: 759px) {
+    .beat .link { position: absolute; width: 0; height: 0; overflow: hidden; visibility: hidden; }
+    .ticks { gap: 7px; }
+    .ticks li { font-size: 13px; line-height: 18px; }
+  }
+
+  /* The label animation runs at every width; only very narrow stages give it a real range
+     (numbers only, plus the label of the step that is playing). */
+  .steps li span {
+    --label-on: 100%;
+    --label-off: 100%;
+    animation: hiwStepLabel var(--dur) linear infinite both;
+    animation-delay: calc(var(--i, 0) * var(--dur) / 5 - var(--dur) - var(--t));
+  }
+  @container (max-width: 420px) {
+    .steps ol { display: flex; justify-content: space-between; }
+    .steps li { flex: none; }
+    .steps li span { --label-on: 110px; --label-off: 0px; }
+  }
+
+  .stage[data-paused='true'] *,
+  .stage[data-paused='true'] *::before,
+  .stage[data-paused='true'] *::after { animation-play-state: paused !important; }
+}
+
+/* Narrow stage (phones, side columns), animated or not: captures cropped to their readable part. */
+@container (max-width: 759px) {
+  .crop { max-width: calc(var(--cw) * 1px); aspect-ratio: var(--cw) / var(--ch); }
+  .crop img { position: absolute; left: calc(-100% * var(--cx) / var(--cw)); top: calc(-100% * var(--cy) / var(--ch)); width: calc(100% * var(--w) / var(--cw)); max-width: none; }
+}
+
+@container (max-width: 420px) {
+  .steps ol { gap: 4px; }
+  .steps li { gap: 5px; font-size: 12px; }
+  .steps li b { width: 17px; height: 17px; font-size: 10px; }
+  .say { font-size: 14px; line-height: 20px; }
+  .card, .lane, .pr { padding: 10px 11px; }
+  .stamp { font-size: 19px; padding: 8px 14px; }
+}
+@media (max-width: 760px) {
+  .stage { padding: 12px 12px 14px; border-radius: 16px; }
+}
+
+/* 1% of --dur is 0.16 s; each beat owns 20%. */
+@keyframes hiwScene {
+  0% { opacity: 0; transform: translate3d(0, 10px, 0); animation-timing-function: cubic-bezier(.2, .7, .2, 1); }
+  3% { opacity: 1; transform: none; }
+  19% { opacity: 1; transform: none; animation-timing-function: ease-in; }
+  21%, 100% { opacity: 0; transform: translate3d(0, -8px, 0); }
+}
+@keyframes hiwPop {
+  0% { opacity: 0; transform: translate3d(0, 8px, 0) scale(.97); animation-timing-function: cubic-bezier(.2, .8, .2, 1.15); }
+  2.5% { opacity: 1; transform: none; }
+  21% { opacity: 1; transform: none; }
+  21.5%, 100% { opacity: 0; transform: none; }
+}
+@keyframes hiwStamp {
+  0% { opacity: 0; transform: rotate(-8deg) scale(1.5); animation-timing-function: cubic-bezier(.3, 1.4, .5, 1); }
+  2.5% { opacity: 1; transform: rotate(-3deg) scale(1); }
+  21% { opacity: 1; transform: rotate(-3deg) scale(1); }
+  21.5%, 100% { opacity: 0; transform: rotate(-3deg); }
+}
+/* Fixed pixel growth, so a wide pill and a two-line pill pulse the same distance. */
+@keyframes hiwRing {
+  0% { opacity: .8; inset: -3px; }
+  9%, 100% { opacity: 0; inset: -11px; }
+}
+@keyframes hiwStep {
+  0%, 19.4% { color: var(--wv-ink); }
+  20%, 100% { color: var(--wv-muted); }
+}
+@keyframes hiwStepBadge {
+  0%, 19.4% { background: var(--wv-iris); color: var(--wv-on-iris); }
+  20%, 100% { background: var(--wv-sunken); color: var(--wv-muted); }
+}
+@keyframes hiwStepLabel {
+  0%, 19.4% { max-width: var(--label-on); }
+  20%, 100% { max-width: var(--label-off); }
+}
+@keyframes hiwProgress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+/* Beat 3: the fast worker is done at about 2.0 s into the beat, the slow one at about 2.45 s,
+   so both show Done for over half a second before the scene fades at 3.04 s. */
+@keyframes hiwFillFast {
+  0% { transform: scaleX(.04); animation-timing-function: cubic-bezier(.4, 0, .4, 1); }
+  9.5%, 100% { transform: scaleX(1); }
+}
+@keyframes hiwFillSlow {
+  0% { transform: scaleX(.04); animation-timing-function: cubic-bezier(.4, 0, .4, 1); }
+  11.5%, 100% { transform: scaleX(1); }
+}
+@keyframes hiwRunFast {
+  0%, 9.5% { opacity: 1; }
+  10%, 100% { opacity: 0; }
+}
+@keyframes hiwRunSlow {
+  0%, 11.5% { opacity: 1; }
+  12%, 100% { opacity: 0; }
+}
+@keyframes hiwDoneFast {
+  0%, 9.5% { opacity: 0; transform: scale(.6); }
+  10.5%, 21% { opacity: 1; transform: none; }
+  21.5%, 100% { opacity: 0; }
+}
+@keyframes hiwDoneSlow {
+  0%, 11.5% { opacity: 0; transform: scale(.6); }
+  12.5%, 21% { opacity: 1; transform: none; }
+  21.5%, 100% { opacity: 0; }
+}
+@keyframes hiwBeads {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -9; }
+}
+@keyframes hiwFall {
+  from { background-position: 0 0; }
+  to { background-position: 0 8px; }
+}
+@keyframes hiwSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes hiwShimmer {
+  from { background-position: -60% 0; }
+  to { background-position: 220% 0; }
+}

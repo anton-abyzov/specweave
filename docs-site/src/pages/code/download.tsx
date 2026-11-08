@@ -9,6 +9,7 @@ import {ChevronDown, Download, Info, ShieldCheck} from 'lucide-react';
 import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../../data/specwithcodeRelease';
 import {providerSummary} from '../../data/tools';
 import MobileStores from '../../components/code/MobileStores';
+import HowItWorks from '../../components/code/HowItWorks';
 import {ALL_DOWNLOADS_ANCHOR, MAC_INSTALLER, useSpecWithCodeInstaller} from '../../data/specwithcodeInstaller';
 import styles from '../code.module.css';
 
@@ -312,11 +313,7 @@ export default function CodeDownload() {
           <HeroDownload />
         </div>
         <div className={styles.heroShot}>
-          <figure className="wv-window">
-            <div className="wv-window__bar"><span><Translate id="code.download.hero.shot.bar" description="Title bar label of the app screenshot">Worker thread</Translate></span><span>Codex, GPT-6.1-Sol</span></div>
-            <img src="/img/studio/code-hero-worker-20261015.webp" width="920" height="1130" alt={translate({id: 'code.download.hero.shot.alt', message: 'SpecWithCode on a Mac: a Codex worker thread reporting the command it ran and the files it changed', description: 'Alt text of the app screenshot. Keep product names in English'})} />
-            <figcaption><Translate id="code.download.hero.shot.caption" description="Screenshot caption; {link} links to the SpecWithCode page. Keep product names in English" values={{link: <Link className="wv-link" to="/code/"><Translate id="code.download.hero.shot.captionLink" description="Link from the screenshot caption to the SpecWithCode page">See everything it does</Translate></Link>}}>{'SpecWithCode on macOS. App capture, 15 October 2026. {link}'}</Translate></figcaption>
-          </figure>
+          <HowItWorks />
         </div>
       </header>
 

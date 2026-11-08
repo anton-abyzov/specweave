@@ -1875,18 +1875,6 @@
     "message": "了解 SpecWithCode",
     "description": "Link to the SpecWithCode page; keep SpecWithCode in English"
   },
-  "product.specwithcode.windowLabel": {
-    "message": "工作线程",
-    "description": "Window title bar label"
-  },
-  "product.specwithcode.imageAlt": {
-    "message": "一个 SpecWithCode 工作线程汇报结果：它运行的命令及打印的输出、无阻塞项、两个已更改的文件",
-    "description": "Alt text of the worker thread screenshot; keep SpecWithCode in English"
-  },
-  "product.specwithcode.caption": {
-    "message": "工作线程汇报其结果、证据和更改的文件。SpecWithCode 1.0.21，2026 年 10 月 15 日。",
-    "description": "Screenshot caption; keep SpecWithCode and the version in English"
-  },
   "product.final.heading": {
     "message": "先写下“完成”的含义，再自由切换工具",
     "description": "Final call-to-action heading"
@@ -3135,21 +3123,109 @@
     "message": "一个免费应用，统一使用 {providers}，运行在你自己的机器上，用你已在付费的订阅。",
     "description": "Hero lead; {providers} is a list of coding agent product names"
   },
-  "code.download.hero.shot.bar": {
-    "message": "工作线程",
-    "description": "Title bar label of the app screenshot"
+  "code.howItWorks.label": {
+    "message": "SpecWithCode 的工作方式：你向协调器发送一个请求；它把工作拆给多个工作线程，每个负责自己的文件；工作线程在你选定的模型上同时运行；每个都会报告运行的命令、输出和改动的文件；最后检查通过，拉取请求被合并。",
+    "description": "Accessible description of the how it works animation. Keep SpecWithCode in English"
   },
-  "code.download.hero.shot.alt": {
-    "message": "Mac 上的 SpecWithCode：一个 Codex 工作线程汇报它运行的命令和更改的文件",
-    "description": "Alt text of the app screenshot. Keep product names in English"
+  "code.howItWorks.step.request": {
+    "message": "请求",
+    "description": "How it works animation, step 1 label: the user sends a request"
   },
-  "code.download.hero.shot.caption": {
-    "message": "macOS 上的 SpecWithCode。应用截图，2026 年 10 月 15 日。{link}",
-    "description": "Screenshot caption; {link} links to the SpecWithCode page. Keep product names in English"
+  "code.howItWorks.step.split": {
+    "message": "拆分",
+    "description": "How it works animation, step 2 label: the work is split between workers"
   },
-  "code.download.hero.shot.captionLink": {
+  "code.howItWorks.step.parallel": {
+    "message": "并行",
+    "description": "How it works animation, step 3 label: workers run at the same time"
+  },
+  "code.howItWorks.step.evidence": {
+    "message": "证据",
+    "description": "How it works animation, step 4 label: results come back with proof"
+  },
+  "code.howItWorks.step.ships": {
+    "message": "发布",
+    "description": "How it works animation, step 5 label: the change is merged and shipped"
+  },
+  "code.howItWorks.say.request": {
+    "message": "你只需提一次。请求会交给协调器。",
+    "description": "How it works animation, step 1 sentence"
+  },
+  "code.howItWorks.say.split": {
+    "message": "协调器把它拆给多个工作线程，每个负责自己的文件。",
+    "description": "How it works animation, step 2 sentence"
+  },
+  "code.howItWorks.say.parallel": {
+    "message": "工作线程同时运行，各自用你选定的模型。",
+    "description": "How it works animation, step 3 sentence"
+  },
+  "code.howItWorks.say.evidence": {
+    "message": "每个工作线程都会带回运行的命令、输出和改动的文件。",
+    "description": "How it works animation, step 4 sentence"
+  },
+  "code.howItWorks.say.ships": {
+    "message": "检查通过，拉取请求合并，改动发布上线。",
+    "description": "How it works animation, step 5 sentence"
+  },
+  "code.howItWorks.coordinator": {
+    "message": "协调器",
+    "description": "How it works animation: the coordinator thread that receives the request"
+  },
+  "code.howItWorks.owns": {
+    "message": "负责 {file}",
+    "description": "How it works animation: which file a worker is responsible for; {file} is a file name"
+  },
+  "code.howItWorks.running": {
+    "message": "运行中",
+    "description": "How it works animation: worker status while it runs"
+  },
+  "code.howItWorks.done": {
+    "message": "完成",
+    "description": "How it works animation: worker status when finished"
+  },
+  "code.howItWorks.evidence.files": {
+    "message": "改动了 2 个文件",
+    "description": "How it works animation: number of files the worker changed"
+  },
+  "code.howItWorks.evidence.sent": {
+    "message": "报告已发给协调器",
+    "description": "How it works animation: the worker sent its report to the coordinator thread"
+  },
+  "code.howItWorks.ship.pr": {
+    "message": "拉取请求",
+    "description": "How it works animation: label of the pull request card"
+  },
+  "code.howItWorks.ship.readme": {
+    "message": "重新运行 README 示例",
+    "description": "How it works animation: a check that re-ran the README examples"
+  },
+  "code.howItWorks.ship.checks": {
+    "message": "所有检查通过",
+    "description": "How it works animation: every check on the pull request passed"
+  },
+  "code.howItWorks.ship.merged": {
+    "message": "已合并",
+    "description": "How it works animation: the pull request was merged"
+  },
+  "code.howItWorks.ship.shipped": {
+    "message": "已发布",
+    "description": "How it works animation: final state, the change is live"
+  },
+  "code.howItWorks.caption": {
+    "message": "基于 SpecWithCode {version} 截图制作的示意图，2026 年 11 月 8 日。",
+    "description": "Caption under the how it works animation; {version} is an app version. Keep SpecWithCode in English"
+  },
+  "code.howItWorks.captionLink": {
     "message": "查看它的全部功能",
-    "description": "Link from the screenshot caption to the SpecWithCode page"
+    "description": "Link from the how it works caption to the SpecWithCode page"
+  },
+  "code.howItWorks.pause": {
+    "message": "暂停动画",
+    "description": "Button under the how it works animation that pauses it"
+  },
+  "code.howItWorks.play": {
+    "message": "播放动画",
+    "description": "Button under the how it works animation that resumes it"
   },
   "code.download.windowsLinux.title": {
     "message": "Windows 和 Linux",

@@ -750,7 +750,7 @@
   grid-column: span 3;
 }
 
-/* Real capture in a window frame. */
+/* How it works illustration column, beside the product copy. */
 .window {
   align-self: start;
   max-width: 520px;

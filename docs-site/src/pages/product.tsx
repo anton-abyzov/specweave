@@ -3,6 +3,7 @@ import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Translate, {translate} from '@docusaurus/Translate';
 import ContinuityBoard from '../components/sections/ContinuityBoard';
+import HowItWorks from '../components/code/HowItWorks';
 import styles from './continuity.module.css';
 import s from './product.module.css';
 import {Capture, ExtensionStrip, motion as m, useActiveBeat, useGlow} from '../components/sections/Motion';
@@ -379,11 +380,7 @@ export default function Product() {
           <p><Translate id="product.specwithcode.body" description="Section body; keep SpecWithCode in English">{"A SpecWithCode worker thread works on one branch and opens one pull request, which is exactly an increment's shape. Its checklist is the increment's task list, and its ledger writes are the commands on this page. Threads leave each other notes in the ledger instead of editing each other's files."}</Translate></p>
           <Link className={styles.textLink} to="/code/"><Translate id="product.specwithcode.link" description="Link to the SpecWithCode page; keep SpecWithCode in English">See SpecWithCode</Translate></Link>
         </div>
-        <figure className={`wv-window ${s.window} ${m.unveil}`}>
-          <div className="wv-window__bar"><span>SpecWithCode</span><span><Translate id="product.specwithcode.windowLabel" description="Window title bar label">Worker thread</Translate></span></div>
-          <img src="/img/studio/flow-worker-claude-20261015.webp" alt={translate({id: 'product.specwithcode.imageAlt', message: 'A SpecWithCode worker thread reporting its outcome, the command it ran with the output it printed, no blockers, and two changed files', description: 'Alt text of the worker thread screenshot; keep SpecWithCode in English'})} width="691" height="797" loading="lazy" />
-          <figcaption><Translate id="product.specwithcode.caption" description="Screenshot caption; keep SpecWithCode and the version in English">A worker thread reports its outcome, its evidence and the files it changed. SpecWithCode 1.0.21, 15 October 2026.</Translate></figcaption>
-        </figure>
+        <HowItWorks showLink={false} className={`${s.window} ${m.unveil}`} />
       </section>
 
       <section className={`${styles.finalCta} ${s.final}`}>
