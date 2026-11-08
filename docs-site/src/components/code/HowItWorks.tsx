@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Translate, {translate} from '@docusaurus/Translate';
-import {Check, CircleCheck, FileCode2, FileText, GitMerge, GitPullRequest, LoaderCircle, Pause, Play} from 'lucide-react';
+import {ArrowUp, Check, CircleCheck, FileCode2, FileText, GitMerge, GitPullRequest, LoaderCircle, Pause, Play} from 'lucide-react';
 import styles from './HowItWorks.module.css';
 
 /*
@@ -52,6 +52,9 @@ function Shot({name, w, h, crop, wide, eager}: ShotProps) {
     <img className={styles.dark} src={dark} {...common} loading="lazy" fetchPriority={eager ? 'low' : undefined} />
   </span>;
 }
+
+/** The request typed in the captured composer, word for word. */
+const REQUEST = 'Add a --currency flag and a README usage section. Start a Codex worker for price.py and a Claude Code worker for README.md in parallel, and have each run the script and report the command and its output.';
 
 /** Start offset (seconds into its beat) for an animated element. */
 const at = (o: number) => ({'--o': `${o}s`} as React.CSSProperties);
@@ -156,7 +159,14 @@ export default function HowItWorks({showLink = true, className}: {showLink?: boo
 
       <div className={styles.beats}>
         <Beat i={0} id="request" className={styles.request}>
-          <span className={clsx(styles.pop, styles.anim)} style={at(0.15)}><Shot name="1-composer" w={715} h={196} crop={[0, 0, 432, 196]} eager />{/* 432 ends both text lines between words */}</span>
+          <span className={clsx(styles.pop, styles.anim)} style={at(0.15)}>
+            <span className={styles.composerWide}><Shot name="1-composer" w={715} h={196} eager /></span>
+            {/* Narrow stages: the request as live text so it wraps, above the capture's real model chip. */}
+            <span className={styles.composerNarrow}>
+              <span className={styles.composerBox}><span>{REQUEST}</span><span className={styles.send} aria-hidden="true"><ArrowUp size={14} strokeWidth={2.5} /></span></span>
+              <Shot name="1-composer" w={715} h={196} crop={[34, 146, 228, 44]} />
+            </span>
+          </span>
           <span className={clsx(styles.drop, styles.anim)} style={at(0.8)} aria-hidden="true" />
           <span className={clsx(styles.node, styles.pop, styles.anim)} style={at(1.3)}>
             <span className={clsx(styles.ring, styles.anim)} style={at(1.4)} />
