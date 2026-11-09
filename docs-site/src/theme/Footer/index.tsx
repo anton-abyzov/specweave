@@ -147,6 +147,10 @@ function getColumns() {
           label: translate({id: 'footer.link.project.support', message: 'Support', description: 'Footer link label'}),
           to: '/support',
         },
+        {
+          label: translate({id: 'footer.link.project.sendFeedback', message: 'Send feedback', description: 'Footer link to the SpecWithCode GitHub issue forms'}),
+          href: 'https://github.com/anton-abyzov/specwithcode/issues/new/choose',
+        },
       ],
     },
   ];
@@ -177,6 +181,14 @@ function XTwitterIcon() {
   );
 }
 
+function YouTubeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31.3 31.3 0 000 12a31.3 31.3 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31.3 31.3 0 0024 12a31.3 31.3 0 00-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z" />
+    </svg>
+  );
+}
+
 function getSocialLinks() {
   return [
     {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave', icon: GitHubIcon},
@@ -190,6 +202,7 @@ function getSocialLinks() {
       icon: SupportIcon,
     },
     {label: 'X / Twitter', href: 'https://x.com/aabyzov', icon: XTwitterIcon},
+    {label: 'YouTube', href: 'https://www.youtube.com/@antonabyzov', icon: YouTubeIcon},
   ];
 }
 
