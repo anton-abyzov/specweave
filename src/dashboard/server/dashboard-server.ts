@@ -1,5 +1,7 @@
 import { registerWorkRoutes } from './routes/work-routes.js';
 import { registerProjectHubRoutes } from './routes/project-hub-routes.js';
+import { matchProjectId, pathToProjectId } from '../project-id.js';
+import os from 'node:os';
 import { registerPlanRoutes } from './routes/plan-routes.js';
 import { localRequestError } from './local-request.js';
 import { getIncrementDetail } from './data/work-projection.js';
@@ -100,7 +102,8 @@ export class DashboardServer {
   }
 
   /** Add a new project to the dashboard */
-  addProject(projectRoot: string): ProjectInfo {
+  addProject(requestedRoot: string): ProjectInfo {
+    const projectRoot = canonicalRoot(requestedRoot);
     const id = pathToProjectId(projectRoot);
     if (this.projects.has(id)) {
       return this.getProjectInfo(id, projectRoot);
@@ -172,7 +175,7 @@ export class DashboardServer {
       name = path.basename(projectRoot);
     }
 
-    return { id, path: projectRoot, name, hasSpecweave: true };
+    return { id, path: projectRoot, name, hasSpecweave: true, machine: os.hostname() };
   }
 
   async start(): Promise<DashboardServerInstance> {
@@ -316,8 +319,12 @@ export class DashboardServer {
     });
 
     if (projectId) {
-      const project = this.projects.get(projectId);
-      if (project) return pick(projectId, project);
+      // A link made on another machine names that machine's path; the folder name finds the local checkout.
+      const match = matchProjectId(
+        projectId,
+        [...this.projects].map(([id, project]) => ({ id, path: project.root })),
+      );
+      if (match) return pick(match.id, this.projects.get(match.id)!);
     }
 
     const first = this.projects.entries().next().value;
@@ -1305,8 +1312,13 @@ function safeParseInt(raw: string | null, defaultVal: number, min: number, max: 
   return Math.min(parsed, max);
 }
 
-function pathToProjectId(p: string): string {
-  return p.replace(/^\//, '').replace(/\//g, '-');
+/** The real folder behind a path: a symlinked spelling must not register the same project twice. */
+function canonicalRoot(projectRoot: string): string {
+  try {
+    return fs.realpathSync(projectRoot);
+  } catch {
+    return path.resolve(projectRoot);
+  }
 }
 
 /** Deep merge objects (target mutated). Filters prototype pollution keys. */

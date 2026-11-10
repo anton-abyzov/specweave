@@ -97,10 +97,28 @@ try {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(instance.url);
-  await page.getByRole('heading', { name: 'Work, without the reset.' }).waitFor();
-  await page.getByRole('button', { name: 'Keep checkout work portable', exact: true }).waitFor();
-  const card = page.locator('[data-intent-id="increment:0001-portable"]');
+  await page.getByRole('heading', { name: 'Work board', exact: true }).waitFor();
+  const realRoot = fs.realpathSync(root);
+  assert.equal(await page.locator('.work-header-path code').innerText(), realRoot, 'header names the folder on disk');
+  const cardOf = (id) => page.locator(`.wb-card[data-intent-id="${id}"]`);
+  const card = cardOf('increment:0001-portable');
   await card.getByText('1/2 tasks', { exact: true }).waitFor();
+  await card.getByRole('progressbar').waitFor();
+  // A paused increment sits in Blocked and says why.
+  await cardOf('increment:0002-auth').getByText('Paused', { exact: true }).waitFor();
+  const layout = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.wb-card')].flatMap((el) => {
+        const box = el.getBoundingClientRect();
+        const lane = el.closest('.wb-cards');
+        const inner = lane.getBoundingClientRect().left + lane.clientLeft + lane.clientWidth;
+        const bar = el.querySelector('.wb-bar')?.getBoundingClientRect().height ?? 6;
+        return el.scrollWidth > el.clientWidth || box.right > inner + 0.5 || bar < 6
+          ? [`${el.dataset.intentId}: card ${box.right} lane ${inner} bar ${bar}`]
+          : [];
+      }),
+    );
+  assert.deepEqual(await layout(), [], 'no card is clipped, under a scrollbar or with a thin progress bar');
   await page.getByRole('button', { name: '+ New intent', exact: true }).click();
   const create = page.getByRole('dialog', { name: 'Capture an intent' });
   await create.getByLabel('Title', { exact: true }).fill('Improve the handoff copy');
@@ -109,18 +127,29 @@ try {
     .fill('Make the next step clear before someone changes coding tools.');
   await create.getByRole('button', { name: 'Create intent', exact: true }).click();
   await create.waitFor({ state: 'hidden' });
-  await page.getByRole('button', { name: 'Improve the handoff copy', exact: true }).waitFor();
-  const newCard = page
-    .locator('article')
-    .filter({ has: page.getByRole('button', { name: 'Improve the handoff copy', exact: true }) });
-  await newCard.getByRole('combobox').selectOption('active');
+  const newCard = page.locator('.wb-card').filter({ hasText: 'Improve the handoff copy' });
+  await newCard.waitFor();
+  // Keyboard: Enter on the card opens the panel; the state control lives there.
+  await newCard.focus();
+  await page.keyboard.press('Enter');
+  const detail = page.getByRole('dialog', { name: 'Improve the handoff copy' });
+  await detail.getByLabel('State for Improve the handoff copy').selectOption('active');
   await page.getByRole('status').filter({ hasText: 'moved to In progress' }).waitFor();
+  assert.match(page.url(), /[?&]item=/, 'the open item is in the address');
   await page.reload();
-  assert.equal(await page.getByLabel('State for Improve the handoff copy').inputValue(), 'active');
+  assert.equal(await detail.getByLabel('State for Improve the handoff copy').inputValue(), 'active');
+  // Focus lands on the panel's close button once it is wired up; Escape then closes it.
+  await page.waitForFunction(() => document.activeElement?.getAttribute('aria-label') === 'Close details');
+  await page.keyboard.press('Escape');
+  await detail.waitFor({ state: 'detached' });
+  assert.doesNotMatch(page.url(), /[?&]item=/);
   await newCard.dragTo(page.getByRole('region', { name: 'Review column' }));
   await page.getByRole('status').filter({ hasText: 'moved to Review' }).waitFor();
-  await page.getByRole('button', { name: 'Improve the handoff copy', exact: true }).click();
-  const detail = page.getByRole('dialog', { name: 'Improve the handoff copy' });
+  // The card leaves its old column with an exit animation; wait for the one in Review.
+  await page.getByRole('region', { name: 'Review column' }).locator('.wb-card').filter({ hasText: 'Improve the handoff copy' }).waitFor();
+  await page.waitForFunction(() => document.querySelectorAll('.wb-card[data-intent-id]').length === new Set([...document.querySelectorAll('.wb-card')].map((el) => el.dataset.intentId)).size);
+  await newCard.click();
+  await detail.getByRole('tab', { name: /^Agents/ }).click();
   await detail.getByText('+ Record a setup or continuation', { exact: true }).click();
   await detail.getByLabel('Harness', { exact: true }).fill('Claude Code');
   await detail.getByLabel('Model', { exact: true }).fill('opus-test');
@@ -141,8 +170,23 @@ try {
   await detail.getByText('observed-model', { exact: true }).waitFor();
   await detail.getByText('Observed', { exact: true }).waitFor();
   await detail.screenshot({ path: path.join(artifacts, 'execution-history.png') });
-  await detail.getByRole('button', { name: 'Close dialog' }).click();
-  // External ledger-only edit: no tasks.md render and no reload.
+  await detail.getByRole('button', { name: 'Close details' }).click();
+  await detail.waitFor({ state: 'detached' });
+  // The panel of an increment: spec, criteria, tasks and the ledger timeline, all from its folder.
+  await card.click();
+  const panel = page.getByRole('dialog', { name: 'Keep checkout work portable' });
+  await panel.getByText(path.join(realRoot, '.specweave/increments/0001-portable'), { exact: true }).waitFor();
+  await panel.getByRole('tab', { name: /^Spec/ }).click();
+  await panel.getByRole('heading', { name: 'Acceptance Criteria' }).waitFor();
+  await panel.getByRole('tab', { name: /^Criteria/ }).click();
+  await panel.getByText('Expected outcome').waitFor();
+  await panel.getByText('Not met', { exact: true }).waitFor();
+  await panel.getByRole('tab', { name: /^Tasks/ }).click();
+  await panel.getByText('Build', { exact: true }).waitFor();
+  await panel.getByRole('tabpanel', { name: 'Tasks' }).getByText('In progress', { exact: true }).waitFor();
+  await panel.getByRole('tab', { name: /^Timeline/ }).click();
+  await panel.getByText('abc1234; npm test exit 0', { exact: true }).waitFor();
+  // External ledger-only edit: no tasks.md render and no reload. Board and open panel both follow.
   fs.appendFileSync(
     path.join(active, 'ledger.jsonl'),
     JSON.stringify({
@@ -153,6 +197,11 @@ try {
       evidence: 'abc5678; npm test exit 0',
     }) + '\n',
   );
+  await panel.getByText('abc5678; npm test exit 0', { exact: true }).waitFor({ timeout: 8000 });
+  await panel.getByText('2/2 tasks · 1/1 criteria', { exact: true }).waitFor({ timeout: 8000 });
+  await panel.screenshot({ path: path.join(artifacts, 'detail-panel.png') });
+  await panel.getByRole('button', { name: 'Close details' }).click();
+  await panel.waitFor({ state: 'detached' });
   await card.getByText('2/2 tasks', { exact: true }).waitFor({ timeout: 8000 });
   fs.writeFileSync(
     path.join(active, 'spec.md'),
@@ -163,12 +212,49 @@ try {
     path.join(active, 'reports/verify.json'),
     JSON.stringify({ ok: true, ranAt: new Date().toISOString() }),
   );
-  await card.getByText('✓ Verified', { exact: true }).waitFor({ timeout: 8000 });
+  await card.getByText('Verified', { exact: true }).waitFor({ timeout: 8000 });
   await page.screenshot({ path: path.join(artifacts, 'work-board-desktop.png'), fullPage: true });
-  await card.getByRole('link', { name: 'Evidence for Keep checkout work portable' }).click();
+  // Filters: every count comes from the same set, the address carries them, Clear resets.
+  // Cards leave with an exit animation, so counts are awaited, not read once.
+  const shows = (n) => page.waitForFunction((count) => document.querySelectorAll('.wb-card').length === count, n);
+  const total = await page.locator('.wb-card').count();
+  await page.getByLabel('Search work').fill('release');
+  await page.getByText('1 item shown of', { exact: false }).waitFor();
+  await shows(1);
+  await page.waitForURL(/[?&]q=release/);
+  await page.getByRole('button', { name: /^Clear 1 filter/ }).click();
+  await shows(total);
+  await page.getByRole('group', { name: 'Filter by state' }).getByRole('button', { name: /Blocked/ }).click();
+  await page.waitForURL(/[?&]state=blocked/);
+  await shows(1);
+  assert.equal(await page.locator('.wb-board').getByRole('region').count(), 1, 'only the selected column is shown');
+  await page.getByLabel('Agent', { exact: true }).selectOption('codex');
+  await page.getByText('No work matches these filters').waitFor();
+  await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
+  await page.getByLabel('Verification', { exact: true }).selectOption('passed');
+  await shows(2);
+  await page.getByRole('button', { name: /^Clear 1 filter/ }).click();
+  await page.getByLabel('Sort by').selectOption('id');
+  await page.getByRole('button', { name: 'List', exact: true }).click();
+  const rows = page.locator('.wb-list tbody tr');
+  await rows.first().waitFor();
+  assert.equal(await rows.count(), total, 'the list shows the same items as the board');
+  assert.match(await rows.first().innerText(), /^0004/, 'ID sort, newest first');
+  await page.getByRole('button', { name: /^ID/ }).click();
+  await page.waitForURL(/[?&]dir=asc/);
+  // The header flips the order.
+  await page.waitForFunction(() => document.querySelector('.wb-list tbody tr')?.textContent?.startsWith('0001'));
+  await page.screenshot({ path: path.join(artifacts, 'work-list-desktop.png'), fullPage: true });
+  await rows.first().click();
+  await panel.getByRole('link', { name: /Open the evidence page for 0001/ }).click();
   await page.getByText('Verification and specification', { exact: true }).waitFor();
   await page.getByText('Task evidence', { exact: true }).click();
   await page.getByText('abc5678; npm test exit 0', { exact: true }).waitFor();
+  // A link made on another machine names that machine's path: the local checkout is shown and named.
+  await page.goto(`${instance.url}/?project=Users-someone-Projects-${path.basename(realRoot)}`);
+  await page.getByRole('status').filter({ hasText: 'another machine' }).waitFor();
+  await page.waitForURL((url) => url.searchParams.get('project') === realRoot.replace(/^\//, '').replace(/\//g, '-'));
+  await card.waitFor();
   const rejected = await fetch(`${instance.url}/api/work`, {
     method: 'POST',
     headers: { Origin: 'https://foreign.example', 'Content-Type': 'application/json' },
@@ -217,10 +303,14 @@ try {
         ok: true,
         checks: [
           'modern ledger',
+          'no clipped cards',
           'create intent',
-          'accessible move',
-          'persist reload',
+          'keyboard open and move',
+          'deep link reload',
           'drag drop',
+          'detail panel: spec, criteria, tasks, timeline',
+          'filters, sort and list view',
+          'foreign project link',
           'cross-harness continuation',
           'explicit local session association',
           'live ledger/spec/verification refresh',

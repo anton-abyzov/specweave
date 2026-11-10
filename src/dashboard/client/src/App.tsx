@@ -1,4 +1,5 @@
-import { WorkPage } from './pages/WorkPage';
+import { WorkBoardPage } from './pages/work/WorkBoardPage';
+import { SessionsPage } from './pages/SessionsPage';
 import { ProjectHubPage } from './pages/ProjectHubPage';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
@@ -39,10 +40,10 @@ export default function App() {
           <main className="flex-1 overflow-y-auto">
             <ErrorBoundary resetKey={location.pathname}>
             <Routes>
-              <Route path="/" element={<WorkPage />} />
+              <Route path="/" element={<WorkBoardPage />} />
               <Route path="/project" element={<ProjectHubPage />} />
               <Route path="/timeline" element={<TimelinePage />} />
-              <Route path="/sessions" element={<WorkPage sessionsOnly />} />
+              <Route path="/sessions" element={<SessionsPage />} />
               <Route path="/overview" element={<OverviewPage />} />
               <Route path="/increments" element={<IncrementsPage />} />
               <Route path="/increments/:id" element={<IncrementDetailPage />} />

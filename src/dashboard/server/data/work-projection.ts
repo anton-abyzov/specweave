@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadDashboardTaskBoard } from './dashboard-task-board.js';
 import { readLedger } from '../../../core/tasks/ledger.js';
-import { parseSpecAcs } from '../../../core/tasks/verify-runner.js';
-import type { ExecutionSegment, WorkItem, WorkState } from '../../work-types.js';
+import { deriveAcStatus, parseSpecAcs } from '../../../core/tasks/verify-runner.js';
+import type { ExecutionSegment, WorkDetail, WorkItem, WorkState } from '../../work-types.js';
 
 export function readText(file: string): string {
   try {
@@ -47,7 +47,7 @@ export function projectIncrement(root: string, id: string): WorkItem | null {
   const metadata = readJson(path.join(dir, 'metadata.json'));
   const spec = readText(path.join(dir, 'spec.md'));
   const board = loadDashboardTaskBoard(dir);
-  const acs = parseSpecAcs(spec);
+  const acs = deriveAcStatus(parseSpecAcs(spec), board);
   const reportPath = path.join(dir, 'reports/verify.json');
   const report = readJson(reportPath);
   const sourceTime = Math.max(
@@ -66,10 +66,24 @@ export function projectIncrement(root: string, id: string): WorkItem | null {
         : ['active', 'in-progress'].includes(status)
           ? 'active'
           : 'backlog';
+  let stateReason = `metadata.json status: ${status}`;
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
   if (status !== 'completed' && status !== 'abandoned') {
-    if (board.counts.blocked > 0 || board.counts.stale > 0) state = 'blocked';
-    else if (terminal || status === 'ready_for_review') state = 'review';
-    else if (board.counts.claimed > 0) state = 'active';
+    if (board.counts.blocked > 0 || board.counts.stale > 0) {
+      state = 'blocked';
+      stateReason = [
+        board.counts.blocked > 0 && plural(board.counts.blocked, 'blocked task'),
+        board.counts.stale > 0 && plural(board.counts.stale, 'stale claim'),
+      ]
+        .filter(Boolean)
+        .join(', ');
+    } else if (terminal || status === 'ready_for_review') {
+      state = 'review';
+      stateReason = terminal ? 'Every task is done or skipped; not closed yet' : stateReason;
+    } else if (board.counts.claimed > 0) {
+      state = 'active';
+      stateReason = plural(board.counts.claimed, 'claimed task');
+    } else if (status === 'paused') stateReason = 'Paused';
   }
   const verification: WorkItem['verification'] = {
     status:
@@ -130,23 +144,48 @@ export function projectIncrement(root: string, id: string): WorkItem | null {
     ).length,
     handoff: readText(path.join(dir, 'handoff.md')) || null,
     executions,
+    type: typeof metadata.type === 'string' ? metadata.type : null,
+    priority: typeof metadata.priority === 'string' ? metadata.priority : null,
+    project: typeof metadata.project === 'string' ? metadata.project : null,
+    createdAt: typeof metadata.created === 'string' ? metadata.created : typeof metadata.createdAt === 'string' ? metadata.createdAt : null,
+    path: path.relative(root, dir).split(path.sep).join('/'),
+    stateReason,
   };
 }
 
+/** The newest ledger events the detail panel receives; older ones stay in ledger.jsonl. */
+const TIMELINE_LIMIT = 400;
+
 /** The legacy detail route shares the exact ledger projection as the work board. */
-export async function getIncrementDetail(root: string, id: string): Promise<Record<string, unknown> | null> {
+export async function getIncrementDetail(root: string, id: string): Promise<WorkDetail | null> {
   const dir = incrementDirectory(root, id);
   const projected = projectIncrement(root, id);
   if (!dir || !projected) return null;
   const board = loadDashboardTaskBoard(dir);
-  const acs = parseSpecAcs(readText(path.join(dir, 'spec.md'))).map((a) => ({
+  const spec = readText(path.join(dir, 'spec.md'));
+  const acs = deriveAcStatus(parseSpecAcs(spec), board).map((a) => ({
     id: a.id,
     text: a.text,
     completed: a.done,
+    via: a.via ?? null,
+    tasks: a.tasks ?? [],
   }));
+  const timeline = readLedger(path.join(dir, 'ledger.jsonl'))
+    .events.sort((a, b) => a.at.localeCompare(b.at))
+    .slice(-TIMELINE_LIMIT)
+    .map((event) => ({
+      at: event.at,
+      task: event.t,
+      event: event.e,
+      by: event.by,
+      model: event.model ?? null,
+      text: event.evidence ?? event.note ?? event.line ?? event.reason ?? null,
+      link: event.link ?? null,
+    }));
   return {
     id,
     dirName: path.basename(dir),
+    path: projected.path ?? '',
     metadata: readJson(path.join(dir, 'metadata.json')),
     tasks: board.tasks.map((t) => ({
       id: t.id,
@@ -154,8 +193,10 @@ export async function getIncrementDetail(root: string, id: string): Promise<Reco
       status:
         t.state.status === 'done' ? 'completed' : t.state.status === 'open' ? 'pending' : t.state.status,
       userStory: t.userStory,
-      acs: t.satisfiesACs,
+      acs: t.satisfiesACs?.length ? t.satisfiesACs : t.acs,
+      files: t.filesAffected,
       actor: t.state.by,
+      since: t.state.since,
       evidence: t.state.evidence,
       note: t.state.note,
       source: t.source,
@@ -172,8 +213,9 @@ export async function getIncrementDetail(root: string, id: string): Promise<Reco
     acSummary: { total: acs.length, completed: acs.filter((a) => a.completed).length },
     verification: projected.verification,
     executions: projected.executions,
+    timeline,
     handoff: projected.handoff,
-    spec: readText(path.join(dir, 'spec.md')),
+    spec,
     verify: readJson(path.join(dir, 'reports/verify.json')),
     warnings: board.warnings,
   };
