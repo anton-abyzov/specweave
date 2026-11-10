@@ -99,24 +99,34 @@ describe('Docusaurus navbar items (Weave)', () => {
   const navItems = items.filter((item: any) => item.position === 'left');
   const rightItems = items.filter((item: any) => item.position === 'right');
 
-  it('shows at most 7 items besides search', () => {
-    expect(items.filter((item: any) => item.type !== 'search').length).toBeLessThanOrEqual(7);
+  // One item set per product: custom.css hides the other product's items (.nav-specweave / .nav-specwithcode).
+  const shownOn = (product: 'specweave' | 'specwithcode') => (item: any) => {
+    const other = product === 'specweave' ? 'nav-specwithcode' : 'nav-specweave';
+    return !String(item.className ?? '').split(/\s+/).includes(other);
+  };
+
+  it('shows at most 7 items besides search on each product', () => {
+    for (const product of ['specweave', 'specwithcode'] as const) {
+      expect(items.filter(shownOn(product)).filter((item: any) => item.type !== 'search').length).toBeLessThanOrEqual(7);
+    }
   });
 
-  it('leads with SpecWithCode, then the CLI, Docs and Tutorials', () => {
-    expect(navItems.map((item: any) => item.label)).toEqual(['SpecWithCode', 'CLI', 'Docs', 'Tutorials']);
-    expect(navItems[0]).toEqual(expect.objectContaining({to: '/code/'}));
-    expect(navItems[1]).toEqual(expect.objectContaining({to: '/product'}));
-    expect(navItems[2]).toEqual(expect.objectContaining({sidebarId: 'docsSidebar'}));
-    expect(navItems[3]).toEqual(expect.objectContaining({to: '/tutorials'}));
+  it('gives each product its own links; the family bar switches products', () => {
+    expect(navItems.filter(shownOn('specweave')).map((item: any) => item.label)).toEqual(['CLI', 'Integrations', 'Docs', 'Tutorials']);
+    expect(navItems.filter(shownOn('specwithcode')).map((item: any) => item.label)).toEqual(['How it works', 'Skills', 'Docs', 'Tutorials']);
+    expect(navItems.find((item: any) => item.label === 'CLI')).toEqual(expect.objectContaining({to: '/product'}));
+    expect(navItems.find((item: any) => item.label === 'Docs')).toEqual(expect.objectContaining({sidebarId: 'docsSidebar'}));
+    expect(navItems.some((item: any) => item.to === '/code/')).toBe(false);
   });
 
-  it('keeps Verified Skill, GitHub and search on the right; Pricing lives in the footer', () => {
+  it('keeps GitHub, search and one main button per product on the right', () => {
     expect(rightItems).toEqual(expect.arrayContaining([
-      expect.objectContaining({label: 'Verified Skill', href: 'https://verified-skill.com/claude-code-skills'}),
       expect.objectContaining({href: 'https://github.com/anton-abyzov/specweave', className: 'header-github-link'}),
       expect.objectContaining({type: 'search'}),
     ]));
+    const cta = (product: 'specweave' | 'specwithcode') => rightItems.filter(shownOn(product)).filter((item: any) => String(item.className ?? '').includes('nav-cta'));
+    expect(cta('specweave').map((item: any) => item.to)).toEqual(['/docs/getting-started']);
+    expect(cta('specwithcode').map((item: any) => item.to)).toEqual(['/code/download/']);
   });
 
   it('uses a wordmark, not the SpecWithCode app icon', () => {
@@ -124,8 +134,8 @@ describe('Docusaurus navbar items (Weave)', () => {
     expect(themeConfig.navbar.logo).toBeUndefined();
   });
 
-  it('does not include Skills or Reference as separate nav items', () => {
-    const labels = navItems.map((item: any) => item.label);
+  it('does not include Skills or Reference as separate SpecWeave nav items', () => {
+    const labels = navItems.filter(shownOn('specweave')).map((item: any) => item.label);
     expect(labels).not.toContain('Skills');
     expect(labels).not.toContain('Reference');
   });

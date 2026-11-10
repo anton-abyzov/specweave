@@ -1,88 +1,14 @@
-/* Weave footer: canvas band closed by a hairline; muted links that go to ink on hover. */
-.footer {
-  background: var(--wv-canvas);
-  color: var(--wv-muted);
-  border-top: 1px solid var(--wv-line);
-  padding: var(--wv-space-16) 0 var(--wv-space-8);
-  font-family: var(--wv-font-sans);
-}
-
-.container {
-  max-width: var(--wv-page-max);
-  margin: 0 auto;
-  padding: 0 var(--wv-space-8);
-}
-
-.columns {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: var(--wv-space-8);
-  margin-bottom: var(--wv-space-12);
-}
-
-@media (max-width: 1024px) {
-  .columns {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-.columnTitle {
-  font-size: 15px;
-  line-height: 22px;
-  font-weight: 600;
-  color: var(--wv-ink);
-  margin-bottom: var(--wv-space-3);
-}
-
-.columnLinks {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--wv-space-2);
-}
-
-.columnLink {
-  color: var(--wv-muted);
-  text-decoration: none;
-  font-size: 15px;
-  line-height: 22px;
-  transition: color 120ms ease;
-}
-
-.columnLink:hover {
-  color: var(--wv-ink);
-  text-decoration: none;
-}
-
-.divider {
-  border: none;
-  height: 0;
-  background: none;
-  border-top: 1px solid var(--wv-line);
-  margin: 0 0 var(--wv-space-6);
-}
-
-.bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--wv-space-4);
-}
-
+/* The footer layout is .wv-footer in weave.css. Only the social icons are local. */
 .socialIcons {
   display: flex;
   align-items: center;
   gap: var(--wv-space-2);
-  /* 44px hit areas around 20px icons: pull the first icon back onto the column edge. */
-  margin-inline-start: calc(-1 * var(--wv-space-3));
+  /* 44px hit areas around 20px icons: pull the last icon back onto the column edge. */
+  margin-inline-end: calc(-1 * var(--wv-space-3));
 }
 
 .socialLink {
   color: var(--wv-muted);
-  transition: color 120ms ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -97,21 +23,4 @@
 .socialLink svg {
   width: 20px;
   height: 20px;
-}
-
-.copyright {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--wv-muted);
-}
-
-@media (max-width: 768px) {
-  .container {
-    padding: 0 var(--wv-space-4);
-  }
-
-  .columns {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--wv-space-8) var(--wv-space-6);
-  }
 }

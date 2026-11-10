@@ -1,6 +1,6 @@
 # Weave design system
 
-Shared by spec-weave.com (including /code) and verified-skill.com. `tokens.json` is the source of truth; `weave.css` is generated from it (tokens for light and dark plus the component classes) and copied unchanged into each site: `docs-site/src/css/weave.css` here and `src/app/weave.css` in vskill-platform. Change a token here, regenerate, copy to both.
+Shared by spec-weave.com (including /code) and verified-skill.com. `tokens.json` is the source of truth; `weave.css` follows it (tokens for light and dark plus the component and shell classes) and is copied unchanged into each site: `docs-site/src/css/weave.css` here and `src/app/weave.css` in vskill-platform. Change a token here, regenerate, copy to both.
 
 Weave is the one design system for the three products: **SpecWeave** (the open-source CLI and spec-weave.com), **SpecWithCode** (the desktop workspace, spec-weave.com/code) and **Verified Skill** (the skill registry, verified-skill.com). A visitor moving between them should feel they never left the same company.
 
@@ -13,6 +13,22 @@ The idea comes from the name. Work in these products is a set of threads: a spec
 3. **Evidence before adjectives.** Lead with what a thing does and what proves it (a passed check, a command, a number with its source). Cut claims that cannot be checked.
 4. **One family, one voice.** Every page uses the same tokens, type, components and copy rules. Products differ by their name and their content, not by their colors.
 5. **Calm by default, motion that explains.** A scroll sequence earns its place when it shows structure, layers or connections: the handoff between agents, a coordinator starting workers, a skill passing its checks. A page may have more than one when each explains something different. Nothing moves for decoration.
+
+## Shell
+
+Every page of every product sits in the same shell, built from the shell classes in `weave.css`:
+
+- **Family bar** (`wv-shell-bar`, `wv-family`): the three products. The thread underlines the current one.
+- **Navbar** (`wv-nav`): the current product's name in the brand slot, that product's links right after it, then one cluster in a fixed order: search, theme, GitHub, account or language where the site has one, and one main button. Controls are `wv-control`, 32px tall.
+- **Footer** (`wv-footer`): a brand block and four columns. The first is always Products, the second is named after the product, the last is Project.
+- **Column**: `wv-shell__inner`, `wv-page-max` wide with a 32px gutter (16px under 997px).
+- **Theme**: with no stored choice a site follows the system. `weave-shell.js` carries a manual choice across the family's domains through `?wv-theme=`.
+
+`weave.css` and `weave-shell.js` are copied unchanged into each site. `checksums.json` records the hashes, and a test in each repository fails when its copy drifts. Change the source here, update `checksums.json`, then copy to both sites.
+
+## Motion
+
+One orchestrated moment per page, drawn by the thread: the family bar underline, and `wv-stage` around the hero object. Use `--wv-ease` with `--wv-dur-ui`, `--wv-dur-move` and `--wv-dur-draw`. A hero demo that explains the product may keep running; idle float, breathe and glow loops and fade-ups on every section are out. Scroll-linked motion is fine when it shows structure. Under `prefers-reduced-motion: reduce` the thread and every decorative animation are off and the final state shows.
 
 ## Content fundamentals
 

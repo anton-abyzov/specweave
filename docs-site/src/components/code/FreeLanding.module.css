@@ -17,7 +17,7 @@
 .page *, .page *::before, .page *::after { box-sizing: border-box; }
 :where(.page) :is(h1, h2, h3, p, figure, ul, ol) { margin: 0; }
 .page h1, .page h2, .page h3 { font-family: var(--wv-font-sans); color: var(--wv-ink); text-wrap: balance; }
-.page h2 { font-size: 32px; line-height: 38px; font-weight: 650; letter-spacing: -0.02em; }
+.page h2 { font-size: 32px; line-height: 38px; font-weight: 700; letter-spacing: -0.018em; }
 .page h3 { font-size: 19px; line-height: 26px; font-weight: 600; }
 
 .page a:global(.wv-btn), .page a:global(.wv-btn):hover { text-decoration: none; }
@@ -34,10 +34,6 @@
 /* ---------- Hero ---------- */
 .hero {
   padding: 72px 0 var(--wv-space-16);
-  background:
-    radial-gradient(60% 70% at 85% 30%, color-mix(in srgb, var(--wv-iris) 16%, transparent), transparent 70%),
-    radial-gradient(50% 60% at 10% 0%, color-mix(in srgb, #4d6bfe 10%, transparent), transparent 70%),
-    linear-gradient(180deg, var(--wv-iris-tint), var(--wv-canvas));
   border-bottom: 1px solid var(--wv-line);
 }
 .heroGrid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--wv-space-12); align-items: center; }
@@ -46,8 +42,9 @@
 .product img { display: block; border-radius: var(--wv-radius-sm); }
 .productName { font-weight: 700; }
 .badge { padding: 2px 10px; border-radius: 999px; background: var(--wv-panel); border: 1px solid var(--wv-line); color: var(--wv-iris-strong); font-size: 13px; font-weight: 600; }
-.hero h1 { font-size: clamp(40px, 5vw, 64px); line-height: 1.04; font-weight: 750; letter-spacing: -0.045em; }
-.hero h1 em { font-style: normal; color: var(--wv-iris); }
+/* Weave display size: 72px, 44px on phones, one weight, one ink. */
+.hero h1 { font-size: clamp(44px, 5vw, 72px); line-height: 1; font-weight: 700; letter-spacing: -0.035em; }
+.hero h1 em { font-style: normal; }
 .lead { max-width: 34em; margin-top: var(--wv-space-6) !important; font-size: 20px; line-height: 31px; color: var(--wv-muted); }
 
 .proof { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: var(--wv-space-6) 0 0 !important; padding: 0; list-style: none; font-size: 15px; line-height: 22px; font-weight: 500; }
@@ -130,17 +127,14 @@
   .section { padding-top: var(--wv-space-16); }
 }
 
-/* ---------- Hero on Weave: tint field, ink type, iris as the one accent ---------- */
-.hero { background: linear-gradient(180deg, var(--wv-iris-tint), var(--wv-canvas)); }
-.hero h1 { font-size: clamp(38px, 4.6vw, 64px); line-height: 1.02; font-weight: 750; letter-spacing: -0.045em; }
-.hero h1 em { color: var(--wv-iris); }
+/* ---------- Hero on Weave: canvas ground, ink type; iris stays on the button and the thread ---------- */
 .h1Top { display: inline-flex; align-items: center; gap: .2em; }
 .page img.h1Mark { width: .56em; height: .56em; padding: .1em; border-radius: .16em; background: #241523; box-sizing: content-box; }
-.hero .lead { max-width: 30em; font-size: 19px; line-height: 29px; margin-top: var(--wv-space-5) !important; }
+.hero .lead { max-width: 30em; font-size: 19px; line-height: 29px; margin-top: var(--wv-space-6) !important; }
 .heroMedia { position: relative; min-width: 0; }
 .heroDownload { margin-top: var(--wv-space-6); }
-.page a.bigButton { min-height: 60px; gap: 14px; padding-inline: 22px 28px; box-shadow: var(--wv-shadow-overlay); }
-.bigButton .osText { font-size: 18px; font-weight: 700; }
+.page a.bigButton { min-height: 48px; gap: 12px; padding-inline: 20px 24px; }
+.bigButton .osText { font-size: 17px; font-weight: 600; }
 .heroNote { margin-top: var(--wv-space-4) !important; font-size: 14px; line-height: 22px; color: var(--wv-muted); }
 .heroNote a { color: var(--wv-iris-strong); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 
@@ -161,11 +155,10 @@
 
 /* ---------- Versus strip ---------- */
 .vsSection { padding-top: var(--wv-space-16); }
-.vsSection h2 { font-size: clamp(28px, 3.6vw, 40px); line-height: 1.12; font-weight: 800; letter-spacing: -0.03em; }
-.vsSection h2 em { font-style: normal; color: var(--wv-iris); }
+.vsSection h2 em { font-style: normal; }
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--wv-space-4); margin: var(--wv-space-6) 0 0; padding: 0; list-style: none; }
 .stats li { display: flex; flex-direction: column; gap: 2px; padding: 16px 20px; border: 1px solid var(--wv-line); border-radius: var(--wv-radius-lg); background: var(--wv-panel); }
-.stats strong { font-size: clamp(28px, 3.2vw, 38px); line-height: 1.1; font-weight: 800; letter-spacing: -0.03em; color: var(--wv-ink); }
+.stats strong { font-size: clamp(28px, 3.2vw, 38px); line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; color: var(--wv-ink); }
 .stats span { color: var(--wv-ink); font-weight: 600; }
 .stats a, .stats small { margin-top: 4px; color: var(--wv-muted); font-size: 13px; }
 .stats a { text-decoration: underline; text-underline-offset: 2px; }
@@ -186,12 +179,6 @@
 /* Doubled class: the minifier merges this with the generic plate rule and may order it first. */
 .page img.h1Mark.h1MarkDark { background: #241523; border-color: #241523; }
 
-/* The headline marks drift a little, so the hero is never fully still. */
-.page img.h1Mark { animation: wvH1Float 4.5s ease-in-out infinite; }
-.page img.h1Mark + .h1Mark { animation-delay: -2.2s; }
-@keyframes wvH1Float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-@media (prefers-reduced-motion: reduce) { .page img.h1Mark { animation: none; } }
-
 /* The agents beyond the two in the headline, in one quiet row. */
 .heroMarks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: var(--wv-space-4) 0 0 !important; padding: 0; list-style: none; font-size: 13px; line-height: 20px; color: var(--wv-muted); }
 .heroMarks li { display: flex; align-items: center; gap: 6px; }
@@ -200,3 +187,8 @@
 .hero { padding-top: 44px; }
 .hero .product { margin-bottom: var(--wv-space-4); }
 @media (max-width: 600px) { .hero { padding-top: 32px; } .hero .lead { font-size: 17px; line-height: 26px; } .heroMarks { gap: 4px 12px; font-size: 13px; } }
+
+/* ---------- Skills: a thread of four steps and the one install command ---------- */
+.skillsCmd { max-width: 34em; margin-top: var(--wv-space-8); }
+.page :global(.wv-thread) { padding: 0; }
+.page :global(.wv-thread__body) a { display: inline; }

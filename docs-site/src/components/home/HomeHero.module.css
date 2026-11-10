@@ -275,7 +275,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .card {
-    animation: rise 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation: rise 900ms var(--wv-ease) both;
   }
 
   .fTests .card { animation-delay: 380ms; }
@@ -284,7 +284,7 @@
   .fUsage .card { animation-delay: 480ms; }
 
   .window {
-    animation: settle 1100ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation: settle 1100ms var(--wv-ease) both;
   }
 }
 
