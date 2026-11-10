@@ -268,6 +268,8 @@ export interface ProjectInfo {
   path: string;        // Absolute path to project root
   name: string;        // Project name from config or dir name
   hasSpecweave: boolean;
+  /** Host name of the machine serving this dashboard: the path above is on that machine. */
+  machine: string;
 }
 
 // Lock file for singleton instance

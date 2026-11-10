@@ -155,6 +155,36 @@ describe('intent, evidence and continuation', () => {
     expect(detail.acSummary).toEqual({ total: 2, completed: 1 });
     expect(projectIncrement(root, '../0001')).toBeNull();
   });
+  it('says why an item is in its column and derives criteria from the ledger', async () => {
+    expect(projectIncrement(root, '0001')).toMatchObject({
+      state: 'active',
+      stateReason: 'metadata.json status: active',
+      acs: { total: 2, done: 1 },
+      path: '.specweave/increments/0001-portable',
+      type: null,
+    });
+    const at = new Date().toISOString();
+    fs.appendFileSync(
+      path.join(inc, 'ledger.jsonl'),
+      JSON.stringify({ t: 'T-02', e: 'done', by: 'claude@host', at, evidence: 'def5678', model: 'opus-test' }) + '\n',
+    );
+    // AC-02 is unticked in spec.md; its only task is done in the ledger.
+    expect(projectIncrement(root, '0001')).toMatchObject({
+      state: 'review',
+      stateReason: 'Every task is done or skipped; not closed yet',
+      acs: { total: 2, done: 2 },
+    });
+    const detail = (await getIncrementDetail(root, '0001'))!;
+    expect(detail.acs.map((a) => [a.id, a.completed, a.via])).toEqual([
+      ['AC-01', true, 'checkbox'],
+      ['AC-02', true, 'ledger'],
+    ]);
+    expect(detail.timeline.map((e) => [e.task, e.event, e.model, e.text])).toEqual([
+      ['T-01', 'done', null, 'commit abc1234; test exit 0'],
+      ['T-02', 'done', 'opus-test', 'def5678'],
+    ]);
+    expect(detail.path).toBe('.specweave/increments/0001-portable');
+  });
   it('persists an intent with no increment, rejects racing edits, and preserves histories', () => {
     const store = new IntentStore(root);
     const item = store.create({ title: 'Small work', summary: 'Fix one label' });

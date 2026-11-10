@@ -8,11 +8,13 @@
  */
 
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import chalk from 'chalk';
 import { findAvailablePort } from '../../utils/docs-preview/server-manager.js';
 import type { DashboardLockFile } from '../../dashboard/types.js';
 import { findEffectiveRoot } from '../../utils/find-project-root.js';
+import { pathToProjectId } from '../../dashboard/project-id.js';
 
 const LOCK_FILE = path.join(process.env.HOME || '', '.specweave-dashboard.json');
 
@@ -22,7 +24,9 @@ export interface DashboardOptions {
 }
 
 export async function dashboardCommand(options: DashboardOptions = {}): Promise<void> {
-  const projectRoot = findEffectiveRoot();
+  // The real folder, so a symlinked spelling of the same checkout gets the same link.
+  const found = findEffectiveRoot();
+  const projectRoot = found ? realPath(found) : null;
 
   if (!projectRoot) {
     console.log(chalk.red(`No SpecWeave project found: no .specweave/config.json in ${process.cwd()} or any parent directory`));
@@ -57,7 +61,9 @@ export async function dashboardCommand(options: DashboardOptions = {}): Promise<
     console.log(chalk.dim('  ────────────────────'));
     console.log(`  ${chalk.cyan('URL:')}     ${chalk.underline(url)}`);
     console.log(`  ${chalk.cyan('Timeline:')} ${chalk.underline(`http://localhost:${existing.port}/timeline?project=${projectSlug}`)}`);
+    console.log(`  ${chalk.cyan('Project:')} ${projectRoot}`);
     console.log(`  ${chalk.dim('Already running (PID ' + existing.pid + ')')}`);
+    printRemoteHint(existing.port);
     console.log('');
 
     if (options.browser !== false) {
@@ -96,7 +102,9 @@ async function startNewDashboard(projectRoot: string, options: DashboardOptions)
   console.log(`  ${chalk.cyan('URL:')}     ${chalk.underline(url)}`);
   console.log(`  ${chalk.cyan('Timeline:')} ${chalk.underline(`${instance.url}/timeline?project=${projectSlug}`)}`);
   console.log(`  ${chalk.cyan('Project:')} ${projectRoot}`);
+  console.log(`  ${chalk.cyan('Machine:')} ${os.hostname()}`);
   console.log(`  ${chalk.cyan('PID:')}     ${process.pid}`);
+  printRemoteHint(port);
   console.log('');
   console.log(chalk.dim('  Run `specweave dashboard` from other projects to add them'));
   console.log(chalk.dim('  Press Ctrl+C to stop'));
@@ -123,12 +131,31 @@ async function startNewDashboard(projectRoot: string, options: DashboardOptions)
 
 /** Convert absolute path to URL-safe slug */
 export function pathToSlug(p: string): string {
-  return p.replace(/^\//, '').replace(/\//g, '-');
+  return pathToProjectId(p);
 }
 
-/** Convert slug back to path */
-export function slugToPath(slug: string): string {
-  return '/' + slug.replace(/-/g, '/');
+function realPath(p: string): string {
+  try {
+    return fs.realpathSync(p);
+  } catch {
+    return p;
+  }
+}
+
+/**
+ * The dashboard listens on this machine's loopback only. Over SSH, or on a
+ * Linux machine with no display, `localhost` in the reader's browser is a
+ * different computer, so say how to reach this one.
+ */
+function printRemoteHint(port: number): void {
+  const remote = Boolean(process.env.SSH_CONNECTION || process.env.SSH_TTY);
+  const headless = process.platform === 'linux' && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY;
+  if (!remote && !headless) return;
+  const user = os.userInfo().username;
+  console.log('');
+  console.log(chalk.dim(`  This dashboard is on ${os.hostname()} and answers only on its own localhost.`));
+  console.log(chalk.dim('  From another computer, forward a port and open http://localhost:' + (port + 1) + '/ there:'));
+  console.log(`  ${chalk.cyan(`ssh -N -L ${port + 1}:localhost:${port} ${user}@${os.hostname()}`)}`);
 }
 
 function readLockFile(): DashboardLockFile | null {
@@ -162,8 +189,10 @@ function isProcessAlive(pid: number): boolean {
 }
 
 async function openUrl(url: string): Promise<void> {
+  // No display to open a browser on: the remote hint above says how to reach the page.
+  if (process.platform === 'linux' && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY) return;
   try {
-    const { execFileNoThrow } = await import('../../utils/execFileNoThrow.js');
-    await execFileNoThrow('open', [url]);
+    const { default: open } = await import('open');
+    await open(url);
   } catch { /* best effort */ }
 }

@@ -17,6 +17,63 @@ export interface WorkItem extends WorkIntent {
   verification: { status: 'passed' | 'failed' | 'stale' | 'missing'; ranAt: string | null };
   evidenceCount: number;
   handoff: string | null;
+  /** metadata.json facts for filters; null on an intent with no increment. */
+  type: string | null;
+  priority: string | null;
+  project: string | null;
+  createdAt: string | null;
+  /** Increment folder relative to the project root. */
+  path: string | null;
+  /** Why the item is in its column, in words a reader can check against the files. */
+  stateReason: string;
+}
+/** One ledger event on the detail panel's timeline. */
+export interface WorkTimelineEvent {
+  at: string;
+  task: string;
+  event: string;
+  by: string;
+  model: string | null;
+  text: string | null;
+  link: string | null;
+}
+export interface WorkDetailTask {
+  id: string;
+  title: string;
+  status: string;
+  userStory?: string;
+  acs?: string[];
+  files?: string[];
+  actor?: string;
+  since?: string;
+  evidence?: string;
+  note?: string;
+  source: string;
+}
+export interface WorkDetailAc {
+  id: string;
+  text: string;
+  completed: boolean;
+  via: string | null;
+  tasks: Array<{ id: string; status: string }>;
+}
+/** `GET /api/increments/:id`: everything the detail panel shows, read from the increment folder. */
+export interface WorkDetail {
+  id: string;
+  dirName: string;
+  path: string;
+  metadata: Record<string, unknown>;
+  tasks: WorkDetailTask[];
+  taskSummary: { total: number; completed: number; skipped: number; pending: number; inProgress: number; blocked: number };
+  acs: WorkDetailAc[];
+  acSummary: { total: number; completed: number };
+  verification: WorkItem['verification'];
+  executions: WorkItem['executions'];
+  timeline: WorkTimelineEvent[];
+  handoff: string | null;
+  spec: string;
+  verify: Record<string, unknown>;
+  warnings: string[];
 }
 export interface WorkBoardPayload {
   items: WorkItem[];

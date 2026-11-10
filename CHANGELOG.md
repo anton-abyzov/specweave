@@ -1,3 +1,18 @@
+## [Unreleased]
+
+### Changed
+
+- The dashboard's Work board is rebuilt. Cards no longer clip, the whole card opens a detail panel (rendered spec, acceptance criteria, tasks with evidence, verification report, ledger timeline, agents, folder on disk), and its address reopens it. Progress is a real bar with a percentage on every card, column and the page.
+- Board filters: text, state, agent, verification, type, priority and done window, with sorting, a list view and a Clear control. Filters live in the address and every count on the page comes from the same filtered set.
+- Acceptance-criteria counts in the dashboard follow the ledger, like `specweave verify`. A card in Blocked or Review says why it is there.
+- Motion on the board (Motion for React) is off under `prefers-reduced-motion`.
+
+### Fixed
+
+- The dashboard header names the machine and folder it reads. A link that carries another machine's project path opens the local checkout of the same folder and says so, instead of silently showing the first project.
+- A symlinked path no longer registers the same project twice.
+- `specweave dashboard` opens the browser on Linux and Windows too, and over SSH or on a machine with no display it prints the port-forward command.
+
 ## [3.1.21] - 2026-11-03
 
 ### Changed
