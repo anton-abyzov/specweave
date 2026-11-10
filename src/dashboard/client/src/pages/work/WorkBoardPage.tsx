@@ -29,6 +29,7 @@ import { DetailPanel } from './DetailPanel';
 import {
   CountUp,
   EmptyArt,
+  EmptyLoom,
   ProgressBar,
   Ring,
   SegmentBar,
@@ -171,7 +172,13 @@ export function WorkBoardPage() {
                 {board.items.length === 1 ? 'item' : 'items'} shown
                 {filterCount > 0 && all.length !== board.items.length ? ` of ${all.length}` : ''}
               </span>
-              <span>Click a state to filter</span>
+              {filterCount > 0 ? (
+                <button type="button" className="wb-clear" onClick={() => setFilters({ ...DEFAULT_FILTERS, sort: filters.sort, ascending: filters.ascending })}>
+                  Clear {filterCount} {filterCount === 1 ? 'filter' : 'filters'}
+                </button>
+              ) : (
+                <span>Click a state to filter</span>
+              )}
             </div>
             <SegmentBar
               size="lg"
@@ -240,11 +247,6 @@ export function WorkBoardPage() {
               ['all', 'Done: all'],
             ]}
           />
-          {filterCount > 0 && (
-            <button type="button" className="wb-clear" onClick={() => setFilters({ ...DEFAULT_FILTERS, sort: filters.sort, ascending: filters.ascending })}>
-              Clear {filterCount} {filterCount === 1 ? 'filter' : 'filters'}
-            </button>
-          )}
           <span className="wb-toolbar-gap" />
           <Select label="Sort by" value={filters.sort} onChange={(sort) => setFilters({ sort: sort as BoardSort })} options={SORTS.map((s) => [s, `Sort: ${SORT_LABEL[s]}`])} />
           <button
@@ -279,7 +281,7 @@ export function WorkBoardPage() {
           <BoardSkeleton />
         ) : board.items.length === 0 && filterCount > 0 ? (
           <div className="wb-nothing">
-            <EmptyArt />
+            <EmptyLoom />
             <h2>No work matches these filters</h2>
             <p>{all.length} items are on this board. Loosen a filter or clear them all.</p>
             <button type="button" className="work-secondary" onClick={() => setFilters({ ...DEFAULT_FILTERS })}>

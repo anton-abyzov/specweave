@@ -3,6 +3,8 @@ import { useEffect, type ReactNode } from 'react';
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react';
 import type { WorkItem, WorkState } from '../../../../work-types';
 import { itemTools, percent, toolName } from './board-model';
+import weaveUrl from '../../assets/work-board-weave.webp';
+import emptyUrl from '../../assets/work-board-empty.webp';
 
 export const STATE_LABEL: Record<WorkState, string> = {
   backlog: 'Backlog',
@@ -137,6 +139,7 @@ export function Ring({ value, size = 84, stroke = 8, children }: { value: number
           stroke="var(--sw-brand-success)"
           strokeWidth={stroke}
           strokeLinecap="round"
+          strokeOpacity={share > 0 ? 1 : 0}
           strokeDasharray={length}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
           initial={{ strokeDashoffset: length }}
@@ -153,7 +156,7 @@ export function Ring({ value, size = 84, stroke = 8, children }: { value: number
 export function CountUp({ value }: { value: number }) {
   const reduce = useReducedMotion();
   const target = useMotionValue(reduce ? value : 0);
-  const spring = useSpring(target, { stiffness: 110, damping: 24 });
+  const spring = useSpring(target, { stiffness: 190, damping: 28 });
   const text = useTransform(spring, (v) => Math.round(v).toLocaleString());
   useEffect(() => {
     target.set(value);
@@ -209,34 +212,14 @@ export function PercentLabel({ value }: { value: number }) {
   return <span className="wb-percent">{percent(value)}%</span>;
 }
 
-/** Warp and weft threads behind the page title. Drawn, so it follows the theme and stays sharp. */
+/** Woven threads behind the page title: a generated plate (see assets/README.md), blended into the paper. */
 export function WeaveArt() {
-  const warp = [0, 1, 2, 3, 4, 5, 6];
-  return (
-    <svg className="wb-weave" viewBox="0 0 560 150" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
-      <defs>
-        <linearGradient id="wb-weave-fade" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0" stopColor="var(--sw-brand-paper)" stopOpacity="1" />
-          <stop offset="0.45" stopColor="var(--sw-brand-paper)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {warp.map((i) => (
-        <path
-          key={`a${i}`}
-          className={`wb-thread wb-thread-${i % 3}`}
-          d={`M-20 ${18 + i * 19} C 120 ${-12 + i * 19}, 200 ${52 + i * 19}, 300 ${18 + i * 19} S 480 ${-10 + i * 19}, 600 ${24 + i * 19}`}
-        />
-      ))}
-      {warp.slice(0, 5).map((i) => (
-        <path
-          key={`b${i}`}
-          className={`wb-thread wb-thread-weft wb-thread-${(i + 1) % 3}`}
-          d={`M${150 + i * 84} -10 C ${132 + i * 84} 40, ${172 + i * 84} 100, ${150 + i * 84} 160`}
-        />
-      ))}
-      <rect width="560" height="150" fill="url(#wb-weave-fade)" />
-    </svg>
-  );
+  return <div className="wb-weave" style={{ backgroundImage: `url(${weaveUrl})` }} aria-hidden="true" />;
+}
+
+/** The empty loom shown when no work matches the filters. */
+export function EmptyLoom() {
+  return <img className="wb-empty-loom" src={emptyUrl} width={168} height={168} alt="" />;
 }
 
 /** An empty loom frame for columns and searches with nothing in them. */

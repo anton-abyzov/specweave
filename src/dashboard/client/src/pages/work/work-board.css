@@ -87,28 +87,24 @@
 .wb-weave {
   position: absolute;
   inset: 0 0 0 auto;
-  width: min(560px, 60%);
-  height: 100%;
+  width: min(700px, 60%);
+  background: right 44% / 100% auto no-repeat;
+  mix-blend-mode: multiply;
+  opacity: 0.72;
+  mask-image: linear-gradient(90deg, transparent, #000 42%), linear-gradient(180deg, transparent, #000 26%, #000 70%, transparent);
+  mask-composite: intersect;
   pointer-events: none;
+  transform-origin: right center;
+  animation: wb-drift 36s ease-in-out infinite alternate;
 }
-.wb-thread {
-  fill: none;
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  opacity: 0.34;
-  stroke-dasharray: 5 9;
-  animation: wb-drift 26s linear infinite;
-}
-.wb-thread-weft {
-  opacity: 0.2;
-  animation-duration: 38s;
-  animation-direction: reverse;
-}
-.wb-thread-0 { stroke: var(--sw-brand-accent); }
-.wb-thread-1 { stroke: var(--sw-brand-success); }
-.wb-thread-2 { stroke: var(--sw-brand-review); }
 @keyframes wb-drift {
-  to { stroke-dashoffset: -280; }
+  from { transform: scale(1); }
+  to { transform: scale(1.07) translateY(-5px); }
+}
+.wb-empty-loom {
+  width: 168px;
+  height: 168px;
+  mix-blend-mode: multiply;
 }
 
 /* Summary band */
@@ -318,10 +314,10 @@
   background: color-mix(in srgb, var(--sw-brand-accent) 8%, var(--sw-brand-card));
 }
 .wb-clear {
-  height: 34px;
-  padding: 0 10px;
+  margin: -4px -8px;
+  padding: 4px 8px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--sw-brand-accent-ink);
 }
@@ -372,7 +368,8 @@
 }
 .wb-board {
   display: grid;
-  grid-template-columns: repeat(var(--wb-columns, 5), minmax(220px, 1fr));
+  grid-template-columns: repeat(var(--wb-columns, 5), minmax(220px, 440px));
+  justify-content: start;
   gap: 12px;
   align-items: start;
 }
