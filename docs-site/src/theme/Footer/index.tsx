@@ -4,6 +4,8 @@
 import React, {type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 import Translate, {translate} from '@docusaurus/Translate';
+import useUnprefixedPathname from '@site/src/hooks/useUnprefixedPathname';
+import {currentProduct} from '../Navbar/FamilyBar';
 import styles from './Footer.module.css';
 
 function getColumns() {
@@ -128,7 +130,8 @@ function getColumns() {
           label: translate({id: 'footer.link.project.downloadSpecwithcode', message: 'Download SpecWithCode', description: 'Footer link label. Keep product names in English'}),
           to: '/code/download/',
         },
-        {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave'},
+        {label: 'SpecWithCode GitHub', href: 'https://github.com/anton-abyzov/specwithcode'},
+        {label: 'SpecWeave GitHub', href: 'https://github.com/anton-abyzov/specweave'},
         {label: 'npm', href: 'https://www.npmjs.com/package/specweave'},
         {
           label: translate({id: 'footer.link.project.pricing', message: 'Pricing', description: 'Footer link label'}),
@@ -189,16 +192,17 @@ function YouTubeIcon() {
   );
 }
 
-function getSocialLinks() {
+function getSocialLinks(app: boolean) {
+  const repo = app ? 'specwithcode' : 'specweave';
   return [
-    {label: 'GitHub', href: 'https://github.com/anton-abyzov/specweave', icon: GitHubIcon},
+    {label: 'GitHub', href: `https://github.com/anton-abyzov/${repo}`, icon: GitHubIcon},
     {
       label: translate({
         id: 'footer.social.githubIssues',
         message: 'GitHub Issues',
         description: 'Accessible label for the GitHub Issues icon link in the footer. Keep product names in English',
       }),
-      href: 'https://github.com/anton-abyzov/specweave/issues',
+      href: `https://github.com/anton-abyzov/${repo}/issues`,
       icon: SupportIcon,
     },
     {label: 'X / Twitter', href: 'https://x.com/aabyzov', icon: XTwitterIcon},
@@ -207,8 +211,9 @@ function getSocialLinks() {
 }
 
 function Footer(): ReactNode {
+  const pathname = useUnprefixedPathname();
   const COLUMNS = getColumns();
-  const SOCIAL_LINKS = getSocialLinks();
+  const SOCIAL_LINKS = getSocialLinks(currentProduct(pathname) === 'specwithcode');
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>

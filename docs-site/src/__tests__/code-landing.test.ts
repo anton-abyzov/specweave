@@ -38,6 +38,8 @@ describe('SpecWithCode landing page', () => {
 
   it('asks for a GitHub star once, in the closing section', () => {
     expect(copy.match(/Star on GitHub/g)).toHaveLength(1);
+    expect(copy).toContain('https://img.shields.io/github/stars/anton-abyzov/specwithcode?style=flat&label=SpecWithCode');
+    expect(copy).not.toContain('img.shields.io/github/stars/anton-abyzov/specweave?');
   });
 
   it('never implies token resale or free Claude Code', () => {
