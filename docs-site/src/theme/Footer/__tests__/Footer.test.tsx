@@ -2,6 +2,8 @@ import {describe, it, expect, vi} from 'vitest';
 import React from 'react';
 import {render, screen} from '@testing-library/react';
 
+import {location} from '../../../__mocks__/unprefixed-pathname';
+
 // Mock @docusaurus/Link
 vi.mock('@docusaurus/Link', () => ({
   default: ({children, to, ...props}: any) => <a href={to} {...props}>{children}</a>,
@@ -53,5 +55,22 @@ describe('Footer', () => {
     expect(screen.getByText('All spec-driven tools')).toHaveAttribute('href', '/docs/compare/spec-driven-development-tools/');
     expect(screen.getByText('What goes in handoff.md')).toHaveAttribute('href', '/docs/guides/handoff-md/');
     expect(screen.getByText('Support')).toHaveAttribute('href', '/support');
+  });
+
+  it('labels both repositories separately', () => {
+    render(<Footer />);
+    expect(screen.getByText('SpecWithCode GitHub')).toHaveAttribute('href', 'https://github.com/anton-abyzov/specwithcode');
+    expect(screen.getByText('SpecWeave GitHub')).toHaveAttribute('href', 'https://github.com/anton-abyzov/specweave');
+  });
+
+  it('sends app-page social links to the app repository and issues', () => {
+    location.pathname = '/code/download/';
+    try {
+      render(<Footer />);
+      expect(screen.getByLabelText('GitHub')).toHaveAttribute('href', 'https://github.com/anton-abyzov/specwithcode');
+      expect(screen.getByLabelText('GitHub Issues')).toHaveAttribute('href', 'https://github.com/anton-abyzov/specwithcode/issues');
+    } finally {
+      location.pathname = '/';
+    }
   });
 });

@@ -16,8 +16,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@site/src/hooks/useUnprefixedPathname': path.resolve(__dirname, 'src/__mocks__/unprefixed-pathname.ts'),
       '@site/src': path.resolve(__dirname, 'src'),
       '@theme': path.resolve(__dirname, 'src/theme'),
+      '@theme-original/NavbarItem/DefaultNavbarItem': path.resolve(__dirname, 'src/__mocks__/default-navbar-item.tsx'),
       '@theme-original': path.resolve(__dirname, 'src/theme'),
       '@docusaurus/Link': path.resolve(__dirname, 'src/__mocks__/docusaurus-link.tsx'),
       '@docusaurus/Translate': path.resolve(__dirname, 'src/__mocks__/docusaurus-Translate.tsx'),

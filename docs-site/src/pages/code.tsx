@@ -380,7 +380,7 @@ export default function Code() {
         <p><Translate id="code.final.body" description="Closing paragraph; {link} links to the spec-as-code comparison. Keep product names in English" values={{link: <Link className="wv-link" to="/docs/compare/spec-as-code/"><Translate id="code.final.body.link" description="Link text that ends the closing paragraph, as in keep the spec with the code">the spec with the code</Translate></Link>}}>{'Free and open source (MIT). Your accounts, your machines. Add the optional SpecWeave CLI to keep {link}.'}</Translate></p>
         <div className={styles.finalActions}>
           <a className="wv-btn wv-btn--primary wv-btn--lg" href="#download"><Translate id="code.final.download" description="Closing call-to-action button. Keep product names in English">Download SpecWithCode</Translate></a>
-          <a className="wv-btn wv-btn--secondary wv-btn--lg" href={release.repoUrl} data-track="github_star_click"><Star size={16} strokeWidth={1.5} aria-hidden="true" /><Translate id="code.final.source" description="Closing link to the source repository, asking visitors to star it. Keep product names in English">Star on GitHub</Translate></a>
+          <a className="wv-btn wv-btn--secondary wv-btn--lg" href={release.repoUrl} data-track="github_star_click"><Star size={16} strokeWidth={1.5} aria-hidden="true" /><Translate id="code.final.source" description="Closing link to the source repository, asking visitors to star it. Keep product names in English">Star on GitHub</Translate><img src="https://img.shields.io/github/stars/anton-abyzov/specwithcode?style=flat&label=SpecWithCode" alt="SpecWithCode GitHub stars" width="130" height="20" loading="lazy" /></a>
         </div>
       </section>
     </main>
