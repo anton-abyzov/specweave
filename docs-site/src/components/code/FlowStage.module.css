@@ -20,12 +20,12 @@
 .segLabel { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
 .segLabel > span:not(.segDot) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .seg em { font-style: normal; padding: 0 7px; border-radius: 999px; background: var(--wv-sunken); color: var(--wv-muted); font-size: 12px; transition: background .3s, color .3s; }
-.segOn em { background: var(--wv-iris); color: var(--wv-on-iris); animation: wvBreathe 2.4s ease-in-out infinite; }
+.segOn em { background: var(--wv-iris); color: var(--wv-on-iris); }
 .segDot { width: 7px; height: 7px; border-radius: 50%; background: var(--wv-control); flex: none; }
 .segOn .segDot { background: var(--wv-pass); animation: wvPulse 1.6s ease-in-out infinite; }
 .segTrack { display: block; height: 4px; border-radius: 4px; background: var(--wv-sunken); overflow: hidden; }
 .segFill { display: block; height: 100%; border-radius: inherit; background: var(--wv-iris); transform-origin: left center; }
-.segOn .segFill { animation: wvBarGlow 1.6s ease-in-out infinite; }
+.segOn .segFill { }
 .seg:focus-visible { outline: 2px solid var(--wv-iris); outline-offset: 4px; border-radius: 6px; }
 .short { display: none; }
 
@@ -42,7 +42,7 @@
 .messages { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; min-height: 318px; }
 .msg { max-width: 94%; padding: 6px 10px; border-radius: 12px; font-size: 13px; line-height: 18px; }
 .msg svg { vertical-align: -2px; }
-.you { align-self: flex-end; background: var(--wv-ink); color: var(--wv-panel); border-bottom-right-radius: 4px; font-weight: 600; animation: wvFloat 3.6s ease-in-out infinite; }
+.you { align-self: flex-end; background: var(--wv-ink); color: var(--wv-panel); border-bottom-right-radius: 4px; font-weight: 600; }
 .caret { display: inline-block; width: 2px; height: 14px; margin-left: 2px; vertical-align: -2px; background: currentColor; animation: wvBlink 1s steps(2) infinite; }
 .coord { align-self: flex-start; background: var(--wv-panel); border: 1px solid var(--wv-line); border-bottom-left-radius: 4px; }
 .coord svg { color: var(--wv-pass); }
@@ -80,9 +80,7 @@
 .threadHandoff::after { animation: wvPacketX .45s ease-in 3; }
 
 .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.mark { flex: none; padding: 4px; border-radius: 8px; background: var(--wv-sunken); box-sizing: content-box; animation: wvFloat 3.2s ease-in-out infinite; }
-.thread:nth-child(2) .mark { animation-delay: -1.1s; }
-.thread:nth-child(3) .mark { animation-delay: -2.2s; }
+.mark { flex: none; padding: 4px; border-radius: 8px; background: var(--wv-sunken); box-sizing: content-box; }
 .darkPlate { background: #241523; }
 .paneTitle .mark { padding: 2px; border-radius: 5px; background: var(--wv-panel); animation: none; }
 .agent { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
@@ -118,10 +116,7 @@
 @property --sweep { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 @keyframes wvSweep { to { --sweep: 360deg; } }
 @keyframes wvShimmer { from { background-position-x: 100%; } to { background-position-x: -100%; } }
-@keyframes wvFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-@keyframes wvBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 @keyframes wvHandoff { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--wv-iris) 55%, transparent); transform: scale(1); } 30% { transform: scale(1.025); } 100% { box-shadow: 0 0 0 16px transparent; transform: scale(1); } }
-@keyframes wvBarGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
 @keyframes wvBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
 /* The sweep animates the gradient angle, never the box, so nothing leaks outside the rounded frame. */

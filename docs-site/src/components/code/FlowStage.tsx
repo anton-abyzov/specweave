@@ -356,7 +356,7 @@ export default function FlowStage() {
   const pick = (f: Flow) => { setRun(r => r + 1); setFlow(f); };
 
   return <MotionConfig reducedMotion="user">
-    <div ref={ref} className={styles.stage}>
+    <div ref={ref} className={`wv-stage ${styles.stage}`}>
       <div className={styles.story} role="tablist" aria-label={translate({id: 'code.flow.tiers.ariaLabel', message: 'Two ways to run it', description: 'Hero diagram, accessible label of the two scene tabs'})}>
         {FLOWS.map(f => <button key={f} type="button" role="tab" aria-selected={flow === f} className={clsx(styles.seg, flow === f && styles.segOn)} onClick={() => pick(f)}>
           <span className={styles.segLabel}>

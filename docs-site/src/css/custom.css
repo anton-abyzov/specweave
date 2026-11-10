@@ -55,34 +55,38 @@ select {
 }
 
 /* ============================================
-   FAMILY BAR (rendered by src/theme/Navbar)
+   SHELL: family bar + navbar (rendered by src/theme/Navbar)
+   The geometry comes from the Weave shell tokens in weave.css, so this header
+   matches verified-skill.com: same column, heights, brand slot and control size.
    ============================================ */
-.sw-family {
-  background: var(--wv-canvas);
-  border-bottom: 1px solid var(--wv-line);
+html:root {
+  --ifm-navbar-height: calc(var(--wv-nav-h) + 1px);
+  --ifm-navbar-padding-horizontal: 0;
+  --ifm-navbar-padding-vertical: 0;
+  --ifm-navbar-item-padding-horizontal: 10px;
+  --ifm-navbar-item-padding-vertical: 6px;
 }
 
-.sw-family__inner {
-  border-bottom: 0;
-  padding-inline: var(--wv-space-6);
-}
-
-/* ============================================
-   NAVBAR (one set of rules)
-   ============================================ */
 .navbar {
   background: var(--wv-canvas);
   color: var(--wv-ink);
   box-shadow: none;
   border-bottom: 1px solid var(--wv-line);
-  padding-inline: var(--wv-space-6);
+}
+
+.navbar__inner {
+  box-sizing: border-box;
+  max-width: var(--wv-page-max);
+  margin-inline: auto;
+  padding-inline: var(--wv-shell-gutter);
 }
 
 .navbar__brand {
   color: var(--wv-ink);
+  margin-right: var(--wv-space-6);
 }
 
-/* SpecWeave wordmark: Weave sans 700 at h3 size, ink. */
+/* Brand slot: the current product's name, Weave sans 700 at h3 size. */
 .navbar__title {
   font-family: var(--wv-font-sans);
   font-size: 21px;
@@ -91,6 +95,9 @@ select {
   letter-spacing: -0.008em;
   color: var(--wv-ink);
 }
+
+.navbar__items { gap: var(--wv-space-1); }
+.navbar__items--right { gap: var(--wv-space-2); }
 
 .navbar__link {
   font-size: 15px;
@@ -102,6 +109,76 @@ select {
 .navbar__link:hover,
 .navbar__link--active {
   color: var(--wv-ink);
+}
+
+/* Each product shows its own links and main button. */
+.sw-shell[data-product='specweave'] .nav-specwithcode,
+.sw-shell[data-product='specwithcode'] .nav-specweave {
+  display: none;
+}
+
+/* Right cluster, in the family order: language, search, theme, GitHub, main button. */
+.navbar__items--right > .dropdown { order: 1; }
+.navbar__items--right > [class*='navbarSearchContainer'] { order: 2; position: static; margin: 0; }
+.navbar__items--right > [class*='colorModeToggle'] { order: 3; margin: 0; }
+.navbar__items--right > .header-github-link { order: 4; }
+.navbar__items--right > .nav-cta { order: 5; }
+
+.navbar .nav-cta,
+.navbar .nav-cta:hover {
+  color: var(--wv-on-iris);
+  text-decoration: none;
+}
+
+/* Controls: 32px, hairline, panel ground (the Weave .wv-control values). */
+.navbar [class*='colorModeToggle'] button,
+.navbar .header-github-link {
+  box-sizing: border-box;
+  width: var(--wv-control-h);
+  height: var(--wv-control-h);
+  padding: 0;
+  justify-content: center;
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-sm);
+  background: var(--wv-panel);
+  color: var(--wv-muted);
+}
+
+.navbar [class*='colorModeToggle'] button:hover,
+.navbar .header-github-link:hover {
+  background: var(--wv-panel);
+  border-color: var(--wv-control);
+  color: var(--wv-ink);
+}
+
+.navbar [class*='colorModeToggle'] { width: var(--wv-control-h); height: var(--wv-control-h); }
+.navbar [class*='colorModeToggle'] button { width: 100%; height: 100%; }
+.navbar [class*='colorModeToggle'] svg { width: 16px; height: 16px; }
+.navbar .navbar__search { margin: 0; }
+
+.navbar .navbar__search-input {
+  box-sizing: border-box;
+  width: 168px;
+  height: var(--wv-control-h);
+  border: 1px solid var(--wv-line);
+  border-radius: var(--wv-radius-sm);
+  background-color: var(--wv-panel);
+  font: 400 13px/18px var(--wv-font-sans);
+}
+
+.navbar .navbar__search-input:hover,
+.navbar .navbar__search-input:focus { border-color: var(--wv-control); }
+
+/* Phones and tablets: menu button, brand, then theme and search. */
+@media (max-width: 996px) {
+  .navbar__toggle { margin-right: var(--wv-space-3); }
+  .navbar__items--right > .header-github-link,
+  .navbar__items--right > .nav-cta { display: none; }
+  .navbar__items--right > [class*='colorModeToggle'] { display: flex; order: 1; }
+  .navbar .navbar__search-input { width: var(--wv-control-h); padding: 0; background-position: center; color: transparent; }
+  .navbar .navbar__search-input::placeholder { color: transparent; }
+  .navbar .navbar__search-input:focus { width: 168px; padding: 0 var(--wv-space-2) 0 2.25rem; background-position: 0.6rem center; color: var(--wv-ink); }
+  .navbar [class*='searchHintContainer'] { display: none; }
 }
 
 /* Weave: no arrows appended to link text (Docusaurus adds one to external links). */
@@ -129,24 +206,17 @@ select {
 
 .header-github-link::before {
   content: '';
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   display: block;
   background-color: currentColor;
   -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.070 3.633 17.700 3.633 17.700c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.070 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.760-1.605-2.665-.3-5.466-1.332-5.466-5.930 0-1.310.465-2.380 1.235-3.220-.135-.303-.540-1.523.105-3.176 0 0 1.005-.322 3.300 1.230.960-.267 1.980-.399 3-.405 1.020.006 2.040.138 3 .405 2.280-1.552 3.285-1.230 3.285-1.230.645 1.653.240 2.873.120 3.176.765.840 1.230 1.910 1.230 3.220 0 4.610-2.805 5.625-5.475 5.920.420.360.810 1.096.810 2.220 0 1.606-.015 2.896-.015 3.286 0 .315.210.690.825.570C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.070 3.633 17.700 3.633 17.700c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.070 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.760-1.605-2.665-.3-5.466-1.332-5.466-5.930 0-1.310.465-2.380 1.235-3.220-.135-.303-.540-1.523.105-3.176 0 0 1.005-.322 3.300 1.230.960-.267 1.980-.399 3-.405 1.020.006 2.040.138 3 .405 2.280-1.552 3.285-1.230 3.285-1.230.645 1.653.240 2.873.120 3.176.765.840 1.230 1.910 1.230 3.220 0 4.610-2.805 5.625-5.475 5.920.420.360.810 1.096.810 2.220 0 1.606-.015 2.896-.015 3.286 0 .315.210.690.825.570C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
-@media (max-width: 996px) {
-  .navbar,
-  .sw-family__inner {
-    padding-inline: var(--wv-space-4);
-  }
-}
-
 /* Phones: product names only, so the family bar fits 390px without scrolling. */
 @media (max-width: 600px) {
-  .sw-family .wv-family__what {
+  .wv-shell-bar .wv-family__what {
     display: none;
   }
 }
@@ -169,7 +239,7 @@ select {
 }
 
 .markdown h2 {
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: -0.018em;
 }
 

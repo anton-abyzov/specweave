@@ -607,17 +607,9 @@
   }
 }
 
-/* ---------- Scroll-driven reveal ---------- */
+/* ---------- Scroll-linked: the screenshot settles and the folder lines draw. No section fade-ups. ---------- */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .reveal {
-      animation: reveal-in linear forwards;
-      animation-timeline: view();
-      /* A fixed distance, not a share of the element: tall blocks (the #app column on phones) were
-         still half transparent while fully readable on screen. */
-      animation-range: entry 0% entry 220px;
-    }
-
     .appShot > a img {
       animation: shot-zoom linear forwards;
       animation-timeline: view();
@@ -630,12 +622,6 @@
       animation-range: entry 0% entry 100%;
     }
   }
-}
-
-@keyframes reveal-in {
-  from { opacity: 0; transform: translate3d(0, 40px, 0); }
-  60% { opacity: 1; }
-  to { opacity: 1; transform: none; }
 }
 
 @keyframes shot-zoom {

@@ -2,6 +2,10 @@ import type {PrismTheme} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import {englishOnlySitemapPatterns} from './src/data/englishOnlyPaths';
+import {readFileSync} from 'node:fs';
+import {join} from 'node:path';
+
+const weaveShellScript = readFileSync(join(__dirname, 'src/css/weave-shell.js'), 'utf8');
 
 // Prism theme built from Weave tokens (src/css/weave.css). CSS variables resolve per
 // data-theme, so the same object serves light and dark: calm, low-chroma, iris used sparingly.
@@ -42,6 +46,9 @@ const config: Config = {
 
   // SEO: Schema.org structured data for search engines
   headTags: [
+    // Weave shell: applies a light or dark choice carried from verified-skill.com before the
+    // theme script reads it. The content is design/weave/weave-shell.js, unchanged.
+    {tagName: 'script', attributes: {'data-weave-shell': 'true'}, innerHTML: weaveShellScript},
     // Cloudflare injects its same-origin analytics beacon at the production edge.
     // A second manual snippet sends duplicate reports to the cross-origin endpoint.
     {
@@ -369,18 +376,23 @@ const config: Config = {
     // The Weave family bar above it lives in src/theme/Navbar/index.tsx.
     navbar: {
       title: 'SpecWeave',
+      // One item set per product: custom.css shows the set that matches .sw-shell[data-product].
+      // The product switch itself is the family bar above the navbar.
       items: [
-        {to: '/code/', label: 'SpecWithCode', position: 'left'},
-        {to: '/product', label: 'CLI', position: 'left'},
+        {to: '/product', label: 'CLI', position: 'left', className: 'nav-specweave'},
+        {to: '/integrations', label: 'Integrations', position: 'left', className: 'nav-specweave'},
+        {to: '/code/#start', label: 'How it works', position: 'left', className: 'nav-specwithcode', activeBaseRegex: '^$'},
+        {to: '/code/#skills', label: 'Skills', position: 'left', className: 'nav-specwithcode', activeBaseRegex: '^$'},
         {type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Docs'},
         {to: '/tutorials', label: 'Tutorials', position: 'left'},
-        {href: 'https://verified-skill.com/claude-code-skills', label: 'Verified Skill', position: 'right'},
         {
           href: 'https://github.com/anton-abyzov/specweave',
           position: 'right',
           className: 'header-github-link',
           'aria-label': 'SpecWeave on GitHub',
         },
+        {to: '/docs/getting-started', label: 'Get the CLI', position: 'right', className: 'wv-btn wv-btn--primary wv-btn--sm nav-cta nav-specweave'},
+        {to: '/code/download/', label: 'Download', position: 'right', className: 'wv-btn wv-btn--primary wv-btn--sm nav-cta nav-specwithcode'},
         {type: 'localeDropdown', position: 'right'},
         {type: 'search', position: 'right'},
       ],

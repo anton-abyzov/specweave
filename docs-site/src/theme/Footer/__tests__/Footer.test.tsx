@@ -12,13 +12,16 @@ vi.mock('@docusaurus/Link', () => ({
 import Footer from '../index';
 
 describe('Footer', () => {
-  it('renders 5 column headings: Start, Switch tools, Compare, Reference, Project', () => {
-    render(<Footer />);
-    expect(screen.getByText('Start')).toBeInTheDocument();
-    expect(screen.getByText('Switch tools')).toBeInTheDocument();
-    expect(screen.getByText('Compare')).toBeInTheDocument();
-    expect(screen.getByText('Reference')).toBeInTheDocument();
-    expect(screen.getByText('Project')).toBeInTheDocument();
+  it('renders the four shell columns, the second named after the product', () => {
+    const {container} = render(<Footer />);
+    const titles = Array.from(container.querySelectorAll('footer.wv-footer h2')).map((h) => h.textContent);
+    expect(titles).toEqual(['Products', 'SpecWeave', 'Guides', 'Project']);
+  });
+
+  it('links the three products first', () => {
+    const {container} = render(<Footer />);
+    const products = container.querySelector('footer.wv-footer ul')!;
+    expect(Array.from(products.querySelectorAll('a')).map((a) => a.getAttribute('href'))).toEqual(['/', '/code/', 'https://verified-skill.com']);
   });
 
   it('renders social icon links', () => {
@@ -48,8 +51,6 @@ describe('Footer', () => {
     expect(screen.getByText('Quick start')).toHaveAttribute('href', '/docs/getting-started');
     expect(screen.getByText('Tutorials')).toHaveAttribute('href', '/tutorials');
     expect(screen.getByText('Handoff and pickup')).toHaveAttribute('href', '/docs/guides/cross-tool-handoff');
-    expect(screen.getByText('SpecWithCode')).toHaveAttribute('href', '/code/');
-    expect(screen.getByText('Download SpecWithCode')).toHaveAttribute('href', '/code/download/');
     expect(screen.getByText('Privacy')).toHaveAttribute('href', '/privacy');
     expect(screen.getByText('SpecWeave vs OpenSpec')).toHaveAttribute('href', '/docs/compare/specweave-vs-openspec/');
     expect(screen.getByText('All spec-driven tools')).toHaveAttribute('href', '/docs/compare/spec-driven-development-tools/');
@@ -69,6 +70,7 @@ describe('Footer', () => {
       render(<Footer />);
       expect(screen.getByLabelText('GitHub')).toHaveAttribute('href', 'https://github.com/anton-abyzov/specwithcode');
       expect(screen.getByLabelText('GitHub Issues')).toHaveAttribute('href', 'https://github.com/anton-abyzov/specwithcode/issues');
+      expect(screen.getByText('Download SpecWithCode')).toHaveAttribute('href', '/code/download/');
     } finally {
       location.pathname = '/';
     }

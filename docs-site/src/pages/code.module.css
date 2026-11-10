@@ -154,7 +154,7 @@
 }
 .heroCopy { max-width: 980px; min-width: 0; margin-inline: auto; }
 .hero .product, .hero .actions { justify-content: center; }
-.hero h1 { font-size: clamp(44px, 5.8vw, 76px); line-height: 1.04; letter-spacing: -.055em; }
+.hero h1 { font-size: 48px; line-height: 1.08; letter-spacing: -0.025em; }
 .hero h1 em { font-style: normal; color: var(--wv-iris-strong); }
 .heroBrand { display: block; font-size: 16px; line-height: 24px; letter-spacing: 0; margin-bottom: 20px; }
 .hero .lead { max-width: 680px; margin: 24px auto; }
@@ -485,7 +485,7 @@
 /* Keep the product proof in the first screen; detailed limits follow it. */
 .hero { padding-top: 32px; gap: 24px; }
 .heroBrand { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
-.hero h1 { font-size: clamp(42px, 5vw, 66px); }
+.hero h1 { font-size: 48px; }
 .hero .lead { font-size: 19px; line-height: 1.5; margin-block: 18px; }
 .hero .providers { margin-block: 20px; }
 .heroShot .requirements { margin-top: 24px; text-align: center; }

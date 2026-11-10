@@ -219,6 +219,7 @@ export default function Code() {
   const brokenLinks = useBrokenLinks();
   for (const {id} of MORE) brokenLinks.collectAnchor(id);
   brokenLinks.collectAnchor('start');
+  brokenLinks.collectAnchor('skills');
   brokenLinks.collectAnchor('questions');
   brokenLinks.collectAnchor('subscriptions');
   const TITLE = pageTitle();
@@ -341,6 +342,33 @@ export default function Code() {
       </section>
 
       {/* ---------- Everything else, briefly ---------- */}
+      {/* ---------- Skills: find, install, test, manage ---------- */}
+      <section id="skills" className={clsx(styles.shell, styles.section)} aria-labelledby="skills-title">
+        <div className={styles.sectionHead}>
+          <h2 id="skills-title"><Translate id="code.skills.title" description="Heading of the skills section">Skills, managed in one place</Translate></h2>
+          <p><Translate id="code.skills.intro" description="Intro of the skills section. Keep product names in English">Each coding agent keeps its own skills. SpecWithCode shows them together on every machine, and Verified Skill tells you what a skill has been through before you install it.</Translate></p>
+        </div>
+        <ol className="wv-thread wv-thread--across">
+          <li>
+            <h3 className="wv-thread__title"><Translate id="code.skills.find.title" description="Skills step 1 title">Find</Translate></h3>
+            <p className="wv-thread__body"><Translate id="code.skills.find.body" description="Skills step 1 text; {link} links to the Verified Skill registry. Keep product names in English" values={{link: <a className="wv-link" href="https://verified-skill.com/skills">Verified Skill</a>}}>{'Browse {link}. Every skill shows its source, its security scan and, when one exists, its evaluation.'}</Translate></p>
+          </li>
+          <li>
+            <h3 className="wv-thread__title"><Translate id="code.skills.install.title" description="Skills step 2 title">Install</Translate></h3>
+            <p className="wv-thread__body"><Translate id="code.skills.install.body" description="Skills step 2 text">One command installs a skill for the agents you choose, on the machine where they run.</Translate></p>
+          </li>
+          <li>
+            <h3 className="wv-thread__title"><Translate id="code.skills.test.title" description="Skills step 3 title">Test</Translate></h3>
+            <p className="wv-thread__body"><Translate id="code.skills.test.body" description="Skills step 3 text; {link} links to the Skill Studio docs. Keep product names in English" values={{link: <Link className="wv-link" to="/docs/skills/skill-studio/">Skill Studio</Link>}}>{'{link} runs a skill on your own task, so you see what it changes before you keep it.'}</Translate></p>
+          </li>
+          <li>
+            <h3 className="wv-thread__title"><Translate id="code.skills.manage.title" description="Skills step 4 title">Manage</Translate></h3>
+            <p className="wv-thread__body"><Translate id="code.skills.manage.body" description="Skills step 4 text; Settings › Skills is a menu path in the app">In Settings › Skills, choose which agents see a skill and which version they run.</Translate></p>
+          </li>
+        </ol>
+        <div className={clsx('wv-cmd', styles.skillsCmd)}><code>npx vskill@latest install owner/repo/skill</code></div>
+      </section>
+
       <section className={clsx(styles.shell, styles.section)} aria-labelledby="more-title">
         <div className={styles.sectionHead}>
           <h2 id="more-title"><Translate id="code.more.title" description="Heading of the more section">There’s more when you need it</Translate></h2>
