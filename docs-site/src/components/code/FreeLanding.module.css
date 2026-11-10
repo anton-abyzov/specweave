@@ -183,7 +183,8 @@
 .hero .h1Top { display: inline; }
 .page img.h1Mark { vertical-align: -0.06em; margin-right: .12em; background: var(--wv-panel); border: 1px solid var(--wv-line); }
 .page img.h1Mark + .h1Mark { margin-right: .2em; }
-.page img.h1MarkDark { background: #241523; border-color: #241523; }
+/* Doubled class: the minifier merges this with the generic plate rule and may order it first. */
+.page img.h1Mark.h1MarkDark { background: #241523; border-color: #241523; }
 
 /* The headline marks drift a little, so the hero is never fully still. */
 .page img.h1Mark { animation: wvH1Float 4.5s ease-in-out infinite; }

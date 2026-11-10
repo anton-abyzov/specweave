@@ -268,8 +268,9 @@ function threadStatus(th: Thread, t: number): Status {
   return 'running';
 }
 
-const flip = {initial: {opacity: 0, rotateY: 90}, animate: {opacity: 1, rotateY: 0}, exit: {opacity: 0, rotateY: -90}, transition: {duration: 0.35}};
-const slide = {initial: {opacity: 0, y: 8}, animate: {opacity: 1, y: 0}, exit: {opacity: 0, y: -8}, transition: {duration: 0.25}};
+const flip = {initial: {opacity: 0, rotateY: 90}, animate: {opacity: 1, rotateY: 0, transition: {duration: 0.2, delay: 0.16}}, exit: {opacity: 0, rotateY: -90, transition: {duration: 0.14}}};
+// Sequential swap: the old text is gone before the new one fades in, so the two never overlap.
+const slide = {initial: {opacity: 0, y: 6}, animate: {opacity: 1, y: 0, transition: {duration: 0.2, delay: 0.16}}, exit: {opacity: 0, y: -6, transition: {duration: 0.14}}};
 const spring = {type: 'spring', stiffness: 260, damping: 26} as const;
 
 function Mark({mark, dark, size, base}: {mark: string; dark?: boolean; size: number; base: string}) {
