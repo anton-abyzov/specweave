@@ -55,7 +55,7 @@ On the phone, the app keeps the list of computers you paired: each computer's na
 
 The camera is used only to scan the pairing QR code, and local network access only to reach your own computers.
 
-Removing a computer in the app deletes its addresses and tokens from the phone, but does not tell the computer. To end the phone's access sooner, revoke it in SpecWithCode on that computer, under Settings > Connections > Authorized clients. Otherwise access ends after 30 days.
+Removing a computer in the app deletes its addresses and tokens from the phone, but does not tell the computer. To end the phone's access sooner, revoke it in SpecWithCode on that computer, under Settings > Machines > Authorized clients. Otherwise access ends after 30 days.
 
 ## SpecWithCode for Android
 

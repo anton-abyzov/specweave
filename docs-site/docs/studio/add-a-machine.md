@@ -1,7 +1,7 @@
 ---
-title: "Add a machine to SpecWithCode: link Connect, invite the machine, allow workers"
+title: "Add a machine to SpecWithCode: link Connect, join the main machine, allow workers"
 sidebar_label: Add a machine
-description: "Let coordinators on your main computer start workers on a second Mac, a Linux box or a VPS. Link SpecWithCode Connect on the new machine, choose Invite this machine in Settings > Connections, paste the line on your main machine and allow workers. Tailscale is an optional fallback. Why we recommend one machine per AI-provider subscription."
+description: "Let coordinators on your main computer start workers on a second Mac, a Linux box or a VPS. Link SpecWithCode Connect on the new machine, choose Join a main machine in Settings > Machines, paste the line on your main machine and allow workers. Tailscale is an optional fallback. Why we recommend one machine per AI-provider subscription."
 ---
 
 import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
@@ -10,22 +10,22 @@ import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
 
 Coordinators on your main machine can start workers on your other computers: a second Mac, a Windows PC, a Linux box at home or a rented VPS. Each worker runs in its own checkout on that machine, with that machine's own provider sign-ins.
 
-Machines reach each other through [SpecWithCode Connect](/docs/studio/connect), so it does not matter which network each one is on, and nothing on your router changes. Everything below is in **Settings > Connections**; you never need a terminal on a Mac with the desktop app.
+Machines reach each other through [SpecWithCode Connect](/docs/studio/connect), so it does not matter which network each one is on, and nothing on your router changes. Everything below is in **Settings > Machines**; you never need a terminal on a Mac with the desktop app.
 
 Adding a machine takes four steps:
 
 1. On the new machine (the **worker**), [link SpecWithCode Connect](#1-link-connect-on-the-worker).
-2. On the worker, [make an invitation line](#2-make-the-line-on-the-worker). It starts with `swc-machine-`.
-3. On your **main machine**, [paste the line](#add-it-on-the-main-machine) under **Settings > Connections > Your private machines > Add a machine**.
-4. On the worker's card there, choose **Allow workers**.
+2. On the worker, [make a join line](#2-make-the-line-on-the-worker). It starts with `swc-machine-`.
+3. On your **main machine**, [paste the line](#add-it-on-the-main-machine) under **Settings > Machines > Add a machine**.
+4. On the worker's row there, choose **Allow** to allow workers.
 
 Only want to open a machine from your phone, a browser or another computer, without starting workers on it? Step 1 is all you need: see [Connect](/docs/studio/connect).
 
 ## 1. Link Connect on the worker
 
-On the worker, choose **Sign in to SpecWithCode Connect** at the bottom of the Settings sidebar, then turn on **Enable SpecWithCode Connect** under **Settings > Connections**. On a server without the desktop app, run `specwithcode connect` there instead. [Connect](/docs/studio/connect#link-a-machine) has the details.
+On the worker, choose **Sign in to SpecWithCode Connect** at the bottom of the Settings sidebar, then turn on **SpecWithCode Connect** under **Settings > Machines**. On a server without the desktop app, run `specwithcode connect` there instead. [Connect](/docs/studio/connect#link-a-machine) has the details.
 
-Only the worker needs Connect. The main machine does not have to be signed in to Connect, or to the same account: the line works because the worker checks that the main machine's environment ID matches the one you enter in step 2. If the main machine cannot reach a machine, **Your private machines** shows a banner that says which machine is not linked yet.
+Only the worker needs Connect. The main machine does not have to be signed in to Connect, or to the same account: the line works because the worker checks that the main machine's environment ID matches the one you enter in step 2. If the main machine cannot reach a machine, **Machines** shows a banner that says which machine is not linked yet.
 
 Connect includes 3 machines; the first 300 accounts get 10 as [founders](/pricing).
 
@@ -37,12 +37,12 @@ The line holds a management credential for the worker. Treat it like a password:
 
 **On a new install**, the first screen asks how you will use this machine. Choose **Connect to an existing one**; it skips setting up agents and projects on the worker. **Start as a main machine** sets them up here instead.
 
-**On a machine that is already set up**, open **Settings > Connections > Your private machines** and, next to **Add this machine to another one**, choose **Invite this machine**.
+**On a machine that is already set up**, open **Settings > Machines** and, next to **Join a main machine**, choose **Make a join line**.
 
 Then:
 
 1. The app checks that Connect is linked here. If not, it shows **Link SpecWithCode Connect first** and clears on its own once you sign in and turn Connect on.
-2. Paste your main machine's environment ID under **Main machine environment ID**. The main machine shows it in its **Add a machine** steps and under **Settings > Connections**. This approves that machine, and only that one, to manage this worker.
+2. Paste your main machine's environment ID under **Main machine environment ID**. The main machine shows it in its **Add a machine** steps under **Settings > Machines**. This approves that machine, and only that one, to manage this worker.
 3. Optionally type a name under **Name on the main machine**. Left empty, the machine's own name is used.
 4. Choose **Make the line**, then **Copy** the `swc-machine-…` line. A line with a Connect address works once, within an hour.
 
@@ -82,10 +82,10 @@ You do not need Tailscale. If both machines are also on the same tailnet, the ma
 
 ## Add it on the main machine
 
-1. Open **Settings > Connections > Your private machines**.
+1. Open **Settings > Machines**.
 2. Paste the line into **Add a machine** within an hour and choose **Add machine**. The main machine checks that the address answers as that machine before saving it. A line made for a different main machine stops with "made for a different main machine": make a new line on the worker with this machine's environment ID.
-3. With **Connect automatically** on, the main machine pairs with the worker within a minute. Otherwise choose **Connect machine** on its card. With Connect only, this browser pairing waits; see [With Connect only](#with-connect-only).
-4. Choose **Allow workers** on the card, and pick the most a worker there may do.
+3. With **Connect automatically** on, the main machine pairs with the worker within a minute. Otherwise choose **Connect machine** on its row. With Connect only, this browser pairing waits; see [With Connect only](#with-connect-only).
+4. On its row, choose **Allow** on the line about agents here starting work on it, and pick the most a worker there may do.
 
 From a terminal on the main machine, `specwithcode fleet add swc-machine-…` does the same. `specwithcode fleet list` shows every machine and whether it answers now; `specwithcode fleet remove <name>` takes one off the list.
 
@@ -114,14 +114,14 @@ The project must exist on the worker as its own checkout, cloned from the same r
 
 ## Revoke a line
 
-A line works for a year unless you revoke it (`fleet invite --ttl` changes that). On the worker, open **Settings > Connections > Authorized clients** and revoke **Fleet management (fleet invite)**, or run `specwithcode auth session list` and `auth session revoke`. To add the machine again, make a new line and add it on the main machine; that updates the same machine in place.
+A line works for a year unless you revoke it (`fleet invite --ttl` changes that). On the worker, open **Settings > Machines > Authorized clients** and revoke **Fleet management (fleet invite)**, or run `specwithcode auth session list` and `auth session revoke`. To add the machine again, make a new line and add it on the main machine; that updates the same machine in place.
 
 ## When something is wrong
 
 | You see | What to do |
 |---|---|
-| A banner says a machine "isn't on SpecWithCode Connect" | On that machine, open **Settings > Connections > SpecWithCode Connect** and link it. It then connects on its own. |
-| The invite asks for Tailscale | Connect is not linked on this machine yet. Link it (step 1) and choose **Invite this machine** again. |
+| A banner says a machine "isn't on SpecWithCode Connect" | On that machine, open **Settings > Machines > SpecWithCode Connect** and link it. It then connects on its own. |
+| The invite asks for Tailscale | Connect is not linked on this machine yet. Link it (step 1) and choose **Make a join line** again. |
 | "Tailscale is not installed", "no Tailscale name" or "could not publish on HTTPS port 443" | Only for the optional Tailscale route: install and sign in to Tailscale, turn on MagicDNS and HTTPS Certificates. Or skip Tailscale and use Connect. |
 | "No running SpecWithCode server found." | Open the desktop app, or start `specwithcode serve`, then run `fleet invite` again. |
 | "This is not a machine invitation." | Part of the line is missing. Make a new one and copy all of it. |

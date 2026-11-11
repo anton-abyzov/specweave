@@ -21,7 +21,7 @@ You do this once on **each machine** you want to reach, either sitting at it or 
 
 ### In the desktop app
 
-1. On the machine, open **Settings > Connections**.
+1. On the machine, open **Settings > Machines**.
 2. Choose **Sign in to SpecWithCode Connect** at the bottom of the Settings sidebar and finish the sign-in in your browser.
 3. Turn on **SpecWithCode Connect** for this machine's environment.
 
@@ -45,7 +45,7 @@ On your other device (the desktop app on another computer, a browser, or the iPh
 
 ### Add your iPhone, or a second one
 
-1. On the computer, open **Settings > Connections**. Under **Use SpecWithCode on your phone**, sign in and choose **Turn on**. It then says the computer is ready for your iPhone.
+1. On the computer, open **Settings > Machines**. Under **Your phones**, sign in and choose **Turn on**. It then says the computer is ready for your iPhone.
 2. On the iPhone, install SpecWithCode, open it and sign in with the same account.
 3. The computer appears in the iPhone's list. Tap it to start.
 
