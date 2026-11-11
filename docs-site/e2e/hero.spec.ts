@@ -45,6 +45,18 @@ test.describe('landing page', () => {
     await expect(stage.locator('[data-on="0"]').first()).toBeAttached();
   });
 
+  test('a playing stage shows the complete picture as soon as printing starts', async ({ page }) => {
+    const stage = page.locator('#how figure').first();
+    await stage.scrollIntoViewIfNeeded();
+    await expect(stage.locator('[data-on="0"]').first()).toBeAttached();
+    // The browser lays out for print when the beforeprint listeners return, so read in the same task.
+    const left = await page.evaluate(() => {
+      window.dispatchEvent(new Event('beforeprint'));
+      return document.querySelectorAll('#how figure[data-live], #how [data-on="0"]').length;
+    });
+    expect(left).toBe(0);
+  });
+
   test('page never scrolls sideways', async ({ page }) => {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(overflow).toBe(false);
