@@ -32,7 +32,7 @@ describe('home story', () => {
     for (const line of LEDGER) {
       const round = JSON.parse(JSON.stringify(line));
       expect(Object.keys(round).slice(0, 4)).toEqual(['t', 'e', 'by', 'at']);
-      expect(round.at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+      expect(round.at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     }
     const times = LEDGER.map((l) => Date.parse(l.at));
     expect([...times].sort((a, b) => a - b)).toEqual(times);
@@ -40,7 +40,7 @@ describe('home story', () => {
     expect(LEDGER[LEDGER.length - 1]).toMatchObject({t: 'T-02', e: 'done', by: 'codex@laptop'});
   });
 
-  it('quotes the real pickup and verify output', () => {
+  it('keeps the pickup, verify and review lines in the CLI formats', () => {
     expect(PICKUP[0][0]).toBe('Picked up the handoff from claude@cloud (out of tokens): applied 7 uncommitted files.');
     expect(PICKUP.find(([, next]) => next)?.[0]).toBe('Next: T-02 Restore the draft on return');
     expect(VERIFY_LINES.map(([text]) => text)).toEqual(['ok   npm test (exit 0)', 'ok   npm run lint (exit 0)', 'ok   npm run build (exit 0)', 'ACs 2/2 · tasks 2/2 done (0 skipped)', 'PASS → reports/verify.md']);
@@ -58,7 +58,7 @@ describe('home story', () => {
     const clock = read('src/components/home/story/useSteps.ts');
     expect(clock).toMatch(/useState\(total\)/);
     expect(clock).toMatch(/prefers-reduced-motion: reduce/);
-    expect(clock).toMatch(/else \{ stop\(\); setLive\(false\); setStep\(total\); \}/);
+    expect(clock).toMatch(/const rest = \(\) => \{ stop\(\); setLive\(false\); setStep\(total\); \};/);
   });
 
   it('animates only under data-live and stops under reduced motion', () => {

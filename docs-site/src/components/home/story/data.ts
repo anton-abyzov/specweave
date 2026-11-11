@@ -11,7 +11,8 @@
     (src/cli/commands/verify.ts). review: `Verdict: <verdict> → <report>`; exit 0 ship, 3 fix first
     (src/cli/commands/review.ts). complete refuses without a passing reports/verify.json
     (src/core/tasks/closure-gate.ts).
-  The review finding is an invented example; the stages are labelled as illustrations.
+  The stages are labelled as illustrations: report paths are shortened to reports/…, evidence shows
+  only its first line, and the review finding is an invented example.
 */
 
 export const INCREMENT = '0001-resumable-checkout';
@@ -38,13 +39,13 @@ export type LedgerLine = { t: string; e: string; by: string; at: string; evidenc
 
 /** The whole ledger of the example. Scene 2 plays Claude's lines, scene 3 the handoff and Codex's. */
 export const LEDGER: LedgerLine[] = [
-  { t: 'T-01', e: 'claim', by: 'claude@cloud', at: '2026-10-15T14:02:11Z' },
-  { t: 'T-01', e: 'done', by: 'claude@cloud', at: '2026-10-15T14:31:40Z', evidence: 'a41c9e2' },
-  { t: 'T-02', e: 'claim', by: 'claude@cloud', at: '2026-10-15T14:32:05Z' },
-  { t: 'T-02', e: 'release', by: 'claude@cloud', at: '2026-10-15T14:58:47Z', note: 'handoff' },
-  { t: '*', e: 'handoff', by: 'claude@cloud', at: '2026-10-15T14:58:47Z', note: 'usage limit' },
-  { t: 'T-02', e: 'claim', by: 'codex@laptop', at: '2026-10-15T15:04:19Z' },
-  { t: 'T-02', e: 'done', by: 'codex@laptop', at: '2026-10-15T15:22:51Z', evidence: '7d03b1f' },
+  { t: 'T-01', e: 'claim', by: 'claude@cloud', at: '2026-10-15T14:02:11.482Z' },
+  { t: 'T-01', e: 'done', by: 'claude@cloud', at: '2026-10-15T14:31:40.117Z', evidence: 'npm test → exit 0' },
+  { t: 'T-02', e: 'claim', by: 'claude@cloud', at: '2026-10-15T14:32:05.930Z' },
+  { t: 'T-02', e: 'release', by: 'claude@cloud', at: '2026-10-15T14:58:47.204Z', note: 'handoff' },
+  { t: '*', e: 'handoff', by: 'claude@cloud', at: '2026-10-15T14:58:47.205Z', note: 'usage limit' },
+  { t: 'T-02', e: 'claim', by: 'codex@laptop', at: '2026-10-15T15:04:19.651Z' },
+  { t: 'T-02', e: 'done', by: 'codex@laptop', at: '2026-10-15T15:22:51.348Z', evidence: 'npm test → exit 0' },
 ];
 
 /** Real `specweave pickup` output in a second clone running as Codex (src/pages/product.tsx). */

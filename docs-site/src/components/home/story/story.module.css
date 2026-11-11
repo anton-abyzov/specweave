@@ -147,7 +147,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) and (min-width: 1080px) {
-  .scene:not(:last-child)::before {
+  .scene:not(:last-child):has(.stage[data-live])::before {
     animation: beadDown 0.8s linear infinite;
   }
 }
@@ -545,6 +545,11 @@
   color: var(--wv-pass);
 }
 
+/* A line lands once. Without this it would fall back to the generic rise when data-new clears and blink. */
+.stage[data-live] .ledger li[data-on="1"] {
+  animation: none;
+}
+
 .stage[data-live] .ledger li[data-new="1"] {
   animation: land 1100ms ease-out both;
 }
@@ -686,7 +691,7 @@
 }
 
 .agent[data-rest="1"] {
-  opacity: 0.72;
+  opacity: 0.86;
 }
 
 .agent[data-wait="1"] {

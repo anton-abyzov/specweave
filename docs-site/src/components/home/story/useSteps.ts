@@ -26,9 +26,10 @@ export function useSteps<T extends HTMLElement>(times: readonly number[], hold =
       times.forEach((at, i) => timers.push(window.setTimeout(() => setStep(i + 1), at)));
       timers.push(window.setTimeout(play, times[total - 1] + hold));
     };
+    const rest = () => { stop(); setLive(false); setStep(total); };
     const sync = () => {
       if (visible && !reduced.matches && !document.hidden) { setLive(true); play(); }
-      else { stop(); setLive(false); setStep(total); }
+      else rest();
     };
     const io = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting === visible) return;
@@ -38,10 +39,15 @@ export function useSteps<T extends HTMLElement>(times: readonly number[], hold =
     io.observe(el);
     reduced.addEventListener('change', sync);
     document.addEventListener('visibilitychange', sync);
+    // Paper gets the complete picture, not the step the loop happened to be on.
+    window.addEventListener('beforeprint', rest);
+    window.addEventListener('afterprint', sync);
     return () => {
       io.disconnect();
       reduced.removeEventListener('change', sync);
       document.removeEventListener('visibilitychange', sync);
+      window.removeEventListener('beforeprint', rest);
+      window.removeEventListener('afterprint', sync);
       stop();
     };
     // `times` is a module constant for every stage.

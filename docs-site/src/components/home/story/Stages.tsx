@@ -134,7 +134,7 @@ export function LedgerStage() {
     <div className={s.board}>
       <p className={s.boardTitle}><Translate id="home.story.ledger.board" description="Title of the task board in the ledger illustration">Task board, computed from the ledger</Translate></p>
       <ul>
-        <TaskRow id="T-01" title="Save the cart as a draft" state={shown >= 2 ? 'done' : shown >= 1 ? 'claimed' : 'open'} by="claude" evidence={LEDGER[1].evidence} />
+        <TaskRow id="T-01" title="Save the cart as a draft" state={shown >= 2 ? 'done' : shown >= 1 ? 'claimed' : 'open'} by="claude" evidence="exit 0" />
         <TaskRow id="T-02" title="Restore the draft on return" state={shown >= 3 ? 'claimed' : 'open'} by="claude" />
       </ul>
     </div>
@@ -153,7 +153,7 @@ export function HandoffStage() {
   return <Frame stage={stage} total={HANDOFF_TIMES.length} file={<><FileText size={14} strokeWidth={2} />handoff.md</>}
     label={translate({ id: 'home.story.handoff.ariaLabel', message: 'Illustration: Claude Code reaches its usage limit on T-02 and runs specweave handoff. The handoff goes to git. Codex runs specweave pickup, gets T-02 with its two criteria and finishes it. Any agent that reads files and runs commands can pick up the same way.', description: 'Accessible label of the animated handoff illustration. Keep product, command and id names in English' })}>
     <div className={s.relay}>
-      <div className={clsx(s.agent, s.from)} data-limit={on(step >= 2)} data-rest={on(step >= 5)}>
+      <div className={s.agent} data-limit={on(step >= 2)} data-rest={on(step >= 5)}>
         <p className={s.agentHead}>
           <Mark who="claude" size={22} />
           <span className={s.agentName}><b>Claude Code</b><small>claude@cloud</small></span>
@@ -176,7 +176,7 @@ export function HandoffStage() {
       </div>
       <span className={s.wire} data-on={on(step >= 5)}><span /></span>
 
-      <div className={clsx(s.agent, s.to)} data-active={on(step >= 5)} data-wait={on(step < 5)}>
+      <div className={s.agent} data-active={on(step >= 5)} data-wait={on(step < 5)}>
         <p className={s.agentHead}>
           <Mark who="codex" size={22} />
           <span className={s.agentName}><b>Codex</b><small>codex@laptop</small></span>
@@ -233,7 +233,7 @@ export function GateStage() {
         </p>
         <Cmd reached={step >= 7}>specweave complete</Cmd>
         <p className={s.out}>
-          <span className={clsx(s.outLine, s.v_pass)} data-on={on(step >= 7)} style={delay(600)}>{INCREMENT}: completed</span>
+          <span className={clsx(s.outLine, s.v_pass)} data-on={on(step >= 7)} style={delay(600)}>✅ Increment {INCREMENT} completed!</span>
         </p>
       </li>
     </ol>
