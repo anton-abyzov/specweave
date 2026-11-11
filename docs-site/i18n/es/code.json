@@ -2611,26 +2611,6 @@
     "message": "Lee la medición",
     "description": "Link to the guide with the full measurement"
   },
-  "home.handoff.beat.spec": {
-    "message": "La especificación",
-    "description": "Progress rail label for beat 1 of the handoff story"
-  },
-  "home.handoff.beat.agents": {
-    "message": "Los agentes",
-    "description": "Progress rail label for beat 2 of the handoff story"
-  },
-  "home.handoff.beat.ledger": {
-    "message": "El ledger",
-    "description": "Progress rail label for beat 3 of the handoff story"
-  },
-  "home.handoff.beat.handoff": {
-    "message": "El traspaso",
-    "description": "Progress rail label for beat 4 of the handoff story"
-  },
-  "home.handoff.diagram.ariaLabel": {
-    "message": "Ilustración: Claude Code escribe en el repositorio hasta su límite de uso; Codex lee la misma especificación, ledger y traspaso desde git y termina la tarea.",
-    "description": "Accessible label of the handoff diagram. Keep product names in English"
-  },
   "home.handoff.chip.usageLimit": {
     "message": "Límite de uso",
     "description": "Warning chip: the agent hit its usage limit"
@@ -2638,10 +2618,6 @@
   "home.handoff.diagram.repo": {
     "message": "Tu repositorio, en git",
     "description": "Diagram node title for the git repository"
-  },
-  "home.handoff.diagram.verifyPass": {
-    "message": "verify: Aprobado",
-    "description": "Pass chip in the diagram; 'verify' is the CLI command name, keep it in English"
   },
   "home.handoff.diagram.caption": {
     "message": "Ilustración",
@@ -2651,25 +2627,9 @@
     "message": "Cuatro capas de un mismo traspaso",
     "description": "Accessible label of the list of the four handoff beats"
   },
-  "home.handoff.spec.title": {
-    "message": "La especificación",
-    "description": "Heading of beat 1"
-  },
   "home.handoff.spec.body": {
     "message": "Qué significa «hecho», escrito una vez antes de que empiece cualquier agente. {file}",
     "description": "Beat 1 text; {file} is the file name spec.md"
-  },
-  "home.handoff.spec.ariaLabel": {
-    "message": "Extracto de spec.md",
-    "description": "Accessible label of the spec.md excerpt; keep the file name"
-  },
-  "home.handoff.agents.title": {
-    "message": "Los agentes",
-    "description": "Heading of beat 2"
-  },
-  "home.handoff.agents.body": {
-    "message": "Cualquier herramienta que pueda leer los archivos reclama una tarea, la demuestra y sigue adelante.",
-    "description": "Beat 2 text"
   },
   "home.handoff.agents.claim": {
     "message": "Claude Code toma la primera tarea abierta. La reclamación es una línea en el ledger, así que ningún otro agente la toma también.",
@@ -2679,10 +2639,6 @@
     "message": "Ejecuta el test de la tarea. Exit 0 es la evidencia, y la salida completa se guarda en {file}.",
     "description": "Explains specweave task done; {file} is a file path"
   },
-  "home.handoff.agents.limit": {
-    "message": "Claude Code reclama T-02 y llega a su límite de uso a la mitad.",
-    "description": "Explains the second claim. Keep product names and T-02 in English"
-  },
   "home.handoff.ledger.title": {
     "message": "El ledger en git",
     "description": "Heading of beat 3"
@@ -2690,10 +2646,6 @@
   "home.handoff.ledger.body": {
     "message": "Cada reclamación, finalización y liberación es una línea, con commit junto al código. {file}",
     "description": "Beat 3 text; {file} is the file name ledger.jsonl"
-  },
-  "home.handoff.ledger.ariaLabel": {
-    "message": "Líneas de ledger.jsonl después de ambos agentes",
-    "description": "Accessible label of the ledger excerpt; keep the file name"
   },
   "home.handoff.handoff.title": {
     "message": "El traspaso",
@@ -2703,10 +2655,6 @@
     "message": "Otra herramienta continúa desde los mismos archivos, no desde una ventana de chat.",
     "description": "Beat 4 text"
   },
-  "home.handoff.switch.srOnly": {
-    "message": "traspasa T-02 a",
-    "description": "Screen-reader text between claude@cloud and codex@laptop; keep T-02"
-  },
   "home.handoff.handoff.release": {
     "message": "Libera la reclamación, escribe {file} con lo que sigue y sube una instantánea a {ref} y {branch}.",
     "description": "Explains specweave handoff; {file} is handoff.md, {ref} and {branch} are git ref names, keep them"
@@ -2714,18 +2662,6 @@
   "home.handoff.handoff.pickup": {
     "message": "En Codex: obtiene el traspaso, aplica los cambios e imprime T-02 con sus dos criterios.",
     "description": "Explains specweave pickup. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.done": {
-    "message": "Codex termina T-02 con los mismos criterios, y el ledger cita la salida del test.",
-    "description": "Explains the second task done. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.verify": {
-    "message": "Ejecuta test, lint y build, comprueba cada criterio y escribe {file}.",
-    "description": "Explains specweave verify; {file} is a file path"
-  },
-  "home.handoff.chip.pass": {
-    "message": "Aprobado",
-    "description": "Pass chip after a successful verify"
   },
   "install.copy.ariaLabel": {
     "message": "Copiar el comando de instalación",
@@ -3880,5 +3816,89 @@
   "code.download.phones.body": {
     "message": "SpecWithCode para Android ya está en Google Play. La app para iPhone está en camino; su tarjeta de App Store se convertirá en enlace el día que la ficha esté publicada.",
     "description": "Phone apps section intro. Keep product names in English"
+  },
+  "home.story.plan.title": {
+    "message": "El plan",
+    "description": "Heading of scene 1 of the handoff story: the plan, kept in spec.md"
+  },
+  "home.story.plan.create": {
+    "message": "Inicia el incremento. Los criterios son líneas {criteria} y las tareas son encabezados {task}, así que cualquier herramienta puede leerlos.",
+    "description": "Explains specweave create-increment; {criteria} and {task} are format samples, keep them"
+  },
+  "home.story.plan.tasks": {
+    "message": "Cada tarea indica los criterios que cubre, los archivos que toca y la prueba que la demuestra.",
+    "description": "Explains the line under each task in spec.md"
+  },
+  "home.story.plan.ariaLabel": {
+    "message": "Ilustración: specweave create-increment escribe spec.md con dos criterios de aceptación, AC-01 y AC-02, y dos tareas, T-01 y T-02, cada una con sus criterios, archivos y prueba.",
+    "description": "Accessible label of the animated plan illustration. Keep command, file and id names in English"
+  },
+  "home.story.count.criteria": {
+    "message": "Criterios",
+    "description": "Counter label in the plan illustration: number of acceptance criteria"
+  },
+  "home.story.count.tasks": {
+    "message": "Tareas",
+    "description": "Counter label in the plan illustration: number of tasks"
+  },
+  "home.story.count.tests": {
+    "message": "Pruebas",
+    "description": "Counter label in the plan illustration: number of tests named by tasks"
+  },
+  "home.story.plan.covered": {
+    "message": "Cada criterio tiene una tarea y una prueba",
+    "description": "Result line in the plan illustration"
+  },
+  "home.story.status.open": {
+    "message": "Abierta",
+    "description": "Task status in the board illustration: nobody has claimed it"
+  },
+  "home.story.status.claimed": {
+    "message": "Reclamada",
+    "description": "Task status in the board illustration: an agent claimed it"
+  },
+  "home.story.ledger.ariaLabel": {
+    "message": "Ilustración: cada comando specweave task añade una línea JSON a ledger.jsonl, y el tablero de tareas se calcula a partir de esas líneas: T-01 hecha con su evidencia, T-02 reclamada por claude@cloud.",
+    "description": "Accessible label of the animated ledger illustration. Keep command, file and id names in English"
+  },
+  "home.story.ledger.board": {
+    "message": "Tablero de tareas, calculado a partir del ledger",
+    "description": "Title of the task board in the ledger illustration"
+  },
+  "home.story.handoff.ariaLabel": {
+    "message": "Ilustración: Claude Code alcanza su límite de uso en T-02 y ejecuta specweave handoff. El traspaso va a git. Codex ejecuta specweave pickup, recibe T-02 con sus dos criterios y la termina. Cualquier agente que lea archivos y ejecute comandos puede continuar igual.",
+    "description": "Accessible label of the animated handoff illustration. Keep product, command and id names in English"
+  },
+  "home.story.handoff.working": {
+    "message": "Trabajando en T-02",
+    "description": "Label in the handoff illustration: the agent is working on task T-02. Keep T-02"
+  },
+  "home.story.handoff.others": {
+    "message": "Cualquier agente que lea archivos y ejecute comandos continúa de la misma forma.",
+    "description": "Line under the handoff illustration, after a row of agent logos"
+  },
+  "home.story.gate.ariaLabel": {
+    "message": "Ilustración: specweave complete queda bloqueado mientras falta reports/verify.json. specweave verify ejecuta test, lint y build y comprueba ambos criterios: aprobado. specweave review, hecho por el otro modelo, devuelve primero «fix first» y luego «ship». Entonces specweave complete cierra el incremento.",
+    "description": "Accessible label of the animated verify and review illustration. Keep command and file names in English"
+  },
+  "home.story.gate.ship": {
+    "message": "Exit 0, a producción",
+    "description": "Pass chip for specweave review: exit code 0 means ship"
+  },
+  "home.story.gate.reviewer": {
+    "message": "Codex revisa lo que escribió Claude Code",
+    "description": "Label in the review illustration. Keep product names in English"
+  },
+  "home.story.gate.closed": {
+    "message": "Cerrado",
+    "description": "Pass chip for specweave complete: the increment is closed"
+  },
+  "home.story.gate.title": {
+    "message": "Verificación y revisión",
+    "description": "Heading of scene 4 of the handoff story: the closure gate"
+  },
+  "home.story.gate.body": {
+    "message": "Un incremento se cierra cuando las comprobaciones pasan y un segundo modelo está de acuerdo, no cuando un agente dice que terminó.",
+    "description": "Scene 4 text"
   }
 }

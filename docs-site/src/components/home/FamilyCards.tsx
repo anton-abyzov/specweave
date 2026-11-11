@@ -8,6 +8,7 @@ import { SPECWITHCODE_RELEASE as release } from '../../data/specwithcodeRelease'
 import Crop, { WINDOW, type CropSpec } from './Crop';
 import { CHROME_EXTENSION_URL } from './chrome';
 import usePointerGlow from './usePointerGlow';
+import HomeIcon from './HomeIcon';
 import s from './FamilyCards.module.css';
 
 /*
@@ -56,7 +57,7 @@ export default function FamilyCards({ cliVersion, cliDate }: { cliVersion: strin
         <figcaption className={s.source}><Translate id="home.family.cli.source" description="Caption of the terminal output; {version} is the CLI version" values={{ version: cliVersion }}>{'Real output · specweave {version}'}</Translate></figcaption>
       </figure>
       <div className={s.body}>
-        <h3>SpecWeave CLI</h3>
+        <h3 className={s.name}><HomeIcon name="terminal" size={36} />SpecWeave CLI</h3>
         <p className={s.kind}><Translate id="home.family.cli.kind" description="CLI card subtitle; {version} is the CLI version, {date} its release date. Keep npm and MIT in English" values={{ version: cliVersion, date: cliDate }}>{'Open source on npm, MIT. Version {version}, {date}.'}</Translate></p>
         <p><Translate id="home.family.cli.body" description="CLI card body; {command} is the shell command specweave handoff. Keep product names in English" values={{ command: <code>specweave handoff</code> }}>{'Writes the spec, the task ledger and the test evidence into your repository, and hands the work to the next tool with {command}. Start here if you work in a terminal with Claude Code, Codex or any agent that reads files.'}</Translate></p>
         <InstallCommand hint={translate({ id: 'home.family.cli.install.hint', message: 'Then run specweave init in your project.', description: 'Hint under the npm install command; keep "specweave init" in English' })} className={s.cmd} />
@@ -70,7 +71,7 @@ export default function FamilyCards({ cliVersion, cliDate }: { cliVersion: strin
         <figcaption className={s.source}><Translate id="home.family.app.source" description="Caption of the app screenshot crop. Keep product names and the version in English">Real capture · SpecWithCode 1.0.103, 27 Oct 2026</Translate></figcaption>
       </figure>
       <div className={s.body}>
-        <h3>SpecWithCode</h3>
+        <h3 className={s.name}><img className={s.appIcon} src="/img/studio/specwithcode-icon.png" alt="" width={36} height={36} loading="lazy" decoding="async" />SpecWithCode</h3>
         <p className={s.kind}><Translate id="home.family.app.kind" description="App card subtitle; {version} is the app version. Keep OS names in English" values={{ version: release.version }}>{'Free app for Mac, Windows and Linux. Version {version}.'}</Translate></p>
         <p><Translate id="home.family.app.body" description="App card body. Keep product names in English">A coordinator per project starts worker threads in the agents you already pay for, on your own machines. Each thread shows its SpecWeave increment and task progress, and its reports are saved beside the increment. Start here if you want one window for several agents.</Translate></p>
         <p className={s.extra}><Translate id="home.family.app.chrome" description="App card extra line; {link} is a link to the Chrome extension labelled 'SpecWithCode Browser for Chrome'. 'Settings, Chrome' names the app's settings section. Keep product names in English" values={{ link: <a className={s.inline} href={CHROME_EXTENSION_URL} rel="noopener"><Translate id="home.family.app.chrome.link" description="Link text to the Chrome Web Store extension. Keep product names in English">SpecWithCode Browser for Chrome</Translate></a> }}>{'Agents can also open, read, click and screenshot pages in your own Chrome profile, in a tab group you can close: {link}, paired in Settings, Chrome.'}</Translate></p>
@@ -90,7 +91,7 @@ export default function FamilyCards({ cliVersion, cliDate }: { cliVersion: strin
         <figcaption className={s.source}><Translate id="home.family.skill.illustration.caption" description="Caption marking a picture as an illustration, not a real capture">Illustration</Translate></figcaption>
       </figure>
       <div className={s.body}>
-        <h3>Verified Skill</h3>
+        <h3 className={s.name}><HomeIcon name="skill" size={36} />Verified Skill</h3>
         <p className={s.kind}><Translate id="home.family.skill.kind" description="Verified Skill card subtitle; keep the domain verified-skill.com">Free to browse at verified-skill.com.</Translate></p>
         <p><Translate id="home.family.skill.body" description="Verified Skill card body">A registry of agent skills. Each shows its source and its security scan, and its evaluation when one exists, so you know what you install before your agents use it.</Translate></p>
         <details className={s.details}>

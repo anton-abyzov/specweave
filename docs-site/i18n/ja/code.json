@@ -3287,26 +3287,6 @@
     "message": "(Chrome ウェブストアが開きます)",
     "description": "Screen-reader hint after the Add to Chrome button; keep the leading space and Chrome Web Store in English"
   },
-  "home.handoff.beat.spec": {
-    "message": "仕様",
-    "description": "Progress rail label for beat 1 of the handoff story"
-  },
-  "home.handoff.beat.agents": {
-    "message": "エージェント",
-    "description": "Progress rail label for beat 2 of the handoff story"
-  },
-  "home.handoff.beat.ledger": {
-    "message": "台帳",
-    "description": "Progress rail label for beat 3 of the handoff story"
-  },
-  "home.handoff.beat.handoff": {
-    "message": "ハンドオフ",
-    "description": "Progress rail label for beat 4 of the handoff story"
-  },
-  "home.handoff.diagram.ariaLabel": {
-    "message": "イラスト:Claude Codeは使用上限までリポジトリに書き込み、Codexはgitから同じ仕様、台帳、ハンドオフを読み取ってタスクを完了する。",
-    "description": "Accessible label of the handoff diagram. Keep product names in English"
-  },
   "home.handoff.chip.usageLimit": {
     "message": "使用上限",
     "description": "Warning chip: the agent hit its usage limit"
@@ -3314,10 +3294,6 @@
   "home.handoff.diagram.repo": {
     "message": "gitのあなたのリポジトリ",
     "description": "Diagram node title for the git repository"
-  },
-  "home.handoff.diagram.verifyPass": {
-    "message": "verify:合格",
-    "description": "Pass chip in the diagram; 'verify' is the CLI command name, keep it in English"
   },
   "home.handoff.diagram.caption": {
     "message": "イラスト",
@@ -3327,25 +3303,9 @@
     "message": "1つのハンドオフを構成する4つのレイヤー",
     "description": "Accessible label of the list of the four handoff beats"
   },
-  "home.handoff.spec.title": {
-    "message": "仕様",
-    "description": "Heading of beat 1"
-  },
   "home.handoff.spec.body": {
     "message": "完了の定義を、どのエージェントも始める前に一度だけ書きます。{file}",
     "description": "Beat 1 text; {file} is the file name spec.md"
-  },
-  "home.handoff.spec.ariaLabel": {
-    "message": "spec.mdの抜粋",
-    "description": "Accessible label of the spec.md excerpt; keep the file name"
-  },
-  "home.handoff.agents.title": {
-    "message": "エージェント",
-    "description": "Heading of beat 2"
-  },
-  "home.handoff.agents.body": {
-    "message": "ファイルを読めるツールなら、タスクを担当し、証明し、次へ進めます。",
-    "description": "Beat 2 text"
   },
   "home.handoff.agents.claim": {
     "message": "Claude Codeが最初の未着手タスクを担当します。担当宣言は台帳の1行なので、他のエージェントが同じタスクを取ることはありません。",
@@ -3355,10 +3315,6 @@
     "message": "タスクのテストを実行します。終了コード0が証跡となり、全出力は{file}に保存されます。",
     "description": "Explains specweave task done; {file} is a file path"
   },
-  "home.handoff.agents.limit": {
-    "message": "Claude CodeがT-02を担当し、途中で使用上限に達します。",
-    "description": "Explains the second claim. Keep product names and T-02 in English"
-  },
   "home.handoff.ledger.title": {
     "message": "gitの台帳",
     "description": "Heading of beat 3"
@@ -3366,10 +3322,6 @@
   "home.handoff.ledger.body": {
     "message": "担当、完了、解除のすべてが1行で、コードと一緒にコミットされます。{file}",
     "description": "Beat 3 text; {file} is the file name ledger.jsonl"
-  },
-  "home.handoff.ledger.ariaLabel": {
-    "message": "両方のエージェントの後のledger.jsonlの行",
-    "description": "Accessible label of the ledger excerpt; keep the file name"
   },
   "home.handoff.handoff.title": {
     "message": "ハンドオフ",
@@ -3379,10 +3331,6 @@
     "message": "別のツールが、チャットウィンドウではなく同じファイルから続きます。",
     "description": "Beat 4 text"
   },
-  "home.handoff.switch.srOnly": {
-    "message": "T-02を引き渡す先:",
-    "description": "Screen-reader text between claude@cloud and codex@laptop; keep T-02"
-  },
   "home.handoff.handoff.release": {
     "message": "担当を解除し、次にやることを{file}に書き、スナップショットを{ref}と{branch}にプッシュします。",
     "description": "Explains specweave handoff; {file} is handoff.md, {ref} and {branch} are git ref names, keep them"
@@ -3390,18 +3338,6 @@
   "home.handoff.handoff.pickup": {
     "message": "Codexで:ハンドオフを取得して編集内容を適用し、T-02とその2つの基準を表示します。",
     "description": "Explains specweave pickup. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.done": {
-    "message": "Codexが同じ基準でT-02を完了し、台帳がテスト出力を参照します。",
-    "description": "Explains the second task done. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.verify": {
-    "message": "テスト、lint、ビルドを実行し、すべての基準を確認して{file}を書き込みます。",
-    "description": "Explains specweave verify; {file} is a file path"
-  },
-  "home.handoff.chip.pass": {
-    "message": "合格",
-    "description": "Pass chip after a successful verify"
   },
   "install.copy.ariaLabel": {
     "message": "インストールコマンドをコピー",
@@ -3880,5 +3816,89 @@
   "code.download.phones.body": {
     "message": "Android 向け SpecWithCode は Google Play で公開中です。iPhone アプリは準備中で、App Store のカードは公開された日からリンクになります。",
     "description": "Phone apps section intro. Keep product names in English"
+  },
+  "home.story.plan.title": {
+    "message": "計画",
+    "description": "Heading of scene 1 of the handoff story: the plan, kept in spec.md"
+  },
+  "home.story.plan.create": {
+    "message": "インクリメントを開始します。基準は{criteria}の行、タスクは{task}の見出しなので、どのツールでも読めます。",
+    "description": "Explains specweave create-increment; {criteria} and {task} are format samples, keep them"
+  },
+  "home.story.plan.tasks": {
+    "message": "各タスクには、対応する基準、変更するファイル、それを証明するテストが書かれます。",
+    "description": "Explains the line under each task in spec.md"
+  },
+  "home.story.plan.ariaLabel": {
+    "message": "イラスト：specweave create-incrementがspec.mdを書きます。受け入れ基準はAC-01とAC-02の2つ、タスクはT-01とT-02の2つで、それぞれに基準、ファイル、テストが書かれています。",
+    "description": "Accessible label of the animated plan illustration. Keep command, file and id names in English"
+  },
+  "home.story.count.criteria": {
+    "message": "基準",
+    "description": "Counter label in the plan illustration: number of acceptance criteria"
+  },
+  "home.story.count.tasks": {
+    "message": "タスク",
+    "description": "Counter label in the plan illustration: number of tasks"
+  },
+  "home.story.count.tests": {
+    "message": "テスト",
+    "description": "Counter label in the plan illustration: number of tests named by tasks"
+  },
+  "home.story.plan.covered": {
+    "message": "すべての基準にタスクとテストがあります",
+    "description": "Result line in the plan illustration"
+  },
+  "home.story.status.open": {
+    "message": "未着手",
+    "description": "Task status in the board illustration: nobody has claimed it"
+  },
+  "home.story.status.claimed": {
+    "message": "担当中",
+    "description": "Task status in the board illustration: an agent claimed it"
+  },
+  "home.story.ledger.ariaLabel": {
+    "message": "イラスト：specweave taskコマンドを実行するたびにledger.jsonlにJSONが1行追加され、タスクボードはその行から計算されます。T-01は証拠付きで完了、T-02はclaude@cloudが担当中です。",
+    "description": "Accessible label of the animated ledger illustration. Keep command, file and id names in English"
+  },
+  "home.story.ledger.board": {
+    "message": "タスクボード（台帳から計算）",
+    "description": "Title of the task board in the ledger illustration"
+  },
+  "home.story.handoff.ariaLabel": {
+    "message": "イラスト：Claude CodeがT-02の途中で使用上限に達し、specweave handoffを実行します。ハンドオフはgitに入ります。Codexがspecweave pickupを実行し、2つの基準付きのT-02を受け取って完了させます。ファイルを読んでコマンドを実行できるエージェントなら、同じように引き継げます。",
+    "description": "Accessible label of the animated handoff illustration. Keep product, command and id names in English"
+  },
+  "home.story.handoff.working": {
+    "message": "T-02を作業中",
+    "description": "Label in the handoff illustration: the agent is working on task T-02. Keep T-02"
+  },
+  "home.story.handoff.others": {
+    "message": "ファイルを読んでコマンドを実行できるエージェントなら、同じように引き継げます。",
+    "description": "Line under the handoff illustration, after a row of agent logos"
+  },
+  "home.story.gate.ariaLabel": {
+    "message": "イラスト：reports/verify.jsonがない間、specweave completeはブロックされます。specweave verifyがテスト、lint、ビルドを実行し、2つの基準を確認して合格します。もう一方のモデルによるspecweave reviewは、最初に「fix first」、次に「ship」を返します。そのあとspecweave completeがインクリメントをクローズします。",
+    "description": "Accessible label of the animated verify and review illustration. Keep command and file names in English"
+  },
+  "home.story.gate.ship": {
+    "message": "終了コード0、出荷",
+    "description": "Pass chip for specweave review: exit code 0 means ship"
+  },
+  "home.story.gate.reviewer": {
+    "message": "CodexがClaude Codeの書いたコードをレビュー",
+    "description": "Label in the review illustration. Keep product names in English"
+  },
+  "home.story.gate.closed": {
+    "message": "クローズ済み",
+    "description": "Pass chip for specweave complete: the increment is closed"
+  },
+  "home.story.gate.title": {
+    "message": "検証とレビュー",
+    "description": "Heading of scene 4 of the handoff story: the closure gate"
+  },
+  "home.story.gate.body": {
+    "message": "インクリメントがクローズされるのは、チェックに合格し、別のモデルも同意したときです。エージェントが「終わった」と言ったときではありません。",
+    "description": "Scene 4 text"
   }
 }

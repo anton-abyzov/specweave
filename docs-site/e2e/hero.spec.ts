@@ -20,11 +20,29 @@ test.describe('landing page', () => {
     }
   });
 
-  test('handoff section shows all four layers', async ({ page }) => {
+  test('handoff section shows all four scenes, each with a stage', async ({ page }) => {
     await expect(page.locator('#how')).toContainText('When Claude Code hits its limit, Codex picks up the same task');
-    for (const title of ['The spec', 'The agents', 'The ledger in git', 'The handoff']) {
+    for (const title of ['The plan', 'The ledger in git', 'The handoff', 'Verify and review']) {
       await expect(page.locator('#how h3', { hasText: title })).toHaveCount(1);
     }
+    await expect(page.locator('#how figure')).toHaveCount(4);
+  });
+
+  test('stages rest on the complete picture under reduced motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.reload();
+    const how = page.locator('#how');
+    await how.scrollIntoViewIfNeeded();
+    await expect(how.locator('figure[data-live]')).toHaveCount(0);
+    await expect(how.locator('[data-on="0"]')).toHaveCount(0);
+    await expect(how.getByText('Verdict: ship → reports/review-codex.md')).toBeVisible();
+  });
+
+  test('a stage plays while it is on screen', async ({ page }) => {
+    const stage = page.locator('#how figure').first();
+    await stage.scrollIntoViewIfNeeded();
+    await expect(stage).toHaveAttribute('data-live', '');
+    await expect(stage.locator('[data-on="0"]').first()).toBeAttached();
   });
 
   test('page never scrolls sideways', async ({ page }) => {

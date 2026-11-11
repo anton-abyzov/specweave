@@ -2611,26 +2611,6 @@
     "message": "Передача на {threshold}%, история сохранена. Порог настраивается для каждого проекта, от 50% до 100%.",
     "description": "Caption under the hero diagram; {threshold} is the default handoff percentage"
   },
-  "home.handoff.beat.spec": {
-    "message": "Спецификация",
-    "description": "Progress rail label for beat 1 of the handoff story"
-  },
-  "home.handoff.beat.agents": {
-    "message": "Агенты",
-    "description": "Progress rail label for beat 2 of the handoff story"
-  },
-  "home.handoff.beat.ledger": {
-    "message": "Журнал",
-    "description": "Progress rail label for beat 3 of the handoff story"
-  },
-  "home.handoff.beat.handoff": {
-    "message": "Передача",
-    "description": "Progress rail label for beat 4 of the handoff story"
-  },
-  "home.handoff.diagram.ariaLabel": {
-    "message": "Иллюстрация: Claude Code пишет в репозиторий до своего лимита использования; Codex читает из git ту же спецификацию, журнал и передачу и заканчивает задачу.",
-    "description": "Accessible label of the handoff diagram. Keep product names in English"
-  },
   "home.handoff.chip.usageLimit": {
     "message": "Лимит использования",
     "description": "Warning chip: the agent hit its usage limit"
@@ -2638,10 +2618,6 @@
   "home.handoff.diagram.repo": {
     "message": "Ваш репозиторий, в git",
     "description": "Diagram node title for the git repository"
-  },
-  "home.handoff.diagram.verifyPass": {
-    "message": "verify: пройдено",
-    "description": "Pass chip in the diagram; 'verify' is the CLI command name, keep it in English"
   },
   "home.handoff.diagram.caption": {
     "message": "Иллюстрация",
@@ -2651,25 +2627,9 @@
     "message": "Четыре слоя одной передачи",
     "description": "Accessible label of the list of the four handoff beats"
   },
-  "home.handoff.spec.title": {
-    "message": "Спецификация",
-    "description": "Heading of beat 1"
-  },
   "home.handoff.spec.body": {
     "message": "Что значит «готово», записанное один раз до старта любого агента. {file}",
     "description": "Beat 1 text; {file} is the file name spec.md"
-  },
-  "home.handoff.spec.ariaLabel": {
-    "message": "Фрагмент spec.md",
-    "description": "Accessible label of the spec.md excerpt; keep the file name"
-  },
-  "home.handoff.agents.title": {
-    "message": "Агенты",
-    "description": "Heading of beat 2"
-  },
-  "home.handoff.agents.body": {
-    "message": "Любой инструмент, умеющий читать файлы, берёт задачу, доказывает её выполнение и идёт дальше.",
-    "description": "Beat 2 text"
   },
   "home.handoff.agents.claim": {
     "message": "Claude Code берёт первую открытую задачу. Захват — это строка в журнале, поэтому другой агент её не возьмёт.",
@@ -2679,10 +2639,6 @@
     "message": "Запускает тест задачи. Код 0 — это подтверждение, а полный вывод сохраняется в {file}.",
     "description": "Explains specweave task done; {file} is a file path"
   },
-  "home.handoff.agents.limit": {
-    "message": "Claude Code берёт T-02 и упирается в лимит использования на полпути.",
-    "description": "Explains the second claim. Keep product names and T-02 in English"
-  },
   "home.handoff.ledger.title": {
     "message": "Журнал в git",
     "description": "Heading of beat 3"
@@ -2690,10 +2646,6 @@
   "home.handoff.ledger.body": {
     "message": "Каждый захват, завершение и освобождение — одна строка, которая коммитится вместе с кодом. {file}",
     "description": "Beat 3 text; {file} is the file name ledger.jsonl"
-  },
-  "home.handoff.ledger.ariaLabel": {
-    "message": "Строки ledger.jsonl после работы обоих агентов",
-    "description": "Accessible label of the ledger excerpt; keep the file name"
   },
   "home.handoff.handoff.title": {
     "message": "Передача",
@@ -2703,10 +2655,6 @@
     "message": "Другой инструмент продолжает по тем же файлам, а не по окну чата.",
     "description": "Beat 4 text"
   },
-  "home.handoff.switch.srOnly": {
-    "message": "передаёт T-02",
-    "description": "Screen-reader text between claude@cloud and codex@laptop; keep T-02"
-  },
   "home.handoff.handoff.release": {
     "message": "Освобождает захват, записывает {file} с тем, что дальше, и отправляет снимок в {ref} и {branch}.",
     "description": "Explains specweave handoff; {file} is handoff.md, {ref} and {branch} are git ref names, keep them"
@@ -2714,18 +2662,6 @@
   "home.handoff.handoff.pickup": {
     "message": "В Codex: получает передачу, применяет правки и выводит T-02 с двумя критериями.",
     "description": "Explains specweave pickup. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.done": {
-    "message": "Codex заканчивает T-02 по тем же критериям, а журнал ссылается на вывод теста.",
-    "description": "Explains the second task done. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.verify": {
-    "message": "Запускает тесты, линтер и сборку, проверяет каждый критерий и пишет {file}.",
-    "description": "Explains specweave verify; {file} is a file path"
-  },
-  "home.handoff.chip.pass": {
-    "message": "Пройдено",
-    "description": "Pass chip after a successful verify"
   },
   "install.copy.ariaLabel": {
     "message": "Скопировать команду установки",
@@ -3880,5 +3816,89 @@
   "code.download.phones.body": {
     "message": "SpecWithCode для Android уже в Google Play. Приложение для iPhone на подходе: карточка App Store станет ссылкой в день публикации.",
     "description": "Phone apps section intro. Keep product names in English"
+  },
+  "home.story.plan.title": {
+    "message": "План",
+    "description": "Heading of scene 1 of the handoff story: the plan, kept in spec.md"
+  },
+  "home.story.plan.create": {
+    "message": "Создаёт инкремент. Критерии записаны строками {criteria}, задачи заголовками {task}, поэтому их прочитает любой инструмент.",
+    "description": "Explains specweave create-increment; {criteria} and {task} are format samples, keep them"
+  },
+  "home.story.plan.tasks": {
+    "message": "В каждой задаче указаны критерии, которые она закрывает, файлы, которые она меняет, и тест, который это подтверждает.",
+    "description": "Explains the line under each task in spec.md"
+  },
+  "home.story.plan.ariaLabel": {
+    "message": "Иллюстрация: specweave create-increment пишет spec.md с двумя критериями приёмки, AC-01 и AC-02, и двумя задачами, T-01 и T-02. В каждой задаче указаны её критерии, файлы и тест.",
+    "description": "Accessible label of the animated plan illustration. Keep command, file and id names in English"
+  },
+  "home.story.count.criteria": {
+    "message": "Критерии",
+    "description": "Counter label in the plan illustration: number of acceptance criteria"
+  },
+  "home.story.count.tasks": {
+    "message": "Задачи",
+    "description": "Counter label in the plan illustration: number of tasks"
+  },
+  "home.story.count.tests": {
+    "message": "Тесты",
+    "description": "Counter label in the plan illustration: number of tests named by tasks"
+  },
+  "home.story.plan.covered": {
+    "message": "У каждого критерия есть задача и тест",
+    "description": "Result line in the plan illustration"
+  },
+  "home.story.status.open": {
+    "message": "Открыта",
+    "description": "Task status in the board illustration: nobody has claimed it"
+  },
+  "home.story.status.claimed": {
+    "message": "Взята",
+    "description": "Task status in the board illustration: an agent claimed it"
+  },
+  "home.story.ledger.ariaLabel": {
+    "message": "Иллюстрация: каждая команда specweave task добавляет одну строку JSON в ledger.jsonl, а доска задач вычисляется из этих строк: T-01 готова и с доказательством, T-02 взята агентом claude@cloud.",
+    "description": "Accessible label of the animated ledger illustration. Keep command, file and id names in English"
+  },
+  "home.story.ledger.board": {
+    "message": "Доска задач, вычисленная из журнала",
+    "description": "Title of the task board in the ledger illustration"
+  },
+  "home.story.handoff.ariaLabel": {
+    "message": "Иллюстрация: Claude Code упирается в лимит использования на T-02 и запускает specweave handoff. Передача уходит в git. Codex запускает specweave pickup, получает T-02 с двумя критериями и завершает её. Любой агент, который читает файлы и выполняет команды, может продолжить так же.",
+    "description": "Accessible label of the animated handoff illustration. Keep product, command and id names in English"
+  },
+  "home.story.handoff.working": {
+    "message": "Работает над T-02",
+    "description": "Label in the handoff illustration: the agent is working on task T-02. Keep T-02"
+  },
+  "home.story.handoff.others": {
+    "message": "Любой агент, который читает файлы и выполняет команды, продолжает так же.",
+    "description": "Line under the handoff illustration, after a row of agent logos"
+  },
+  "home.story.gate.ariaLabel": {
+    "message": "Иллюстрация: specweave complete заблокирован, пока нет reports/verify.json. specweave verify запускает тесты, линтер и сборку и проверяет оба критерия: пройдено. specweave review от другой модели сначала возвращает «fix first», затем «ship». После этого specweave complete закрывает инкремент.",
+    "description": "Accessible label of the animated verify and review illustration. Keep command and file names in English"
+  },
+  "home.story.gate.ship": {
+    "message": "Код 0, можно выпускать",
+    "description": "Pass chip for specweave review: exit code 0 means ship"
+  },
+  "home.story.gate.reviewer": {
+    "message": "Codex проверяет то, что написал Claude Code",
+    "description": "Label in the review illustration. Keep product names in English"
+  },
+  "home.story.gate.closed": {
+    "message": "Закрыто",
+    "description": "Pass chip for specweave complete: the increment is closed"
+  },
+  "home.story.gate.title": {
+    "message": "Проверка и ревью",
+    "description": "Heading of scene 4 of the handoff story: the closure gate"
+  },
+  "home.story.gate.body": {
+    "message": "Инкремент закрывается, когда проверки пройдены и вторая модель согласна, а не когда агент сказал, что всё готово.",
+    "description": "Scene 4 text"
   }
 }

@@ -2,12 +2,15 @@ import React from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import clsx from 'clsx';
+import { FileText, Folder } from 'lucide-react';
 import Translate, { translate } from '@docusaurus/Translate';
 import { tools } from '../data/tools';
 import { TUTORIALS, type Tutorial } from '../data/tutorials';
 import base from './continuity.module.css';
 import h from '../components/landing/home.module.css';
-import HomeHandoff from '../components/landing/HomeHandoff';
+import Story from '../components/home/story/Story';
+import { AGENTS, Mark, type Agent } from '../components/home/story/Stages';
+import HomeIcon from '../components/home/HomeIcon';
 import HomeHero from '../components/home/HomeHero';
 import FamilyCards from '../components/home/FamilyCards';
 import Crop, { type CropSpec } from '../components/home/Crop';
@@ -18,9 +21,11 @@ import { SPECWITHCODE_RELEASE as release } from '../data/specwithcodeRelease';
 /*
   spec-weave.com home: one story for the family (SpecWeave CLI, SpecWithCode, Verified Skill),
   then the handoff layers, the proof, the app and tutorials.
-  Motion: layered hero (components/home/HomeHero), a pinned four-beat stage in #how
-  (components/landing/HomeHandoff), and scroll-driven reveals elsewhere. The resting state is the
+  Motion: layered hero (components/home/HomeHero), four self-running stages in #how
+  (components/home/story), and scroll-driven reveals elsewhere. The resting state is the
   final layout, so reduced motion, no-JS, print and captures render complete.
+  Icons: section headings carry one generated set (components/home/HomeIcon); agents show their
+  own logos where static/img/studio/providers has one.
   Facts checked on 18 October 2026: specweave 3.1.0 (package.json, CHANGELOG 17 October 2026);
   `review` exit 0 ship / 3 fix first and the opt-in skills are 3.1.0; `complete` refuses without
   reports/verify.json (src/core/tasks/closure-gate.ts); `specwithcode fleet invite` and
@@ -110,6 +115,9 @@ function dateOf(t: Tutorial): string | null {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 }
 
+/** Agent logo for a name in the "Works with" row; agents without a logo file show their name only. */
+const AGENT_BY_NAME: Record<string, Agent | undefined> = Object.fromEntries((Object.keys(AGENTS) as Agent[]).map((key) => [AGENTS[key].name, key]));
+
 /** Lucide monitor, 1.5 stroke. */
 function MonitorIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -135,17 +143,18 @@ export default function Home() {
       <HomeHero />
 
       <div className={h.tools}>
-        <p><span className={h.toolsLabel}><Translate id="home.tools.label" description="Label before the list of supported agent tools">Works with</Translate></span>{tools.map((t) => <span key={t} className={h.tool}>{t}</span>)}</p>
+        <p><span className={h.toolsLabel}><Translate id="home.tools.label" description="Label before the list of supported agent tools">Works with</Translate></span>{tools.map((t) => { const agent = AGENT_BY_NAME[t]; return <span key={t} className={h.tool}>{agent && <Mark who={agent} size={16} />}{t}</span>; })}</p>
       </div>
 
       {/* 2. The family: one record, three ways in, and where each visitor should start */}
       <section className={h.section} id="family" aria-labelledby="family-title">
         <div className={h.head}>
+          <HomeIcon name="braid" className={h.headIcon} />
           <h2 id="family-title"><Translate id="home.family.title" description="Heading of the product family section">One record in git, three ways to work with it</Translate></h2>
           <p><Translate id="home.family.lead" description="Lead of the product family section. Keep product names in English">SpecWeave keeps the plan and the evidence in your repository. SpecWithCode runs agents against that record on your machines. Verified Skill gives those agents skills you can check first.</Translate></p>
         </div>
         <FamilyCards cliVersion={CLI_VERSION} cliDate={CLI_DATE} />
-        <nav className={h.guides} aria-label={translate({ id: 'home.guides.ariaLabel', message: 'Guides', description: 'Accessible label of the guide links navigation' })}>
+        <nav className={h.guideLinks} aria-label={translate({ id: 'home.guides.ariaLabel', message: 'Guides', description: 'Accessible label of the guide links navigation' })}>
           <span><Translate id="home.guides.label" description="Label before the guide links">Guides</Translate></span>
           <Link className="wv-link" to="/docs/guides/claude-code-usage-limit/"><Translate id="home.guides.usageLimit" description="Guide link. Keep Claude Code in English">Claude Code usage limit</Translate></Link>
           <Link className="wv-link" to="/docs/guides/switch-claude-code-to-codex/"><Translate id="home.guides.switchToCodex" description="Guide link. Keep product names in English">Switch Claude Code to Codex</Translate></Link>
@@ -159,39 +168,24 @@ export default function Home() {
 
       {/* 3. The handoff, layer by layer (the main scroll sequence) */}
       <section className={h.section} id="how" aria-labelledby="how-title">
-        <HomeHandoff head={<div className={clsx(h.head, h.howHead)}>
+        <div className={h.head}>
+          <HomeIcon name="limit" className={h.headIcon} />
           <h2 id="how-title" className={h.howTitle}><Translate id="home.how.title" description="Heading of the handoff section. Keep product names in English">When Claude Code hits its limit, Codex picks up the same task</Translate></h2>
           <p><Translate id="home.how.lead" description="Lead of the handoff section">The handoff carries the spec, the claims and the evidence. Nothing lives only in a chat window.</Translate></p>
-        </div>} />
+        </div>
+        <Story cliVersion={CLI_VERSION} cliDate={CLI_DATE} />
         <p className={h.note}><Translate id="home.how.note" description="Note under the handoff example; {version} is the CLI version, {format} a code sample, {link} a link labelled 'How SpecWeave works'" values={{ version: CLI_VERSION, format: <code>- [ ] AC-01:</code>, link: <Link className={base.textLink} to="/product"><Translate id="home.how.note.link" description="Link text to the product page. Keep SpecWeave in English">How SpecWeave works</Translate></Link> }}>{'Example increment, written in the formats specweave {version} reads: criteria as {format} lines, one JSON object per ledger line. See a real pickup in {link}.'}</Translate></p>
       </section>
 
       {/* 4. The records and the gate */}
       <section className={clsx(h.section, h.proof, h.lazy)} id="proof" aria-labelledby="proof-title">
         <div className={clsx(h.proofText, h.reveal)}>
+          <HomeIcon name="folder" className={h.headIcon} />
           <h2 id="proof-title"><Translate id="home.proof.title" description="Heading of the proof section">Nothing closes without proof</Translate></h2>
           <p className={h.proofLead}><Translate id="home.proof.lead" description="Lead of the proof section">Open the increment folder and you can see what was planned, who did it and what proved it.</Translate></p>
-          <pre className={clsx('wv-code', h.folder)} aria-label={translate({ id: 'home.proof.folder.ariaLabel', message: 'Files in an increment folder', description: 'Accessible label of the increment folder listing' })}>{FOLDER.map(([depth, name, note]) => <span key={`${depth}${name}`} className={h.folderLine} style={{'--depth': depth} as React.CSSProperties}><span className={h.folderName}>{'  '.repeat(depth)}{name}</span>{note && <span className={h.folderNote}>{note}</span>}</span>)}</pre>
         </div>
-        <div className={clsx(h.proofGate, h.reveal)}>
-          <ul className="wv-evidence">
-            <li>
-              <span className="wv-evidence__name"><code className={h.cmdName}>specweave verify</code></span>
-              <span className="wv-chip wv-chip--pass"><Translate id="home.proof.verify.chip" description="Pass chip for specweave verify">Pass</Translate></span>
-              <span className="wv-evidence__detail"><Translate id="home.proof.verify.detail" description="Explains specweave verify; {spec} and {report} are file names, keep them" values={{ spec: <code>spec.md</code>, report: <code>reports/verify.json</code> }}>{'Runs your test, lint and build commands, checks that every criterion in {spec} is ticked and writes {report}.'}</Translate></span>
-            </li>
-            <li>
-              <span className="wv-evidence__name"><code className={h.cmdName}>specweave review</code></span>
-              <span className="wv-chip wv-chip--warn"><Translate id="home.proof.review.chip" description="Warning chip for specweave review: exit code 3 means fix first">Exit 3, fix first</Translate></span>
-              <span className="wv-evidence__detail"><Translate id="home.proof.review.detail" description="Explains specweave review; {report} is a file name, keep it. Keep product names in English" values={{ report: <code>reports/review-codex.md</code> }}>{'Hands the diff to a reviewer from the other model family: Codex reviews code Claude wrote, Claude reviews code Codex wrote. The report lands in {report}; exit 0 means ship.'}</Translate></span>
-            </li>
-            <li>
-              <span className="wv-evidence__name"><code className={h.cmdName}>specweave complete</code></span>
-              <span className="wv-chip wv-chip--fail"><Translate id="home.proof.complete.chip" description="Fail chip for specweave complete">Blocked</Translate></span>
-              <span className="wv-evidence__detail"><Translate id="home.proof.complete.detail" description="Explains specweave complete; {file} is a file name and {flag} a command flag, keep them" values={{ file: <code>verify.json</code>, flag: <code>--reason</code> }}>{'Refuses to close an increment without a passing {file}. Closing anyway takes {flag}, and the reason is stored with the increment.'}</Translate></span>
-            </li>
-          </ul>
-          <p className={h.caption}><Translate id="home.proof.caption" description="Caption; {version} is the CLI version, {date} its release date" values={{ version: CLI_VERSION, date: CLI_DATE }}>{'Behaviour of specweave {version}, released {date}.'}</Translate></p>
+        <div className={clsx(h.proofFolder, h.reveal)}>
+          <pre className={clsx('wv-code', h.folder)} aria-label={translate({ id: 'home.proof.folder.ariaLabel', message: 'Files in an increment folder', description: 'Accessible label of the increment folder listing' })}>{FOLDER.map(([depth, name, note]) => <span key={`${depth}${name}`} className={h.folderLine} style={{'--depth': depth} as React.CSSProperties}><span className={h.folderName}>{'  '.repeat(depth)}{name.endsWith('/') ? <Folder size={13} strokeWidth={2} aria-hidden="true" /> : <FileText size={13} strokeWidth={2} aria-hidden="true" />}{name}</span>{note && <span className={h.folderNote}>{note}</span>}</span>)}</pre>
         </div>
       </section>
 
@@ -201,6 +195,7 @@ export default function Home() {
       {/* 5. The desktop app and your machines */}
       <section className={clsx(h.section, h.app, h.lazy)} id="app" aria-labelledby="app-title">
         <div className={h.head}>
+          <HomeIcon name="machines" className={h.headIcon} />
           <h2 id="app-title"><Translate id="home.app.title" description="Heading of the desktop app section">Run the same work from a desktop app</Translate></h2>
           <p><Translate id="home.app.lead" description="Lead of the desktop app section. Keep SpecWithCode in English">SpecWithCode runs these increments as threads on your own machines and subscriptions, with one coordinator per project and workers on any provider you are signed in to.</Translate></p>
         </div>
@@ -240,6 +235,7 @@ export default function Home() {
       {/* 6. Tutorials (the skills detail now lives in the Verified Skill card in #family) */}
       {guides.length > 0 && <section className={clsx(h.section, h.lazy)} id="tutorials" aria-labelledby="tutorials-title">
         <div className={h.head}>
+          <HomeIcon name="play" className={h.headIcon} />
           <h2 id="tutorials-title"><Translate id="home.tutorials.title" description="Heading of the tutorials section">Learn it in a few minutes</Translate></h2>
           <p><Translate id="home.tutorials.lead" description="Lead of the tutorials section">Narrated recordings of the real apps, with captions and chapters.</Translate></p>
         </div>
@@ -271,6 +267,7 @@ export default function Home() {
       {/* 7. Pricing, built with, final call to action */}
       <section className={clsx(h.section, h.pricing, h.lazy)} aria-labelledby="pricing-title">
         <div>
+          <HomeIcon name="tag" className={h.headIcon} />
           <h2 id="pricing-title"><Translate id="home.pricing.title" description="Heading of the pricing summary">Free for every developer and team</Translate></h2>
           <p><Translate id="home.pricing.lead" description="Lead of the pricing summary. Pro and Connect are product names; keep them in English">You pay only for Pro (unlimited Connect machines, private skills) or a team contract with setup and support.</Translate></p>
           <Link className={base.secondary} to="/pricing"><Translate id="home.pricing.link" description="Button linking to the pricing page">See pricing</Translate></Link>
@@ -286,6 +283,7 @@ export default function Home() {
 
       <section className={clsx(h.section, h.lazy)} id="built-with" aria-labelledby="built-with-title">
         <div className={h.head}>
+          <HomeIcon name="blocks" className={h.headIcon} />
           <h2 id="built-with-title"><Translate id="home.builtWith.title" description="Heading of the list of products built with SpecWeave. Keep SpecWeave in English">Built with SpecWeave</Translate></h2>
         </div>
         <ul className={h.built}>

@@ -1,0 +1,13 @@
+/*
+  One icon set for the home page (static/img/home/icons): soft 3D objects on an iris tile, each with
+  the thread and its amber bead. The tiles carry their own background, so they read on both themes.
+*/
+.icon {
+  display: block;
+  flex: none;
+  border-radius: 26%;
+  background: #4a2a8c;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--wv-iris) 35%, transparent),
+    0 10px 20px -10px color-mix(in srgb, var(--wv-iris) 80%, transparent);
+}

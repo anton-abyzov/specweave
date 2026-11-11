@@ -1,6 +1,6 @@
 /*
   /code fleet diagram: coordinator, workers on several machines, results back.
-  Static: the site's one scroll sequence is on the home page (HomeHandoff), so
+  Static: the home page tells its story in four self-running stages (components/home/story), so
   this diagram is always complete.
 */
 .fleet {

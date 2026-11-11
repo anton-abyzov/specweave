@@ -115,3 +115,7 @@
 @media (max-width: 560px) {
   .stats { grid-template-columns: minmax(0, 1fr); }
 }
+
+.icon {
+  margin-bottom: var(--wv-space-4);
+}

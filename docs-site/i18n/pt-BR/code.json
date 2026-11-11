@@ -2343,26 +2343,6 @@
     "message": "Abrir a captura de tela em tamanho real",
     "description": "Accessible label of the link that opens the full-size app screenshot"
   },
-  "home.handoff.beat.spec": {
-    "message": "A spec",
-    "description": "Progress rail label for beat 1 of the handoff story"
-  },
-  "home.handoff.beat.agents": {
-    "message": "Os agentes",
-    "description": "Progress rail label for beat 2 of the handoff story"
-  },
-  "home.handoff.beat.ledger": {
-    "message": "O ledger",
-    "description": "Progress rail label for beat 3 of the handoff story"
-  },
-  "home.handoff.beat.handoff": {
-    "message": "O handoff",
-    "description": "Progress rail label for beat 4 of the handoff story"
-  },
-  "home.handoff.diagram.ariaLabel": {
-    "message": "Ilustração: o Claude Code escreve no repositório até o limite de uso; o Codex lê do git a mesma spec, o mesmo ledger e o mesmo handoff e termina a tarefa.",
-    "description": "Accessible label of the handoff diagram. Keep product names in English"
-  },
   "home.handoff.chip.usageLimit": {
     "message": "Limite de uso",
     "description": "Warning chip: the agent hit its usage limit"
@@ -2370,10 +2350,6 @@
   "home.handoff.diagram.repo": {
     "message": "Seu repositório, no git",
     "description": "Diagram node title for the git repository"
-  },
-  "home.handoff.diagram.verifyPass": {
-    "message": "verify: Aprovado",
-    "description": "Pass chip in the diagram; 'verify' is the CLI command name, keep it in English"
   },
   "home.handoff.diagram.caption": {
     "message": "Ilustração",
@@ -2383,25 +2359,9 @@
     "message": "Quatro camadas de um handoff",
     "description": "Accessible label of the list of the four handoff beats"
   },
-  "home.handoff.spec.title": {
-    "message": "A spec",
-    "description": "Heading of beat 1"
-  },
   "home.handoff.spec.body": {
     "message": "O que significa concluído, escrito uma vez antes de qualquer agente começar. {file}",
     "description": "Beat 1 text; {file} is the file name spec.md"
-  },
-  "home.handoff.spec.ariaLabel": {
-    "message": "Trecho do spec.md",
-    "description": "Accessible label of the spec.md excerpt; keep the file name"
-  },
-  "home.handoff.agents.title": {
-    "message": "Os agentes",
-    "description": "Heading of beat 2"
-  },
-  "home.handoff.agents.body": {
-    "message": "Qualquer ferramenta que leia os arquivos assume uma tarefa, comprova e segue em frente.",
-    "description": "Beat 2 text"
   },
   "home.handoff.agents.claim": {
     "message": "O Claude Code pega a primeira tarefa aberta. O claim é uma linha no ledger, então nenhum outro agente a pega também.",
@@ -2411,10 +2371,6 @@
     "message": "Executa o teste da tarefa. A saída 0 é a evidência, e a saída completa fica guardada em {file}.",
     "description": "Explains specweave task done; {file} is a file path"
   },
-  "home.handoff.agents.limit": {
-    "message": "O Claude Code assume a T-02 e atinge o limite de uso no meio dela.",
-    "description": "Explains the second claim. Keep product names and T-02 in English"
-  },
   "home.handoff.ledger.title": {
     "message": "O ledger no git",
     "description": "Heading of beat 3"
@@ -2422,10 +2378,6 @@
   "home.handoff.ledger.body": {
     "message": "Cada claim, conclusão e release é uma linha, commitada junto com o código. {file}",
     "description": "Beat 3 text; {file} is the file name ledger.jsonl"
-  },
-  "home.handoff.ledger.ariaLabel": {
-    "message": "Linhas do ledger.jsonl depois dos dois agentes",
-    "description": "Accessible label of the ledger excerpt; keep the file name"
   },
   "home.handoff.handoff.title": {
     "message": "O handoff",
@@ -2435,10 +2387,6 @@
     "message": "Outra ferramenta continua a partir dos mesmos arquivos, não de uma janela de chat.",
     "description": "Beat 4 text"
   },
-  "home.handoff.switch.srOnly": {
-    "message": "passa a T-02 para",
-    "description": "Screen-reader text between claude@cloud and codex@laptop; keep T-02"
-  },
   "home.handoff.handoff.release": {
     "message": "Libera o claim, grava {file} com o que vem a seguir e envia um snapshot para {ref} e {branch}.",
     "description": "Explains specweave handoff; {file} is handoff.md, {ref} and {branch} are git ref names, keep them"
@@ -2446,18 +2394,6 @@
   "home.handoff.handoff.pickup": {
     "message": "No Codex: busca o handoff, aplica as edições e mostra a T-02 com seus dois critérios.",
     "description": "Explains specweave pickup. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.done": {
-    "message": "O Codex termina a T-02 contra os mesmos critérios, e o ledger cita a saída do teste.",
-    "description": "Explains the second task done. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.verify": {
-    "message": "Executa test, lint e build, confere cada critério e grava {file}.",
-    "description": "Explains specweave verify; {file} is a file path"
-  },
-  "home.handoff.chip.pass": {
-    "message": "Aprovado",
-    "description": "Pass chip after a successful verify"
   },
   "install.copy.ariaLabel": {
     "message": "Copiar o comando de instalação",
@@ -3880,5 +3816,89 @@
   "code.download.phones.body": {
     "message": "O SpecWithCode para Android está no Google Play. O app para iPhone está a caminho; o cartão da App Store vira link no dia em que a listagem for publicada.",
     "description": "Phone apps section intro. Keep product names in English"
+  },
+  "home.story.plan.title": {
+    "message": "O plano",
+    "description": "Heading of scene 1 of the handoff story: the plan, kept in spec.md"
+  },
+  "home.story.plan.create": {
+    "message": "Inicia o incremento. Os critérios são linhas {criteria} e as tarefas são títulos {task}, então qualquer ferramenta consegue ler.",
+    "description": "Explains specweave create-increment; {criteria} and {task} are format samples, keep them"
+  },
+  "home.story.plan.tasks": {
+    "message": "Cada tarefa indica os critérios que cobre, os arquivos que altera e o teste que a comprova.",
+    "description": "Explains the line under each task in spec.md"
+  },
+  "home.story.plan.ariaLabel": {
+    "message": "Ilustração: specweave create-increment escreve o spec.md com dois critérios de aceitação, AC-01 e AC-02, e duas tarefas, T-01 e T-02, cada uma com seus critérios, arquivos e teste.",
+    "description": "Accessible label of the animated plan illustration. Keep command, file and id names in English"
+  },
+  "home.story.count.criteria": {
+    "message": "Critérios",
+    "description": "Counter label in the plan illustration: number of acceptance criteria"
+  },
+  "home.story.count.tasks": {
+    "message": "Tarefas",
+    "description": "Counter label in the plan illustration: number of tasks"
+  },
+  "home.story.count.tests": {
+    "message": "Testes",
+    "description": "Counter label in the plan illustration: number of tests named by tasks"
+  },
+  "home.story.plan.covered": {
+    "message": "Todo critério tem uma tarefa e um teste",
+    "description": "Result line in the plan illustration"
+  },
+  "home.story.status.open": {
+    "message": "Aberta",
+    "description": "Task status in the board illustration: nobody has claimed it"
+  },
+  "home.story.status.claimed": {
+    "message": "Assumida",
+    "description": "Task status in the board illustration: an agent claimed it"
+  },
+  "home.story.ledger.ariaLabel": {
+    "message": "Ilustração: cada comando specweave task acrescenta uma linha JSON ao ledger.jsonl, e o quadro de tarefas é calculado a partir dessas linhas: T-01 concluída com sua evidência, T-02 assumida por claude@cloud.",
+    "description": "Accessible label of the animated ledger illustration. Keep command, file and id names in English"
+  },
+  "home.story.ledger.board": {
+    "message": "Quadro de tarefas, calculado a partir do ledger",
+    "description": "Title of the task board in the ledger illustration"
+  },
+  "home.story.handoff.ariaLabel": {
+    "message": "Ilustração: o Claude Code atinge o limite de uso na T-02 e executa specweave handoff. O handoff vai para o git. O Codex executa specweave pickup, recebe a T-02 com seus dois critérios e a conclui. Qualquer agente que leia arquivos e execute comandos pode continuar do mesmo jeito.",
+    "description": "Accessible label of the animated handoff illustration. Keep product, command and id names in English"
+  },
+  "home.story.handoff.working": {
+    "message": "Trabalhando na T-02",
+    "description": "Label in the handoff illustration: the agent is working on task T-02. Keep T-02"
+  },
+  "home.story.handoff.others": {
+    "message": "Qualquer agente que leia arquivos e execute comandos continua do mesmo jeito.",
+    "description": "Line under the handoff illustration, after a row of agent logos"
+  },
+  "home.story.gate.ariaLabel": {
+    "message": "Ilustração: specweave complete fica bloqueado enquanto reports/verify.json não existe. specweave verify executa teste, lint e build e confere os dois critérios: aprovado. specweave review, feito pelo outro modelo, devolve primeiro \"fix first\" e depois \"ship\". Então specweave complete fecha o incremento.",
+    "description": "Accessible label of the animated verify and review illustration. Keep command and file names in English"
+  },
+  "home.story.gate.ship": {
+    "message": "Saída 0, pode entregar",
+    "description": "Pass chip for specweave review: exit code 0 means ship"
+  },
+  "home.story.gate.reviewer": {
+    "message": "O Codex revisa o que o Claude Code escreveu",
+    "description": "Label in the review illustration. Keep product names in English"
+  },
+  "home.story.gate.closed": {
+    "message": "Fechado",
+    "description": "Pass chip for specweave complete: the increment is closed"
+  },
+  "home.story.gate.title": {
+    "message": "Verificação e revisão",
+    "description": "Heading of scene 4 of the handoff story: the closure gate"
+  },
+  "home.story.gate.body": {
+    "message": "Um incremento fecha quando as verificações passam e um segundo modelo concorda, não quando um agente diz que terminou.",
+    "description": "Scene 4 text"
   }
 }

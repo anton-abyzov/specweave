@@ -2331,26 +2331,6 @@
     "message": "{threshold}%에서 핸드오프하고 기록은 유지돼요. 지점은 프로젝트별로 50%에서 100% 사이로 정하세요.",
     "description": "Caption under the hero diagram; {threshold} is the default handoff percentage"
   },
-  "home.handoff.beat.spec": {
-    "message": "스펙",
-    "description": "Progress rail label for beat 1 of the handoff story"
-  },
-  "home.handoff.beat.agents": {
-    "message": "에이전트",
-    "description": "Progress rail label for beat 2 of the handoff story"
-  },
-  "home.handoff.beat.ledger": {
-    "message": "원장",
-    "description": "Progress rail label for beat 3 of the handoff story"
-  },
-  "home.handoff.beat.handoff": {
-    "message": "핸드오프",
-    "description": "Progress rail label for beat 4 of the handoff story"
-  },
-  "home.handoff.diagram.ariaLabel": {
-    "message": "일러스트: Claude Code는 사용 한도에 닿을 때까지 저장소에 기록하고, Codex는 git에서 같은 스펙, 원장, 핸드오프를 읽어 작업을 마무리해요.",
-    "description": "Accessible label of the handoff diagram. Keep product names in English"
-  },
   "home.handoff.chip.usageLimit": {
     "message": "사용 한도",
     "description": "Warning chip: the agent hit its usage limit"
@@ -2358,10 +2338,6 @@
   "home.handoff.diagram.repo": {
     "message": "git의 내 저장소",
     "description": "Diagram node title for the git repository"
-  },
-  "home.handoff.diagram.verifyPass": {
-    "message": "verify: 통과",
-    "description": "Pass chip in the diagram; 'verify' is the CLI command name, keep it in English"
   },
   "home.handoff.diagram.caption": {
     "message": "일러스트",
@@ -2371,25 +2347,9 @@
     "message": "하나의 핸드오프를 이루는 네 개의 층",
     "description": "Accessible label of the list of the four handoff beats"
   },
-  "home.handoff.spec.title": {
-    "message": "스펙",
-    "description": "Heading of beat 1"
-  },
   "home.handoff.spec.body": {
     "message": "에이전트가 시작하기 전에 한 번 적어 두는 완료의 의미. {file}",
     "description": "Beat 1 text; {file} is the file name spec.md"
-  },
-  "home.handoff.spec.ariaLabel": {
-    "message": "spec.md 발췌",
-    "description": "Accessible label of the spec.md excerpt; keep the file name"
-  },
-  "home.handoff.agents.title": {
-    "message": "에이전트",
-    "description": "Heading of beat 2"
-  },
-  "home.handoff.agents.body": {
-    "message": "파일을 읽을 수 있는 도구라면 무엇이든 작업을 맡고, 증명하고, 다음으로 넘어가요.",
-    "description": "Beat 2 text"
   },
   "home.handoff.agents.claim": {
     "message": "Claude Code가 첫 번째 열린 작업을 맡아요. 담당은 원장의 한 줄이라서 다른 에이전트가 같은 작업을 가져가지 못해요.",
@@ -2399,10 +2359,6 @@
     "message": "작업의 테스트를 실행해요. 종료 코드 0이 증거이며, 전체 출력은 {file}에 저장돼요.",
     "description": "Explains specweave task done; {file} is a file path"
   },
-  "home.handoff.agents.limit": {
-    "message": "Claude Code가 T-02를 맡았다가 작업 도중 사용 한도에 닿아요.",
-    "description": "Explains the second claim. Keep product names and T-02 in English"
-  },
   "home.handoff.ledger.title": {
     "message": "git의 원장",
     "description": "Heading of beat 3"
@@ -2410,10 +2366,6 @@
   "home.handoff.ledger.body": {
     "message": "모든 담당, 완료, 해제가 한 줄이며 코드와 함께 커밋돼요. {file}",
     "description": "Beat 3 text; {file} is the file name ledger.jsonl"
-  },
-  "home.handoff.ledger.ariaLabel": {
-    "message": "두 에이전트 이후 ledger.jsonl의 줄",
-    "description": "Accessible label of the ledger excerpt; keep the file name"
   },
   "home.handoff.handoff.title": {
     "message": "핸드오프",
@@ -2423,10 +2375,6 @@
     "message": "다른 도구가 채팅 창이 아니라 같은 파일에서 이어가요.",
     "description": "Beat 4 text"
   },
-  "home.handoff.switch.srOnly": {
-    "message": "T-02를 넘김:",
-    "description": "Screen-reader text between claude@cloud and codex@laptop; keep T-02"
-  },
   "home.handoff.handoff.release": {
     "message": "담당을 해제하고, 다음에 할 일을 담은 {file}을 작성하고, 스냅샷을 {ref}와 {branch}에 푸시해요.",
     "description": "Explains specweave handoff; {file} is handoff.md, {ref} and {branch} are git ref names, keep them"
@@ -2434,18 +2382,6 @@
   "home.handoff.handoff.pickup": {
     "message": "Codex에서: 핸드오프를 가져오고, 수정 사항을 적용하고, T-02와 두 가지 기준을 출력해요.",
     "description": "Explains specweave pickup. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.done": {
-    "message": "Codex가 같은 기준으로 T-02를 마무리하고, 원장이 테스트 출력을 인용해요.",
-    "description": "Explains the second task done. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.verify": {
-    "message": "테스트, 린트, 빌드를 실행하고 모든 기준을 확인한 뒤 {file}을 작성해요.",
-    "description": "Explains specweave verify; {file} is a file path"
-  },
-  "home.handoff.chip.pass": {
-    "message": "통과",
-    "description": "Pass chip after a successful verify"
   },
   "install.copy.ariaLabel": {
     "message": "설치 명령 복사",
@@ -3880,5 +3816,89 @@
   "code.download.phones.body": {
     "message": "Android용 SpecWithCode는 Google Play에 있습니다. iPhone 앱은 준비 중이며, App Store 카드는 게시되는 날 링크로 바뀝니다.",
     "description": "Phone apps section intro. Keep product names in English"
+  },
+  "home.story.plan.title": {
+    "message": "계획",
+    "description": "Heading of scene 1 of the handoff story: the plan, kept in spec.md"
+  },
+  "home.story.plan.create": {
+    "message": "인크리먼트를 시작해요. 기준은 {criteria} 줄이고 작업은 {task} 제목이라서 어떤 도구든 읽을 수 있어요.",
+    "description": "Explains specweave create-increment; {criteria} and {task} are format samples, keep them"
+  },
+  "home.story.plan.tasks": {
+    "message": "각 작업에는 다루는 기준, 수정하는 파일, 이를 증명하는 테스트가 적혀 있어요.",
+    "description": "Explains the line under each task in spec.md"
+  },
+  "home.story.plan.ariaLabel": {
+    "message": "일러스트: specweave create-increment가 spec.md를 작성해요. 인수 기준은 AC-01과 AC-02 두 개, 작업은 T-01과 T-02 두 개이고, 각 작업에 기준과 파일, 테스트가 적혀 있어요.",
+    "description": "Accessible label of the animated plan illustration. Keep command, file and id names in English"
+  },
+  "home.story.count.criteria": {
+    "message": "기준",
+    "description": "Counter label in the plan illustration: number of acceptance criteria"
+  },
+  "home.story.count.tasks": {
+    "message": "작업",
+    "description": "Counter label in the plan illustration: number of tasks"
+  },
+  "home.story.count.tests": {
+    "message": "테스트",
+    "description": "Counter label in the plan illustration: number of tests named by tasks"
+  },
+  "home.story.plan.covered": {
+    "message": "모든 기준에 작업과 테스트가 있어요",
+    "description": "Result line in the plan illustration"
+  },
+  "home.story.status.open": {
+    "message": "열림",
+    "description": "Task status in the board illustration: nobody has claimed it"
+  },
+  "home.story.status.claimed": {
+    "message": "담당 중",
+    "description": "Task status in the board illustration: an agent claimed it"
+  },
+  "home.story.ledger.ariaLabel": {
+    "message": "일러스트: specweave task 명령을 실행할 때마다 ledger.jsonl에 JSON 한 줄이 추가되고, 작업 보드는 그 줄들로 계산돼요. T-01은 증거와 함께 완료, T-02는 claude@cloud가 담당 중이에요.",
+    "description": "Accessible label of the animated ledger illustration. Keep command, file and id names in English"
+  },
+  "home.story.ledger.board": {
+    "message": "작업 보드, 원장에서 계산",
+    "description": "Title of the task board in the ledger illustration"
+  },
+  "home.story.handoff.ariaLabel": {
+    "message": "일러스트: Claude Code가 T-02 도중 사용 한도에 도달해 specweave handoff를 실행해요. 핸드오프는 git으로 가요. Codex가 specweave pickup을 실행해 두 가지 기준이 있는 T-02를 받아 끝내요. 파일을 읽고 명령을 실행하는 에이전트라면 누구나 같은 방식으로 이어받을 수 있어요.",
+    "description": "Accessible label of the animated handoff illustration. Keep product, command and id names in English"
+  },
+  "home.story.handoff.working": {
+    "message": "T-02 작업 중",
+    "description": "Label in the handoff illustration: the agent is working on task T-02. Keep T-02"
+  },
+  "home.story.handoff.others": {
+    "message": "파일을 읽고 명령을 실행하는 에이전트라면 누구나 같은 방식으로 이어받아요.",
+    "description": "Line under the handoff illustration, after a row of agent logos"
+  },
+  "home.story.gate.ariaLabel": {
+    "message": "일러스트: reports/verify.json이 없는 동안 specweave complete는 차단돼요. specweave verify가 테스트, 린트, 빌드를 실행하고 두 기준을 확인해 통과해요. 다른 모델이 하는 specweave review는 먼저 \"fix first\", 그다음 \"ship\"을 돌려줘요. 그러면 specweave complete가 인크리먼트를 닫아요.",
+    "description": "Accessible label of the animated verify and review illustration. Keep command and file names in English"
+  },
+  "home.story.gate.ship": {
+    "message": "종료 코드 0, 출시",
+    "description": "Pass chip for specweave review: exit code 0 means ship"
+  },
+  "home.story.gate.reviewer": {
+    "message": "Codex가 Claude Code가 작성한 코드를 리뷰",
+    "description": "Label in the review illustration. Keep product names in English"
+  },
+  "home.story.gate.closed": {
+    "message": "닫힘",
+    "description": "Pass chip for specweave complete: the increment is closed"
+  },
+  "home.story.gate.title": {
+    "message": "검증과 리뷰",
+    "description": "Heading of scene 4 of the handoff story: the closure gate"
+  },
+  "home.story.gate.body": {
+    "message": "인크리먼트는 검사가 통과하고 두 번째 모델이 동의할 때 닫혀요. 에이전트가 끝났다고 말할 때가 아니에요.",
+    "description": "Scene 4 text"
   }
 }
