@@ -370,3 +370,16 @@
   from { transform: scale(1.18); }
   to { transform: none; }
 }
+
+/* Product name with its icon: the generated set for the CLI and the registry, the real app icon for SpecWithCode. */
+.body .name {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-3);
+}
+
+.appIcon {
+  display: block;
+  flex: none;
+  border-radius: 26%;
+}

@@ -2,6 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import Translate, {translate} from '@docusaurus/Translate';
+import HomeIcon from './HomeIcon';
 import styles from './MeasuredPlanning.module.css';
 
 /*
@@ -42,6 +43,7 @@ export default function MeasuredPlanning() {
   const PLAN = planList();
   return <section className={styles.band} id="when-to-plan" aria-labelledby="when-to-plan-title">
     <div className={styles.copy}>
+      <HomeIcon name="chart" className={styles.icon} />
       <p className={styles.kicker}><Translate id="home.planning.kicker" description="Small label above the 'when to plan' heading">Measured on our own work</Translate></p>
       <h2 id="when-to-plan-title"><Translate id="home.planning.title" description="Heading of the 'when to plan an increment' section">Plan when it pays off, skip it when it doesn’t</Translate></h2>
       <p className={styles.lead}><Translate id="home.planning.lead" description="Lead paragraph of the 'when to plan' section. Keep product names in English">We build these products with SpecWeave, so we looked at where a spec earns its keep. Small changes looked about the same either way. Large increment-backed ones took more messages, so we keep increments for work that Codex, another account or another machine will continue.</Translate></p>

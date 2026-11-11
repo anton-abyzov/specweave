@@ -2315,26 +2315,6 @@
     "message": "打开完整大小的截图",
     "description": "Accessible label of the link that opens the full-size app screenshot"
   },
-  "home.handoff.beat.spec": {
-    "message": "规格",
-    "description": "Progress rail label for beat 1 of the handoff story"
-  },
-  "home.handoff.beat.agents": {
-    "message": "智能体",
-    "description": "Progress rail label for beat 2 of the handoff story"
-  },
-  "home.handoff.beat.ledger": {
-    "message": "台账",
-    "description": "Progress rail label for beat 3 of the handoff story"
-  },
-  "home.handoff.beat.handoff": {
-    "message": "交接",
-    "description": "Progress rail label for beat 4 of the handoff story"
-  },
-  "home.handoff.diagram.ariaLabel": {
-    "message": "示意图：Claude Code 向仓库写入，直到触达用量上限；Codex 从 git 读取同样的规格、台账和交接记录，并完成任务。",
-    "description": "Accessible label of the handoff diagram. Keep product names in English"
-  },
   "home.handoff.chip.usageLimit": {
     "message": "用量上限",
     "description": "Warning chip: the agent hit its usage limit"
@@ -2342,10 +2322,6 @@
   "home.handoff.diagram.repo": {
     "message": "你的仓库，在 git 中",
     "description": "Diagram node title for the git repository"
-  },
-  "home.handoff.diagram.verifyPass": {
-    "message": "verify：通过",
-    "description": "Pass chip in the diagram; 'verify' is the CLI command name, keep it in English"
   },
   "home.handoff.diagram.caption": {
     "message": "示意图",
@@ -2355,25 +2331,9 @@
     "message": "一次交接的四个层面",
     "description": "Accessible label of the list of the four handoff beats"
   },
-  "home.handoff.spec.title": {
-    "message": "规格",
-    "description": "Heading of beat 1"
-  },
   "home.handoff.spec.body": {
     "message": "“完成”的含义，在任何智能体开工前一次写好。{file}",
     "description": "Beat 1 text; {file} is the file name spec.md"
-  },
-  "home.handoff.spec.ariaLabel": {
-    "message": "spec.md 摘录",
-    "description": "Accessible label of the spec.md excerpt; keep the file name"
-  },
-  "home.handoff.agents.title": {
-    "message": "智能体",
-    "description": "Heading of beat 2"
-  },
-  "home.handoff.agents.body": {
-    "message": "任何能读取这些文件的工具，都可以认领任务、证明完成，然后继续下一个。",
-    "description": "Beat 2 text"
   },
   "home.handoff.agents.claim": {
     "message": "Claude Code 领取第一个未完成的任务。认领是台账中的一行，所以其他智能体不会重复领取。",
@@ -2383,10 +2343,6 @@
     "message": "运行该任务的测试。退出码 0 就是证据，完整输出保存在 {file}。",
     "description": "Explains specweave task done; {file} is a file path"
   },
-  "home.handoff.agents.limit": {
-    "message": "Claude Code 认领了 T-02，做到一半就触达了用量上限。",
-    "description": "Explains the second claim. Keep product names and T-02 in English"
-  },
   "home.handoff.ledger.title": {
     "message": "git 中的台账",
     "description": "Heading of beat 3"
@@ -2394,10 +2350,6 @@
   "home.handoff.ledger.body": {
     "message": "每次认领、完成和释放都是一行，与代码一起提交。{file}",
     "description": "Beat 3 text; {file} is the file name ledger.jsonl"
-  },
-  "home.handoff.ledger.ariaLabel": {
-    "message": "两个智能体之后的 ledger.jsonl 内容",
-    "description": "Accessible label of the ledger excerpt; keep the file name"
   },
   "home.handoff.handoff.title": {
     "message": "交接",
@@ -2407,10 +2359,6 @@
     "message": "另一个工具从同样的文件继续，而不是从某个聊天窗口。",
     "description": "Beat 4 text"
   },
-  "home.handoff.switch.srOnly": {
-    "message": "把 T-02 交给",
-    "description": "Screen-reader text between claude@cloud and codex@laptop; keep T-02"
-  },
   "home.handoff.handoff.release": {
     "message": "释放认领，写入记录接下来要做什么的 {file}，并把快照推送到 {ref} 和 {branch}。",
     "description": "Explains specweave handoff; {file} is handoff.md, {ref} and {branch} are git ref names, keep them"
@@ -2418,18 +2366,6 @@
   "home.handoff.handoff.pickup": {
     "message": "在 Codex 中：获取交接，应用修改，并打印 T-02 及其两条验收标准。",
     "description": "Explains specweave pickup. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.done": {
-    "message": "Codex 按同样的验收标准完成 T-02，台账引用了测试输出。",
-    "description": "Explains the second task done. Keep Codex and T-02 in English"
-  },
-  "home.handoff.handoff.verify": {
-    "message": "运行测试、lint 和构建，检查每条验收标准，并写入 {file}。",
-    "description": "Explains specweave verify; {file} is a file path"
-  },
-  "home.handoff.chip.pass": {
-    "message": "通过",
-    "description": "Pass chip after a successful verify"
   },
   "install.copy.ariaLabel": {
     "message": "复制安装命令",
@@ -3880,5 +3816,89 @@
   "code.download.phones.body": {
     "message": "SpecWithCode Android 版已在 Google Play 上架。iPhone 版正在路上，App Store 卡片会在上架当天变成链接。",
     "description": "Phone apps section intro. Keep product names in English"
+  },
+  "home.story.plan.title": {
+    "message": "计划",
+    "description": "Heading of scene 1 of the handoff story: the plan, kept in spec.md"
+  },
+  "home.story.plan.create": {
+    "message": "创建增量。验收标准是 {criteria} 这样的行，任务是 {task} 这样的标题，所以任何工具都能读取。",
+    "description": "Explains specweave create-increment; {criteria} and {task} are format samples, keep them"
+  },
+  "home.story.plan.tasks": {
+    "message": "每个任务都写明它覆盖的标准、改动的文件，以及证明它完成的测试。",
+    "description": "Explains the line under each task in spec.md"
+  },
+  "home.story.plan.ariaLabel": {
+    "message": "示意图：specweave create-increment 写出 spec.md，其中有两条验收标准 AC-01 和 AC-02，以及两个任务 T-01 和 T-02，每个任务都写明对应的标准、文件和测试。",
+    "description": "Accessible label of the animated plan illustration. Keep command, file and id names in English"
+  },
+  "home.story.count.criteria": {
+    "message": "标准",
+    "description": "Counter label in the plan illustration: number of acceptance criteria"
+  },
+  "home.story.count.tasks": {
+    "message": "任务",
+    "description": "Counter label in the plan illustration: number of tasks"
+  },
+  "home.story.count.tests": {
+    "message": "测试",
+    "description": "Counter label in the plan illustration: number of tests named by tasks"
+  },
+  "home.story.plan.covered": {
+    "message": "每条标准都有任务和测试",
+    "description": "Result line in the plan illustration"
+  },
+  "home.story.status.open": {
+    "message": "未领取",
+    "description": "Task status in the board illustration: nobody has claimed it"
+  },
+  "home.story.status.claimed": {
+    "message": "已认领",
+    "description": "Task status in the board illustration: an agent claimed it"
+  },
+  "home.story.ledger.ariaLabel": {
+    "message": "示意图：每条 specweave task 命令都会向 ledger.jsonl 追加一行 JSON，任务看板由这些行计算得出：T-01 已完成并附有证据，T-02 由 claude@cloud 认领。",
+    "description": "Accessible label of the animated ledger illustration. Keep command, file and id names in English"
+  },
+  "home.story.ledger.board": {
+    "message": "任务看板，由台账计算得出",
+    "description": "Title of the task board in the ledger illustration"
+  },
+  "home.story.handoff.ariaLabel": {
+    "message": "示意图：Claude Code 在 T-02 上达到用量上限，运行 specweave handoff。交接内容进入 git。Codex 运行 specweave pickup，拿到带有两条标准的 T-02 并完成它。任何能读文件、能运行命令的智能体都可以用同样的方式接手。",
+    "description": "Accessible label of the animated handoff illustration. Keep product, command and id names in English"
+  },
+  "home.story.handoff.working": {
+    "message": "正在处理 T-02",
+    "description": "Label in the handoff illustration: the agent is working on task T-02. Keep T-02"
+  },
+  "home.story.handoff.others": {
+    "message": "任何能读文件、能运行命令的智能体都可以用同样的方式接手。",
+    "description": "Line under the handoff illustration, after a row of agent logos"
+  },
+  "home.story.gate.ariaLabel": {
+    "message": "示意图：缺少 reports/verify.json 时，specweave complete 会被拦截。specweave verify 运行测试、lint 和构建，并检查两条标准：通过。由另一个模型执行的 specweave review 先返回“fix first”，再返回“ship”。随后 specweave complete 关闭增量。",
+    "description": "Accessible label of the animated verify and review illustration. Keep command and file names in English"
+  },
+  "home.story.gate.ship": {
+    "message": "退出码 0，可以发布",
+    "description": "Pass chip for specweave review: exit code 0 means ship"
+  },
+  "home.story.gate.reviewer": {
+    "message": "Codex 审查 Claude Code 写的代码",
+    "description": "Label in the review illustration. Keep product names in English"
+  },
+  "home.story.gate.closed": {
+    "message": "已关闭",
+    "description": "Pass chip for specweave complete: the increment is closed"
+  },
+  "home.story.gate.title": {
+    "message": "验证与审查",
+    "description": "Heading of scene 4 of the handoff story: the closure gate"
+  },
+  "home.story.gate.body": {
+    "message": "只有检查通过并且第二个模型也同意，增量才会关闭，而不是智能体说做完了就算数。",
+    "description": "Scene 4 text"
   }
 }

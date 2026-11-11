@@ -1,0 +1,1039 @@
+/*
+  #how on the homepage: four scenes on one thread (plan, ledger, handoff, verify and review).
+  Each scene is an icon, a short explanation and a stage that plays on its own (Stages.tsx).
+  Same grammar as the /code hero stage: panel on canvas, ink command bubbles, iris beads that
+  flow between parts, provider marks on small plates. Only --wv-* tokens, so it follows the theme.
+
+  Motion contract: a step that has not been reached carries data-on="0" and is hidden in place, so
+  the stage keeps its size through the loop. Entry animations exist only under [data-live], which
+  the step clock sets while the stage is on screen and motion is allowed. Everything else (server
+  render, no JavaScript, reduced motion, print) is the finished picture, still.
+*/
+
+/* ---------- Scenes on the thread ---------- */
+.story {
+  display: grid;
+  gap: var(--wv-space-16);
+  margin: var(--wv-space-12) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scene {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--wv-space-6);
+  min-width: 0;
+  margin: 0;
+}
+
+.copy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--wv-space-4);
+  row-gap: var(--wv-space-3);
+  align-content: start;
+  min-width: 0;
+  max-width: 44rem;
+}
+
+.copy > * {
+  grid-column: 1 / -1;
+}
+
+.copy > .sceneIcon {
+  grid-column: 1;
+}
+
+.copy > h3 {
+  grid-column: 2;
+  align-self: center;
+  font-size: 24px;
+  line-height: 30px;
+  letter-spacing: -0.015em;
+}
+
+.copy > p {
+  font-size: 16px;
+  line-height: 25px;
+  color: var(--wv-muted);
+}
+
+.copy code {
+  padding: 0 var(--wv-space-1);
+  border-radius: var(--wv-radius-xs);
+  background: var(--wv-sunken);
+  font-family: var(--wv-font-mono);
+  font-size: 13px;
+  color: var(--wv-ink);
+  overflow-wrap: anywhere;
+}
+
+/* The commands of a scene: the command, then what it does. */
+.cmds {
+  display: grid;
+  margin: var(--wv-space-1) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--wv-line);
+}
+
+.cmds li {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: var(--wv-space-3) 0;
+  border-bottom: 1px solid var(--wv-line);
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--wv-muted);
+}
+
+.cmds li > code:first-child {
+  justify-self: start;
+  padding: 0;
+  background: none;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.cmds li > code:first-child:not([data-format])::before {
+  content: "$ ";
+  color: var(--wv-iris);
+}
+
+.copy .fine {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+@media (min-width: 1080px) {
+  .scene {
+    grid-template-columns: minmax(0, 23.5rem) minmax(0, 1fr);
+    gap: var(--wv-space-12);
+    align-items: start;
+  }
+
+  .copy {
+    grid-template-columns: 56px minmax(0, 1fr);
+    column-gap: var(--wv-space-6);
+  }
+
+  .copy > * {
+    grid-column: 2;
+  }
+
+  .copy > .sceneIcon {
+    grid-row: 1 / span 2;
+    align-self: start;
+  }
+
+  .copy > h3 {
+    margin-top: var(--wv-space-3);
+  }
+
+  /* The thread: iris beads run from each icon down to the next one. */
+  .scene:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 66px;
+    bottom: calc(-1 * var(--wv-space-16) + 10px);
+    left: 26px;
+    width: 4px;
+    background: radial-gradient(circle, var(--wv-iris) 1.7px, transparent 2.3px) center / 4px 9px repeat-y;
+    opacity: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 1080px) {
+  .scene:not(:last-child):has(.stage[data-live])::before {
+    animation: beadDown 0.8s linear infinite;
+  }
+}
+
+/* The icon of the scene that is playing lifts a little. */
+.sceneIcon {
+  transition: transform 500ms var(--wv-ease, ease-out);
+}
+
+.scene:has(.stage[data-live]) .sceneIcon {
+  animation: float 3.2s ease-in-out infinite;
+}
+
+/* ---------- Stage frame ---------- */
+.stage {
+  --bead: radial-gradient(circle, var(--wv-iris) 1.7px, transparent 2.3px);
+  position: relative;
+  container-type: inline-size;
+  width: 100%;
+  max-width: 760px;
+  min-width: 0;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--wv-line);
+  border-radius: 20px;
+  background: var(--wv-panel);
+  box-shadow: var(--wv-shadow-window);
+  color: var(--wv-ink);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.stage p {
+  margin: 0;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--wv-space-3);
+}
+
+.file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: var(--wv-sunken);
+  font: 600 12.5px/18px var(--wv-font-mono);
+}
+
+.file svg {
+  color: var(--wv-iris);
+}
+
+.track {
+  flex: 1;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--wv-sunken);
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.stage[data-live] .track {
+  opacity: 1;
+}
+
+.track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--wv-iris);
+  transform-origin: left center;
+  transform: scaleX(var(--p, 1));
+  transition: transform 600ms linear;
+}
+
+.body {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tag {
+  margin-top: 10px;
+  text-align: right;
+  font: 500 11.5px/16px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+/* ---------- Steps ---------- */
+.stage [data-on="0"] {
+  visibility: hidden;
+}
+
+.stage[data-live] [data-on="1"] {
+  animation: rise 340ms var(--wv-ease, ease-out) var(--d, 0ms) both;
+}
+
+/* ---------- Shared parts ---------- */
+.cmd {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  justify-self: start;
+  max-width: 100%;
+  padding: 5px 11px;
+  border-radius: 10px;
+  border-bottom-left-radius: 4px;
+  background: var(--wv-ink);
+  color: var(--wv-panel);
+  font: 500 12.5px/20px var(--wv-font-mono);
+}
+
+.prompt {
+  flex: none;
+  opacity: 0.55;
+}
+
+.typed {
+  display: inline-block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.stage[data-live] [data-on="1"] > .typed {
+  animation: type 620ms steps(28, end) calc(var(--d, 0ms) + 140ms) both;
+}
+
+.mark {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  padding: 3px;
+  border-radius: 7px;
+  background: var(--wv-sunken);
+  line-height: 0;
+}
+
+.mark img {
+  display: block;
+}
+
+/* Light marks (OpenAI, Copilot, Cursor, Grok) need the dark plate in both themes; OpenCode the light one.
+   Two classes: the minifier merges equal declarations across files, which can move a single-class rule above .mark. */
+.mark.markDark {
+  background: #241523;
+}
+
+.mark.markLight {
+  background: #f4f2f1;
+}
+
+.out {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  font: 400 11.5px/18px var(--wv-font-mono);
+  color: var(--wv-muted);
+}
+
+.outLine {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  transition: opacity 300ms ease;
+}
+
+.clip {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hl {
+  font-weight: 600;
+  color: var(--wv-ink);
+}
+
+.v_ok {
+  color: var(--wv-ink);
+}
+
+.v_pass {
+  font-weight: 600;
+  color: var(--wv-pass);
+}
+
+.v_fail {
+  font-weight: 600;
+  color: var(--wv-fail);
+}
+
+.finding {
+  color: var(--wv-warn);
+}
+
+/* Superseded output: the first verdict after the fix, the refusal after verify passed. */
+.outLine[data-old="1"] {
+  font-weight: 400;
+  color: var(--wv-muted);
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.chip {
+  flex: none;
+}
+
+.stage[data-live] .chip[data-on="1"] {
+  animation: pop 420ms cubic-bezier(0.3, 1.5, 0.5, 1) var(--d, 0ms) both;
+}
+
+.spin {
+  animation: none;
+}
+
+.stage[data-live] .spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ---------- 1. Plan ---------- */
+.editor {
+  padding: 10px 12px 10px 0;
+  border: 1px solid var(--wv-line);
+  border-radius: 12px;
+  background: var(--wv-canvas);
+  font: 400 12.5px/21px var(--wv-font-mono);
+  counter-reset: ln;
+  overflow: hidden;
+}
+
+.ln {
+  position: relative;
+  display: block;
+  min-height: 21px;
+  padding-left: 42px;
+  counter-increment: ln;
+}
+
+.ln::before {
+  content: counter(ln);
+  position: absolute;
+  left: 0;
+  width: 28px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--wv-control);
+}
+
+.ln i {
+  font-style: normal;
+  color: var(--wv-control);
+}
+
+.ln em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--wv-iris-strong);
+}
+
+.ln b {
+  font-weight: 600;
+}
+
+.k_meta {
+  color: var(--wv-muted);
+}
+
+.k_meta em {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--wv-iris-tint);
+}
+
+/* A line appears by being typed, not by rising. */
+.stage[data-live] .ln[data-on="1"] {
+  animation: none;
+}
+
+.stage[data-live] .ln[data-on="1"]::before {
+  animation: fade 200ms var(--d, 0ms) both;
+}
+
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.counts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 3px 10px 3px 4px;
+  border: 1px solid var(--wv-line);
+  border-radius: 999px;
+  background: var(--wv-canvas);
+  font: 500 12.5px/18px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.counts b {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--wv-iris);
+  color: var(--wv-on-iris);
+  font: 700 12px/1 var(--wv-font-mono);
+}
+
+.stage[data-live] .counts b {
+  animation: pop 380ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+.counts .covered {
+  margin-left: auto;
+  padding-left: 8px;
+  border-color: color-mix(in srgb, var(--wv-pass) 45%, var(--wv-line));
+  background: var(--wv-pass-tint);
+  font-weight: 600;
+  color: var(--wv-pass);
+}
+
+/* ---------- 2. Ledger ---------- */
+.ledger {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--wv-line);
+  border-radius: 12px;
+  background: var(--wv-canvas);
+  list-style: none;
+}
+
+.ledger li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 3px 6px;
+  border-radius: 8px;
+}
+
+.ledger code {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 400 12px/20px var(--wv-font-mono);
+  color: var(--wv-muted);
+  overflow-wrap: anywhere;
+}
+
+/* A line wraps between its fields, never inside "T-01" or a timestamp. */
+.ledger code > span {
+  white-space: nowrap;
+}
+
+.ledger code i {
+  font-style: normal;
+  color: var(--wv-control);
+}
+
+.ledger code b {
+  font-weight: 400;
+}
+
+.ledger code [data-k="t"],
+.ledger code [data-k="by"] {
+  color: var(--wv-ink);
+}
+
+.ledger code [data-k="e"] {
+  font-weight: 600;
+  color: var(--wv-iris-strong);
+}
+
+.ledger code [data-k="evidence"] {
+  font-weight: 600;
+  color: var(--wv-pass);
+}
+
+/* A line lands once. Without this it would fall back to the generic rise when data-new clears and blink. */
+.stage[data-live] .ledger li[data-on="1"] {
+  animation: none;
+}
+
+.stage[data-live] .ledger li[data-new="1"] {
+  animation: land 1100ms ease-out both;
+}
+
+.board {
+  position: relative;
+  margin-top: 14px;
+}
+
+/* Beads run from the ledger into the board: the board is read from those lines. */
+.board::before {
+  content: "";
+  position: absolute;
+  top: -22px;
+  left: 22px;
+  width: 4px;
+  height: 20px;
+  background: var(--bead) center / 4px 9px repeat-y;
+}
+
+.stage[data-live] .board::before {
+  animation: beadDown 0.8s linear infinite;
+}
+
+.boardTitle {
+  padding-left: 36px;
+  font: 600 12px/16px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.board ul {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--wv-line);
+  border-radius: 12px;
+  background: var(--wv-canvas);
+  transition: border-color 300ms ease;
+}
+
+.task[data-state="claimed"] {
+  border-color: var(--wv-iris);
+}
+
+.task[data-state="done"] {
+  border-color: color-mix(in srgb, var(--wv-pass) 50%, var(--wv-line));
+}
+
+.taskIcon {
+  display: inline-flex;
+  flex: none;
+  color: var(--wv-control);
+}
+
+.task[data-state="claimed"] .taskIcon {
+  color: var(--wv-iris);
+}
+
+.task[data-state="done"] .taskIcon {
+  color: var(--wv-pass);
+}
+
+.taskName {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.taskName em {
+  margin-right: 8px;
+  font: 600 12px/1 var(--wv-font-mono);
+  font-style: normal;
+  color: var(--wv-iris-strong);
+}
+
+.taskState {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  font: 600 12px/18px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.task[data-state="done"] .taskState {
+  color: var(--wv-pass);
+}
+
+.taskState code {
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--wv-pass-tint);
+  font: 500 11.5px/18px var(--wv-font-mono);
+  color: var(--wv-pass);
+}
+
+.stage[data-live] .taskState {
+  animation: rise 300ms ease-out both;
+}
+
+.stage[data-live] .task:not([data-state="claimed"]) .taskIcon {
+  animation: pop 380ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+/* ---------- 3. Handoff ---------- */
+.relay {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.agent {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--wv-line);
+  border-radius: 14px;
+  background: var(--wv-canvas);
+  transition: border-color 400ms ease, opacity 400ms ease, box-shadow 400ms ease;
+}
+
+.agent[data-limit="1"] {
+  border-color: var(--wv-warn);
+}
+
+.agent[data-rest="1"] {
+  opacity: 0.86;
+}
+
+.agent[data-wait="1"] {
+  opacity: 0.5;
+}
+
+.agent[data-active="1"] {
+  border-color: var(--wv-iris);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--wv-iris) 12%, transparent);
+}
+
+.agentHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 28px;
+}
+
+.agentName {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  line-height: 16px;
+}
+
+.agentName b {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agentName small {
+  font: 400 11.5px/16px var(--wv-font-mono);
+  color: var(--wv-muted);
+}
+
+.usage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px 8px;
+  font: 500 12px/16px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.meter {
+  grid-column: 1 / -1;
+  display: block;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--wv-sunken);
+  overflow: hidden;
+}
+
+.meter i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--wv-warn);
+  transform-origin: left center;
+}
+
+.stage .meter i[data-on="0"] {
+  visibility: visible;
+  background: var(--wv-iris);
+  transform: scaleX(0.55);
+}
+
+.stage[data-live] .meter i[data-on="1"] {
+  animation: fill 1700ms cubic-bezier(0.3, 0, 0.2, 1) both;
+}
+
+.wire {
+  position: relative;
+  display: block;
+  justify-self: center;
+  width: 4px;
+  height: 22px;
+  background: var(--bead) center / 4px 9px repeat-y;
+  transition: opacity 300ms ease;
+}
+
+.stage .wire[data-on="0"] {
+  visibility: visible;
+  opacity: 0.3;
+}
+
+.stage[data-live] .wire[data-on="1"] {
+  animation: beadDown 0.8s linear infinite;
+}
+
+.wire span {
+  display: none;
+}
+
+.repo {
+  display: grid;
+  gap: 5px;
+  justify-items: start;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 50%, var(--wv-line));
+  border-radius: 14px;
+  background: var(--wv-panel);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--wv-iris) 9%, transparent);
+}
+
+.repoTitle {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-bottom: 2px;
+  font: 600 11.5px/16px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.repoTitle svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--wv-iris);
+}
+
+.repoFile {
+  padding: 1px 7px;
+  border: 1px solid color-mix(in srgb, var(--wv-iris) 40%, var(--wv-line));
+  border-radius: 6px;
+  background: var(--wv-iris-tint);
+  font: 500 12px/18px var(--wv-font-mono);
+  color: var(--wv-iris-strong);
+}
+
+.stage[data-live] .repoFile[data-pulse="1"] {
+  animation: pulse 900ms ease-out both;
+}
+
+.stage[data-live] .repoNew[data-on="1"] {
+  animation: pop 460ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+.others {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font: 500 12.5px/18px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.otherMarks {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.otherMarks > span {
+  display: inline-flex;
+}
+
+.stage[data-live] .others[data-on="1"] .otherMarks > span {
+  animation: pop 360ms cubic-bezier(0.3, 1.5, 0.5, 1) var(--d, 0ms) both;
+}
+
+@container (min-width: 640px) {
+  .relay {
+    grid-template-columns: minmax(0, 1fr) 30px minmax(0, 8.75rem) 30px minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .wire {
+    width: 100%;
+    height: 4px;
+    background: var(--bead) 0 0 / 9px 4px repeat-x;
+  }
+
+  .stage[data-live] .wire[data-on="1"] {
+    animation-name: beadRight;
+  }
+
+  /* A packet crosses the wire when the work moves. */
+  .wire span {
+    position: absolute;
+    top: -3px;
+    left: 0;
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--wv-iris);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--wv-iris) 25%, transparent);
+    opacity: 0;
+  }
+
+  .stage[data-live] .wire[data-on="1"] span {
+    animation: packet 700ms ease-in 3 both;
+  }
+}
+
+/* ---------- 4. The gate ---------- */
+.gate {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.station {
+  position: relative;
+  display: grid;
+  gap: 7px;
+  align-content: start;
+  min-width: 0;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--wv-line);
+  border-radius: 14px;
+  background: var(--wv-canvas);
+  transition: border-color 400ms ease, opacity 400ms ease;
+}
+
+.station[data-state="wait"] {
+  opacity: 0.55;
+}
+
+.station[data-state="run"] {
+  border-color: var(--wv-iris);
+}
+
+.station[data-state="pass"] {
+  border-color: color-mix(in srgb, var(--wv-pass) 55%, var(--wv-line));
+}
+
+.station[data-state="warn"] {
+  border-color: var(--wv-warn);
+}
+
+.station[data-state="fail"] {
+  border-color: var(--wv-fail);
+}
+
+.station + .station::before {
+  content: "";
+  position: absolute;
+  top: -22px;
+  left: 22px;
+  width: 4px;
+  height: 22px;
+  background: var(--bead) center / 4px 9px repeat-y;
+}
+
+.stage[data-live] .station + .station::before {
+  animation: beadDown 0.8s linear infinite;
+}
+
+.stationHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+  min-height: 24px;
+}
+
+.stationHead code {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 600 13.5px/20px var(--wv-font-mono);
+  color: var(--wv-ink);
+}
+
+.pair {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  font: 500 11.5px/16px var(--wv-font-sans);
+  color: var(--wv-muted);
+}
+
+.pair svg {
+  color: var(--wv-control);
+}
+
+@container (min-width: 620px) {
+  .gate {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .station + .station::before {
+    top: 20px;
+    left: -22px;
+    width: 22px;
+    height: 4px;
+    background: var(--bead) 0 0 / 9px 4px repeat-x;
+  }
+
+  .stage[data-live] .station + .station::before {
+    animation-name: beadRight;
+  }
+}
+
+/* ---------- Narrow stages ---------- */
+@container (max-width: 480px) {
+  .counts .covered {
+    margin-left: 0;
+  }
+
+  .taskName {
+    white-space: normal;
+  }
+}
+
+@keyframes float { 50% { transform: translate3d(0, -5px, 0) rotate(-3deg); } }
+@keyframes rise { from { opacity: 0; transform: translate3d(0, 6px, 0); } }
+@keyframes fade { from { opacity: 0; } }
+@keyframes pop { from { opacity: 0; transform: scale(0.6); } }
+@keyframes type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -2px 0 0); } }
+@keyframes land { from { background: var(--wv-iris-tint); opacity: 0; transform: translate3d(-8px, 0, 0); } 25% { opacity: 1; transform: none; } 70% { background: var(--wv-iris-tint); } to { background: transparent; } }
+@keyframes fill { from { transform: scaleX(0.55); background: var(--wv-iris); } 75% { background: var(--wv-iris); } }
+@keyframes pulse { 30% { transform: scale(1.08); box-shadow: 0 0 0 5px color-mix(in srgb, var(--wv-iris) 25%, transparent); } }
+@keyframes packet { 0% { opacity: 0; transform: translate3d(0, 0, 0); } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate3d(20px, 0, 0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes beadDown { from { background-position-y: 0; } to { background-position-y: 9px; } }
+@keyframes beadRight { from { background-position-x: 0; } to { background-position-x: 9px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .stage *,
+  .stage *::before,
+  .sceneIcon,
+  .scene::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media print {
+  .stage *,
+  .stage *::before {
+    animation: none !important;
+  }
+}

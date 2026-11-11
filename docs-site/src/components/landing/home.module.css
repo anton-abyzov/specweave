@@ -2,7 +2,7 @@
   Homepage (src/pages/index.tsx) on Weave. Builds on continuity.module.css (.page type and buttons).
   Only --wv-* tokens. Left aligned, sections separated by space and hairlines.
   The hero lives in components/home/HomeHero, #family in components/home/FamilyCards and
-  #how's pinned stage in HomeHandoff. Here: section rhythm, the other sections, and the
+  #how's four scenes in components/home/story. Here: section rhythm, the other sections, and the
   scroll-driven .reveal (fill forwards only from entry 0%, so the static layout is the final state).
 */
 
@@ -36,13 +36,21 @@
 }
 
 .home .tools .tool {
-  padding: 2px var(--wv-space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px var(--wv-space-3) 3px 4px;
   border: 1px solid var(--wv-line);
   border-radius: 999px;
   background: var(--wv-panel);
   font-size: 14px;
   line-height: 20px;
   transition: border-color 160ms ease, color 160ms ease;
+}
+
+/* A name without a logo keeps the same inset as the others. */
+.home .tools .tool:not(:has(img)) {
+  padding-left: var(--wv-space-3);
 }
 
 .home .tools .tool:hover {
@@ -75,8 +83,9 @@
   color: var(--wv-muted);
 }
 
-.home .howHead {
-  margin-bottom: 0;
+/* One icon set above every section heading (components/home/HomeIcon). */
+.headIcon {
+  margin-bottom: var(--wv-space-4);
 }
 
 .home .howTitle {
@@ -158,13 +167,13 @@
 }
 
 .proofText,
-.proofGate {
+.proofFolder {
   min-width: 0;
 }
 
 .home .proofLead {
   max-width: 48ch;
-  margin: var(--wv-space-3) 0 var(--wv-space-6);
+  margin: var(--wv-space-3) 0 0;
   color: var(--wv-muted);
 }
 
@@ -177,8 +186,14 @@
 /* Each entry is one row: name, then its note in an aligned column. */
 .folderLine {
   display: grid;
-  grid-template-columns: 24ch minmax(0, 1fr);
+  grid-template-columns: 27ch minmax(0, 1fr);
   column-gap: var(--wv-space-4);
+}
+
+.folderName svg {
+  margin-right: 6px;
+  vertical-align: -2px;
+  color: var(--wv-iris);
 }
 
 .folderNote {
@@ -198,29 +213,10 @@
   }
 }
 
-.home .cmdName {
-  padding: 0;
-  background: none;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.proofGate :global(.wv-evidence__detail) code {
-  font-size: 13px;
-}
-
-.proofGate .caption {
-  margin-top: var(--wv-space-4);
-}
-
 @media (min-width: 1024px) {
   .proof {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     gap: var(--wv-space-16);
-  }
-
-  .proofGate {
-    padding-top: var(--wv-space-16);
   }
 }
 
@@ -587,11 +583,7 @@
     padding: var(--wv-space-12) var(--wv-space-4) 0;
   }
 
-  .home .howHead {
-  margin-bottom: 0;
-}
-
-.home .howTitle {
+  .home .howTitle {
     font-size: 32px;
     line-height: 38px;
   }
@@ -634,6 +626,6 @@
   100% { opacity: 1; transform: none; }
 }
 
-/* One row of guide links under the family cards. */
-.guides { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--wv-space-2) var(--wv-space-6); margin-top: var(--wv-space-8); font-size: 15px; }
-.guides > span { color: var(--wv-muted); font: 500 13px/20px var(--wv-font-mono); text-transform: uppercase; letter-spacing: 0.06em; }
+/* One row of guide links under the family cards (its own class: .guides is the tutorial card grid). */
+.guideLinks { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--wv-space-2) var(--wv-space-6); margin-top: var(--wv-space-8); font-size: 15px; }
+.guideLinks > span { color: var(--wv-muted); font: 500 13px/20px var(--wv-font-mono); text-transform: uppercase; letter-spacing: 0.06em; }
