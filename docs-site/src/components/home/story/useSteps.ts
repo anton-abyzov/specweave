@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 /**
  * Step clock for a self-running stage. `times` are ms from the start of a loop; the hook returns
@@ -39,14 +40,16 @@ export function useSteps<T extends HTMLElement>(times: readonly number[], hold =
     io.observe(el);
     reduced.addEventListener('change', sync);
     document.addEventListener('visibilitychange', sync);
-    // Paper gets the complete picture, not the step the loop happened to be on.
-    window.addEventListener('beforeprint', rest);
+    // Paper gets the complete picture, not the step the loop happened to be on. The browser lays the
+    // page out for print as soon as this listener returns, so the change is committed synchronously.
+    const restNow = () => flushSync(rest);
+    window.addEventListener('beforeprint', restNow);
     window.addEventListener('afterprint', sync);
     return () => {
       io.disconnect();
       reduced.removeEventListener('change', sync);
       document.removeEventListener('visibilitychange', sync);
-      window.removeEventListener('beforeprint', rest);
+      window.removeEventListener('beforeprint', restNow);
       window.removeEventListener('afterprint', sync);
       stop();
     };
