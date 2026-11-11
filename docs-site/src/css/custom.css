@@ -112,6 +112,11 @@ html:root {
 }
 
 /* Each product shows its own links and main button. */
+/* The wrapper must not become the navbar's sticky container. */
+.sw-shell {
+  display: contents;
+}
+
 .sw-shell[data-product='specweave'] .nav-specwithcode,
 .sw-shell[data-product='specwithcode'] .nav-specweave {
   display: none;
