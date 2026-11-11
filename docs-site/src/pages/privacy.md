@@ -71,7 +71,7 @@ Either way, the app sends your messages only to your own computers, and replies 
 
 spec-weave.com is a static site served by GitHub Pages. GitHub may log standard request data such as IP addresses to operate and secure its service; see the [GitHub Privacy Statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). The site sets no advertising cookies.
 
-Cloudflare Web Analytics counts page views and page load times without cookies or local storage. When you click a download link, a store link or a feedback link on the site, your browser also sends one anonymous event to relay.spec-weave.com: the kind of link, the platform and file type (for example `arm64.dmg`), where on the page the link sits, and the page path. The relay adds the country Cloudflare reports for the request and keeps no IP address with the event. No cookie or identifier is set, and nothing is sent when your browser's Do Not Track setting is on.
+Cloudflare Web Analytics counts page views and page load times without cookies or local storage. When you click a download link, an app store link, the Chrome extension link, the Star on GitHub link or a feedback link on the site, your browser also sends one anonymous event to relay.spec-weave.com: the kind of link, the platform and file type (for example `arm64.dmg`), where on the page the link sits, and the page path. The relay adds the country Cloudflare reports for the request; the event record holds no IP address. Cloudflare, which runs the relay, may log standard request data such as IP addresses to operate and secure its service. No cookie or identifier is set, and nothing is sent when your browser's Do Not Track setting is on.
 
 ## Children
 

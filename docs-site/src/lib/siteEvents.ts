@@ -139,7 +139,9 @@ export function startSiteEvents(env: SiteEventEnvironment, origin?: string | nul
   // Pointer clicks and keyboard activation both fire `click`. Middle clicks
   // (open in a new tab) fire `auxclick`.
   const onClick = (e: Event) => {
-    if (e.type === 'auxclick' && (e as MouseEvent).button !== 1) return;
+    const button = (e as MouseEvent).button ?? 0;
+    // Some browsers also fire a legacy `click` for a middle click; count it once.
+    if (button !== (e.type === 'auxclick' ? 1 : 0)) return;
     const target = e.target as {closest?: (selector: string) => Element | null} | null;
     if (!target || typeof target.closest !== 'function') return;
     const element = target.closest(`[${SITE_EVENT_ATTR}]`);

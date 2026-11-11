@@ -97,6 +97,7 @@ describe('startSiteEvents', () => {
     plain.addEventListener('click', e => e.preventDefault());
     plain.click();
     a.dispatchEvent(new MouseEvent('auxclick', {bubbles: true, button: 2}));
+    a.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, button: 1}));
     expect(sendBeacon).not.toHaveBeenCalled();
     a.dispatchEvent(new MouseEvent('auxclick', {bubbles: true, button: 1}));
     expect(sendBeacon).toHaveBeenCalledTimes(1);
