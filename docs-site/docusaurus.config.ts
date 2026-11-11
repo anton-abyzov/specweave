@@ -44,6 +44,9 @@ const config: Config = {
   // Emit the slash form so canonicals and sitemap URLs are not redirects.
   trailingSlash: true,
 
+  // Anonymous download click counts (src/lib/siteEvents.ts).
+  clientModules: ['./src/clientModules/siteEvents.ts'],
+
   // SEO: Schema.org structured data for search engines
   headTags: [
     // Weave shell: applies a light or dark choice carried from verified-skill.com before the

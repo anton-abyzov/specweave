@@ -5,7 +5,7 @@ description: How SpecWeave, SpecWithCode and spec-weave.com handle your informat
 
 # Privacy Policy
 
-Effective 1 November 2026.
+Effective 10 November 2026.
 
 This policy covers the SpecWeave command-line tool, the SpecWithCode desktop app and service, the SpecWithCode iPhone and Android apps, and this website, spec-weave.com. They are made by Anton Abyzov ("we"). Questions go to [anton.abyzov@gmail.com](mailto:anton.abyzov@gmail.com).
 
@@ -70,6 +70,8 @@ Either way, the app sends your messages only to your own computers, and replies 
 ## This website
 
 spec-weave.com is a static site served by GitHub Pages. GitHub may log standard request data such as IP addresses to operate and secure its service; see the [GitHub Privacy Statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). The site sets no advertising cookies.
+
+Cloudflare Web Analytics counts page views and page load times without cookies or local storage. When you click a download link, a store link or a feedback link on the site, your browser also sends one anonymous event to relay.spec-weave.com: the kind of link, the platform and file type (for example `arm64.dmg`), where on the page the link sits, and the page path. The relay adds the country Cloudflare reports for the request and keeps no IP address with the event. No cookie or identifier is set, and nothing is sent when your browser's Do Not Track setting is on.
 
 ## Children
 
