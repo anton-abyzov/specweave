@@ -116,9 +116,9 @@ On the server, run:
 specwithcode fleet invite --coordinator '<main-machine-environment-id>' --via connect --label "Hetzner VPS"
 ```
 
-It prints one line starting with `swc-machine-`. Treat it like a password. With Connect linked, the line carries the machine's Connect address and works once, within an hour. On your main computer, paste it under **Settings > Connections > Your private machines > Add a machine** and choose **Add machine**, or run `specwithcode fleet add <that line>`. Then choose **Allow workers** on the new card. Reaching the machine does not let anyone use it: the line and **Allow workers** are what grant access. [Add a machine](/docs/studio/add-a-machine) covers the rest, including the one-subscription-per-machine recommendation.
+It prints one line starting with `swc-machine-`. Treat it like a password. With Connect linked, the line carries the machine's Connect address and works once, within an hour. On your main computer, paste it under **Settings > Machines > Add a machine** and choose **Add machine**, or run `specwithcode fleet add <that line>`. Then, on the new machine's row, choose **Allow** to allow workers. Reaching the machine does not let anyone use it: the line and allowing workers are what grant access. [Add a machine](/docs/studio/add-a-machine) covers the rest, including the one-subscription-per-machine recommendation.
 
-If your main computer cannot reach the worker, **Your private machines** shows a banner that it is not on SpecWithCode Connect. Run `specwithcode connect` on the worker again and make a new line.
+If your main computer cannot reach the worker, **Machines** shows a banner that it is not on SpecWithCode Connect. Run `specwithcode connect` on the worker again and make a new line.
 
 From then on a coordinator starts work there when you ask, for example "run the tests on the Hetzner VPS".
 

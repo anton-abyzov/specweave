@@ -161,7 +161,7 @@ function getFaq(): {q: string; a: string}[] {
     },
     {
       q: translate({id: 'code.download.faq.update.q', message: 'How do I update SpecWithCode?', description: 'FAQ question. Keep product names in English'}),
-      a: translate({id: 'code.download.faq.update.a', message: 'Download the newest .dmg from the SpecWithCode GitHub releases and replace the app in Applications. When a machine runs an older server than your app, SpecWithCode shows an update notice in the conversation and in Settings › Connections.', description: 'FAQ answer; Settings › Connections is a menu path in the app. Keep product names in English'}),
+      a: translate({id: 'code.download.faq.update.a', message: 'Download the newest .dmg from the SpecWithCode GitHub releases and replace the app in Applications. When a machine runs an older server than your app, SpecWithCode shows an update notice in the conversation and in Settings › Machines.', description: 'FAQ answer; Settings › Machines is a menu path in the app. Keep product names in English'}),
     },
   ];
 }

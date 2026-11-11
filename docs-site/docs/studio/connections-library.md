@@ -1,7 +1,7 @@
 ---
 title: "Connections library: compare MCP servers across Codex and Claude Code"
 sidebar_label: Connections library
-description: "Settings > Connections in SpecWithCode shows which MCP servers Codex and Claude Code have declared on each machine and in each project, what each state means, and what the library never reads or changes."
+description: "Settings > Integrations > MCP connections in SpecWithCode shows which MCP servers Codex and Claude Code have declared on each machine and in each project, what each state means, and what the library never reads or changes."
 ---
 
 # Connections library
@@ -10,7 +10,7 @@ Each coding agent keeps its own list of MCP servers in its own file. The Connect
 
 ## Open it
 
-Open **Settings > Connections** and select the machine you want to look at. A matrix compares the MCP declarations in Codex's and Claude Code's configuration on that machine. Select a cell to see its source file, its scope, the other declarations with the same name, and who owns access to it. **Refresh configurations** reads the machine again.
+Open **Settings > Integrations**, find **MCP connections** and select the machine you want to look at. A matrix compares the MCP declarations in Codex's and Claude Code's configuration on that machine. Select a cell to see its source file, its scope, the other declarations with the same name, and who owns access to it. **Refresh configurations** reads the machine again.
 
 Open a project's **Environment** to include that project's own configuration from its registered checkout. User declarations are shared across projects; project and private-project declarations can override them. Connections that SpecWithCode itself manages keep their own per-project tool grants.
 

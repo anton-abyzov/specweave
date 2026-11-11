@@ -223,7 +223,7 @@ export default function Home() {
             <h3><Translate id="home.app.machines.title" description="Heading of the machines list">Your machines, not a cloud container</Translate></h3>
             <ul className={h.list}>
               {MACHINES.map((l) => <li key={l}>{l}</li>)}
-              <li><Translate id="home.app.machines.add" description="How to add a machine; {command} is a shell command, keep it. 'Invite this machine', 'Add a machine' and 'Settings, Connections' are app UI labels. Keep product names in English" values={{ command: <code>specwithcode fleet invite</code> }}>{'Add a Mac mini or a Linux machine over SpecWithCode Connect: link Connect on it with your account, choose Invite this machine in its Settings or run {command} there, then paste the line into Add a machine under Settings, Connections on your main Mac.'}</Translate></li>
+              <li><Translate id="home.app.machines.add" description="How to add a machine; {command} is a shell command, keep it. 'Join a main machine', 'Add a machine' and 'Settings, Machines' are app UI labels. Keep product names in English" values={{ command: <code>specwithcode fleet invite</code> }}>{'Add a Mac mini or a Linux machine over SpecWithCode Connect: link Connect on it with your account, choose Join a main machine in its Settings or run {command} there, then paste the line into Add a machine under Settings, Machines on your main Mac.'}</Translate></li>
             </ul>
             <div className={clsx('wv-note', h.boundary)}>
               <MonitorIcon />
