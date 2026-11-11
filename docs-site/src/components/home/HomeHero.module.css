@@ -253,26 +253,6 @@
 }
 
 /* ---------- Motion ---------- */
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .back,
-    .mid,
-    .float {
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: scroll(root);
-      animation-range: 0 90vh;
-    }
-
-    .back { animation-name: drift-back; }
-    .mid { animation-name: drift-mid; }
-    .fTests { animation-name: drift-near; }
-    .fThreads { animation-name: drift-far; }
-    .fDispatch { animation-name: drift-nearest; }
-    .fUsage { animation-name: drift-far; }
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .card {
     animation: rise 900ms var(--wv-ease) both;
@@ -296,26 +276,6 @@
 @keyframes settle {
   from { opacity: 0; transform: translate3d(0, 20px, 0) rotateX(8deg) scale(0.97); }
   to { opacity: 1; }
-}
-
-@keyframes drift-back {
-  to { transform: translate3d(0, 120px, 0) scale(1.12); opacity: 0.4; }
-}
-
-@keyframes drift-mid {
-  to { transform: translate3d(0, -36px, 0) scale(1.03); }
-}
-
-@keyframes drift-far {
-  to { transform: translate3d(0, -110px, 0); }
-}
-
-@keyframes drift-near {
-  to { transform: translate3d(0, -170px, 0); }
-}
-
-@keyframes drift-nearest {
-  to { transform: translate3d(0, -230px, 0); }
 }
 
 @media print {

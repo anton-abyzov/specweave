@@ -22,7 +22,8 @@
         var target = new URL(link.href);
         if (target.host === location.host) return;
         var choice = localStorage.getItem(key);
-        target.searchParams.set('wv-theme', choice === 'light' || choice === 'dark' ? choice : 'system');
+        if (choice !== 'light' && choice !== 'dark') return;
+        target.searchParams.set('wv-theme', choice);
         link.href = target.toString();
       } catch (_) {}
     }, true);

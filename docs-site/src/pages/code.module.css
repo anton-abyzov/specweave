@@ -46,7 +46,7 @@
 .page h2 {
   font-size: 32px;
   line-height: 38px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.018em;
 }
 
@@ -464,8 +464,8 @@
   }
 
   .page h1 {
-    font-size: 44px;
-    line-height: 48px;
+    font-size: 36px;
+    line-height: 40px;
   }
 
   .actions :global(.wv-btn) {
