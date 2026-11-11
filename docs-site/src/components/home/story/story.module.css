@@ -152,6 +152,15 @@
   }
 }
 
+/* The icon of the scene that is playing lifts a little. */
+.sceneIcon {
+  transition: transform 500ms var(--wv-ease, ease-out);
+}
+
+.scene:has(.stage[data-live]) .sceneIcon {
+  animation: float 3.2s ease-in-out infinite;
+}
+
 /* ---------- Stage frame ---------- */
 .stage {
   --bead: radial-gradient(circle, var(--wv-iris) 1.7px, transparent 2.3px);
@@ -286,12 +295,13 @@
   display: block;
 }
 
-/* Light marks (OpenAI, Copilot, Cursor, Grok) need the dark plate in both themes; OpenCode the light one. */
-.markDark {
+/* Light marks (OpenAI, Copilot, Cursor, Grok) need the dark plate in both themes; OpenCode the light one.
+   Two classes: the minifier merges equal declarations across files, which can move a single-class rule above .mark. */
+.mark.markDark {
   background: #241523;
 }
 
-.markLight {
+.mark.markLight {
   background: #f4f2f1;
 }
 
@@ -841,7 +851,7 @@
   animation: pop 360ms cubic-bezier(0.3, 1.5, 0.5, 1) var(--d, 0ms) both;
 }
 
-@container (min-width: 540px) {
+@container (min-width: 640px) {
   .relay {
     grid-template-columns: minmax(0, 1fr) 30px minmax(0, 8.75rem) 30px minmax(0, 1fr);
     align-items: center;
@@ -936,9 +946,10 @@
 
 .stationHead {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 4px 8px;
   min-height: 24px;
 }
 
@@ -992,6 +1003,7 @@
   }
 }
 
+@keyframes float { 50% { transform: translate3d(0, -5px, 0) rotate(-3deg); } }
 @keyframes rise { from { opacity: 0; transform: translate3d(0, 6px, 0); } }
 @keyframes fade { from { opacity: 0; } }
 @keyframes pop { from { opacity: 0; transform: scale(0.6); } }
@@ -1007,6 +1019,7 @@
 @media (prefers-reduced-motion: reduce) {
   .stage *,
   .stage *::before,
+  .sceneIcon,
   .scene::before {
     animation: none !important;
     transition: none !important;

@@ -11,7 +11,7 @@ test.describe('landing page', () => {
     const download = page.getByRole('link', { name: /Download SpecWithCode|Download for Mac/ }).first();
     await expect(download).toBeVisible();
     await expect(download).toHaveAttribute('href', /\.dmg$/);
-    await expect(page.getByRole('link', { name: 'Get the CLI' })).toHaveAttribute('href', /^\/product\/?$/);
+    await expect(page.locator('main').getByRole('link', { name: 'Get the CLI' })).toHaveAttribute('href', /^\/product\/?$/);
   });
 
   test('family section names all three products', async ({ page }) => {
