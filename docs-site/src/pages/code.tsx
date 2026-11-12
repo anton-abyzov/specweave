@@ -4,15 +4,18 @@ import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import Head from '@docusaurus/Head';
 import Translate, {translate} from '@docusaurus/Translate';
-import {ArrowRight, ArrowUpRight, ChevronDown, Gauge, GitMerge, Info, Layers, Network, Star, Users} from 'lucide-react';
+import {ArrowRight, ArrowUpRight, ChevronDown, GitMerge, Info, Layers, Star} from 'lucide-react';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import {SPECWITHCODE_OPERATING_SYSTEMS, SPECWITHCODE_REPO_URL, type SpecWithCodeMacRelease} from '../data/specwithcodeRelease';
 import {useSpecWithCodeRelease, type SpecWithCodeDownloads} from '../data/specwithcodeLiveRelease';
 import {useSpecWithCodeInstaller} from '../data/specwithcodeInstaller';
 import FlowStage from '../components/code/FlowStage';
+import Benefits from '../components/code/benefits/Benefits';
+import {OS_ICON, type Os} from '../components/code/osIcons';
 import MobileStores from '../components/code/MobileStores';
 import {SPECS_URL} from '../components/code/BuiltWithItself';
+import {CountUp} from '../components/sections/Motion';
 import {CHROME_EXTENSION_URL} from '../components/home/chrome';
 import styles from '../components/code/FreeLanding.module.css';
 
@@ -36,7 +39,6 @@ const pageTitle = () => translate({id: 'code.meta.title', message: 'Claude Code 
 const pageDescription = () => translate({id: 'code.meta.description', message: 'SpecWithCode (Spec with Code): Claude Code and Codex on macOS, Windows and Linux. Free mobile companion apps for iPhone and Android.', description: 'Meta description of the SpecWithCode landing page. Keep product names in English'});
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 
-type Os = 'mac' | 'windows' | 'linux';
 const getDownloads = ({release, desktop}: SpecWithCodeDownloads): {os: Os; label: string; note: string; url: string}[] => [
   {os: 'mac', label: 'Mac', note: translate({id: 'code.downloads.mac.note', message: 'Apple silicon, macOS 13+', description: 'Requirements note under the Mac download button. Keep product names in English'}), url: release.dmgUrl},
   {os: 'windows', label: 'Windows', note: translate({id: 'code.downloads.windows.note', message: 'Windows 10 and 11, x64', description: 'Requirements note under the Windows download button. Keep product names in English'}), url: desktop.exe.url},
@@ -47,12 +49,6 @@ const getUnsupported = () => ({
   'intel-mac': translate({id: 'code.downloads.unsupported.intelMac', message: 'This Mac has an Intel chip. SpecWithCode for Mac needs Apple silicon; use a Windows or Linux machine instead.', description: 'Shown when the visitor uses an Intel Mac. Keep product names in English'}),
   mobile: translate({id: 'code.downloads.unsupported.mobile', message: 'SpecWithCode runs on a Mac, Windows PC or Linux machine. The mobile apps below connect to your computer.', description: 'Shown when the visitor is on a phone or tablet. Keep product names in English'}),
 } as const);
-
-const OS_ICON: Record<Os, React.ReactNode> = {
-  mac: <svg viewBox="0 0 814 1000" aria-hidden="true"><path fill="currentColor" d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57-155.5-127C46.7 790.7 0 663 0 541.8c0-194.4 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z" /></svg>,
-  windows: <svg viewBox="0 0 88 88" aria-hidden="true"><path fill="currentColor" d="m0 12.402 35.687-4.86.016 34.423-35.67.203zm35.67 33.529.028 34.453L.028 75.48.026 45.7zm4.326-39.025L87.314 0v41.527l-47.318.376zm47.329 39.349-.011 41.34-47.318-6.678-.066-34.739z" /></svg>,
-  linux: <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2c-2.3 0-3.3 2-3.2 4.3.1 1.3-.2 2.2-1 3.3-1 1.3-2.5 3.3-2.6 5.4-.1 1 .2 1.7.6 2.2-.6.4-1.6.6-1.8 1.4-.2.9.6 1.6.4 2.4-.1.5.3 1 .9 1 1 .1 2-.1 2.9.4.9.4 1.9.4 2.6-.2.5.1 1.5.1 2.4 0 .7.6 1.7.7 2.6.2.9-.5 1.9-.3 2.9-.4.6 0 1-.5.9-1-.2-.8.6-1.5.4-2.4-.2-.8-1.2-1-1.8-1.4.4-.5.7-1.2.6-2.2-.1-2.1-1.6-4.1-2.6-5.4-.8-1.1-1.1-2-1-3.3C15.3 4 14.3 2 12 2zm-1.3 3.6c.4 0 .7.5.7 1.1 0 .6-.3 1.1-.7 1.1-.4 0-.7-.5-.7-1.1 0-.6.3-1.1.7-1.1zm2.6 0c.4 0 .7.5.7 1.1 0 .6-.3 1.1-.7 1.1-.4 0-.7-.5-.7-1.1 0-.6.3-1.1.7-1.1zM12 8.4c.9 0 2 .6 2 1 0 .4-1.1 1.1-2 1.1s-2-.7-2-1.1c0-.4 1.1-1 2-1z" /></svg>,
-};
 
 /** Download buttons for Mac, Windows and Linux. The visitor's own system leads once the browser says which it is. */
 function Downloads({placement}: {placement: string}) {
@@ -129,17 +125,7 @@ function ChromeMark() {
   </svg>;
 }
 
-const getSubs = (): {icon: typeof Layers; title: string; body: React.ReactNode}[] => [
-  {icon: Users, title: translate({id: 'code.subs.parallel.title', message: 'Every plan working at once', description: 'Card title in the paid plans section'}), body: <>{translate({id: 'code.subs.parallel.body', message: 'A coordinator splits one goal into threads and runs them on Claude Code, Codex and others in parallel, each on its own plan.', description: 'Card text in the paid plans section. Keep product names in English'})}</>},
-  {icon: Network, title: translate({id: 'code.subs.machines.title', message: 'Every machine you own', description: 'Card title in the paid plans section'}), body: <>{translate({id: 'code.subs.machines.body', message: 'Each Mac, Windows PC or Linux server adds the limits of the plans signed in on it. One account per provider on each machine.', description: 'Card text in the paid plans section. Keep product names in English'})}</>},
-  {icon: Gauge, title: translate({id: 'code.subs.handoff.title', message: 'Hand off at 98%, or where you choose', description: 'Card title in the paid plans section; 98% is the default handoff point'}), body: <>{translate({id: 'code.subs.handoff.body', message: 'Set the point from 50% to 100% per project. Work moves to a plan with room before the provider refuses it.', description: 'Card text in the paid plans section'})}</>},
-  {icon: GitMerge, title: translate({id: 'code.subs.usage.title', message: 'Usage for every account', description: 'Card title in the paid plans section'}), body: <>{translate({id: 'code.subs.usage.body', message: 'Usage › Limits shows each account, the machine it is signed in on, and what is left in every session and weekly window.', description: 'Card text in the paid plans section; "Usage › Limits" is a menu path in the app, translate it as the app labels it'})}</>},
-];
-
 const getMore = (): {id: string; icon: typeof Layers; title: string; body: React.ReactNode; to: string; link: string}[] => [
-  {id: 'harnesses', icon: Layers, title: translate({id: 'code.more.harnesses.title', message: 'Each agent in its own harness', description: 'Card title in the "more" section'}), body: <>{translate({id: 'code.more.harnesses.body', message: 'Claude Code, Codex, GitHub Copilot, Cursor, OpenCode and more run the way their vendors ship them, on your own sign-ins.', description: 'Card text in the "more" section. Keep product names in English'})}</>, to: '/docs/studio/harnesses/', link: translate({id: 'code.more.harnesses.link', message: 'Harnesses and models', description: 'Card link to the harnesses docs'})},
-  {id: 'coordinator', icon: Users, title: translate({id: 'code.more.coordinator.title', message: 'A coordinator for bigger jobs', description: 'Card title in the "more" section'}), body: <>{translate({id: 'code.more.coordinator.body', message: 'Give one goal. A coordinator splits it into worker threads on different agents, and you review the result.', description: 'Card text in the "more" section'})}</>, to: '/docs/overview/studio', link: translate({id: 'code.more.coordinator.link', message: 'How projects work', description: 'Card link to the projects docs'})},
-  {id: 'machines', icon: Network, title: translate({id: 'code.more.machines.title', message: 'All your machines', description: 'Card title in the "more" section'}), body: <>{translate({id: 'code.more.machines.body', message: 'Add a spare laptop, a Windows PC or a small Linux server as a worker, each signed in to its own accounts.', description: 'Card text in the "more" section. Keep product names in English'})}</>, to: '/tutorials/add-a-machine/', link: translate({id: 'code.more.machines.link', message: 'Add a machine', description: 'Card link to the add-a-machine tutorial'})},
   {id: 'built-with-itself', icon: GitMerge, title: translate({id: 'code.more.builtWithItself.title', message: 'Built with itself', description: 'Card title in the "more" section'}), body: <Translate
     id="code.more.builtWithItself.body"
     description="Card text in the 'more' section; {link} is a link labelled 'source code'. Keep product names in English"
@@ -218,14 +204,13 @@ export default function Code() {
   // Other pages link to /code/#harnesses and #built-with-itself; section ids on a custom page must be declared to the link checker.
   const MORE = getMore();
   const brokenLinks = useBrokenLinks();
-  for (const {id} of MORE) brokenLinks.collectAnchor(id);
+  for (const id of [...MORE.map(m => m.id), 'harnesses', 'coordinator', 'machines', 'one-window', 'aide', 'designs']) brokenLinks.collectAnchor(id);
   brokenLinks.collectAnchor('start');
   brokenLinks.collectAnchor('skills');
   brokenLinks.collectAnchor('questions');
   brokenLinks.collectAnchor('subscriptions');
   const TITLE = pageTitle();
   const DESCRIPTION = pageDescription();
-  const SUBS = getSubs();
   const FAQ = getFaq();
   const {release, desktop} = useSpecWithCodeRelease();
   const SPECWITHCODE_LD = buildLd(release, `${SITE}${useBaseUrl('/code/')}`, TITLE, DESCRIPTION, FAQ);
@@ -272,35 +257,18 @@ export default function Code() {
         </div>
       </header>
 
-      {/* ---------- Sourced numbers ---------- */}
-      <section className={clsx(styles.shell, styles.vsSection)} aria-labelledby="vs-title">
+      {/* ---------- The free start, with its sources ---------- */}
+      <section className={clsx(styles.shell, styles.freeBand)} aria-labelledby="vs-title">
         <h2 id="vs-title"><Translate id="code.stats.title.main" description="First part of the stats section heading. Keep product names in English">The Codex millions use.</Translate> <em><Translate id="code.stats.title.emphasis" description="Second, emphasized part of the stats section heading">Free on your account.</Translate></em></h2>
-        <ul className={styles.stats}>
-          <li><strong>5M+</strong><span><Translate id="code.stats.weeklyUsers.label" description="Stat label after 5M+. Keep product names in English">people use Codex every week</Translate></span><a href="https://www.constellationr.com/insights/news/openai-touts-broadening-codex-usage-5-million-weekly-active-users" rel="noopener"><Translate id="code.stats.weeklyUsers.source" description="Source link for the weekly users stat. Keep product names in English">OpenAI, June 2026</Translate></a></li>
+        <ul className={styles.figures}>
+          <li><strong><img className={styles.darkPlate} src={marks.openai} alt="" width="26" height="26" /><CountUp value={5} suffix="M+" /></strong><span><Translate id="code.stats.weeklyUsers.label" description="Stat label after 5M+. Keep product names in English">people use Codex every week</Translate></span><a href="https://www.constellationr.com/insights/news/openai-touts-broadening-codex-usage-5-million-weekly-active-users" rel="noopener"><Translate id="code.stats.weeklyUsers.source" description="Source link for the weekly users stat. Keep product names in English">OpenAI, June 2026</Translate></a></li>
           <li><strong>$0</strong><span><Translate id="code.stats.free.label" description="Stat label after $0. Keep product names in English">Codex on a free ChatGPT account</Translate></span><a href="https://openai.com/index/introducing-the-codex-app/" rel="noopener"><Translate id="code.stats.free.source" description="Source link for the free Codex stat. Keep product names in English">OpenAI, for a limited time</Translate></a></li>
-          <li><strong>98%</strong><span><Translate id="code.stats.threshold.label" description="Stat label after 98%. Keep product names in English">where SpecWithCode hands off by default, before the limit stops you</Translate></span><small><Translate id="code.stats.threshold.note" description="Small note under the 98% stat">You can set it from 50% to 100%</Translate></small></li>
+          <li><strong><CountUp value={99} suffix="%" /></strong><span><Translate id="code.stats.threshold.label" description="Stat label after 99%. Keep product names in English">where SpecWithCode hands off by default, before the limit stops you</Translate></span><small><Translate id="code.stats.threshold.note" description="Small note under the 99% stat">You can set it from 50% to 100%</Translate></small></li>
         </ul>
       </section>
 
-      {/* ---------- For people on paid plans ---------- */}
-      <section id="subscriptions" className={clsx(styles.shell, styles.section)} aria-labelledby="subs-title">
-        <div className={styles.sectionHead}>
-          <h2 id="subs-title"><Translate id="code.subs.title" description="Heading of the paid plans section">Paying $200 a month? Use all of it.</Translate></h2>
-          <p><Translate id="code.subs.intro" description="Intro of the paid plans section. Keep product names in English">SpecWithCode runs each agent on the plan you already pay for, across every machine you sign in, and keeps going when one plan runs low.</Translate></p>
-        </div>
-        <ul className={styles.more}>
-          {SUBS.map(({icon: Icon, title, body}) => <li key={title} className={styles.moreCard}>
-            <Icon size={20} strokeWidth={1.5} aria-hidden="true" />
-            <h3>{title}</h3>
-            <p>{body}</p>
-          </li>)}
-        </ul>
-        <ul className={styles.alsoMarks} aria-label={translate({id: 'code.subs.plans.ariaLabel', message: 'Plans shown here', description: 'Accessible label of the list of paid plans'})}>
-          <li><img src={marks.claude} alt="" width="20" height="20" /><Translate id="code.subs.plans.claude" description="Paid plan names. Keep product names in English">Claude Max and Pro</Translate></li>
-          <li><img className={styles.darkPlate} src={marks.openai} alt="" width="20" height="20" /><Translate id="code.subs.plans.chatgpt" description="Paid plan names. Keep product names in English">ChatGPT Pro and Plus</Translate></li>
-          <li><img className={styles.darkPlate} src={marks.copilot} alt="" width="20" height="20" />GitHub Copilot</li>
-        </ul>
-      </section>
+      {/* ---------- What is in the app: seven rows, each with its drawing ---------- */}
+      <Benefits />
 
       {/* ---------- Three steps ---------- */}
       <section id="start" className={clsx(styles.shell, styles.section)} aria-labelledby="start-title">
@@ -343,48 +311,18 @@ export default function Code() {
         </div>
       </section>
 
-      {/* ---------- Everything else, briefly ---------- */}
-      {/* ---------- Skills: find, install, test, manage ---------- */}
-      <section id="skills" className={clsx(styles.shell, styles.section)} aria-labelledby="skills-title">
-        <div className={styles.sectionHead}>
-          <h2 id="skills-title"><Translate id="code.skills.title" description="Heading of the skills section">Skills, managed in one place</Translate></h2>
-          <p><Translate id="code.skills.intro" description="Intro of the skills section. Keep product names in English">Each coding agent keeps its own skills. SpecWithCode shows them together on every machine, and Verified Skill tells you what a skill has been through before you install it.</Translate></p>
-        </div>
-        <ol className="wv-thread wv-thread--across">
-          <li>
-            <h3 className="wv-thread__title"><Translate id="code.skills.find.title" description="Skills step 1 title">Find</Translate></h3>
-            <p className="wv-thread__body"><Translate id="code.skills.find.body" description="Skills step 1 text; {link} links to the Verified Skill registry. Keep product names in English" values={{link: <a className="wv-link" href="https://verified-skill.com/skills">Verified Skill</a>}}>{'Browse {link}. Every skill shows its source, its security scan and, when one exists, its evaluation.'}</Translate></p>
-          </li>
-          <li>
-            <h3 className="wv-thread__title"><Translate id="code.skills.install.title" description="Skills step 2 title">Install</Translate></h3>
-            <p className="wv-thread__body"><Translate id="code.skills.install.body" description="Skills step 2 text">One command installs a skill for the agents you choose, on the machine where they run.</Translate></p>
-          </li>
-          <li>
-            <h3 className="wv-thread__title"><Translate id="code.skills.test.title" description="Skills step 3 title">Test</Translate></h3>
-            <p className="wv-thread__body"><Translate id="code.skills.test.body" description="Skills step 3 text; {link} links to the Skill Studio docs. Keep product names in English" values={{link: <Link className="wv-link" to="/docs/skills/skill-studio/">Skill Studio</Link>}}>{'{link} runs a skill on your own task, so you see what it changes before you keep it.'}</Translate></p>
-          </li>
-          <li>
-            <h3 className="wv-thread__title"><Translate id="code.skills.manage.title" description="Skills step 4 title">Manage</Translate></h3>
-            <p className="wv-thread__body"><Translate id="code.skills.manage.body" description="Skills step 4 text; Settings › Skills is a menu path in the app">In Settings › Skills, choose which agents see a skill and which version they run.</Translate></p>
-          </li>
-        </ol>
-        <div className={clsx('wv-cmd', styles.skillsCmd)}><code>npx vskill@latest install owner/repo/skill</code></div>
-      </section>
-
-      <section className={clsx(styles.shell, styles.section)} aria-labelledby="more-title">
-        <div className={styles.sectionHead}>
-          <h2 id="more-title"><Translate id="code.more.title" description="Heading of the more section">There’s more when you need it</Translate></h2>
-        </div>
-        <ul className={styles.more}>
-          {MORE.map(({id, icon: Icon, title, body, to, link}) => <li key={id} id={id} className={styles.moreCard}>
-            <Icon size={20} strokeWidth={1.5} aria-hidden="true" />
-            <h3>{title}</h3>
+      {/* ---------- Built with itself, and the other agents ---------- */}
+      <section className={clsx(styles.shell, styles.section)} aria-label={MORE[0].title}>
+        {MORE.map(({id, icon: Icon, title, body, to, link}) => <div key={id} id={id} className={styles.builtBand}>
+          <span className={styles.builtIcon}><Icon size={22} strokeWidth={1.75} aria-hidden="true" /></span>
+          <div>
+            <h2>{title}</h2>
             <p>{body}</p>
-            {to.startsWith('http')
-              ? <a className="wv-link" href={to}>{link}<ArrowUpRight size={14} strokeWidth={1.5} aria-hidden="true" /></a>
-              : <Link className="wv-link" to={to}>{link}<ArrowRight size={14} strokeWidth={1.5} aria-hidden="true" /></Link>}
-          </li>)}
-        </ul>
+          </div>
+          {to.startsWith('http')
+            ? <a className="wv-btn wv-btn--secondary" href={to}>{link}<ArrowUpRight size={14} strokeWidth={1.5} aria-hidden="true" /></a>
+            : <Link className="wv-btn wv-btn--secondary" to={to}>{link}<ArrowRight size={14} strokeWidth={1.5} aria-hidden="true" /></Link>}
+        </div>)}
         <ul className={styles.alsoMarks} aria-label={translate({id: 'code.more.agents.ariaLabel', message: 'Other supported coding agents', description: 'Accessible label of the list of other coding agents'})}>
           <li><img className={styles.darkPlate} src={marks.copilot} alt="" width="20" height="20" />GitHub Copilot</li>
           <li><img src={marks.gemini} alt="" width="20" height="20" />Gemini CLI</li>

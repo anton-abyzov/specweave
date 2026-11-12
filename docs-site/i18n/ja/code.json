@@ -115,69 +115,13 @@
     "message": "エージェントがログイン済みの Chrome を使います · 無料",
     "description": "One line under the Chrome extension card title"
   },
-  "code.subs.parallel.title": {
-    "message": "すべてのプランを同時に稼働",
-    "description": "Card title in the paid plans section"
-  },
-  "code.subs.parallel.body": {
-    "message": "コーディネーターが1つの目標をスレッドに分け、Claude CodeやCodexなどで並行実行。スレッドごとに別のプランを使います。",
-    "description": "Card text in the paid plans section. Keep product names in English"
-  },
-  "code.subs.machines.title": {
-    "message": "お持ちのすべてのマシンで",
-    "description": "Card title in the paid plans section"
-  },
-  "code.subs.machines.body": {
-    "message": "Mac、Windows PC、Linuxサーバーを追加するたびに、そこでサインインしたプランの上限が加わります。プロバイダーごとに1マシン1アカウントです。",
-    "description": "Card text in the paid plans section. Keep product names in English"
-  },
-  "code.subs.handoff.title": {
-    "message": "98%で、または好きな地点でハンドオフ",
-    "description": "Card title in the paid plans section; 98% is the default handoff point"
-  },
-  "code.subs.handoff.body": {
-    "message": "プロジェクトごとに50%〜100%で設定可能。プロバイダーに拒否される前に、余裕のあるプランへ作業が移ります。",
-    "description": "Card text in the paid plans section"
-  },
-  "code.subs.usage.title": {
-    "message": "全アカウントの使用状況",
-    "description": "Card title in the paid plans section"
-  },
-  "code.subs.usage.body": {
-    "message": "「使用状況 › 上限」に、各アカウント、サインイン先のマシン、セッションと週ごとの残量が表示されます。",
-    "description": "Card text in the paid plans section; \"Usage › Limits\" is a menu path in the app, translate it as the app labels it"
-  },
-  "code.more.harnesses.title": {
-    "message": "エージェントごとに専用のハーネス",
-    "description": "Card title in the \"more\" section"
-  },
-  "code.more.harnesses.body": {
-    "message": "Claude Code、Codex、GitHub Copilot、Cursor、OpenCodeなどを、各ベンダー提供のままご自身のサインインで実行します。",
-    "description": "Card text in the \"more\" section. Keep product names in English"
-  },
   "code.more.harnesses.link": {
     "message": "ハーネスとモデル",
     "description": "Card link to the harnesses docs"
   },
-  "code.more.coordinator.title": {
-    "message": "大きな仕事にはコーディネーター",
-    "description": "Card title in the \"more\" section"
-  },
-  "code.more.coordinator.body": {
-    "message": "目標を1つ伝えるだけ。コーディネーターが別々のエージェントのワーカースレッドに分担させ、結果はあなたがレビューします。",
-    "description": "Card text in the \"more\" section"
-  },
   "code.more.coordinator.link": {
     "message": "プロジェクトのしくみ",
     "description": "Card link to the projects docs"
-  },
-  "code.more.machines.title": {
-    "message": "すべてのマシンを活用",
-    "description": "Card title in the \"more\" section"
-  },
-  "code.more.machines.body": {
-    "message": "余ったノートPC、Windows PC、小さなLinuxサーバーをワーカーとして追加。それぞれ自分のアカウントでサインインします。",
-    "description": "Card text in the \"more\" section. Keep product names in English"
   },
   "code.more.machines.link": {
     "message": "マシンを追加する",
@@ -305,23 +249,15 @@
   },
   "code.stats.threshold.label": {
     "message": "上限で止まる前に、SpecWithCodeがデフォルトでハンドオフする地点",
-    "description": "Stat label after 98%. Keep product names in English"
+    "description": "Stat label after 99%. Keep product names in English"
   },
   "code.stats.threshold.note": {
     "message": "50%〜100%で設定できます",
-    "description": "Small note under the 98% stat"
+    "description": "Small note under the 99% stat"
   },
   "code.subs.title": {
     "message": "月額$200を払っているなら、使い切りましょう。",
     "description": "Heading of the paid plans section"
-  },
-  "code.subs.intro": {
-    "message": "SpecWithCodeは、サインインしたすべてのマシンで、すでに契約中のプランごとに各エージェントを動かし、1つのプランが残り少なくなっても作業を止めません。",
-    "description": "Intro of the paid plans section. Keep product names in English"
-  },
-  "code.subs.plans.ariaLabel": {
-    "message": "ここに表示しているプラン",
-    "description": "Accessible label of the list of paid plans"
   },
   "code.subs.plans.claude": {
     "message": "Claude MaxとPro",
@@ -394,10 +330,6 @@
   "code.downloads.signing": {
     "message": "Mac版アプリは署名・公証済みです。WindowsとLinuxのインストーラーはまだコード署名されていません。",
     "description": "Signing status of the installers. Keep product names in English"
-  },
-  "code.more.title": {
-    "message": "必要なときに、もっと",
-    "description": "Heading of the more section"
   },
   "code.more.agents.ariaLabel": {
     "message": "対応しているその他のコーディングエージェント",
@@ -3932,5 +3864,401 @@
   "home.story.gate.body": {
     "message": "インクリメントがクローズされるのは、チェックに合格し、別のモデルも同意したときです。エージェントが「終わった」と言ったときではありません。",
     "description": "Scene 4 text"
+  },
+  "code.b.nav.agents": {
+    "message": "エージェント",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.window.title": {
+    "message": "タブの切り替えはもう不要",
+    "description": "Benefit row on the SpecWithCode page: heading about one window for every coding agent. Keep product names in English"
+  },
+  "code.b.nav.projects": {
+    "message": "プロジェクト",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.threads.title": {
+    "message": "プロジェクトを最初から知っているスレッド",
+    "description": "Benefit row on the SpecWithCode page: heading about projects, the coordinator and threads. Keep product names in English"
+  },
+  "code.b.nav.aide": {
+    "message": "Aide",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.aide.title": {
+    "message": "同じアプリで使える個人アシスタント",
+    "description": "Benefit row on the SpecWithCode page: heading about Aide, the personal assistant. Keep product names in English"
+  },
+  "code.b.aide.link": {
+    "message": "個人用プロジェクト",
+    "description": "Link to the docs about personal projects"
+  },
+  "code.b.nav.designs": {
+    "message": "デザイン",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.designs.title": {
+    "message": "デザインはプロジェクトの中に",
+    "description": "Benefit row on the SpecWithCode page: heading about the Designs tab. Keep product names in English"
+  },
+  "code.b.nav.machines": {
+    "message": "マシン",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.machines.title": {
+    "message": "お持ちのすべてのマシンで、同じ作業を",
+    "description": "Benefit row on the SpecWithCode page: heading about running work on several machines. Keep product names in English"
+  },
+  "code.b.nav.limits": {
+    "message": "上限",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.limits.link": {
+    "message": "メモリと使用状況",
+    "description": "Link to the docs about usage limits"
+  },
+  "code.b.nav.skills": {
+    "message": "スキル",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.index.label": {
+    "message": "アプリの内容",
+    "description": "Accessible label of the list of links to the benefit rows"
+  },
+  "code.b.window.body": {
+    "message": "Claude Code、Codex、GitHub Copilot、Cursor、Gemini CLIなどを、ご自身のサインインで並べて実行できます。スレッドの途中でエージェントを変えても、直近の会話を引き継いで続行します。",
+    "description": "Benefit row on the SpecWithCode page: text about one window for every coding agent. Keep product names in English"
+  },
+  "code.b.window.point1": {
+    "message": "サインインしたすべてのエージェントを1つのモデルピッカーで",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.window.point2": {
+    "message": "各エージェントは、独自のツール、承認、サインインをそのまま保持",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.threads.body": {
+    "message": "プロジェクトは、目標、指示、メモリを1か所に保ちます。コーディネーターに目標を伝えると、作業がスレッドに分かれ、どのスレッドもその文脈から始まります。貼り付けは不要で、文脈を引き継ぐために別のチャットを開く必要もありません。",
+    "description": "Benefit row on the SpecWithCode page: text about projects, the coordinator and threads. Keep product names in English"
+  },
+  "code.b.threads.point1": {
+    "message": "スレッドは「対応が必要」「作業中」「解決済み」で並びます",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.threads.point2": {
+    "message": "ワーカーはコーディネーターに報告し、結果はあなたがレビューします",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.aide.body": {
+    "message": "Aideは毎朝、返信が必要なメールと今日の予定をまとめ、下書きまで用意します。送るのは、あなたが承認した返信だけです。デスクトップ、iPhone、またはご自身のTelegramボットから話しかけられます。",
+    "description": "Benefit row on the SpecWithCode page: text about Aide, the personal assistant. Keep product names in English"
+  },
+  "code.b.aide.point1": {
+    "message": "許可したGmail、Calendar、Driveのアカウントを読み取ります",
+    "description": "Benefit row on the SpecWithCode page: point; Gmail, Calendar and Drive logos sit before it. Keep product names in English"
+  },
+  "code.b.aide.point2": {
+    "message": "スマートフォンアプリでは、コーディングスレッドの進行も確認でき、承認にも答えられます",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.aide.fine": {
+    "message": "Aideはお使いのコンピューターで動くため、そのコンピューターが起きている間だけ応答します。",
+    "description": "Benefit row on the SpecWithCode page: fine print under the Aide row. Keep product names in English"
+  },
+  "code.b.designs.body": {
+    "message": "どのプロジェクトにも「デザイン」タブがあります。あなたとエージェントが同じキャンバスに描き、ファイルは{path}の下のリポジトリに置かれるので、デザインは対応するコードと一緒に動きます。",
+    "description": "Benefit row on the SpecWithCode page: text about the Designs tab; {path} is a folder path. Keep product names in English"
+  },
+  "code.b.designs.point1": {
+    "message": "エージェントがスレッドからデザインを作成、編集し、スクリーンショットを撮ります",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.designs.point2": {
+    "message": "コード、トークンファイル、Figmaデスクトップから読み込んだ変数からデザインシステムを始められます",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.machines.body": {
+    "message": "余ったノートPC、Windows PC、Linuxサーバーを追加できます。コーディネーターは設定した順にスレッドを配置し、各マシンは他のマシンに実行を許す内容を自分で設定します。",
+    "description": "Benefit row on the SpecWithCode page: text about running work on several machines. Keep product names in English"
+  },
+  "code.b.machines.point1": {
+    "message": "同じSpecWithCode Connectアカウントのマシンは、ワンクリックで参加",
+    "description": "Benefit row on the SpecWithCode page: point; SpecWithCode Connect is a product name. Keep product names in English"
+  },
+  "code.b.machines.point2": {
+    "message": "マシンのアクセス設定が、送られてくるすべてのスレッドの上限になります",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.machines.point3": {
+    "message": "プロジェクトはGitまたはファイルコピーで別のマシンに引き継げます",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.limits.body": {
+    "message": "「使用状況 › 上限」には、各アカウント、サインイン先のマシン、リセット時刻が表示されます。プロバイダーが上限に達すると、プロジェクトは別のプロバイダーへ切り替えるか、切り替えを提案するか、リセットを待ちます。どれにするかはあなたが決めます。",
+    "description": "Benefit row on the SpecWithCode page: text about usage limits; 'Usage › Limits' is a menu path in the app, translate it as the app labels it. Keep product names in English"
+  },
+  "code.b.limits.point1": {
+    "message": "初期設定では使用量99%で切り替わります。50%〜100%で変更できます。",
+    "description": "Benefit row on the SpecWithCode page: point; 99% is the default, 50% to 100% the allowed range. Keep product names in English"
+  },
+  "code.b.skills.body": {
+    "message": "スキルによって、同じモデルでもエージェントの動きが変わります。そのため、各エージェントにどのスキルを見せるかを選べます。「設定 › スキル」には、マシン上のすべてのエージェントが見つけられるスキルが並びます。特定のエージェントだけオフにする、バージョンを固定する、複数のマシンにインストールする、といった操作ができます。",
+    "description": "Benefit row on the SpecWithCode page: text about skills; Settings › Skills is a menu path in the app. Keep product names in English"
+  },
+  "code.b.skills.point1": {
+    "message": "アプリでスキルを書き、{link}に公開してレビューを受けられます",
+    "description": "Benefit row on the SpecWithCode page: point; {link} links to the Verified Skill registry. Keep product names in English"
+  },
+  "code.b.skills.point2": {
+    "message": "スキルを残す前に、{link}でご自身のタスクに試せます",
+    "description": "Benefit row on the SpecWithCode page: point; {link} links to the Skill Studio docs. Keep product names in English"
+  },
+  "code.b.skills.fine": {
+    "message": "バージョンの固定や他のマシンへのインストールには、無料のvskill CLIを使います。{command}",
+    "description": "Benefit row on the SpecWithCode page: fine print under the skills row; vskill is a command-line tool and {command} is its install command. Keep product names in English"
+  },
+  "code.b.title": {
+    "message": "アプリは1つで十分",
+    "description": "Heading of the benefits section on the SpecWithCode page"
+  },
+  "code.b.intro": {
+    "message": "コーディングエージェント、個人アシスタント、デザイン、スキル、すべてのマシンが、1つのウィンドウと1つのスマートフォンアプリに集まります。",
+    "description": "Intro of the benefits section on the SpecWithCode page"
+  },
+  "code.b.window.label": {
+    "message": "SpecWithCodeの1つのスレッド。モデルピッカーにはClaude Code、Codex、GitHub Copilot、Gemini CLIが並び、選んだものでスレッドが続きます。",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the model picker drawing. Keep product names in English"
+  },
+  "code.b.window.thread": {
+    "message": "チェックアウトの端数処理を修正",
+    "description": "Benefit diagram on the SpecWithCode page: example thread title"
+  },
+  "code.b.window.ask": {
+    "message": "一部の注文で合計が1セントずれます。",
+    "description": "Benefit diagram on the SpecWithCode page: example message from the person"
+  },
+  "code.b.window.answer": {
+    "message": "原因が分かりました。税額の行が割引より先に丸められています。",
+    "description": "Benefit diagram on the SpecWithCode page: example answer from the agent"
+  },
+  "code.b.window.continued": {
+    "message": "直近の会話を引き継いで{agent}で続行",
+    "description": "Benefit diagram on the SpecWithCode page: line shown when a thread moves to another agent; {agent} is a product name"
+  },
+  "code.b.window.search": {
+    "message": "モデルまたはプロバイダーを検索",
+    "description": "Benefit diagram on the SpecWithCode page: placeholder of the model picker search box, as the app labels it"
+  },
+  "code.b.window.all": {
+    "message": "すべて",
+    "description": "Benefit diagram on the SpecWithCode page: model picker filter chip"
+  },
+  "code.b.window.favorites": {
+    "message": "お気に入り",
+    "description": "Benefit diagram on the SpecWithCode page: model picker filter chip"
+  },
+  "code.b.threads.working": {
+    "message": "作業中",
+    "description": "Benefit diagram on the SpecWithCode page: thread status"
+  },
+  "code.b.threads.needs": {
+    "message": "対応が必要",
+    "description": "Benefit diagram on the SpecWithCode page: thread status: waiting for the person"
+  },
+  "code.b.threads.done": {
+    "message": "解決済み",
+    "description": "Benefit diagram on the SpecWithCode page: thread status, as the app labels a finished thread"
+  },
+  "code.b.threads.task.payments": {
+    "message": "決済API",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.threads.task.checkout": {
+    "message": "チェックアウト画面",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.threads.task.tests": {
+    "message": "テストとCI",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.threads.label": {
+    "message": "プロジェクトがないと、サイドバーには同じプロジェクト文脈のチャットが並びます。SpecWithCodeのプロジェクトでは、目標、指示、メモリが1か所に保たれ、3つのスレッドに届きます。スレッドの状態は「作業中」「対応が必要」「解決済み」で表示されます。",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the project threads drawing"
+  },
+  "code.b.threads.before": {
+    "message": "文脈をチャットに保存",
+    "description": "Benefit diagram on the SpecWithCode page: column title: the old way"
+  },
+  "code.b.threads.contextChat": {
+    "message": "プロジェクトの文脈 (5848bdc2…)",
+    "description": "Benefit diagram on the SpecWithCode page: a repeated chat title in another tool’s sidebar; keep the id as written"
+  },
+  "code.b.threads.after": {
+    "message": "プロジェクトに1回だけ保存",
+    "description": "Benefit diagram on the SpecWithCode page: column title: the SpecWithCode way"
+  },
+  "code.b.machines.coordinator": {
+    "message": "コーディネーター",
+    "description": "Benefit diagram on the SpecWithCode page: role of the main machine"
+  },
+  "code.b.threads.context": {
+    "message": "目標 · 指示 · メモリ",
+    "description": "Benefit diagram on the SpecWithCode page: the three things a project keeps for every thread"
+  },
+  "code.b.aide.label": {
+    "message": "スマートフォンのAide。8:00のブリーフィングには、返信が必要なメール2通と今日の予定3件が並び、続いて「送信」「送信しない」付きの下書きが表示されます。「送信」を選ぶまで何も送られません。",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the personal assistant drawing"
+  },
+  "code.b.aide.briefing": {
+    "message": "プロアクティブブリーフィング",
+    "description": "Benefit diagram on the SpecWithCode page: name of the daily briefing routine, as the app labels it"
+  },
+  "code.b.aide.replies": {
+    "message": "返信が必要 · 2",
+    "description": "Benefit diagram on the SpecWithCode page: briefing line: two mails need a reply"
+  },
+  "code.b.aide.today": {
+    "message": "今日 · 予定3件",
+    "description": "Benefit diagram on the SpecWithCode page: briefing line: three calendar events today"
+  },
+  "code.b.aide.to": {
+    "message": "宛先 Dana · Re: 10月の請求書",
+    "description": "Benefit diagram on the SpecWithCode page: recipient and subject of an example reply draft"
+  },
+  "code.b.aide.draft": {
+    "message": "Danaさん、ありがとうございます。今朝お支払いしました。領収書を添付します。",
+    "description": "Benefit diagram on the SpecWithCode page: example reply draft text"
+  },
+  "code.b.aide.sent": {
+    "message": "あなたのGmailから送信しました",
+    "description": "Benefit diagram on the SpecWithCode page: shown after the person chose Send"
+  },
+  "code.b.aide.send": {
+    "message": "送信",
+    "description": "Benefit diagram on the SpecWithCode page: reply card button, as the app labels it"
+  },
+  "code.b.aide.dontSend": {
+    "message": "送信しない",
+    "description": "Benefit diagram on the SpecWithCode page: reply card button, as the app labels it"
+  },
+  "code.b.designs.tab.threads": {
+    "message": "スレッド",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.tab.designs": {
+    "message": "デザイン",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.tab.library": {
+    "message": "ライブラリ",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.tab.prs": {
+    "message": "PR",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it: pull requests"
+  },
+  "code.b.designs.tab.routines": {
+    "message": "ルーティン",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.label": {
+    "message": "プロジェクトの「デザイン」タブ。エージェントが、Checkoutという名前の1440×1024のフレームにヘッダー、フォーム、ボタンを追加します。ファイルはリポジトリの.specweave/design/に保存され、PNG、SVG、HTML、PDF、PPTXに書き出せます。",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the designs drawing. Keep file paths and formats as written"
+  },
+  "code.b.machines.linux": {
+    "message": "Linuxサーバー",
+    "description": "Benefit diagram on the SpecWithCode page: machine name"
+  },
+  "code.b.machines.windows": {
+    "message": "Windows PC",
+    "description": "Benefit diagram on the SpecWithCode page: machine name"
+  },
+  "code.b.machines.access.full": {
+    "message": "フルアクセス",
+    "description": "Benefit diagram on the SpecWithCode page: permission mode, as the app labels it"
+  },
+  "code.b.machines.access.auto": {
+    "message": "自動",
+    "description": "Benefit diagram on the SpecWithCode page: permission mode, as the app labels it"
+  },
+  "code.b.machines.access.supervised": {
+    "message": "監督付き",
+    "description": "Benefit diagram on the SpecWithCode page: permission mode, as the app labels it"
+  },
+  "code.b.machines.task.emails": {
+    "message": "メールテンプレート",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.machines.label": {
+    "message": "3台のマシン。コーディネーターを動かすMacと、ワーカースレッドを動かすLinuxサーバーとWindows PCです。それぞれにアクセス設定があります。Linuxサーバーがオフラインの間、新しいスレッドはそこを飛ばしてWindows PCで始まります。",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the machines drawing"
+  },
+  "code.b.machines.order": {
+    "message": "ワーカー用マシン",
+    "description": "Benefit diagram on the SpecWithCode page: project setting, as the app labels it"
+  },
+  "code.b.machines.offline": {
+    "message": "オフライン · スキップ",
+    "description": "Benefit diagram on the SpecWithCode page: a machine that is offline is skipped when placing threads"
+  },
+  "code.b.limits.switch": {
+    "message": "自動で切り替える",
+    "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
+  },
+  "code.b.limits.offer": {
+    "message": "代替を提案する",
+    "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
+  },
+  "code.b.limits.wait": {
+    "message": "リセットを待つ",
+    "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
+  },
+  "code.b.limits.label": {
+    "message": "3つのアカウント(Claude Max、ChatGPT Pro、GitHub Copilot)の使用上限。Claude Maxの使用量が99%に達すると、スレッドはCodexで続行されます。ルールは「自動で切り替える」に設定されており、ほかの選択肢は「代替を提案する」と「リセットを待つ」です。",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English"
+  },
+  "code.b.limits.title": {
+    "message": "使用状況 › 上限",
+    "description": "Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it"
+  },
+  "code.b.limits.continued": {
+    "message": "Claude Maxが99%に達しました。このスレッドはCodexで続行しました。",
+    "description": "Benefit diagram on the SpecWithCode page: line shown when a thread moves to the fallback agent. Keep product names in English"
+  },
+  "code.b.limits.rule": {
+    "message": "プロバイダーの上限に達したとき",
+    "description": "Benefit diagram on the SpecWithCode page: project setting, as the app labels it"
+  },
+  "code.b.skills.label": {
+    "message": "設定、スキル。3つのスキルの表で、各スキルが見えるエージェント、バージョン、ティアを示します。1つのスキルはCodexだけオフにされ、その後バージョン1.1.0から1.2.0に更新されて3台のマシンにインストールされます。",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the skills drawing"
+  },
+  "code.b.skills.title": {
+    "message": "スキルを1か所で管理",
+    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+  },
+  "code.b.skills.col.skill": {
+    "message": "スキル",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.col.providers": {
+    "message": "プロバイダー",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.col.version": {
+    "message": "バージョン",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.col.tier": {
+    "message": "ティア",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.local": {
+    "message": "ローカル",
+    "description": "Benefit diagram on the SpecWithCode page: version cell of a skill that was not installed from the registry"
+  },
+  "code.b.skills.push": {
+    "message": "複数にインストール…",
+    "description": "Benefit diagram on the SpecWithCode page: button in Settings > Skills, as the app labels it"
   }
 }

@@ -115,69 +115,13 @@
     "message": "Os agentes usam seu Chrome já logado · grátis",
     "description": "One line under the Chrome extension card title"
   },
-  "code.subs.parallel.title": {
-    "message": "Todos os planos trabalhando ao mesmo tempo",
-    "description": "Card title in the paid plans section"
-  },
-  "code.subs.parallel.body": {
-    "message": "Um coordenador divide um objetivo em threads e as executa em paralelo no Claude Code, no Codex e em outros, cada uma no seu próprio plano.",
-    "description": "Card text in the paid plans section. Keep product names in English"
-  },
-  "code.subs.machines.title": {
-    "message": "Todas as máquinas que você tem",
-    "description": "Card title in the paid plans section"
-  },
-  "code.subs.machines.body": {
-    "message": "Cada Mac, PC com Windows ou servidor Linux soma os limites dos planos conectados nele. Uma conta por provedor em cada máquina.",
-    "description": "Card text in the paid plans section. Keep product names in English"
-  },
-  "code.subs.handoff.title": {
-    "message": "Handoff aos 98%, ou onde você escolher",
-    "description": "Card title in the paid plans section; 98% is the default handoff point"
-  },
-  "code.subs.handoff.body": {
-    "message": "Defina o ponto de 50% a 100% por projeto. O trabalho passa para um plano com folga antes de o provedor recusar.",
-    "description": "Card text in the paid plans section"
-  },
-  "code.subs.usage.title": {
-    "message": "Uso de todas as contas",
-    "description": "Card title in the paid plans section"
-  },
-  "code.subs.usage.body": {
-    "message": "Uso › Limites mostra cada conta, a máquina em que ela está conectada e o que resta em cada sessão e janela semanal.",
-    "description": "Card text in the paid plans section; \"Usage › Limits\" is a menu path in the app, translate it as the app labels it"
-  },
-  "code.more.harnesses.title": {
-    "message": "Cada agente no seu próprio harness",
-    "description": "Card title in the \"more\" section"
-  },
-  "code.more.harnesses.body": {
-    "message": "Claude Code, Codex, GitHub Copilot, Cursor, OpenCode e outros rodam como os fabricantes os entregam, com os seus próprios logins.",
-    "description": "Card text in the \"more\" section. Keep product names in English"
-  },
   "code.more.harnesses.link": {
     "message": "Harnesses e modelos",
     "description": "Card link to the harnesses docs"
   },
-  "code.more.coordinator.title": {
-    "message": "Um coordenador para trabalhos maiores",
-    "description": "Card title in the \"more\" section"
-  },
-  "code.more.coordinator.body": {
-    "message": "Dê um objetivo. Um coordenador o divide em threads de worker em agentes diferentes, e você revisa o resultado.",
-    "description": "Card text in the \"more\" section"
-  },
   "code.more.coordinator.link": {
     "message": "Como os projetos funcionam",
     "description": "Card link to the projects docs"
-  },
-  "code.more.machines.title": {
-    "message": "Todas as suas máquinas",
-    "description": "Card title in the \"more\" section"
-  },
-  "code.more.machines.body": {
-    "message": "Adicione um notebook sobrando, um PC com Windows ou um pequeno servidor Linux como worker, cada um conectado às suas próprias contas.",
-    "description": "Card text in the \"more\" section. Keep product names in English"
   },
   "code.more.machines.link": {
     "message": "Adicionar uma máquina",
@@ -305,23 +249,15 @@
   },
   "code.stats.threshold.label": {
     "message": "ponto em que o SpecWithCode faz o handoff por padrão, antes de o limite te parar",
-    "description": "Stat label after 98%. Keep product names in English"
+    "description": "Stat label after 99%. Keep product names in English"
   },
   "code.stats.threshold.note": {
     "message": "Você pode ajustar de 50% a 100%",
-    "description": "Small note under the 98% stat"
+    "description": "Small note under the 99% stat"
   },
   "code.subs.title": {
     "message": "Paga $200 por mês? Aproveite tudo.",
     "description": "Heading of the paid plans section"
-  },
-  "code.subs.intro": {
-    "message": "O SpecWithCode roda cada agente no plano que você já paga, em todas as máquinas em que você entra, e segue em frente quando um plano está acabando.",
-    "description": "Intro of the paid plans section. Keep product names in English"
-  },
-  "code.subs.plans.ariaLabel": {
-    "message": "Planos mostrados aqui",
-    "description": "Accessible label of the list of paid plans"
   },
   "code.subs.plans.claude": {
     "message": "Claude Max e Pro",
@@ -394,10 +330,6 @@
   "code.downloads.signing": {
     "message": "O app para Mac é assinado e notarizado; os instaladores de Windows e Linux ainda não têm assinatura de código.",
     "description": "Signing status of the installers. Keep product names in English"
-  },
-  "code.more.title": {
-    "message": "Tem mais quando você precisar",
-    "description": "Heading of the more section"
   },
   "code.more.agents.ariaLabel": {
     "message": "Outros agentes de código compatíveis",
@@ -3932,5 +3864,401 @@
   "home.story.gate.body": {
     "message": "Um incremento fecha quando as verificações passam e um segundo modelo concorda, não quando um agente diz que terminou.",
     "description": "Scene 4 text"
+  },
+  "code.b.nav.agents": {
+    "message": "Agentes",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.window.title": {
+    "message": "Chega de trocar de aba",
+    "description": "Benefit row on the SpecWithCode page: heading about one window for every coding agent. Keep product names in English"
+  },
+  "code.b.nav.projects": {
+    "message": "Projetos",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.threads.title": {
+    "message": "Threads que já conhecem o projeto",
+    "description": "Benefit row on the SpecWithCode page: heading about projects, the coordinator and threads. Keep product names in English"
+  },
+  "code.b.nav.aide": {
+    "message": "Aide",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.aide.title": {
+    "message": "Um assistente pessoal no mesmo app",
+    "description": "Benefit row on the SpecWithCode page: heading about Aide, the personal assistant. Keep product names in English"
+  },
+  "code.b.aide.link": {
+    "message": "Projetos pessoais",
+    "description": "Link to the docs about personal projects"
+  },
+  "code.b.nav.designs": {
+    "message": "Designs",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.designs.title": {
+    "message": "Os designs ficam no projeto",
+    "description": "Benefit row on the SpecWithCode page: heading about the Designs tab. Keep product names in English"
+  },
+  "code.b.nav.machines": {
+    "message": "Máquinas",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.machines.title": {
+    "message": "Todas as suas máquinas, no mesmo trabalho",
+    "description": "Benefit row on the SpecWithCode page: heading about running work on several machines. Keep product names in English"
+  },
+  "code.b.nav.limits": {
+    "message": "Limites",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.limits.link": {
+    "message": "Memória e uso",
+    "description": "Link to the docs about usage limits"
+  },
+  "code.b.nav.skills": {
+    "message": "Skills",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.index.label": {
+    "message": "O que há no app",
+    "description": "Accessible label of the list of links to the benefit rows"
+  },
+  "code.b.window.body": {
+    "message": "Claude Code, Codex, GitHub Copilot, Cursor, Gemini CLI e outros rodam lado a lado, cada um com o seu próprio login. Troque o agente no meio de uma thread e ela continua com a conversa recente.",
+    "description": "Benefit row on the SpecWithCode page: text about one window for every coding agent. Keep product names in English"
+  },
+  "code.b.window.point1": {
+    "message": "Um seletor de modelos para todos os agentes em que você entrou",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.window.point2": {
+    "message": "Cada agente mantém as próprias ferramentas, aprovações e login",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.threads.body": {
+    "message": "Um projeto guarda o objetivo, as instruções e a memória em um só lugar. Dê um objetivo ao coordenador e ele divide o trabalho em threads que já começam com esse contexto. Você não cola nada e não abre chats extras para levar o contexto.",
+    "description": "Benefit row on the SpecWithCode page: text about projects, the coordinator and threads. Keep product names in English"
+  },
+  "code.b.threads.point1": {
+    "message": "As threads se ordenam por o que precisa de você, o que está em andamento e o que está resolvido",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.threads.point2": {
+    "message": "Os workers respondem ao coordenador, e você revisa o resultado",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.aide.body": {
+    "message": "O Aide faz um resumo toda manhã dos e-mails que precisam de resposta e do seu dia, com rascunhos prontos. Ele só envia as respostas que você aprova. Fale com ele no desktop, no iPhone ou pelo seu próprio bot do Telegram.",
+    "description": "Benefit row on the SpecWithCode page: text about Aide, the personal assistant. Keep product names in English"
+  },
+  "code.b.aide.point1": {
+    "message": "Lê as contas de Gmail, Calendar e Drive que você permitir",
+    "description": "Benefit row on the SpecWithCode page: point; Gmail, Calendar and Drive logos sit before it. Keep product names in English"
+  },
+  "code.b.aide.point2": {
+    "message": "O app no celular também acompanha as suas threads de código e deixa você responder às aprovações",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.aide.fine": {
+    "message": "O Aide roda no seu computador, então responde enquanto ele estiver ligado.",
+    "description": "Benefit row on the SpecWithCode page: fine print under the Aide row. Keep product names in English"
+  },
+  "code.b.designs.body": {
+    "message": "Todo projeto tem uma aba Designs. Você e seus agentes desenham no mesmo canvas, e os arquivos ficam no repositório em {path}, então um design acompanha o código a que pertence.",
+    "description": "Benefit row on the SpecWithCode page: text about the Designs tab; {path} is a folder path. Keep product names in English"
+  },
+  "code.b.designs.point1": {
+    "message": "Os agentes criam, editam e tiram prints de um design a partir de uma thread",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.designs.point2": {
+    "message": "Comece um sistema de design a partir do seu código, de um arquivo de tokens ou de variáveis importadas do Figma desktop",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.machines.body": {
+    "message": "Adicione um notebook sobrando, um PC com Windows ou um servidor Linux. O coordenador coloca threads neles na ordem que você definir, e cada máquina define o que outras máquinas podem rodar nela.",
+    "description": "Benefit row on the SpecWithCode page: text about running work on several machines. Keep product names in English"
+  },
+  "code.b.machines.point1": {
+    "message": "As máquinas da mesma conta do SpecWithCode Connect entram com um clique",
+    "description": "Benefit row on the SpecWithCode page: point; SpecWithCode Connect is a product name. Keep product names in English"
+  },
+  "code.b.machines.point2": {
+    "message": "A configuração de acesso de uma máquina limita toda thread enviada a ela",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.machines.point3": {
+    "message": "Passe um projeto para outra máquina com Git ou cópia de arquivos",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.limits.body": {
+    "message": "Uso › Limites mostra cada conta, a máquina em que ela está conectada e quando reinicia. Quando um provedor esgota, o projeto troca para outro, oferece a troca ou espera o reset. Você escolhe qual.",
+    "description": "Benefit row on the SpecWithCode page: text about usage limits; 'Usage › Limits' is a menu path in the app, translate it as the app labels it. Keep product names in English"
+  },
+  "code.b.limits.point1": {
+    "message": "Troca aos 99% de uso por padrão. Defina de 50% a 100%.",
+    "description": "Benefit row on the SpecWithCode page: point; 99% is the default, 50% to 100% the allowed range. Keep product names in English"
+  },
+  "code.b.skills.body": {
+    "message": "As skills mudam o que um agente faz com o mesmo modelo, então você escolhe quais cada agente enxerga. Configurações › Skills lista as skills que cada agente encontra em uma máquina. Desative uma para um só agente, fixe uma versão ou instale em várias máquinas.",
+    "description": "Benefit row on the SpecWithCode page: text about skills; Settings › Skills is a menu path in the app. Keep product names in English"
+  },
+  "code.b.skills.point1": {
+    "message": "Escreva uma skill no app e publique no {link} para revisão",
+    "description": "Benefit row on the SpecWithCode page: point; {link} links to the Verified Skill registry. Keep product names in English"
+  },
+  "code.b.skills.point2": {
+    "message": "Teste uma skill na sua própria tarefa no {link} antes de ficar com ela",
+    "description": "Benefit row on the SpecWithCode page: point; {link} links to the Skill Studio docs. Keep product names in English"
+  },
+  "code.b.skills.fine": {
+    "message": "Fixar uma versão ou instalar em outras máquinas usa o vskill CLI gratuito: {command}",
+    "description": "Benefit row on the SpecWithCode page: fine print under the skills row; vskill is a command-line tool and {command} is its install command. Keep product names in English"
+  },
+  "code.b.title": {
+    "message": "Um só app, não uma coleção deles",
+    "description": "Heading of the benefits section on the SpecWithCode page"
+  },
+  "code.b.intro": {
+    "message": "Seus agentes de código, um assistente pessoal, designs, skills e todas as suas máquinas dividem uma janela e um app de celular.",
+    "description": "Intro of the benefits section on the SpecWithCode page"
+  },
+  "code.b.window.label": {
+    "message": "Uma thread no SpecWithCode. O seletor de modelos lista Claude Code, Codex, GitHub Copilot e Gemini CLI, e a thread continua no que você escolher.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the model picker drawing. Keep product names in English"
+  },
+  "code.b.window.thread": {
+    "message": "Corrigir arredondamento no checkout",
+    "description": "Benefit diagram on the SpecWithCode page: example thread title"
+  },
+  "code.b.window.ask": {
+    "message": "Os totais estão errados em um centavo em alguns pedidos.",
+    "description": "Benefit diagram on the SpecWithCode page: example message from the person"
+  },
+  "code.b.window.answer": {
+    "message": "Achei: a linha de imposto arredonda antes do desconto.",
+    "description": "Benefit diagram on the SpecWithCode page: example answer from the agent"
+  },
+  "code.b.window.continued": {
+    "message": "Continuou no {agent} com a conversa recente",
+    "description": "Benefit diagram on the SpecWithCode page: line shown when a thread moves to another agent; {agent} is a product name"
+  },
+  "code.b.window.search": {
+    "message": "Buscar modelos ou provedores",
+    "description": "Benefit diagram on the SpecWithCode page: placeholder of the model picker search box, as the app labels it"
+  },
+  "code.b.window.all": {
+    "message": "Todos",
+    "description": "Benefit diagram on the SpecWithCode page: model picker filter chip"
+  },
+  "code.b.window.favorites": {
+    "message": "Favoritos",
+    "description": "Benefit diagram on the SpecWithCode page: model picker filter chip"
+  },
+  "code.b.threads.working": {
+    "message": "Em andamento",
+    "description": "Benefit diagram on the SpecWithCode page: thread status"
+  },
+  "code.b.threads.needs": {
+    "message": "Precisa de você",
+    "description": "Benefit diagram on the SpecWithCode page: thread status: waiting for the person"
+  },
+  "code.b.threads.done": {
+    "message": "Resolvida",
+    "description": "Benefit diagram on the SpecWithCode page: thread status, as the app labels a finished thread"
+  },
+  "code.b.threads.task.payments": {
+    "message": "API de pagamentos",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.threads.task.checkout": {
+    "message": "Tela de checkout",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.threads.task.tests": {
+    "message": "Testes e CI",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.threads.label": {
+    "message": "Sem um projeto, a barra lateral se enche de chats repetidos com o contexto do projeto. Em um projeto do SpecWithCode, o objetivo, as instruções e a memória ficam guardados uma só vez e chegam a três threads, que mostram Em andamento, Precisa de você ou Resolvida.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the project threads drawing"
+  },
+  "code.b.threads.before": {
+    "message": "Contexto guardado em chats",
+    "description": "Benefit diagram on the SpecWithCode page: column title: the old way"
+  },
+  "code.b.threads.contextChat": {
+    "message": "Contexto do projeto (5848bdc2…)",
+    "description": "Benefit diagram on the SpecWithCode page: a repeated chat title in another tool’s sidebar; keep the id as written"
+  },
+  "code.b.threads.after": {
+    "message": "Guardado uma vez, no projeto",
+    "description": "Benefit diagram on the SpecWithCode page: column title: the SpecWithCode way"
+  },
+  "code.b.machines.coordinator": {
+    "message": "Coordenador",
+    "description": "Benefit diagram on the SpecWithCode page: role of the main machine"
+  },
+  "code.b.threads.context": {
+    "message": "Objetivo · Instruções · Memória",
+    "description": "Benefit diagram on the SpecWithCode page: the three things a project keeps for every thread"
+  },
+  "code.b.aide.label": {
+    "message": "O Aide em um celular. O resumo das 08:00 lista dois e-mails que precisam de resposta e os três eventos de hoje, e depois mostra um rascunho com Enviar e Não enviar. Nada é enviado até você escolher Enviar.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the personal assistant drawing"
+  },
+  "code.b.aide.briefing": {
+    "message": "Resumo proativo",
+    "description": "Benefit diagram on the SpecWithCode page: name of the daily briefing routine, as the app labels it"
+  },
+  "code.b.aide.replies": {
+    "message": "Precisa da sua resposta · 2",
+    "description": "Benefit diagram on the SpecWithCode page: briefing line: two mails need a reply"
+  },
+  "code.b.aide.today": {
+    "message": "Hoje · 3 eventos",
+    "description": "Benefit diagram on the SpecWithCode page: briefing line: three calendar events today"
+  },
+  "code.b.aide.to": {
+    "message": "Para Dana · Re: Fatura de outubro",
+    "description": "Benefit diagram on the SpecWithCode page: recipient and subject of an example reply draft"
+  },
+  "code.b.aide.draft": {
+    "message": "Obrigado, Dana. Paguei hoje de manhã, comprovante em anexo.",
+    "description": "Benefit diagram on the SpecWithCode page: example reply draft text"
+  },
+  "code.b.aide.sent": {
+    "message": "Enviado pelo seu Gmail",
+    "description": "Benefit diagram on the SpecWithCode page: shown after the person chose Send"
+  },
+  "code.b.aide.send": {
+    "message": "Enviar",
+    "description": "Benefit diagram on the SpecWithCode page: reply card button, as the app labels it"
+  },
+  "code.b.aide.dontSend": {
+    "message": "Não enviar",
+    "description": "Benefit diagram on the SpecWithCode page: reply card button, as the app labels it"
+  },
+  "code.b.designs.tab.threads": {
+    "message": "Threads",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.tab.designs": {
+    "message": "Designs",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.tab.library": {
+    "message": "Biblioteca",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.tab.prs": {
+    "message": "PRs",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it: pull requests"
+  },
+  "code.b.designs.tab.routines": {
+    "message": "Rotinas",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.label": {
+    "message": "A aba Designs de um projeto. Um agente adiciona um cabeçalho, um formulário e um botão a um quadro de 1440 por 1024 chamado Checkout. O arquivo é salvo em .specweave/design/ no repositório e exporta para PNG, SVG, HTML, PDF ou PPTX.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the designs drawing. Keep file paths and formats as written"
+  },
+  "code.b.machines.linux": {
+    "message": "Servidor Linux",
+    "description": "Benefit diagram on the SpecWithCode page: machine name"
+  },
+  "code.b.machines.windows": {
+    "message": "PC com Windows",
+    "description": "Benefit diagram on the SpecWithCode page: machine name"
+  },
+  "code.b.machines.access.full": {
+    "message": "Acesso total",
+    "description": "Benefit diagram on the SpecWithCode page: permission mode, as the app labels it"
+  },
+  "code.b.machines.access.auto": {
+    "message": "Automático",
+    "description": "Benefit diagram on the SpecWithCode page: permission mode, as the app labels it"
+  },
+  "code.b.machines.access.supervised": {
+    "message": "Supervisionado",
+    "description": "Benefit diagram on the SpecWithCode page: permission mode, as the app labels it"
+  },
+  "code.b.machines.task.emails": {
+    "message": "Modelos de e-mail",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.machines.label": {
+    "message": "Três máquinas: um Mac que roda o coordenador, um servidor Linux e um PC com Windows que rodam threads de worker. Cada uma tem a sua própria configuração de acesso. Enquanto o servidor Linux está offline, uma nova thread o ignora e começa no PC com Windows.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the machines drawing"
+  },
+  "code.b.machines.order": {
+    "message": "Máquinas para workers",
+    "description": "Benefit diagram on the SpecWithCode page: project setting, as the app labels it"
+  },
+  "code.b.machines.offline": {
+    "message": "Offline · ignorada",
+    "description": "Benefit diagram on the SpecWithCode page: a machine that is offline is skipped when placing threads"
+  },
+  "code.b.limits.switch": {
+    "message": "Trocar automaticamente",
+    "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
+  },
+  "code.b.limits.offer": {
+    "message": "Oferecer a alternativa",
+    "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
+  },
+  "code.b.limits.wait": {
+    "message": "Esperar o reset",
+    "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
+  },
+  "code.b.limits.label": {
+    "message": "Limites de uso de três contas: Claude Max, ChatGPT Pro e GitHub Copilot. Quando o Claude Max chega a 99% de uso, a thread continua no Codex. A regra está em Trocar automaticamente; as outras opções são Oferecer a alternativa e Esperar o reset.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English"
+  },
+  "code.b.limits.title": {
+    "message": "Uso › Limites",
+    "description": "Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it"
+  },
+  "code.b.limits.continued": {
+    "message": "Claude Max em 99%. Esta thread continuou no Codex.",
+    "description": "Benefit diagram on the SpecWithCode page: line shown when a thread moves to the fallback agent. Keep product names in English"
+  },
+  "code.b.limits.rule": {
+    "message": "Quando um provedor esgota",
+    "description": "Benefit diagram on the SpecWithCode page: project setting, as the app labels it"
+  },
+  "code.b.skills.label": {
+    "message": "Configurações, Skills: uma tabela com três skills, os agentes que enxergam cada uma, a versão e o nível. Uma skill é desativada só para o Codex, depois atualiza da versão 1.1.0 para a 1.2.0 e é instalada em três máquinas.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the skills drawing"
+  },
+  "code.b.skills.title": {
+    "message": "Skills, gerenciadas em um só lugar",
+    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+  },
+  "code.b.skills.col.skill": {
+    "message": "Skill",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.col.providers": {
+    "message": "Provedores",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.col.version": {
+    "message": "Versão",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.col.tier": {
+    "message": "Nível",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.local": {
+    "message": "local",
+    "description": "Benefit diagram on the SpecWithCode page: version cell of a skill that was not installed from the registry"
+  },
+  "code.b.skills.push": {
+    "message": "Instalar em várias…",
+    "description": "Benefit diagram on the SpecWithCode page: button in Settings > Skills, as the app labels it"
   }
 }
