@@ -144,7 +144,7 @@ describe('SpecWithCode landing page', () => {
     expect(band).toMatch(/The 418 is a floor/);
     expect(copy).toMatch(/302 specs and got 1,393 merged pull requests, at least 418/);
     expect(copy).toMatch(/to: SPECS_URL, link: translate\(\{id: 'code.more.builtWithItself.link', message: 'See the specs'/);
-    expect(copy).toMatch(/href=\{release.repoUrl\}><Translate id="code.more.builtWithItself.sourceLink"/);
+    expect(copy).toMatch(/href=\{SPECWITHCODE_REPO_URL\}><Translate id="code.more.builtWithItself.sourceLink"/);
     for (const src of [band, copy]) expect(src.match(/message: '[^']*'/g)?.join('') ?? '').not.toContain('\u2014');
   });
 

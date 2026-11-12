@@ -16,7 +16,7 @@ import FamilyCards from '../components/home/FamilyCards';
 import Crop, { type CropSpec } from '../components/home/Crop';
 import BuiltWithItself from '../components/code/BuiltWithItself';
 import MeasuredPlanning from '../components/home/MeasuredPlanning';
-import { SPECWITHCODE_RELEASE as release } from '../data/specwithcodeRelease';
+import { useSpecWithCodeRelease } from '../data/specwithcodeLiveRelease';
 
 /*
   spec-weave.com home: one story for the family (SpecWeave CLI, SpecWithCode, Verified Skill),
@@ -133,6 +133,7 @@ export default function Home() {
   const APPROVAL = approvalCrop();
   const MACHINES = machines();
   const BUILT = built();
+  const { release } = useSpecWithCodeRelease();
   const downloadLabel = translate({ id: 'home.download.ariaLabel', message: 'Download SpecWithCode {version} for macOS, Apple silicon, {size}', description: 'Accessible label of the Download for Mac button; {version} is the app version, {size} the file size. Keep product names in English' }, { version: release.version, size: release.size });
   const downloadText = <Translate id="home.download.button" description="Primary button that downloads the Mac app">Download for Mac</Translate>;
   return <Layout

@@ -2,6 +2,7 @@ import React from 'react';
 import Link from '@docusaurus/Link';
 import styles from './studio.module.css';
 import { SPECWITHCODE_RELEASE as release } from '../../data/specwithcodeRelease';
+import { useSpecWithCodeRelease } from '../../data/specwithcodeLiveRelease';
 import { providerNames } from '../../data/tools';
 
 export const providers = providerNames;
@@ -125,4 +126,14 @@ export function StudioStack() {
     <div className={styles.layer}><div><small>What survives the session</small><strong>SpecWeave CLI</strong></div><p>spec.md, ledger.jsonl and handoff in git. SpecWithCode can read a plan straight from an increment; any other tool can too.</p></div>
     <div className={styles.layer}><div><small>What the agents know</small><strong>vskill</strong></div><p>Verified skills installed once into Claude Code, Codex and 50+ other agents.</p></div>
   </div>;
+}
+
+/**
+ * The Mac download sentence on the SpecWithCode overview page. The link is
+ * GitHub's latest installer; the version and size beside it follow the newest
+ * release once the page is open.
+ */
+export function MacDownloadLine() {
+  const { release: latest } = useSpecWithCodeRelease();
+  return <><a href={latest.dmgUrl}>Download version {latest.version} for macOS (Apple silicon)</a>, {latest.size}, or see <a href={latest.releasesUrl}>all releases</a>.</>;
 }

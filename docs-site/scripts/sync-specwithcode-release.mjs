@@ -3,16 +3,18 @@
  * Points the SpecWithCode downloads in src/data/specwithcodeRelease.ts at the
  * newest published release of anton-abyzov/specwithcode.
  *
- * deploy-docs.yml runs it before every build, and the SpecWithCode release
- * script starts that workflow once a release is public, so the download page
+ * deploy-docs.yml runs it before every build, and specwithcode-release-watch.yml
+ * starts that workflow when the deployed page is behind, so the download page
  * follows each release without a commit. The committed values are the
  * fallback: when GitHub cannot be read, or a release lacks a file, they stay.
+ * Which release each download takes is decided in
+ * src/data/specwithcodeReleasePick.mjs, shared with the browser.
  *
  *   node scripts/sync-specwithcode-release.mjs            rewrite the file
  *   node scripts/sync-specwithcode-release.mjs --check    exit 1 when it would change
  *   node scripts/sync-specwithcode-release.mjs --strict   exit 1 when GitHub cannot be read
  *   node scripts/sync-specwithcode-release.mjs --live URL exit 10 when the deployed page at URL
- *                                                         links an older release, printing
+ *                                                         shows an older release, printing
  *                                                         `since=<time its files were ready>`
  *
  * --live is what specwithcode-release-watch.yml polls with: a release made
@@ -23,79 +25,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-const REPO = 'anton-abyzov/specwithcode';
+import {
+  SPECWITHCODE_REPO as REPO,
+  compareVersions,
+  parseVersion,
+  pickReleases,
+} from '../src/data/specwithcodeReleasePick.mjs';
+
+export {compareVersions, pickReleases};
+
 const DATA_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src/data/specwithcodeRelease.ts');
-const MIN_BYTES = 20_000_000;
-
-const MAC_DMG = 'SpecWithCode-arm64.dmg';
-const MAC_SUMS = 'SHA256SUMS';
-const DESKTOP_SUMS = 'SHA256SUMS-windows-linux';
-/** Constant in the data file, then the asset it sizes. */
-const DESKTOP_ASSETS = [
-  ['EXE_X64_BYTES', (v) => `SpecWithCode-${v}-x64.exe`],
-  ['EXE_ARM64_BYTES', (v) => `SpecWithCode-${v}-arm64.exe`],
-  ['APPIMAGE_X64_BYTES', (v) => `SpecWithCode-${v}-x86_64.AppImage`],
-  ['APPIMAGE_ARM64_BYTES', (v) => `SpecWithCode-${v}-arm64.AppImage`],
-  ['DEB_X64_BYTES', (v) => `SpecWithCode-${v}-amd64.deb`],
-  ['DEB_ARM64_BYTES', (v) => `SpecWithCode-${v}-arm64.deb`],
-];
-
-const parseVersion = (text) => {
-  const match = /^v?(\d+)\.(\d+)\.(\d+)$/.exec(text ?? '');
-  return match ? match.slice(1).map(Number) : null;
-};
-
-export const compareVersions = (left, right) => {
-  const a = parseVersion(left);
-  const b = parseVersion(right);
-  if (!a || !b) throw new Error(`Not a release version: ${a ? right : left}`);
-  for (let i = 0; i < 3; i += 1) if (a[i] !== b[i]) return a[i] - b[i];
-  return 0;
-};
-
-/** Sizes of a release's fully uploaded files, by name. */
-const uploaded = (release) =>
-  (release.assets ?? []).filter((asset) => asset.state === undefined || asset.state === 'uploaded');
-
-const assetSizes = (release) => new Map(uploaded(release).map((asset) => [asset.name, asset.size]));
-
-/** When the last of a release's files finished uploading, else when it was published. */
-const readyAt = (release) =>
-  uploaded(release)
-    .map((asset) => asset.updated_at)
-    .concat(release.published_at)
-    .filter(Boolean)
-    .sort()
-    .pop() ?? null;
-
-/**
- * The newest stable release that carries the Mac download, and the newest
- * that carries every Windows and Linux installer (they are attached later, so
- * it can be an older one). Either is null when no release qualifies.
- */
-export function pickReleases(releases) {
-  const stable = releases
-    .filter((release) => !release.draft && !release.prerelease && parseVersion(release.tag_name))
-    .map((release) => ({
-      version: release.tag_name.replace(/^v/, ''),
-      sizes: assetSizes(release),
-      readyAt: readyAt(release),
-    }))
-    .sort((a, b) => compareVersions(b.version, a.version));
-  let mac = null;
-  let desktop = null;
-  for (const {version, sizes, readyAt: ready} of stable) {
-    if (mac === null && sizes.get(MAC_DMG) > MIN_BYTES && sizes.has(MAC_SUMS)) {
-      mac = {version, readyAt: ready, bytes: {DMG_BYTES: sizes.get(MAC_DMG)}};
-    }
-    if (desktop === null && sizes.has(DESKTOP_SUMS)) {
-      const bytes = Object.fromEntries(DESKTOP_ASSETS.map(([name, file]) => [name, sizes.get(file(version))]));
-      if (Object.values(bytes).every((size) => size > MIN_BYTES)) desktop = {version, readyAt: ready, bytes};
-    }
-    if (mac && desktop) break;
-  }
-  return {mac, desktop};
-}
 
 const readConstant = (source, name) => {
   const match = new RegExp(`^const ${name} = (.+);$`, 'm').exec(source);
@@ -127,11 +66,18 @@ export function applyReleases(source, {mac, desktop}) {
   return next;
 }
 
-/** The Mac and the Windows and Linux release a built download page links. */
+/**
+ * The Mac and the Windows and Linux release a built download page shows. The
+ * Mac button is GitHub's version-free latest link, so the Mac release is read
+ * from the page's schema.org `softwareVersion`; a page built before that
+ * still names it in the installer link.
+ */
 export function linkedReleases(html) {
   const version = (pattern) => pattern.exec(html)?.[1] ?? null;
   return {
-    mac: version(/releases\/download\/v(\d+\.\d+\.\d+)\/SpecWithCode-arm64\.dmg/),
+    mac:
+      version(/"softwareVersion":\s*"(\d+\.\d+\.\d+)"/) ??
+      version(/releases\/download\/v(\d+\.\d+\.\d+)\/SpecWithCode-arm64\.dmg/),
     desktop: version(/releases\/download\/v(\d+\.\d+\.\d+)\/SpecWithCode-\1-x64\.exe/),
   };
 }

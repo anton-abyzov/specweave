@@ -7,7 +7,8 @@ import Translate, {translate} from '@docusaurus/Translate';
 import {ArrowRight, ArrowUpRight, ChevronDown, Gauge, GitMerge, Info, Layers, Network, Star, Users} from 'lucide-react';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import useBrokenLinks from '@docusaurus/useBrokenLinks';
-import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../data/specwithcodeRelease';
+import {SPECWITHCODE_OPERATING_SYSTEMS, SPECWITHCODE_REPO_URL, type SpecWithCodeMacRelease} from '../data/specwithcodeRelease';
+import {useSpecWithCodeRelease, type SpecWithCodeDownloads} from '../data/specwithcodeLiveRelease';
 import {useSpecWithCodeInstaller} from '../data/specwithcodeInstaller';
 import FlowStage from '../components/code/FlowStage';
 import MobileStores from '../components/code/MobileStores';
@@ -36,7 +37,7 @@ const pageDescription = () => translate({id: 'code.meta.description', message: '
 const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
 
 type Os = 'mac' | 'windows' | 'linux';
-const getDownloads = (): {os: Os; label: string; note: string; url: string}[] => [
+const getDownloads = ({release, desktop}: SpecWithCodeDownloads): {os: Os; label: string; note: string; url: string}[] => [
   {os: 'mac', label: 'Mac', note: translate({id: 'code.downloads.mac.note', message: 'Apple silicon, macOS 13+', description: 'Requirements note under the Mac download button. Keep product names in English'}), url: release.dmgUrl},
   {os: 'windows', label: 'Windows', note: translate({id: 'code.downloads.windows.note', message: 'Windows 10 and 11, x64', description: 'Requirements note under the Windows download button. Keep product names in English'}), url: desktop.exe.url},
   {os: 'linux', label: 'Linux', note: translate({id: 'code.downloads.linux.note', message: 'AppImage, x64', description: 'Package note under the Linux download button. Keep product names in English'}), url: desktop.appImage.url},
@@ -56,7 +57,7 @@ const OS_ICON: Record<Os, React.ReactNode> = {
 /** Download buttons for Mac, Windows and Linux. The visitor's own system leads once the browser says which it is. */
 function Downloads({placement}: {placement: string}) {
   const {installer, detected, unsupported} = useSpecWithCodeInstaller();
-  const DOWNLOADS = getDownloads();
+  const DOWNLOADS = getDownloads(useSpecWithCodeRelease());
   const UNSUPPORTED = getUnsupported();
   const mine: Os | null = !detected || unsupported ? null : installer.key === 'mac' ? 'mac' : installer.key.startsWith('windows') ? 'windows' : installer.key.startsWith('linux') ? 'linux' : null;
   const lead = mine ?? 'mac';
@@ -87,7 +88,7 @@ function Downloads({placement}: {placement: string}) {
 /** One big button for the visitor's own system, with the other systems one click away. */
 function HeroDownload() {
   const {installer, detected, unsupported} = useSpecWithCodeInstaller();
-  const DOWNLOADS = getDownloads();
+  const DOWNLOADS = getDownloads(useSpecWithCodeRelease());
   const UNSUPPORTED = getUnsupported();
   const os: Os = !detected || unsupported ? 'mac' : installer.key === 'mac' ? 'mac' : installer.key.startsWith('windows') ? 'windows' : 'linux';
   const main = DOWNLOADS.find(d => d.os === os)!;
@@ -142,7 +143,7 @@ const getMore = (): {id: string; icon: typeof Layers; title: string; body: React
   {id: 'built-with-itself', icon: GitMerge, title: translate({id: 'code.more.builtWithItself.title', message: 'Built with itself', description: 'Card title in the "more" section'}), body: <Translate
     id="code.more.builtWithItself.body"
     description="Card text in the 'more' section; {link} is a link labelled 'source code'. Keep product names in English"
-    values={{link: <a className="wv-link" href={release.repoUrl}><Translate id="code.more.builtWithItself.sourceLink" description="Inline link to the source repository on GitHub">source code</Translate></a>}}>
+    values={{link: <a className="wv-link" href={SPECWITHCODE_REPO_URL}><Translate id="code.more.builtWithItself.sourceLink" description="Inline link to the source repository on GitHub">source code</Translate></a>}}>
     {'From 9 October to 7 November 2026, SpecWithCode was planned in 302 specs and got 1,393 merged pull requests, at least 418 of them from its own worker threads. Read the {link}.'}
   </Translate>, to: SPECS_URL, link: translate({id: 'code.more.builtWithItself.link', message: 'See the specs', description: 'Card link to the public folder of SpecWeave increments (specs) on GitHub'})},
 ];
@@ -159,7 +160,7 @@ const getFaq = (): {q: string; a: string}[] => [
 ];
 
 /** pageUrl includes the locale base (/ru/code/), matching the page's canonical. */
-const buildLd = (pageUrl: string, TITLE: string, DESCRIPTION: string, FAQ: {q: string; a: string}[]) => ({
+const buildLd = (release: SpecWithCodeMacRelease, pageUrl: string, TITLE: string, DESCRIPTION: string, FAQ: {q: string; a: string}[]) => ({
   '@context': 'https://schema.org',
   '@graph': [
     {'@type': 'MobileApplication', name: 'SpecWithCode for Android', operatingSystem: 'Android', applicationCategory: 'DeveloperApplication', installUrl: SPECWITHCODE_MOBILE.android.url, url: SPECWITHCODE_MOBILE.android.url},
@@ -226,7 +227,8 @@ export default function Code() {
   const DESCRIPTION = pageDescription();
   const SUBS = getSubs();
   const FAQ = getFaq();
-  const SPECWITHCODE_LD = buildLd(`${SITE}${useBaseUrl('/code/')}`, TITLE, DESCRIPTION, FAQ);
+  const {release, desktop} = useSpecWithCodeRelease();
+  const SPECWITHCODE_LD = buildLd(release, `${SITE}${useBaseUrl('/code/')}`, TITLE, DESCRIPTION, FAQ);
 
   return <Layout title={TITLE} description={DESCRIPTION}>
     <Head>

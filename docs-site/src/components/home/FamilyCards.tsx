@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import Translate, { translate } from '@docusaurus/Translate';
 import base from '../../pages/continuity.module.css';
 import InstallCommand from '../landing/InstallCommand';
-import { SPECWITHCODE_RELEASE as release } from '../../data/specwithcodeRelease';
+import { useSpecWithCodeRelease } from '../../data/specwithcodeLiveRelease';
 import Crop, { WINDOW, type CropSpec } from './Crop';
 import { CHROME_EXTENSION_URL } from './chrome';
 import usePointerGlow from './usePointerGlow';
@@ -48,6 +48,7 @@ export default function FamilyCards({ cliVersion, cliDate }: { cliVersion: strin
   usePointerGlow(list);
   const THREADS = threadsCrop();
   const SKILL_ROWS = skillRows();
+  const { release } = useSpecWithCodeRelease();
   const downloadLabel = translate({ id: 'home.download.ariaLabel', message: 'Download SpecWithCode {version} for macOS, Apple silicon, {size}', description: 'Accessible label of the Download for Mac button; {version} is the app version, {size} the file size. Keep product names in English' }, { version: release.version, size: release.size });
   return <ol className={s.cards} ref={list}>
     <li className={s.card} data-glow>
