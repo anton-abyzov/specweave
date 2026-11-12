@@ -1,14 +1,17 @@
 /**
  * The SpecWithCode desktop download linked from /studio, the homepage and the docs.
  * Keep the installer URL, release notes, checksum and displayed size on the
- * same release. When it ships, update VERSION and DMG_BYTES from
- * `gh release view vX.Y.Z -R anton-abyzov/specwithcode --json assets`.
- * No release script writes this file; bump it by hand in a docs-site PR.
- * After editing, run `CHECK_RELEASE_LINKS=1 npx vitest run specwithcodeRelease` to confirm the DMG exists.
+ * same release. `scripts/sync-specwithcode-release.mjs` rewrites the constants
+ * below from the newest published release before every deploy build
+ * (deploy-docs.yml), and the SpecWithCode release script starts that deploy,
+ * so the values committed here are only the fallback for when GitHub cannot
+ * be read. Keep each constant on its own `const NAME = value;` line.
+ * To refresh the fallback, run `node scripts/sync-specwithcode-release.mjs`, then
+ * `CHECK_RELEASE_LINKS=1 npx vitest run specwithcodeRelease` to confirm the files exist.
  */
-const VERSION = '1.0.247';
+const VERSION = '1.0.248';
 const DMG_NAME = 'SpecWithCode-arm64.dmg';
-const DMG_BYTES = 163_319_016;
+const DMG_BYTES = 163_324_953;
 
 const REPO = 'https://github.com/anton-abyzov/specwithcode';
 
@@ -35,17 +38,16 @@ export const SPECWITHCODE_OPERATING_SYSTEMS =
  * after its macOS assets, so they are pinned to the newest release that carries
  * them rather than to GitHub's Latest. Their file names carry the version and
  * there is no version-free alias, so a /releases/latest/download/ link would
- * break on the next release. When a release adds them, update DESKTOP_VERSION
- * and the byte sizes from
- * `gh release view vX.Y.Z -R anton-abyzov/specwithcode --json assets`.
+ * break on the next release. The sync script moves DESKTOP_VERSION and the
+ * byte sizes to the newest release that has all six installers.
  */
-const DESKTOP_VERSION = '1.0.247';
-const EXE_X64_BYTES = 154_721_824;
-const EXE_ARM64_BYTES = 145_113_680;
-const APPIMAGE_X64_BYTES = 169_947_891;
-const APPIMAGE_ARM64_BYTES = 168_529_928;
-const DEB_X64_BYTES = 142_984_392;
-const DEB_ARM64_BYTES = 136_767_100;
+const DESKTOP_VERSION = '1.0.248';
+const EXE_X64_BYTES = 154_732_560;
+const EXE_ARM64_BYTES = 145_112_208;
+const APPIMAGE_X64_BYTES = 169_939_599;
+const APPIMAGE_ARM64_BYTES = 168_537_442;
+const DEB_X64_BYTES = 142_985_492;
+const DEB_ARM64_BYTES = 136_777_388;
 
 const desktopAsset = (name: string, bytes: number) => ({
   name,
