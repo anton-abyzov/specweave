@@ -1,16 +1,19 @@
 name: SpecWithCode release watch
 
-# The download page at /code/download/ links one SpecWithCode release. deploy-docs.yml points it
-# at the newest one on every build, so the page only needs a build after each release. This asks
-# for that build: it compares the deployed page with the published releases of
-# anton-abyzov/specwithcode and starts deploy-docs.yml when the page is behind. It needs nothing
-# from the release tooling, so a release cut anywhere, and the Windows and Linux installers
-# attached to it afterwards, reach the page. The SpecWithCode release script also starts
-# deploy-docs.yml itself when its token may; this is what holds when it may not.
+# The Mac download on the site is GitHub's version-free latest link, and an open page reads the
+# newest release from GitHub itself, so visitors get each release at once. What a build bakes
+# into the HTML (the version and size shown, and the Windows and Linux links a visitor without
+# JavaScript gets) still needs a build after each release. This asks for that build: it compares
+# the deployed page with the published releases of anton-abyzov/specwithcode and starts
+# deploy-docs.yml when the page is behind. It needs nothing from the release tooling, so a
+# release cut anywhere, and the Windows and Linux installers attached to it about twenty minutes
+# later, reach the page. The SpecWithCode release script also starts deploy-docs.yml itself when
+# its token may (it may not today: HTTP 403); this is what holds when it may not.
 
 on:
   schedule:
-    - cron: '7,22,37,52 * * * *'
+    # Every five minutes, GitHub's shortest interval: one small job that reads a page and the releases.
+    - cron: '2-59/5 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -32,6 +35,7 @@ jobs:
         with:
           sparse-checkout: |
             docs-site/scripts/sync-specwithcode-release.mjs
+            docs-site/src/data/specwithcodeReleasePick.mjs
             docs-site/src/data/specwithcodeRelease.ts
           sparse-checkout-cone-mode: false
 

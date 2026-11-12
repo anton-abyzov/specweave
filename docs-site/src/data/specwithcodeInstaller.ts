@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {translate} from '@docusaurus/Translate';
-import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop} from './specwithcodeRelease';
+import {SPECWITHCODE_RELEASE, type SpecWithCodeMacRelease} from './specwithcodeRelease';
+import {BUILT_DOWNLOADS, useSpecWithCodeRelease, type SpecWithCodeDownloads} from './specwithcodeLiveRelease';
 import {detectVisitorPlatform, type VisitorPlatform} from '../lib/visitorPlatform';
 
 /**
@@ -23,8 +24,8 @@ export interface SpecWithCodeInstaller {
   alt?: {label: string; file: string; url: string; size: string};
 }
 
-/** Visible copy is a getter, so it renders in the active locale. */
-export const MAC_INSTALLER: SpecWithCodeInstaller = {
+/** The Mac installer of `release`. Visible copy is a getter, so it renders in the active locale. */
+export const macInstaller = (release: SpecWithCodeMacRelease): SpecWithCodeInstaller => ({
   key: 'mac',
   get label() { return translate({id: 'installer.mac.label', message: 'Download for Mac', description: 'Download button for the macOS installer. Keep product names in English'}); },
   get platformName() { return translate({id: 'installer.mac.platformName', message: 'macOS on Apple silicon', description: 'Who the macOS installer is for. Keep product names in English'}); },
@@ -32,7 +33,10 @@ export const MAC_INSTALLER: SpecWithCodeInstaller = {
   url: release.dmgUrl,
   size: release.size,
   version: release.version,
-};
+});
+
+/** The Mac installer of the release the build recorded. */
+export const MAC_INSTALLER: SpecWithCodeInstaller = macInstaller(SPECWITHCODE_RELEASE);
 
 export const ALL_DOWNLOADS_ANCHOR = '#windows-linux-title';
 
@@ -46,12 +50,14 @@ export interface InstallerChoice {
   archGuessed?: boolean;
 }
 
-export function chooseInstaller(platform: VisitorPlatform | null): InstallerChoice {
-  if (!platform) return {installer: MAC_INSTALLER, detected: false};
+export function chooseInstaller(platform: VisitorPlatform | null, downloads: SpecWithCodeDownloads = BUILT_DOWNLOADS): InstallerChoice {
+  const {release, desktop} = downloads;
+  const mac = release === SPECWITHCODE_RELEASE ? MAC_INSTALLER : macInstaller(release);
+  if (!platform) return {installer: mac, detected: false};
   const {os, arch} = platform;
   if (os === 'mac') return arch === 'x64'
-    ? {installer: MAC_INSTALLER, detected: true, unsupported: 'intel-mac'}
-    : {installer: MAC_INSTALLER, detected: true};
+    ? {installer: mac, detected: true, unsupported: 'intel-mac'}
+    : {installer: mac, detected: true};
   if (os === 'windows') {
     const arm = arch === 'arm64';
     const a = arm ? desktop.exeArm64 : desktop.exe;
@@ -74,17 +80,21 @@ export function chooseInstaller(platform: VisitorPlatform | null): InstallerChoi
       alt: {label: translate({id: 'installer.linux.debLabel', message: '.deb for Debian and Ubuntu', description: 'Button for the Linux .deb package. Keep product names in English'}), file: deb.name, url: deb.url, size: deb.size},
     }};
   }
-  if (os === 'mobile') return {installer: MAC_INSTALLER, detected: true, unsupported: 'mobile'};
-  return {installer: MAC_INSTALLER, detected: false};
+  if (os === 'mobile') return {installer: mac, detected: true, unsupported: 'mobile'};
+  return {installer: mac, detected: false};
 }
 
-/** The installer for this visitor; the Mac default until the browser has been asked. */
+/**
+ * The installer for this visitor, from the newest release; the Mac default
+ * until the browser has been asked.
+ */
 export function useSpecWithCodeInstaller(): InstallerChoice {
+  const downloads = useSpecWithCodeRelease();
   const [platform, setPlatform] = useState<VisitorPlatform | null>(null);
   useEffect(() => {
     let live = true;
     detectVisitorPlatform(navigator).then(p => { if (live) setPlatform(p); });
     return () => { live = false; };
   }, []);
-  return chooseInstaller(platform);
+  return chooseInstaller(platform, downloads);
 }

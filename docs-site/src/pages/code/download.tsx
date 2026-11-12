@@ -6,12 +6,13 @@ import Head from '@docusaurus/Head';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Translate, {translate} from '@docusaurus/Translate';
 import {ChevronDown, Download, Info, ShieldCheck} from 'lucide-react';
-import {SPECWITHCODE_RELEASE as release, SPECWITHCODE_WINDOWS_LINUX as desktop, SPECWITHCODE_OPERATING_SYSTEMS} from '../../data/specwithcodeRelease';
+import {SPECWITHCODE_OPERATING_SYSTEMS, type SpecWithCodeDesktopRelease, type SpecWithCodeMacRelease} from '../../data/specwithcodeRelease';
+import {useSpecWithCodeRelease} from '../../data/specwithcodeLiveRelease';
 import {providerSummary} from '../../data/tools';
 import MobileStores from '../../components/code/MobileStores';
 import HowItWorks from '../../components/code/HowItWorks';
 import FeedbackLinks from '../../components/code/FeedbackLinks';
-import {ALL_DOWNLOADS_ANCHOR, MAC_INSTALLER, useSpecWithCodeInstaller} from '../../data/specwithcodeInstaller';
+import {ALL_DOWNLOADS_ANCHOR, useSpecWithCodeInstaller} from '../../data/specwithcodeInstaller';
 import styles from '../code.module.css';
 
 /*
@@ -55,7 +56,7 @@ function getSteps(): {title: string; body: React.ReactNode}[] {
   ];
 }
 
-function getDesktopNotes(): {name: string; detail: React.ReactNode}[] {
+function getDesktopNotes(desktop: SpecWithCodeDesktopRelease): {name: string; detail: React.ReactNode}[] {
   return [
     {
       name: translate({id: 'code.download.desktopNotes.whichFile.name', message: 'Which file', description: 'Windows/Linux install note label: which installer file to pick'}),
@@ -99,7 +100,7 @@ function getDesktopNotes(): {name: string; detail: React.ReactNode}[] {
   ];
 }
 
-function getVerify(): {name: string; detail: React.ReactNode}[] {
+function getVerify(desktop: SpecWithCodeDesktopRelease): {name: string; detail: React.ReactNode}[] {
   return [
     {
       name: 'macOS',
@@ -141,7 +142,7 @@ function getNext(): {name: string; detail: React.ReactNode}[] {
   ];
 }
 
-function getFaq(): {q: string; a: string}[] {
+function getFaq(desktop: SpecWithCodeDesktopRelease): {q: string; a: string}[] {
   return [
     {
       q: translate({id: 'code.download.faq.free.q', message: 'Is SpecWithCode free?', description: 'FAQ question. Keep product names in English'}),
@@ -167,7 +168,7 @@ function getFaq(): {q: string; a: string}[] {
 }
 
 /** pageUrl and codeUrl include the locale base (/ru/code/download/), matching each page's canonical. */
-function downloadLd(pageUrl: string, codeUrl: string, title: string, description: string, steps: {title: string}[], faq: {q: string; a: string}[]) {
+function downloadLd(release: SpecWithCodeMacRelease, pageUrl: string, codeUrl: string, title: string, description: string, steps: {title: string}[], faq: {q: string; a: string}[]) {
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -231,12 +232,13 @@ function downloadLd(pageUrl: string, codeUrl: string, title: string, description
 */
 function HeroDownload() {
   const {installer, detected, unsupported, archGuessed} = useSpecWithCodeInstaller();
+  const {release, desktop} = useSpecWithCodeRelease();
   const isMac = installer.key === 'mac';
   return <>
     <div className={styles.actions}>
       <a className={clsx('wv-btn', unsupported ? 'wv-btn--secondary' : 'wv-btn--primary', 'wv-btn--lg')} href={installer.url} data-track="download_click" data-placement="download-page" data-os={installer.key}><Download {...btnIcon} />{installer.label} ({installer.size})</a>
       {installer.alt && <a className="wv-btn wv-btn--secondary wv-btn--lg" href={installer.alt.url} data-track="download_click" data-placement="download-page-alt" data-os={installer.key}><Download {...btnIcon} />{installer.alt.label} ({installer.alt.size})</a>}
-      {!isMac && <a className="wv-btn wv-btn--secondary wv-btn--lg" href={MAC_INSTALLER.url} data-track="download_click" data-placement="download-page-mac" data-os="mac"><Download {...btnIcon} />Mac ({MAC_INSTALLER.size})</a>}
+      {!isMac && <a className="wv-btn wv-btn--secondary wv-btn--lg" href={release.dmgUrl} data-track="download_click" data-placement="download-page-mac" data-os="mac"><Download {...btnIcon} />Mac ({release.size})</a>}
       {isMac && <a className="wv-btn wv-btn--secondary wv-btn--lg" href={ALL_DOWNLOADS_ANCHOR}><Translate id="code.download.hero.windowsLinuxButton" description="Button that jumps to the Windows and Linux downloads. Keep product names in English">Windows and Linux</Translate></a>}
     </div>
     <p className={styles.requirements} data-testid="download-requirements">
@@ -279,13 +281,14 @@ function FooterDownload() {
 export default function CodeDownload() {
   const TITLE = pageTitle();
   const DESCRIPTION = pageDescription();
+  const {release, desktop} = useSpecWithCodeRelease();
   const STEPS = getSteps();
-  const DESKTOP_NOTES = getDesktopNotes();
+  const DESKTOP_NOTES = getDesktopNotes(desktop);
   const NEXT = getNext();
-  const FAQ_TEXT = getFaq();
+  const FAQ_TEXT = getFaq(desktop);
   const pageBase = useBaseUrl('/code/download/');
   const codeBase = useBaseUrl('/code/');
-  const DOWNLOAD_LD = downloadLd(`${SITE}${pageBase}`, `${SITE}${codeBase}`, TITLE, DESCRIPTION, STEPS, FAQ_TEXT);
+  const DOWNLOAD_LD = downloadLd(release, `${SITE}${pageBase}`, `${SITE}${codeBase}`, TITLE, DESCRIPTION, STEPS, FAQ_TEXT);
   return <Layout title={TITLE} description={DESCRIPTION}>
     <Head>
       <title>{TITLE}</title>
@@ -347,7 +350,7 @@ export default function CodeDownload() {
           <p><Translate id="code.download.verify.body" description="Verify section intro">Every installer is signed, and every file has a SHA-256 and a build provenance attestation.</Translate></p>
         </div>
         <ul className={clsx('wv-evidence', styles.list)}>
-          {getVerify().map(item => <li key={item.name}>
+          {getVerify(desktop).map(item => <li key={item.name}>
             <span className="wv-evidence__name">{item.name}</span>
             <span className="wv-evidence__detail">{item.detail}</span>
           </li>)}

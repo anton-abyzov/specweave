@@ -5,7 +5,7 @@ import Translate, { translate } from '@docusaurus/Translate';
 import base from '../../pages/continuity.module.css';
 import InstallCommand from '../landing/InstallCommand';
 import { STUDIO_WINDOW, StudioWindowFullSize } from '../ecosystem/StudioWindowShot';
-import { SPECWITHCODE_RELEASE as release } from '../../data/specwithcodeRelease';
+import { useSpecWithCodeRelease } from '../../data/specwithcodeLiveRelease';
 import Crop, { WINDOW, type CropSpec } from './Crop';
 import { CHROME_EXTENSION_URL } from './chrome';
 import usePointerGlow from './usePointerGlow';
@@ -57,6 +57,7 @@ export default function HomeHero() {
   const stage = useRef<HTMLDivElement>(null);
   usePointerGlow(stage, 6);
   const { MAIN, TESTS, THREADS, DISPATCH, USAGE } = crops();
+  const { release } = useSpecWithCodeRelease();
   const downloadLabel = translate({ id: 'home.download.ariaLabel', message: 'Download SpecWithCode {version} for macOS, Apple silicon, {size}', description: 'Accessible label of the Download for Mac button; {version} is the app version, {size} the file size. Keep product names in English' }, { version: release.version, size: release.size });
   return <section className={s.hero}>
     <div className={s.text}>

@@ -65,8 +65,8 @@ jobs:
           sed -i '1i---\nsidebar_position: 0\ntitle: README\ndescription: SpecWeave project overview from GitHub README\n---\n' docs-site/docs/overview/readme.md
           echo "✅ Synced README.md to docs-site"
 
-      # The download page follows the newest SpecWithCode release without a commit; the
-      # SpecWithCode release script starts this workflow once a release is public.
+      # The download page follows the newest SpecWithCode release without a commit;
+      # specwithcode-release-watch.yml starts this workflow when the page is behind.
       - name: Point SpecWithCode downloads at the latest release
         env:
           GH_TOKEN: ${{ github.token }}

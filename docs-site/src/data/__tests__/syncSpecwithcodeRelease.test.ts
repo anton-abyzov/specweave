@@ -76,10 +76,17 @@ describe('SpecWithCode download sync', () => {
   });
 
   it('tells when a deployed page links an older release, and since when the newer one was ready', () => {
+    // The Mac button has no version in it, so the page's schema.org softwareVersion says which release it shows.
     const page = (mac: string, desktop: string) =>
-      `<a href="https://github.com/anton-abyzov/specwithcode/releases/download/v${mac}/SpecWithCode-arm64.dmg">Mac</a>` +
+      `<script type="application/ld+json">{"@type":"SoftwareApplication","softwareVersion":"${mac}","fileSize":"163 MB"}</script>` +
+      `<a href="https://github.com/anton-abyzov/specwithcode/releases/latest/download/SpecWithCode-arm64.dmg">Mac</a>` +
       `<a href="https://github.com/anton-abyzov/specwithcode/releases/download/v${desktop}/SpecWithCode-${desktop}-x64.exe">Windows</a>`;
     expect(linkedReleases(page('9.0.10', '9.0.8'))).toEqual({mac: '9.0.10', desktop: '9.0.8'});
+    // A page built before the latest link still names the Mac release in the installer link.
+    const pinnedPage =
+      '<a href="https://github.com/anton-abyzov/specwithcode/releases/download/v9.0.7/SpecWithCode-arm64.dmg">Mac</a>' +
+      '<a href="https://github.com/anton-abyzov/specwithcode/releases/download/v9.0.7/SpecWithCode-9.0.7-x64.exe">Windows</a>';
+    expect(linkedReleases(pinnedPage)).toEqual({mac: '9.0.7', desktop: '9.0.7'});
     const picked = pickReleases([
       release('9.0.10', macAssets.map((asset) => ({...asset, updated_at: '2026-11-12T06:20:00Z'})), {
         published_at: '2026-11-12T06:26:30Z',

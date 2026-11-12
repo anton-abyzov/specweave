@@ -4,7 +4,7 @@ import Link from '@docusaurus/Link';
 import useBrokenLinks from '@docusaurus/useBrokenLinks';
 import {Info} from 'lucide-react';
 import TutorialVideo from './index';
-import {SPECWITHCODE_RELEASE} from '@site/src/data/specwithcodeRelease';
+import {useSpecWithCodeRelease} from '@site/src/data/specwithcodeLiveRelease';
 import {
   agentLabel,
   formatDate,
@@ -29,13 +29,13 @@ export function InlineCode({text}: {text: string}): ReactNode {
   );
 }
 
-function recordedLine(t: Tutorial): string {
+function recordedLine(t: Tutorial, currentVersion: string): string {
   const parts: string[] = [];
   if (t.testedOn) parts.push(`Recorded on ${t.testedOn}`);
   parts.push(`added ${formatDate(t.uploadDate)}`);
   let line = parts.join(', ');
   line = line.charAt(0).toUpperCase() + line.slice(1);
-  if (t.product === 'specwithcode') line += `. The current release is SpecWithCode ${SPECWITHCODE_RELEASE.version}`;
+  if (t.product === 'specwithcode') line += `. The current release is SpecWithCode ${currentVersion}`;
   return `${line}.`;
 }
 
@@ -184,6 +184,7 @@ export function GuideBody({tutorial: t, transcript = [], captures = [], startAt}
   captures?: TranscriptCapture[];
   startAt?: number;
 }): ReactNode {
+  const currentVersion = useSpecWithCodeRelease().release.version;
   const audio = t.audio === 'silent' ? 'Captioned, no sound' : 'Narrated, with captions';
   return (
     <main className={clsx('wv-root', styles.page)}>
@@ -206,7 +207,7 @@ export function GuideBody({tutorial: t, transcript = [], captures = [], startAt}
             <li>{agentLabel(t)}</li>
             <li>{audio}</li>
           </ul>
-          <p className={styles.muted}>{recordedLine(t)}</p>
+          <p className={styles.muted}>{recordedLine(t, currentVersion)}</p>
           {t.prerequisites.length > 0 && (
             <p className={styles.prereq}>
               <span className={styles.prereqLabel}>Before you start:</span>{' '}
