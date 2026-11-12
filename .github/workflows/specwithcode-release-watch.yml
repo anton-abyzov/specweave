@@ -1,0 +1,65 @@
+name: SpecWithCode release watch
+
+# The download page at /code/download/ links one SpecWithCode release. deploy-docs.yml points it
+# at the newest one on every build, so the page only needs a build after each release. This asks
+# for that build: it compares the deployed page with the published releases of
+# anton-abyzov/specwithcode and starts deploy-docs.yml when the page is behind. It needs nothing
+# from the release tooling, so a release cut anywhere, and the Windows and Linux installers
+# attached to it afterwards, reach the page. The SpecWithCode release script also starts
+# deploy-docs.yml itself when its token may; this is what holds when it may not.
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: specwithcode-release-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    name: Deploy when the download page is behind
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout the sync script
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            docs-site/scripts/sync-specwithcode-release.mjs
+            docs-site/src/data/specwithcodeRelease.ts
+          sparse-checkout-cone-mode: false
+
+      - name: Compare the deployed page with the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGE_URL: https://spec-weave.com/code/download/
+        run: |
+          set -uo pipefail
+          # The step's shell exits on the first failing command, so the status is caught here:
+          # 10 means the page is behind, anything else non-zero is a real failure.
+          out="$(node docs-site/scripts/sync-specwithcode-release.mjs --live "$PAGE_URL")" && code=0 || code=$?
+          printf '%s\n' "$out"
+          if [ "$code" -ne 10 ]; then exit "$code"; fi
+          since="$(printf '%s\n' "$out" | sed -n 's/^since=//p')"
+          runs="$(gh run list -R "$GITHUB_REPOSITORY" --workflow deploy-docs.yml --branch develop --limit 20 --json status,conclusion,createdAt)"
+          # A deploy that started after the release was ready already carries it.
+          if [ "$(jq '[.[] | select(.status != "completed")] | length' <<< "$runs")" -gt 0 ]; then
+            echo "A deploy is already queued or running; it picks the release up."
+            exit 0
+          fi
+          if [ -n "$since" ] && [ "$(jq --arg since "$since" '[.[] | select(.createdAt > $since and .conclusion == "success")] | length' <<< "$runs")" -gt 0 ]; then
+            echo "::warning::A deploy finished after the release was ready, yet $PAGE_URL still links the older one. Not deploying again; check the sync step of that run."
+            exit 0
+          fi
+          if [ -n "$since" ] && [ "$(jq --arg since "$since" '[.[] | select(.createdAt > $since)] | length' <<< "$runs")" -ge 2 ]; then
+            echo "::warning::Two deploys since the release was ready did not succeed. Not deploying again; fix deploy-docs.yml first."
+            exit 0
+          fi
+          gh workflow run deploy-docs.yml -R "$GITHUB_REPOSITORY" --ref develop
+          echo "Started deploy-docs.yml for the newer release."
