@@ -67,69 +67,13 @@
     "message": "에이전트가 로그인된 내 Chrome을 사용합니다 · 무료",
     "description": "One line under the Chrome extension card title"
   },
-  "code.subs.parallel.title": {
-    "message": "모든 요금제를 동시에",
-    "description": "Card title in the paid plans section"
-  },
-  "code.subs.parallel.body": {
-    "message": "코디네이터가 하나의 목표를 스레드로 나누고, Claude Code와 Codex 등에서 각자의 요금제로 병렬 실행해요.",
-    "description": "Card text in the paid plans section. Keep product names in English"
-  },
-  "code.subs.machines.title": {
-    "message": "내 모든 머신",
-    "description": "Card title in the paid plans section"
-  },
-  "code.subs.machines.body": {
-    "message": "Mac, Windows PC, Linux 서버를 추가할 때마다 그 머신에 로그인한 요금제의 한도가 더해져요. 머신마다 제공업체별 계정은 하나씩이에요.",
-    "description": "Card text in the paid plans section. Keep product names in English"
-  },
-  "code.subs.handoff.title": {
-    "message": "98%에서, 또는 원하는 지점에서 핸드오프",
-    "description": "Card title in the paid plans section; 98% is the default handoff point"
-  },
-  "code.subs.handoff.body": {
-    "message": "프로젝트별로 50%에서 100% 사이로 지점을 정하세요. 제공업체가 거부하기 전에 여유 있는 요금제로 작업이 넘어가요.",
-    "description": "Card text in the paid plans section"
-  },
-  "code.subs.usage.title": {
-    "message": "모든 계정의 사용량",
-    "description": "Card title in the paid plans section"
-  },
-  "code.subs.usage.body": {
-    "message": "사용량 › 한도에서 각 계정, 로그인한 머신, 세션별·주간 구간별 남은 양을 확인할 수 있어요.",
-    "description": "Card text in the paid plans section; \"Usage › Limits\" is a menu path in the app, translate it as the app labels it"
-  },
-  "code.more.harnesses.title": {
-    "message": "에이전트마다 자체 하네스로",
-    "description": "Card title in the \"more\" section"
-  },
-  "code.more.harnesses.body": {
-    "message": "Claude Code, Codex, GitHub Copilot, Cursor, OpenCode 등이 제작사가 배포한 그대로, 내 로그인으로 실행돼요.",
-    "description": "Card text in the \"more\" section. Keep product names in English"
-  },
   "code.more.harnesses.link": {
     "message": "하네스와 모델",
     "description": "Card link to the harnesses docs"
   },
-  "code.more.coordinator.title": {
-    "message": "큰 작업은 코디네이터에게",
-    "description": "Card title in the \"more\" section"
-  },
-  "code.more.coordinator.body": {
-    "message": "목표 하나를 주세요. 코디네이터가 여러 에이전트의 워커 스레드로 나누고, 결과는 직접 검토해요.",
-    "description": "Card text in the \"more\" section"
-  },
   "code.more.coordinator.link": {
     "message": "프로젝트 작동 방식",
     "description": "Card link to the projects docs"
-  },
-  "code.more.machines.title": {
-    "message": "내 모든 머신을 한곳에서",
-    "description": "Card title in the \"more\" section"
-  },
-  "code.more.machines.body": {
-    "message": "여분의 노트북, Windows PC, 작은 Linux 서버를 워커로 추가하세요. 각각 자기 계정으로 로그인해요.",
-    "description": "Card text in the \"more\" section. Keep product names in English"
   },
   "code.more.machines.link": {
     "message": "머신 추가",
@@ -257,23 +201,15 @@
   },
   "code.stats.threshold.label": {
     "message": "한도에 막히기 전에 SpecWithCode가 기본으로 핸드오프하는 지점",
-    "description": "Stat label after 98%. Keep product names in English"
+    "description": "Stat label after 99%. Keep product names in English"
   },
   "code.stats.threshold.note": {
     "message": "50%에서 100% 사이로 설정할 수 있어요",
-    "description": "Small note under the 98% stat"
+    "description": "Small note under the 99% stat"
   },
   "code.subs.title": {
     "message": "월 $200를 내고 계신가요? 전부 쓰세요.",
     "description": "Heading of the paid plans section"
-  },
-  "code.subs.intro": {
-    "message": "SpecWithCode는 이미 결제 중인 요금제로 에이전트를 실행하고, 로그인한 모든 머신에서 요금제 하나가 부족해지면 다른 요금제로 계속 이어가요.",
-    "description": "Intro of the paid plans section. Keep product names in English"
-  },
-  "code.subs.plans.ariaLabel": {
-    "message": "여기에 표시된 요금제",
-    "description": "Accessible label of the list of paid plans"
   },
   "code.subs.plans.claude": {
     "message": "Claude Max 및 Pro",
@@ -346,10 +282,6 @@
   "code.downloads.signing": {
     "message": "Mac 앱은 서명 및 공증이 완료됐고, Windows와 Linux 설치 프로그램은 아직 코드 서명이 되어 있지 않아요.",
     "description": "Signing status of the installers. Keep product names in English"
-  },
-  "code.more.title": {
-    "message": "필요할 때 더 많은 기능이 있어요",
-    "description": "Heading of the more section"
   },
   "code.more.agents.ariaLabel": {
     "message": "지원하는 다른 코딩 에이전트",
@@ -3932,5 +3864,405 @@
   "home.story.gate.body": {
     "message": "인크리먼트는 검사가 통과하고 두 번째 모델이 동의할 때 닫혀요. 에이전트가 끝났다고 말할 때가 아니에요.",
     "description": "Scene 4 text"
+  },
+  "code.b.nav.agents": {
+    "message": "에이전트",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.window.title": {
+    "message": "탭을 오갈 필요 없어요",
+    "description": "Benefit row on the SpecWithCode page: heading about one window for every coding agent. Keep product names in English"
+  },
+  "code.b.nav.projects": {
+    "message": "프로젝트",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.threads.title": {
+    "message": "프로젝트를 이미 아는 스레드",
+    "description": "Benefit row on the SpecWithCode page: heading about projects, the coordinator and threads. Keep product names in English"
+  },
+  "code.b.nav.aide": {
+    "message": "Aide",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.aide.title": {
+    "message": "같은 앱 안의 개인 비서",
+    "description": "Benefit row on the SpecWithCode page: heading about Aide, the personal assistant. Keep product names in English"
+  },
+  "code.b.aide.link": {
+    "message": "개인 프로젝트",
+    "description": "Link to the docs about personal projects"
+  },
+  "code.b.nav.designs": {
+    "message": "디자인",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.designs.title": {
+    "message": "디자인이 프로젝트 안에 있어요",
+    "description": "Benefit row on the SpecWithCode page: heading about the Designs tab. Keep product names in English"
+  },
+  "code.b.nav.machines": {
+    "message": "머신",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.machines.title": {
+    "message": "내 모든 머신이 같은 작업을",
+    "description": "Benefit row on the SpecWithCode page: heading about running work on several machines. Keep product names in English"
+  },
+  "code.b.nav.limits": {
+    "message": "한도",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.limits.link": {
+    "message": "메모리와 사용량",
+    "description": "Link to the docs about usage limits"
+  },
+  "code.b.nav.skills": {
+    "message": "스킬",
+    "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
+  },
+  "code.b.index.label": {
+    "message": "앱에 들어 있는 기능",
+    "description": "Accessible label of the list of links to the benefit rows"
+  },
+  "code.b.window.body": {
+    "message": "Claude Code, Codex, GitHub Copilot, Cursor, Gemini CLI 등이 내 로그인으로 나란히 실행돼요. 스레드 도중에 에이전트를 바꿔도 최근 대화를 이어받아 계속해요.",
+    "description": "Benefit row on the SpecWithCode page: text about one window for every coding agent. Keep product names in English"
+  },
+  "code.b.window.point1": {
+    "message": "로그인한 모든 에이전트를 하나의 모델 선택기로",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.window.point2": {
+    "message": "각 에이전트는 자체 도구, 승인, 로그인을 그대로 유지해요",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.threads.body": {
+    "message": "프로젝트는 목표, 지침, 메모리를 한곳에 보관해요. 코디네이터에게 목표를 주면 작업이 스레드로 나뉘고, 각 스레드는 그 컨텍스트로 시작해요. 붙여 넣을 필요도, 컨텍스트를 옮기려고 채팅을 따로 열 필요도 없어요.",
+    "description": "Benefit row on the SpecWithCode page: text about projects, the coordinator and threads. Keep product names in English"
+  },
+  "code.b.threads.point1": {
+    "message": "스레드는 확인이 필요한 것, 작업 중인 것, 해결된 것 순으로 정렬돼요",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.threads.point2": {
+    "message": "워커가 코디네이터에게 보고하고, 결과는 직접 검토해요",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.aide.body": {
+    "message": "Aide가 매일 아침 답장이 필요한 메일과 오늘 일정을 정리하고 초안까지 준비해요. 승인한 답장만 보내요. 데스크톱, iPhone, 또는 내 Telegram 봇으로 말을 걸 수 있어요.",
+    "description": "Benefit row on the SpecWithCode page: text about Aide, the personal assistant. Keep product names in English"
+  },
+  "code.b.aide.point1": {
+    "message": "허용한 Gmail, Calendar, Drive 계정을 읽어요",
+    "description": "Benefit row on the SpecWithCode page: point; Gmail, Calendar and Drive logos sit before it. Keep product names in English"
+  },
+  "code.b.aide.point2": {
+    "message": "휴대폰 앱에서 코딩 스레드도 따라가고 승인 요청에 답할 수 있어요",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.aide.fine": {
+    "message": "Aide는 내 컴퓨터에서 실행되므로 그 컴퓨터가 켜져 있는 동안에만 답해요.",
+    "description": "Benefit row on the SpecWithCode page: fine print under the Aide row. Keep product names in English"
+  },
+  "code.b.designs.body": {
+    "message": "모든 프로젝트에 디자인 탭이 있어요. 나와 에이전트가 같은 캔버스에 그리고, 파일은 저장소의 {path} 아래에 있어서 디자인이 해당 코드와 함께 움직여요.",
+    "description": "Benefit row on the SpecWithCode page: text about the Designs tab; {path} is a folder path. Keep product names in English"
+  },
+  "code.b.designs.point1": {
+    "message": "에이전트가 스레드에서 디자인을 만들고, 수정하고, 스크린샷을 찍어요",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.designs.point2": {
+    "message": "코드, 토큰 파일, Figma 데스크톱에서 가져온 변수로 디자인 시스템을 시작하세요",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.machines.body": {
+    "message": "여분의 노트북, Windows PC, Linux 서버를 추가하세요. 코디네이터가 정한 순서대로 스레드를 배치하고, 각 머신은 다른 머신이 자기 위에서 무엇을 실행할 수 있는지 설정해요.",
+    "description": "Benefit row on the SpecWithCode page: text about running work on several machines. Keep product names in English"
+  },
+  "code.b.machines.point1": {
+    "message": "같은 SpecWithCode Connect 계정의 머신은 클릭 한 번으로 참여해요",
+    "description": "Benefit row on the SpecWithCode page: point; SpecWithCode Connect is a product name. Keep product names in English"
+  },
+  "code.b.machines.point2": {
+    "message": "머신의 권한 설정이 그 머신으로 보낸 모든 스레드의 상한이 돼요",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.machines.point3": {
+    "message": "Git이나 파일 복사로 프로젝트를 다른 머신에 넘길 수 있어요",
+    "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
+  },
+  "code.b.limits.body": {
+    "message": "사용량 › 한도에서 모든 계정, 로그인한 머신, 초기화 시점을 볼 수 있어요. 제공업체가 한도에 닿으면 프로젝트가 다른 제공업체로 전환하거나, 전환을 제안하거나, 초기화를 기다려요. 어느 쪽으로 할지는 직접 정해요.",
+    "description": "Benefit row on the SpecWithCode page: text about usage limits; 'Usage › Limits' is a menu path in the app, translate it as the app labels it. Keep product names in English"
+  },
+  "code.b.limits.point1": {
+    "message": "기본값은 99% 사용 시 전환이에요. 50%에서 100% 사이로 정할 수 있어요.",
+    "description": "Benefit row on the SpecWithCode page: point; 99% is the default, 50% to 100% the allowed range. Keep product names in English"
+  },
+  "code.b.skills.body": {
+    "message": "스킬은 같은 모델이라도 에이전트가 하는 일을 바꾸기 때문에 각 에이전트가 어떤 스킬을 볼지 직접 고를 수 있어요. 설정 › 스킬에는 머신에서 모든 에이전트가 찾을 수 있는 스킬이 나와요. 에이전트 하나에서만 끄거나, 버전을 고정하거나, 여러 머신에 설치할 수 있어요.",
+    "description": "Benefit row on the SpecWithCode page: text about skills; Settings › Skills is a menu path in the app. Keep product names in English"
+  },
+  "code.b.skills.point1": {
+    "message": "앱에서 스킬을 작성해 {link}에 게시하고 검토를 받으세요",
+    "description": "Benefit row on the SpecWithCode page: point; {link} links to the Verified Skill registry. Keep product names in English"
+  },
+  "code.b.skills.point2": {
+    "message": "스킬을 쓰기 전에 {link}에서 내 작업으로 먼저 시험해 보세요",
+    "description": "Benefit row on the SpecWithCode page: point; {link} links to the Skill Studio docs. Keep product names in English"
+  },
+  "code.b.skills.fine": {
+    "message": "버전 고정과 다른 머신에 설치할 때는 무료 vskill CLI를 써요. {command}",
+    "description": "Benefit row on the SpecWithCode page: fine print under the skills row; vskill is a command-line tool and {command} is its install command. Keep product names in English"
+  },
+  "code.b.title": {
+    "message": "앱은 하나면 충분해요",
+    "description": "Heading of the benefits section on the SpecWithCode page"
+  },
+  "code.b.intro": {
+    "message": "코딩 에이전트, 개인 비서, 디자인, 스킬, 내 모든 머신이 하나의 창과 하나의 휴대폰 앱에 모여요.",
+    "description": "Intro of the benefits section on the SpecWithCode page"
+  },
+  "code.b.window.label": {
+    "message": "SpecWithCode의 스레드 하나예요. 모델 선택기에 Claude Code, Codex, GitHub Copilot, Gemini CLI가 나열되고, 고른 모델로 스레드가 이어져요.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the model picker drawing. Keep product names in English"
+  },
+  "code.b.window.thread": {
+    "message": "체크아웃 반올림 오류 수정",
+    "description": "Benefit diagram on the SpecWithCode page: example thread title"
+  },
+  "code.b.window.ask": {
+    "message": "일부 주문에서 합계가 1센트 차이 나요.",
+    "description": "Benefit diagram on the SpecWithCode page: example message from the person"
+  },
+  "code.b.window.answer": {
+    "message": "원인을 찾았어요. 세금 줄이 할인보다 먼저 반올림돼요.",
+    "description": "Benefit diagram on the SpecWithCode page: example answer from the agent"
+  },
+  "code.b.window.continued": {
+    "message": "최근 대화를 이어받아 {agent}에서 계속",
+    "description": "Benefit diagram on the SpecWithCode page: line shown when a thread moves to another agent; {agent} is a product name"
+  },
+  "code.b.window.search": {
+    "message": "모델 또는 제공업체 검색",
+    "description": "Benefit diagram on the SpecWithCode page: placeholder of the model picker search box, as the app labels it"
+  },
+  "code.b.window.all": {
+    "message": "전체",
+    "description": "Benefit diagram on the SpecWithCode page: model picker filter chip"
+  },
+  "code.b.window.favorites": {
+    "message": "즐겨찾기",
+    "description": "Benefit diagram on the SpecWithCode page: model picker filter chip"
+  },
+  "code.b.threads.working": {
+    "message": "작업 중",
+    "description": "Benefit diagram on the SpecWithCode page: thread status"
+  },
+  "code.b.threads.needs": {
+    "message": "확인 필요",
+    "description": "Benefit diagram on the SpecWithCode page: thread status: waiting for the person"
+  },
+  "code.b.threads.done": {
+    "message": "해결됨",
+    "description": "Benefit diagram on the SpecWithCode page: thread status, as the app labels a finished thread"
+  },
+  "code.b.threads.task.payments": {
+    "message": "결제 API",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.threads.task.checkout": {
+    "message": "체크아웃 화면",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.threads.task.tests": {
+    "message": "테스트와 CI",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.threads.label": {
+    "message": "프로젝트가 없으면 사이드바가 같은 프로젝트 컨텍스트 채팅으로 채워져요. SpecWithCode 프로젝트에서는 목표, 지침, 메모리가 한 번만 저장되어 스레드 세 개에 전달되고, 스레드는 작업 중, 확인 필요, 해결됨으로 표시돼요.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the project threads drawing"
+  },
+  "code.b.threads.before": {
+    "message": "컨텍스트를 채팅에 보관",
+    "description": "Benefit diagram on the SpecWithCode page: column title: the old way"
+  },
+  "code.b.threads.contextChat": {
+    "message": "프로젝트 컨텍스트 (5848bdc2…)",
+    "description": "Benefit diagram on the SpecWithCode page: a repeated chat title in another tool’s sidebar; keep the id as written"
+  },
+  "code.b.threads.after": {
+    "message": "프로젝트에 한 번만 보관",
+    "description": "Benefit diagram on the SpecWithCode page: column title: the SpecWithCode way"
+  },
+  "code.b.machines.coordinator": {
+    "message": "코디네이터",
+    "description": "Benefit diagram on the SpecWithCode page: role of the main machine"
+  },
+  "code.b.threads.context": {
+    "message": "목표 · 지침 · 메모리",
+    "description": "Benefit diagram on the SpecWithCode page: the three things a project keeps for every thread"
+  },
+  "code.b.aide.label": {
+    "message": "휴대폰의 Aide예요. 오전 8시 브리핑에 답장이 필요한 메일 2통과 오늘 일정 3개가 나오고, 이어서 보내기와 보내지 않기 버튼이 있는 초안이 보여요. 보내기를 고르기 전에는 아무것도 전송되지 않아요.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the personal assistant drawing"
+  },
+  "code.b.aide.briefing": {
+    "message": "선제 브리핑",
+    "description": "Benefit diagram on the SpecWithCode page: name of the daily briefing routine, as the app labels it"
+  },
+  "code.b.aide.replies": {
+    "message": "답장 필요 · 2",
+    "description": "Benefit diagram on the SpecWithCode page: briefing line: two mails need a reply"
+  },
+  "code.b.aide.today": {
+    "message": "오늘 · 일정 3개",
+    "description": "Benefit diagram on the SpecWithCode page: briefing line: three calendar events today"
+  },
+  "code.b.aide.to": {
+    "message": "받는 사람 Dana · Re: 10월 청구서",
+    "description": "Benefit diagram on the SpecWithCode page: recipient and subject of an example reply draft"
+  },
+  "code.b.aide.draft": {
+    "message": "Dana님, 감사합니다. 오늘 아침에 결제했고 영수증을 첨부합니다.",
+    "description": "Benefit diagram on the SpecWithCode page: example reply draft text"
+  },
+  "code.b.aide.sent": {
+    "message": "내 Gmail에서 보냈어요",
+    "description": "Benefit diagram on the SpecWithCode page: shown after the person chose Send"
+  },
+  "code.b.aide.send": {
+    "message": "보내기",
+    "description": "Benefit diagram on the SpecWithCode page: reply card button, as the app labels it"
+  },
+  "code.b.aide.dontSend": {
+    "message": "보내지 않기",
+    "description": "Benefit diagram on the SpecWithCode page: reply card button, as the app labels it"
+  },
+  "code.b.designs.tab.threads": {
+    "message": "스레드",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.tab.designs": {
+    "message": "디자인",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.tab.library": {
+    "message": "라이브러리",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.tab.prs": {
+    "message": "PR",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it: pull requests"
+  },
+  "code.b.designs.tab.routines": {
+    "message": "루틴",
+    "description": "Benefit diagram on the SpecWithCode page: project tab, as the app labels it"
+  },
+  "code.b.designs.label": {
+    "message": "프로젝트의 디자인 탭이에요. 에이전트가 Checkout이라는 이름의 1440×1024 프레임에 헤더, 폼, 버튼을 추가해요. 파일은 저장소의 .specweave/design/ 아래에 저장되고 PNG, SVG, HTML, PDF, PPTX로 내보낼 수 있어요.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the designs drawing. Keep file paths and formats as written"
+  },
+  "code.b.machines.linux": {
+    "message": "Linux 서버",
+    "description": "Benefit diagram on the SpecWithCode page: machine name"
+  },
+  "code.b.machines.windows": {
+    "message": "Windows PC",
+    "description": "Benefit diagram on the SpecWithCode page: machine name"
+  },
+  "code.b.machines.access.full": {
+    "message": "전체 권한",
+    "description": "Benefit diagram on the SpecWithCode page: permission mode, as the app labels it"
+  },
+  "code.b.machines.access.auto": {
+    "message": "자동",
+    "description": "Benefit diagram on the SpecWithCode page: permission mode, as the app labels it"
+  },
+  "code.b.machines.access.supervised": {
+    "message": "감독형",
+    "description": "Benefit diagram on the SpecWithCode page: permission mode, as the app labels it"
+  },
+  "code.b.machines.task.emails": {
+    "message": "이메일 템플릿",
+    "description": "Benefit diagram on the SpecWithCode page: example thread name"
+  },
+  "code.b.machines.label": {
+    "message": "머신 세 대예요. 코디네이터를 실행하는 Mac, 워커 스레드를 실행하는 Linux 서버와 Windows PC예요. 각 머신에는 자체 권한 설정이 있어요. Linux 서버가 오프라인인 동안 새 스레드는 그 서버를 건너뛰고 Windows PC에서 시작돼요.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the machines drawing"
+  },
+  "code.b.machines.order": {
+    "message": "워커용 머신",
+    "description": "Benefit diagram on the SpecWithCode page: project setting, as the app labels it"
+  },
+  "code.b.machines.offline": {
+    "message": "오프라인 · 건너뜀",
+    "description": "Benefit diagram on the SpecWithCode page: a machine that is offline is skipped when placing threads"
+  },
+  "code.b.limits.switch": {
+    "message": "자동으로 전환",
+    "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
+  },
+  "code.b.limits.offer": {
+    "message": "대체 수단 제안",
+    "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
+  },
+  "code.b.limits.wait": {
+    "message": "초기화까지 대기",
+    "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
+  },
+  "code.b.limits.label": {
+    "message": "계정 세 개의 사용 한도예요. Claude Max, ChatGPT Pro, Claude Pro이에요. Claude Max가 99% 사용에 이르면 스레드는 Codex에서 이어져요. 규칙은 자동으로 전환으로 설정되어 있고, 다른 선택지는 대체 수단 제안과 초기화까지 대기예요.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English"
+  },
+  "code.b.limits.title": {
+    "message": "사용량 › 한도",
+    "description": "Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it"
+  },
+  "code.b.limits.continued": {
+    "message": "Claude Max가 99%예요. 이 스레드는 Codex에서 이어졌어요.",
+    "description": "Benefit diagram on the SpecWithCode page: line shown when a thread moves to the fallback agent. Keep product names in English"
+  },
+  "code.b.limits.rule": {
+    "message": "제공업체 한도에 도달했을 때",
+    "description": "Benefit diagram on the SpecWithCode page: project setting, as the app labels it"
+  },
+  "code.b.skills.label": {
+    "message": "설정, 스킬이에요. 스킬 세 개의 표에 각 스킬을 볼 수 있는 에이전트, 버전, 티어가 나와요. 스킬 하나는 Codex에서만 꺼져 있다가 버전 1.1.0에서 1.2.0으로 업데이트되어 머신 세 대에 설치돼요.",
+    "description": "Benefit diagram on the SpecWithCode page: accessible description of the skills drawing"
+  },
+  "code.b.skills.title": {
+    "message": "설정 › 스킬",
+    "description": "Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it"
+  },
+  "code.b.skills.col.skill": {
+    "message": "스킬",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.col.providers": {
+    "message": "제공업체",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.col.version": {
+    "message": "버전",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.col.tier": {
+    "message": "티어",
+    "description": "Benefit diagram on the SpecWithCode page: table column, as the app labels it"
+  },
+  "code.b.skills.local": {
+    "message": "로컬",
+    "description": "Benefit diagram on the SpecWithCode page: version cell of a skill that was not installed from the registry"
+  },
+  "code.b.skills.push": {
+    "message": "여러 곳에 설치…",
+    "description": "Benefit diagram on the SpecWithCode page: button in Settings > Skills, as the app labels it"
+  },
+  "code.b.skills.heading": {
+    "message": "스킬을 한곳에서 관리",
+    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
   }
 }

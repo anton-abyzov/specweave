@@ -21,14 +21,14 @@ import styles from './FlowStage.module.css';
   - Plans you pay for: the same picture on Claude Max (Opus 5.5), ChatGPT Pro and GitHub Copilot.
     When Claude Max nears its limit, the next task moves to a plan with room. No thread is handed
     from Claude Code to Codex here (not retested), and no provider has more than one account.
-  The handoff point is the default, 98%. Task text is illustrative; there are no dated "real run"
+  The handoff point is the default, 99% (98% before 1.0.262). Task text is illustrative; there are no dated "real run"
   labels on this drawing. The server render shows the free scene's finished state. The scene clock
   and the beaded connectors run under prefers-reduced-motion too (the picture is the explanation;
   without them it reads as broken); only the decorative float, breathe, sweep and shimmer stop.
 */
 
 export type Flow = 'free' | 'subs';
-const THRESHOLD = 98;
+const THRESHOLD = 99;
 type MachineId = 'mac' | 'windows' | 'linux';
 
 const MACHINES: Record<MachineId, {name: string; icon: typeof Laptop}> = {

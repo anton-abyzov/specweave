@@ -159,4 +159,36 @@ describe('SpecWithCode landing page', () => {
       expect(JSON.stringify(msgs)).not.toMatch(/\b367 /);
     }
   });
+
+  it('keeps the benefit rows inside what the app does', () => {
+    const files = ['Benefits.tsx', 'visuals.tsx', 'parts.tsx'].map(f => read(`components/code/benefits/${f}`));
+    const all = files.join('\n');
+    expect(all).not.toMatch(/T3 Code|t3code|\bfork(ed)? of\b/i);
+    expect(all).not.toMatch(/free Claude|full history|whole history/i);
+    expect(all.match(/(message: '[^']*'|>[^<>{}]+<\/Translate>)/g)?.join('') ?? '').not.toContain('—');
+    // Extraction only sees literal ids, so no wrapper may build one.
+    expect(all).not.toMatch(/translate\(\{id: [^']/);
+    // A limit hands a thread to another agent, never to another machine, and a finished thread is Resolved.
+    expect(all).toMatch(/a new thread skips it and starts on the Windows PC/);
+    expect(all).toMatch(/message: 'Resolved'/);
+    expect(all).not.toMatch(/name="figma"/);
+    const threshold = read('components/code/FlowStage.tsx').match(/const THRESHOLD = (\d+);/)?.[1];
+    expect(threshold).toBe('99');
+    expect(page).toContain('<Benefits />');
+  });
+
+  it('carries every benefit string in every locale', () => {
+    const src = ['Benefits.tsx', 'visuals.tsx'].map(f => read(`components/code/benefits/${f}`)).join('\n');
+    const ids = [...new Set([...src.matchAll(/id[:=] ?['"](code\.b\.[\w.]+)['"]/g)].map(m => m[1]))];
+    expect(ids.length).toBeGreaterThan(90);
+    const pairs = [...src.matchAll(/id: '(code\.b\.[\w.]+)', message: '((?:[^'\\]|\\.)*)'/g)];
+    const seen = new Map<string, string>();
+    for (const [, id, message] of pairs) { expect(seen.get(id) ?? message, id).toBe(message); seen.set(id, message); }
+    for (const loc of ['de', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-CN']) {
+      const msgs = JSON.parse(read(`../i18n/${loc}/code.json`));
+      expect(ids.filter(id => !msgs[id]?.message), loc).toEqual([]);
+      expect(Object.keys(msgs).filter(k => /^code\.(subs\.(parallel|machines|handoff|usage)\.|subs\.intro$|subs\.plans\.ariaLabel$|more\.(harnesses|coordinator|machines)\.(title|body)$|more\.title$)/.test(k)), loc).toEqual([]);
+      expect(ids.map(id => msgs[id].message).join('')).not.toContain('—');
+    }
+  });
 });
