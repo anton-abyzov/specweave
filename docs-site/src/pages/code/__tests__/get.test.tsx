@@ -37,6 +37,11 @@ describe('phoneStoreFor', () => {
     expect(phoneStoreFor(MAC)).toBeNull();
   });
 
+  it('sends an iPod and an Android tablet to their stores', () => {
+    expect(phoneStoreFor(IPHONE.replace('iPhone;', 'iPod touch;'), 5)).toBe('ios');
+    expect(phoneStoreFor(ANDROID.replace(' Mobile Safari', ' Safari'), 10)).toBe('android');
+  });
+
   it('sends a computer nowhere', () => {
     expect(phoneStoreFor(WINDOWS, 0)).toBeNull();
     // A Windows laptop with a touch screen is still a computer.
@@ -66,6 +71,9 @@ describe('the get page', () => {
     render(<CodeGet />);
     expect(openPhoneStore).not.toHaveBeenCalled();
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent('Get SpecWithCode on your phone');
+    // Nothing is opening, so nothing is announced.
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.getByText(/Open this page on your iPhone or Android phone/)).toBeInTheDocument();
     expect(screen.getByRole('link', {name: /App Store/})).toHaveAttribute('href', SPECWITHCODE_MOBILE.ios.url);
     expect(screen.getByRole('link', {name: /Google Play/})).toHaveAttribute('href', SPECWITHCODE_MOBILE.android.url);
     expect(screen.getByRole('link', {name: 'Download SpecWithCode for Mac, Windows and Linux'})).toHaveAttribute('href', '/code/download/');

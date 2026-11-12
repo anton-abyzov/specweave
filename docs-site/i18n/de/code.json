@@ -3814,11 +3814,11 @@
     "description": "Title of the page that sends a phone to its app store. Keep product names in English"
   },
   "code.get.meta.description": {
-    "message": "Holen Sie sich die SpecWithCode-App für Ihr iPhone oder Android-Telefon. Öffnen Sie diese Seite auf dem Telefon, und sie führt Sie zum App Store oder zu Google Play.",
+    "message": "Hol dir die SpecWithCode-App für dein iPhone oder Android-Telefon. Öffne diese Seite auf dem Telefon, dann führt sie dich zum App Store oder zu Google Play.",
     "description": "Meta description of the page that sends a phone to its app store. Keep product and store names in English"
   },
   "code.get.title": {
-    "message": "SpecWithCode auf Ihr Telefon holen",
+    "message": "SpecWithCode auf dein Telefon holen",
     "description": "Headline of the page that sends a phone to its app store. Keep product names in English"
   },
   "code.get.opening.ios": {
@@ -3830,7 +3830,7 @@
     "description": "Shown on an Android phone while Google Play opens. Keep the store name in English"
   },
   "code.get.lead": {
-    "message": "Öffnen Sie diese Seite auf Ihrem iPhone oder Android-Telefon, und sie führt Sie zum richtigen Store. Melden Sie sich dann mit demselben Konto an wie auf Ihrem Computer, und Ihr Computer erscheint von selbst.",
+    "message": "Öffne diese Seite auf deinem iPhone oder Android-Telefon, dann führt sie dich zum richtigen Store. Melde dich mit demselben Konto an wie auf deinem Computer, dann erscheint er von selbst.",
     "description": "Lead of the page that sends a phone to its app store"
   },
   "code.get.desktop": {

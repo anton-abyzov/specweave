@@ -13,6 +13,9 @@ import styles from '../code.module.css';
   A phone that opens it goes straight to its own store; any other browser sees both store cards.
 */
 
+const SITE = 'https://spec-weave.com';
+const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
+
 function pageTitle(): string {
   return translate({id: 'code.get.meta.title', message: 'Get SpecWithCode for iPhone and Android', description: 'Title of the page that sends a phone to its app store. Keep product names in English'});
 }
@@ -38,6 +41,12 @@ export default function CodeGet() {
       <meta property="og:title" content={TITLE} />
       <meta name="twitter:title" content={TITLE} />
       <meta property="og:site_name" content="SpecWithCode" />
+      <meta property="og:image" content={OG_IMAGE} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta name="twitter:image" content={OG_IMAGE} />
+      {/* A way to a store, not a page to find: a crawler with a phone's user agent would follow it there. */}
+      <meta name="robots" content="noindex, follow" />
     </Head>
     <main className={clsx('wv-root', styles.page)}>
       <header className={clsx(styles.shell, styles.hero)}>
@@ -47,11 +56,14 @@ export default function CodeGet() {
             <span className={styles.productName}><Link to="/code/">SpecWithCode</Link></span>
           </p>
           <h1><Translate id="code.get.title" description="Headline of the page that sends a phone to its app store. Keep product names in English">Get SpecWithCode on your phone</Translate></h1>
-          <p className={styles.lead} role="status">
-            {opening === 'ios' && <Translate id="code.get.opening.ios" description="Shown on an iPhone while the App Store opens. Keep the store name in English">Opening the App Store…</Translate>}
-            {opening === 'android' && <Translate id="code.get.opening.android" description="Shown on an Android phone while Google Play opens. Keep the store name in English">Opening Google Play…</Translate>}
-            {opening === null && <Translate id="code.get.lead" description="Lead of the page that sends a phone to its app store">Open this page on your iPhone or Android phone and it takes you to the right store. Then sign in with the same account as on your computer, and your computer shows up by itself.</Translate>}
-          </p>
+          {/* Only the short "Opening" line is announced; the lead is read as ordinary text. */}
+          {opening === null
+            ? <p className={styles.lead}><Translate id="code.get.lead" description="Lead of the page that sends a phone to its app store">Open this page on your iPhone or Android phone and it takes you to the right store. Then sign in with the same account as on your computer, and your computer shows up by itself.</Translate></p>
+            : <p className={styles.lead} role="status">
+              {opening === 'ios'
+                ? <Translate id="code.get.opening.ios" description="Shown on an iPhone while the App Store opens. Keep the store name in English">Opening the App Store…</Translate>
+                : <Translate id="code.get.opening.android" description="Shown on an Android phone while Google Play opens. Keep the store name in English">Opening Google Play…</Translate>}
+            </p>}
           <MobileStores placement="get-page" align="center" kicker={false} />
           <p style={{marginTop: 'var(--wv-space-6)'}}>
             <Translate

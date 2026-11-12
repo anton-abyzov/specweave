@@ -244,6 +244,8 @@ const config: Config = {
           // Tag, archive and author lists are thin pages, so they stay out too.
           ignorePatterns: [
             '/search', '/search/**', '/docs/tags/**', '/blog/tags/**', '/blog/archive/**', '/blog/authors/**',
+            // The page that sends a phone to its app store is noindex, in every language.
+            '/code/get/', '/*/code/get/',
             // Untranslated sections (docs, blog, legal, tutorial guides) canonicalize to English.
             ...TRANSLATED_LOCALES.flatMap(englishOnlySitemapPatterns),
           ],
