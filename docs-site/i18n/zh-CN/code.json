@@ -4214,7 +4214,7 @@
     "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
   },
   "code.b.limits.label": {
-    "message": "三个账号的用量上限：Claude Max、ChatGPT Pro 和 GitHub Copilot。Claude Max 用到 99% 时，线程转到 Codex 继续。规则设为“自动切换”；其他选项是“提供备用方案”和“等待额度重置”。",
+    "message": "三个账号的用量上限：Claude Max、ChatGPT Pro 和 Claude Pro。Claude Max 用到 99% 时，线程转到 Codex 继续。规则设为“自动切换”；其他选项是“提供备用方案”和“等待额度重置”。",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English"
   },
   "code.b.limits.title": {
@@ -4234,8 +4234,8 @@
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the skills drawing"
   },
   "code.b.skills.title": {
-    "message": "技能，集中管理",
-    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+    "message": "设置 › 技能",
+    "description": "Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it"
   },
   "code.b.skills.col.skill": {
     "message": "技能",
@@ -4260,5 +4260,9 @@
   "code.b.skills.push": {
     "message": "安装到多台…",
     "description": "Benefit diagram on the SpecWithCode page: button in Settings > Skills, as the app labels it"
+  },
+  "code.b.skills.heading": {
+    "message": "技能，集中管理",
+    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
   }
 }

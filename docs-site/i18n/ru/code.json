@@ -4214,7 +4214,7 @@
     "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
   },
   "code.b.limits.label": {
-    "message": "Лимиты для трёх аккаунтов: Claude Max, ChatGPT Pro и GitHub Copilot. Когда Claude Max израсходован на 99%, тред продолжается на Codex. Выбрано правило «Переключаться автоматически»; другие варианты: «Предлагать запасной вариант» и «Ждать сброса лимита».",
+    "message": "Лимиты для трёх аккаунтов: Claude Max, ChatGPT Pro и Claude Pro. Когда Claude Max израсходован на 99%, тред продолжается на Codex. Выбрано правило «Переключаться автоматически»; другие варианты: «Предлагать запасной вариант» и «Ждать сброса лимита».",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English"
   },
   "code.b.limits.title": {
@@ -4234,8 +4234,8 @@
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the skills drawing"
   },
   "code.b.skills.title": {
-    "message": "Навыки под управлением в одном месте",
-    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+    "message": "Settings › Skills",
+    "description": "Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it"
   },
   "code.b.skills.col.skill": {
     "message": "Навык",
@@ -4260,5 +4260,9 @@
   "code.b.skills.push": {
     "message": "Установить на нескольких…",
     "description": "Benefit diagram on the SpecWithCode page: button in Settings > Skills, as the app labels it"
+  },
+  "code.b.skills.heading": {
+    "message": "Все навыки в одном месте",
+    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
   }
 }

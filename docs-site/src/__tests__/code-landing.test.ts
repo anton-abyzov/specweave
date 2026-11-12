@@ -181,6 +181,9 @@ describe('SpecWithCode landing page', () => {
     const src = ['Benefits.tsx', 'visuals.tsx'].map(f => read(`components/code/benefits/${f}`)).join('\n');
     const ids = [...new Set([...src.matchAll(/id[:=] ?['"](code\.b\.[\w.]+)['"]/g)].map(m => m[1]))];
     expect(ids.length).toBeGreaterThan(90);
+    const pairs = [...src.matchAll(/id: '(code\.b\.[\w.]+)', message: '((?:[^'\\]|\\.)*)'/g)];
+    const seen = new Map<string, string>();
+    for (const [, id, message] of pairs) { expect(seen.get(id) ?? message, id).toBe(message); seen.set(id, message); }
     for (const loc of ['de', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-CN']) {
       const msgs = JSON.parse(read(`../i18n/${loc}/code.json`));
       expect(ids.filter(id => !msgs[id]?.message), loc).toEqual([]);

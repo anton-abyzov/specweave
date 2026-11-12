@@ -4214,7 +4214,7 @@
     "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
   },
   "code.b.limits.label": {
-    "message": "Limites d’usage de trois comptes : Claude Max, ChatGPT Pro et GitHub Copilot. Quand Claude Max atteint 99 % d’utilisation, le thread continue sur Codex. La règle est sur Basculer automatiquement ; les autres choix sont Proposer le secours et Attendre la réinitialisation.",
+    "message": "Limites d’usage de trois comptes : Claude Max, ChatGPT Pro et Claude Pro. Quand Claude Max atteint 99 % d’utilisation, le thread continue sur Codex. La règle est sur Basculer automatiquement ; les autres choix sont Proposer le secours et Attendre la réinitialisation.",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English"
   },
   "code.b.limits.title": {
@@ -4234,8 +4234,8 @@
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the skills drawing"
   },
   "code.b.skills.title": {
-    "message": "Les skills, gérées au même endroit",
-    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+    "message": "Réglages › Skills",
+    "description": "Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it"
   },
   "code.b.skills.col.skill": {
     "message": "Skill",
@@ -4260,5 +4260,9 @@
   "code.b.skills.push": {
     "message": "Installer sur plusieurs…",
     "description": "Benefit diagram on the SpecWithCode page: button in Settings > Skills, as the app labels it"
+  },
+  "code.b.skills.heading": {
+    "message": "Les skills, gérées au même endroit",
+    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
   }
 }

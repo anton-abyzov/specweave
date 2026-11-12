@@ -4214,7 +4214,7 @@
     "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
   },
   "code.b.limits.label": {
-    "message": "3つのアカウント(Claude Max、ChatGPT Pro、GitHub Copilot)の使用上限。Claude Maxの使用量が99%に達すると、スレッドはCodexで続行されます。ルールは「自動で切り替える」に設定されており、ほかの選択肢は「代替を提案する」と「リセットを待つ」です。",
+    "message": "3つのアカウント(Claude Max、ChatGPT Pro、Claude Pro)の使用上限。Claude Maxの使用量が99%に達すると、スレッドはCodexで続行されます。ルールは「自動で切り替える」に設定されており、ほかの選択肢は「代替を提案する」と「リセットを待つ」です。",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English"
   },
   "code.b.limits.title": {
@@ -4234,8 +4234,8 @@
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the skills drawing"
   },
   "code.b.skills.title": {
-    "message": "スキルを1か所で管理",
-    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+    "message": "設定 › スキル",
+    "description": "Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it"
   },
   "code.b.skills.col.skill": {
     "message": "スキル",
@@ -4260,5 +4260,9 @@
   "code.b.skills.push": {
     "message": "複数にインストール…",
     "description": "Benefit diagram on the SpecWithCode page: button in Settings > Skills, as the app labels it"
+  },
+  "code.b.skills.heading": {
+    "message": "スキルを1か所で管理",
+    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
   }
 }

@@ -167,7 +167,7 @@ const FLEET: {os: Os; name: string; access: string}[] = [
 ];
 
 export function Machines() {
-  const [ref, step] = useStep<HTMLDivElement>(3, 0, 2800);
+  const [ref, step] = useStep<HTMLDivElement>(3, 2, 2800);
   // Step 0: the first machine in the order takes a thread. Step 1: it goes offline. Step 2: a new thread skips it and starts on the next machine.
   // A running thread never moves by itself, so the first thread stays where it started.
   const offline = step >= 1;
@@ -205,7 +205,7 @@ export function Machines() {
 const ACCOUNTS = [
   {mark: 'claude', plan: 'Claude Max', used: [72, 99, 99]},
   {mark: 'openai', plan: 'ChatGPT Pro', used: [41, 44, 58]},
-  {mark: 'copilot', plan: 'GitHub Copilot', used: [18, 20, 23]},
+  {mark: 'claude', plan: 'Claude Pro', used: [18, 20, 23]},
 ];
 
 export function Limits() {
@@ -215,7 +215,7 @@ export function Limits() {
     translate({id: 'code.b.limits.offer', message: 'Offer the fallback', description: 'Benefit diagram on the SpecWithCode page: choice under "When a provider runs out", as the app labels it'}),
     translate({id: 'code.b.limits.wait', message: 'Wait for the reset', description: 'Benefit diagram on the SpecWithCode page: choice under "When a provider runs out", as the app labels it'}),
   ];
-  return <Stage ref={ref} label={translate({id: 'code.b.limits.label', message: 'Usage limits for three accounts: Claude Max, ChatGPT Pro and GitHub Copilot. When Claude Max reaches 99% used, the thread continues on Codex. The rule is set to Switch automatically; the other choices are Offer the fallback and Wait for the reset.', description: 'Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English'})}>
+  return <Stage ref={ref} label={translate({id: 'code.b.limits.label', message: 'Usage limits for three accounts: Claude Max, ChatGPT Pro and Claude Pro. When Claude Max reaches 99% used, the thread continues on Codex. The rule is set to Switch automatically; the other choices are Offer the fallback and Wait for the reset.', description: 'Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English'})}>
     <p className={styles.colTitle}>{translate({id: 'code.b.limits.title', message: 'Usage › Limits', description: 'Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it'})}</p>
     <ul className={styles.meters}>
       {ACCOUNTS.map(a => {

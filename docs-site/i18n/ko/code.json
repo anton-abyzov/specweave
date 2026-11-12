@@ -4214,7 +4214,7 @@
     "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
   },
   "code.b.limits.label": {
-    "message": "계정 세 개의 사용 한도예요. Claude Max, ChatGPT Pro, GitHub Copilot이에요. Claude Max가 99% 사용에 이르면 스레드는 Codex에서 이어져요. 규칙은 자동으로 전환으로 설정되어 있고, 다른 선택지는 대체 수단 제안과 초기화까지 대기예요.",
+    "message": "계정 세 개의 사용 한도예요. Claude Max, ChatGPT Pro, Claude Pro이에요. Claude Max가 99% 사용에 이르면 스레드는 Codex에서 이어져요. 규칙은 자동으로 전환으로 설정되어 있고, 다른 선택지는 대체 수단 제안과 초기화까지 대기예요.",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English"
   },
   "code.b.limits.title": {
@@ -4234,8 +4234,8 @@
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the skills drawing"
   },
   "code.b.skills.title": {
-    "message": "스킬을 한곳에서 관리",
-    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+    "message": "설정 › 스킬",
+    "description": "Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it"
   },
   "code.b.skills.col.skill": {
     "message": "스킬",
@@ -4260,5 +4260,9 @@
   "code.b.skills.push": {
     "message": "여러 곳에 설치…",
     "description": "Benefit diagram on the SpecWithCode page: button in Settings > Skills, as the app labels it"
+  },
+  "code.b.skills.heading": {
+    "message": "스킬을 한곳에서 관리",
+    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
   }
 }

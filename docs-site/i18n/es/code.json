@@ -3966,7 +3966,7 @@
     "description": "Benefit row on the SpecWithCode page: fine print under the Aide row. Keep product names in English"
   },
   "code.b.designs.body": {
-    "message": "Cada proyecto tiene una pestaña Diseños. Tú y tus agentes dibujáis en el mismo lienzo, y los archivos están en el repositorio en {path}, así que un diseño viaja con el código al que pertenece.",
+    "message": "Cada proyecto tiene una pestaña Diseños. Tus agentes y tú dibujan en el mismo lienzo, y los archivos están en el repositorio en {path}, así que un diseño viaja con el código al que pertenece.",
     "description": "Benefit row on the SpecWithCode page: text about the Designs tab; {path} is a folder path. Keep product names in English"
   },
   "code.b.designs.point1": {
@@ -4214,7 +4214,7 @@
     "description": "Benefit diagram on the SpecWithCode page: choice under \"When a provider runs out\", as the app labels it"
   },
   "code.b.limits.label": {
-    "message": "Límites de uso de tres cuentas: Claude Max, ChatGPT Pro y GitHub Copilot. Cuando Claude Max llega al 99 % de uso, el hilo continúa en Codex. La regla está en Cambiar automáticamente; las otras opciones son Ofrecer el respaldo y Esperar al reinicio.",
+    "message": "Límites de uso de tres cuentas: Claude Max, ChatGPT Pro y Claude Pro. Cuando Claude Max llega al 99 % de uso, el hilo continúa en Codex. La regla está en Cambiar automáticamente; las otras opciones son Ofrecer el respaldo y Esperar al reinicio.",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the usage limits drawing. Keep product names in English"
   },
   "code.b.limits.title": {
@@ -4234,8 +4234,8 @@
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the skills drawing"
   },
   "code.b.skills.title": {
-    "message": "Skills, gestionadas en un solo lugar",
-    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+    "message": "Settings › Skills",
+    "description": "Benefit diagram on the SpecWithCode page: menu path in the app; translate it as the app labels it"
   },
   "code.b.skills.col.skill": {
     "message": "Skill",
@@ -4260,5 +4260,9 @@
   "code.b.skills.push": {
     "message": "Instalar en varias…",
     "description": "Benefit diagram on the SpecWithCode page: button in Settings > Skills, as the app labels it"
+  },
+  "code.b.skills.heading": {
+    "message": "Skills, gestionadas en un solo lugar",
+    "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
   }
 }

@@ -110,7 +110,6 @@ function rows(): Row[] {
         <span className={styles.plans}>
           <span><Logo name="claude" size={16} /><Translate id="code.subs.plans.claude" description="Paid plan names. Keep product names in English">Claude Max and Pro</Translate></span>
           <span><Logo name="openai" size={16} /><Translate id="code.subs.plans.chatgpt" description="Paid plan names. Keep product names in English">ChatGPT Pro and Plus</Translate></span>
-          <span><Logo name="copilot" size={16} />GitHub Copilot</span>
         </span>,
       ],
       link: {to: '/docs/studio/memory-and-usage', label: translate({id: 'code.b.limits.link', message: 'Memory and usage', description: 'Link to the docs about usage limits'})},
@@ -119,13 +118,13 @@ function rows(): Row[] {
     {
       id: 'skills', icon: Sparkles,
       nav: translate({id: 'code.b.nav.skills', message: 'Skills', description: 'Short name of a benefit row in the index of rows on the SpecWithCode page'}),
-      title: translate({id: 'code.b.skills.title', message: 'Skills, managed in one place', description: 'Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English'}),
+      title: translate({id: 'code.b.skills.heading', message: 'Skills, managed in one place', description: 'Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English'}),
       body: <Translate id="code.b.skills.body" description="Benefit row on the SpecWithCode page: text about skills; Settings › Skills is a menu path in the app. Keep product names in English">Skills change what an agent does with the same model, so you choose which ones each agent sees. Settings › Skills lists the skills every agent finds on a machine. Turn one off for a single agent, pin a version, or install it on several machines.</Translate>,
       points: [
         <Translate id="code.b.skills.point1" description="Benefit row on the SpecWithCode page: point; {link} links to the Verified Skill registry. Keep product names in English" values={{link: <a className="wv-link" href="https://verified-skill.com/skills">Verified Skill</a>}}>{'Write a skill in the app and publish it to {link} for review'}</Translate>,
         <Translate id="code.b.skills.point2" description="Benefit row on the SpecWithCode page: point; {link} links to the Skill Studio docs. Keep product names in English" values={{link: <Link className="wv-link" to="/docs/skills/skill-studio/">Skill Studio</Link>}}>{'Try a skill on your own task in {link} before you keep it'}</Translate>,
       ],
-      fine: <Translate id="code.b.skills.fine" description="Benefit row on the SpecWithCode page: fine print under the skills row; vskill is a command-line tool and {command} is its install command. Keep product names in English" values={{command: <code>npx vskill@latest install owner/repo/skill</code>}}>{'Pinning a version or installing on other machines runs the free vskill CLI: {command}'}</Translate>,
+      fine: <Translate id="code.b.skills.fine" description="Benefit row on the SpecWithCode page: fine print under the skills row; vskill is a command-line tool and {command} is its install command. Keep product names in English" values={{command: <code>npm i -g vskill</code>}}>{'Pinning a version or installing on other machines runs the free vskill CLI: {command}'}</Translate>,
       visual: <Skills />,
     },
   ];
