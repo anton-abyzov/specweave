@@ -166,6 +166,16 @@ describe('SpecWithCode downloads while a page is open', () => {
     expect(store.get().desktop.appImage.url).toBe(`${REPO}/releases/download/v9.0.10/SpecWithCode-9.0.10-x86_64.AppImage`);
   });
 
+  it('reads again when the clock was set back', async () => {
+    let clock = 10 * LIVE_TTL_MS;
+    const fetch = answering(github);
+    const store = createLiveReleaseStore({built, fetch, storage: null, now: () => clock});
+    await store.refresh();
+    clock -= 3 * LIVE_TTL_MS;
+    await store.refresh();
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
   it('survives storage that throws or holds something else', async () => {
     const throwing = {
       getItem: () => {

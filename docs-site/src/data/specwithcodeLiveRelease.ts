@@ -139,7 +139,11 @@ export function createLiveReleaseStore(options: LiveReleaseStoreOptions = {}): L
     if (!doFetch) return;
     let picked: PickedReleases | null = null;
     try {
-      const response = await doFetch(LIVE_RELEASES_URL, {headers: {accept: 'application/vnd.github+json'}});
+      const response = await doFetch(LIVE_RELEASES_URL, {
+        headers: {accept: 'application/vnd.github+json'},
+        // A stalled request must not hold later checks back.
+        signal: typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal ? AbortSignal.timeout(10_000) : undefined,
+      });
       if (response.ok) picked = pickReleases(await response.json());
     } catch {
       // Offline, blocked or rate limited: the built values stay.
@@ -159,7 +163,9 @@ export function createLiveReleaseStore(options: LiveReleaseStoreOptions = {}): L
     },
     refresh() {
       if (reading) return reading;
-      if (now() - lastRead < LIVE_TTL_MS) return Promise.resolve();
+      // A clock set back makes the time since the last read negative: read again then.
+      const sinceRead = now() - lastRead;
+      if (sinceRead >= 0 && sinceRead < LIVE_TTL_MS) return Promise.resolve();
       reading = read()
         .catch(() => undefined)
         .finally(() => {
