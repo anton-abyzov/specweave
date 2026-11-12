@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {describe, it, expect} from 'vitest';
 // @ts-expect-error -- plain .mjs build script without types
-import {applyReleases, pickReleases} from '../../../scripts/sync-specwithcode-release.mjs';
+import {applyReleases, linkedReleases, pickReleases, releasesAhead} from '../../../scripts/sync-specwithcode-release.mjs';
 
 const source = fs.readFileSync(path.resolve(__dirname, '../specwithcodeRelease.ts'), 'utf8');
 
@@ -36,7 +36,7 @@ describe('SpecWithCode download sync', () => {
       release('9.0.11', macAssets, {draft: true}),
       release('9.1.0-beta.1', macAssets, {prerelease: true}),
     ]);
-    expect(picked.mac).toEqual({version: '9.0.10', bytes: {DMG_BYTES: BIG + 1}});
+    expect(picked.mac).toEqual({version: '9.0.10', readyAt: null, bytes: {DMG_BYTES: BIG + 1}});
     expect(picked.desktop?.version).toBe('9.0.8');
     expect(picked.desktop?.bytes.DEB_ARM64_BYTES).toBe(BIG + 15);
   });
@@ -73,5 +73,25 @@ describe('SpecWithCode download sync', () => {
     const older = pickReleases([release('0.0.1', [...macAssets, ...desktopAssets('0.0.1')])]);
     expect(applyReleases(source, older)).toBe(source);
     expect(applyReleases(source, {mac: null, desktop: null})).toBe(source);
+  });
+
+  it('tells when a deployed page links an older release, and since when the newer one was ready', () => {
+    const page = (mac: string, desktop: string) =>
+      `<a href="https://github.com/anton-abyzov/specwithcode/releases/download/v${mac}/SpecWithCode-arm64.dmg">Mac</a>` +
+      `<a href="https://github.com/anton-abyzov/specwithcode/releases/download/v${desktop}/SpecWithCode-${desktop}-x64.exe">Windows</a>`;
+    expect(linkedReleases(page('9.0.10', '9.0.8'))).toEqual({mac: '9.0.10', desktop: '9.0.8'});
+    const picked = pickReleases([
+      release('9.0.10', macAssets.map((asset) => ({...asset, updated_at: '2026-11-12T06:20:00Z'})), {
+        published_at: '2026-11-12T06:26:30Z',
+      }),
+      release('9.0.8', [...macAssets, ...desktopAssets('9.0.8')], {published_at: '2026-11-11T01:00:00Z'}),
+    ]);
+    expect(releasesAhead(picked, linkedReleases(page('9.0.10', '9.0.8')))).toEqual([]);
+    const ahead = releasesAhead(picked, linkedReleases(page('9.0.9', '9.0.8')));
+    expect(ahead.map((entry: {version: string}) => entry.version)).toEqual(['9.0.10']);
+    expect(ahead[0].readyAt).toBe('2026-11-12T06:26:30Z');
+    // A page that cannot be parsed, or one already ahead, never asks for a deploy.
+    expect(releasesAhead(picked, linkedReleases('<html></html>'))).toEqual([]);
+    expect(releasesAhead(picked, linkedReleases(page('9.0.11', '9.0.9')))).toEqual([]);
   });
 });
