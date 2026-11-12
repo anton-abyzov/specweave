@@ -18,14 +18,16 @@ export default defineConfig({
     alias: {
       '@site/src/hooks/useUnprefixedPathname': path.resolve(__dirname, 'src/__mocks__/unprefixed-pathname.ts'),
       '@site/src': path.resolve(__dirname, 'src'),
+      // Before '@theme': the first alias that matches wins.
+      '@theme/Layout': path.resolve(__dirname, 'src/__mocks__/docusaurus-layout.tsx'),
       '@theme': path.resolve(__dirname, 'src/theme'),
       '@theme-original/NavbarItem/DefaultNavbarItem': path.resolve(__dirname, 'src/__mocks__/default-navbar-item.tsx'),
       '@theme-original': path.resolve(__dirname, 'src/theme'),
+      '@docusaurus/Head': path.resolve(__dirname, 'src/__mocks__/docusaurus-Head.tsx'),
       '@docusaurus/Link': path.resolve(__dirname, 'src/__mocks__/docusaurus-link.tsx'),
       '@docusaurus/Translate': path.resolve(__dirname, 'src/__mocks__/docusaurus-Translate.tsx'),
       '@docusaurus/useBaseUrl': path.resolve(__dirname, 'src/__mocks__/docusaurus-useBaseUrl.ts'),
       '@docusaurus/useBrokenLinks': path.resolve(__dirname, 'src/__mocks__/docusaurus-useBrokenLinks.ts'),
-      '@theme/Layout': path.resolve(__dirname, 'src/__mocks__/docusaurus-layout.tsx'),
     },
   },
 });

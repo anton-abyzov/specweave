@@ -3809,6 +3809,38 @@
     "message": "Disponível na",
     "description": "Small line above the store name on a live store card"
   },
+  "code.get.meta.title": {
+    "message": "Baixe o SpecWithCode para iPhone e Android",
+    "description": "Title of the page that sends a phone to its app store. Keep product names in English"
+  },
+  "code.get.meta.description": {
+    "message": "Baixe o app do SpecWithCode para o seu iPhone ou celular Android. Abra esta página no celular e ela leva você à App Store ou ao Google Play.",
+    "description": "Meta description of the page that sends a phone to its app store. Keep product and store names in English"
+  },
+  "code.get.title": {
+    "message": "Baixe o SpecWithCode no seu celular",
+    "description": "Headline of the page that sends a phone to its app store. Keep product names in English"
+  },
+  "code.get.opening.ios": {
+    "message": "Abrindo a App Store…",
+    "description": "Shown on an iPhone while the App Store opens. Keep the store name in English"
+  },
+  "code.get.opening.android": {
+    "message": "Abrindo o Google Play…",
+    "description": "Shown on an Android phone while Google Play opens. Keep the store name in English"
+  },
+  "code.get.lead": {
+    "message": "Abra esta página no seu iPhone ou celular Android e ela leva você à loja certa. Depois entre com a mesma conta do seu computador, e o seu computador aparece sozinho.",
+    "description": "Lead of the page that sends a phone to its app store"
+  },
+  "code.get.desktop": {
+    "message": "No computador? {link}.",
+    "description": "Line under the store cards for someone on a computer; {link} is a link to the desktop download page"
+  },
+  "code.get.desktop.link": {
+    "message": "Baixe o SpecWithCode para Mac, Windows e Linux",
+    "description": "Link text to the desktop download page. Keep product names in English"
+  },
   "code.download.phones.title": {
     "message": "No seu celular",
     "description": "Section heading for the phone apps. Keep product names in English"
