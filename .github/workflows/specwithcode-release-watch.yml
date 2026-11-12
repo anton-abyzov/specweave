@@ -41,8 +41,9 @@ jobs:
           PAGE_URL: https://spec-weave.com/code/download/
         run: |
           set -uo pipefail
-          out="$(node docs-site/scripts/sync-specwithcode-release.mjs --live "$PAGE_URL")"
-          code=$?
+          # The step's shell exits on the first failing command, so the status is caught here:
+          # 10 means the page is behind, anything else non-zero is a real failure.
+          out="$(node docs-site/scripts/sync-specwithcode-release.mjs --live "$PAGE_URL")" && code=0 || code=$?
           printf '%s\n' "$out"
           if [ "$code" -ne 10 ]; then exit "$code"; fi
           since="$(printf '%s\n' "$out" | sed -n 's/^since=//p')"

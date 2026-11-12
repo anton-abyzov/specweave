@@ -48,6 +48,7 @@ const parseVersion = (text) => {
 export const compareVersions = (left, right) => {
   const a = parseVersion(left);
   const b = parseVersion(right);
+  if (!a || !b) throw new Error(`Not a release version: ${a ? right : left}`);
   for (let i = 0; i < 3; i += 1) if (a[i] !== b[i]) return a[i] - b[i];
   return 0;
 };
