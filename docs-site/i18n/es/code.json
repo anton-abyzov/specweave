@@ -3809,6 +3809,38 @@
     "message": "Consíguelo en",
     "description": "Small line above the store name on a live store card"
   },
+  "code.get.meta.title": {
+    "message": "Consigue SpecWithCode para iPhone y Android",
+    "description": "Title of the page that sends a phone to its app store. Keep product names in English"
+  },
+  "code.get.meta.description": {
+    "message": "Consigue la app de SpecWithCode para tu iPhone o teléfono Android. Abre esta página en el teléfono y te lleva al App Store o a Google Play.",
+    "description": "Meta description of the page that sends a phone to its app store. Keep product and store names in English"
+  },
+  "code.get.title": {
+    "message": "Consigue SpecWithCode en tu teléfono",
+    "description": "Headline of the page that sends a phone to its app store. Keep product names in English"
+  },
+  "code.get.opening.ios": {
+    "message": "Abriendo el App Store…",
+    "description": "Shown on an iPhone while the App Store opens. Keep the store name in English"
+  },
+  "code.get.opening.android": {
+    "message": "Abriendo Google Play…",
+    "description": "Shown on an Android phone while Google Play opens. Keep the store name in English"
+  },
+  "code.get.lead": {
+    "message": "Abre esta página en tu iPhone o teléfono Android y te lleva a la tienda correcta. Luego inicia sesión con la misma cuenta que en tu ordenador, y tu ordenador aparece solo.",
+    "description": "Lead of the page that sends a phone to its app store"
+  },
+  "code.get.desktop": {
+    "message": "¿En un ordenador? {link}.",
+    "description": "Line under the store cards for someone on a computer; {link} is a link to the desktop download page"
+  },
+  "code.get.desktop.link": {
+    "message": "Descargar SpecWithCode para Mac, Windows y Linux",
+    "description": "Link text to the desktop download page. Keep product names in English"
+  },
   "code.download.phones.title": {
     "message": "En tu teléfono",
     "description": "Section heading for the phone apps. Keep product names in English"

@@ -3809,6 +3809,38 @@
     "message": "前往下载",
     "description": "Small line above the store name on a live store card"
   },
+  "code.get.meta.title": {
+    "message": "获取 iPhone 和 Android 版 SpecWithCode",
+    "description": "Title of the page that sends a phone to its app store. Keep product names in English"
+  },
+  "code.get.meta.description": {
+    "message": "获取适用于 iPhone 或 Android 手机的 SpecWithCode 应用。在手机上打开此页面，即可前往 App Store 或 Google Play。",
+    "description": "Meta description of the page that sends a phone to its app store. Keep product and store names in English"
+  },
+  "code.get.title": {
+    "message": "在手机上获取 SpecWithCode",
+    "description": "Headline of the page that sends a phone to its app store. Keep product names in English"
+  },
+  "code.get.opening.ios": {
+    "message": "正在打开 App Store…",
+    "description": "Shown on an iPhone while the App Store opens. Keep the store name in English"
+  },
+  "code.get.opening.android": {
+    "message": "正在打开 Google Play…",
+    "description": "Shown on an Android phone while Google Play opens. Keep the store name in English"
+  },
+  "code.get.lead": {
+    "message": "在 iPhone 或 Android 手机上打开此页面，即可前往对应的应用商店。然后使用与电脑相同的账号登录，你的电脑会自动出现。",
+    "description": "Lead of the page that sends a phone to its app store"
+  },
+  "code.get.desktop": {
+    "message": "在用电脑？{link}。",
+    "description": "Line under the store cards for someone on a computer; {link} is a link to the desktop download page"
+  },
+  "code.get.desktop.link": {
+    "message": "下载 Mac、Windows、Linux 版 SpecWithCode",
+    "description": "Link text to the desktop download page. Keep product names in English"
+  },
   "code.download.phones.title": {
     "message": "在你的手机上",
     "description": "Section heading for the phone apps. Keep product names in English"

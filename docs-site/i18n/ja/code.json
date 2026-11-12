@@ -3809,6 +3809,38 @@
     "message": "入手先",
     "description": "Small line above the store name on a live store card"
   },
+  "code.get.meta.title": {
+    "message": "iPhoneとAndroid向けSpecWithCodeを入手",
+    "description": "Title of the page that sends a phone to its app store. Keep product names in English"
+  },
+  "code.get.meta.description": {
+    "message": "iPhoneまたはAndroidスマートフォン向けのSpecWithCodeアプリを入手できます。スマートフォンでこのページを開くと、App StoreまたはGoogle Playに移動します。",
+    "description": "Meta description of the page that sends a phone to its app store. Keep product and store names in English"
+  },
+  "code.get.title": {
+    "message": "スマートフォンでSpecWithCodeを入手",
+    "description": "Headline of the page that sends a phone to its app store. Keep product names in English"
+  },
+  "code.get.opening.ios": {
+    "message": "App Storeを開いています…",
+    "description": "Shown on an iPhone while the App Store opens. Keep the store name in English"
+  },
+  "code.get.opening.android": {
+    "message": "Google Playを開いています…",
+    "description": "Shown on an Android phone while Google Play opens. Keep the store name in English"
+  },
+  "code.get.lead": {
+    "message": "iPhoneまたはAndroidスマートフォンでこのページを開くと、対応するストアに移動します。そのあと、パソコンと同じアカウントでサインインすると、パソコンが自動的に表示されます。",
+    "description": "Lead of the page that sends a phone to its app store"
+  },
+  "code.get.desktop": {
+    "message": "パソコンをお使いですか？ {link}。",
+    "description": "Line under the store cards for someone on a computer; {link} is a link to the desktop download page"
+  },
+  "code.get.desktop.link": {
+    "message": "Mac・Windows・Linux向けSpecWithCodeをダウンロード",
+    "description": "Link text to the desktop download page. Keep product names in English"
+  },
   "code.download.phones.title": {
     "message": "スマートフォンで",
     "description": "Section heading for the phone apps. Keep product names in English"

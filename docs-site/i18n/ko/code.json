@@ -3809,6 +3809,38 @@
     "message": "다운로드",
     "description": "Small line above the store name on a live store card"
   },
+  "code.get.meta.title": {
+    "message": "iPhone 및 Android용 SpecWithCode 받기",
+    "description": "Title of the page that sends a phone to its app store. Keep product names in English"
+  },
+  "code.get.meta.description": {
+    "message": "iPhone 또는 Android 휴대폰용 SpecWithCode 앱을 받으세요. 휴대폰에서 이 페이지를 열면 App Store 또는 Google Play로 이동합니다.",
+    "description": "Meta description of the page that sends a phone to its app store. Keep product and store names in English"
+  },
+  "code.get.title": {
+    "message": "휴대폰에 SpecWithCode 받기",
+    "description": "Headline of the page that sends a phone to its app store. Keep product names in English"
+  },
+  "code.get.opening.ios": {
+    "message": "App Store를 여는 중…",
+    "description": "Shown on an iPhone while the App Store opens. Keep the store name in English"
+  },
+  "code.get.opening.android": {
+    "message": "Google Play를 여는 중…",
+    "description": "Shown on an Android phone while Google Play opens. Keep the store name in English"
+  },
+  "code.get.lead": {
+    "message": "iPhone 또는 Android 휴대폰에서 이 페이지를 열면 맞는 스토어로 이동합니다. 그런 다음 컴퓨터와 같은 계정으로 로그인하면 컴퓨터가 자동으로 나타납니다.",
+    "description": "Lead of the page that sends a phone to its app store"
+  },
+  "code.get.desktop": {
+    "message": "컴퓨터에서 보고 계신가요? {link}.",
+    "description": "Line under the store cards for someone on a computer; {link} is a link to the desktop download page"
+  },
+  "code.get.desktop.link": {
+    "message": "Mac, Windows, Linux용 SpecWithCode 다운로드",
+    "description": "Link text to the desktop download page. Keep product names in English"
+  },
   "code.download.phones.title": {
     "message": "휴대폰에서",
     "description": "Section heading for the phone apps. Keep product names in English"
