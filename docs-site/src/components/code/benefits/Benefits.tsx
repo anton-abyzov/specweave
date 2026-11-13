@@ -14,8 +14,8 @@ import styles from './Benefits.module.css';
   - Changing agent in a thread carries a selection of the recent conversation, never all of it.
   - A project gives every thread its goal, instructions and memory index; a worker does not get the
     coordinator's whole conversation.
-  - Aide runs on the person's own computer and sends mail only from a reply card they answered.
-    Voice calls are desktop only. Aide, Google and Telegram are set up on the desktop.
+  - Percy runs on the person's own computer and sends mail only from a reply card they answered.
+    Voice calls are desktop only. Percy, Google and Telegram are set up on the desktop.
   - Designs is the app's own canvas. Figma is a one-way import of variables from Figma desktop.
   - A usage limit changes provider on the same machine; it never moves a thread to another machine.
     Moving a project between machines starts a new provider session.
@@ -65,14 +65,14 @@ function rows(): Row[] {
     },
     {
       id: 'aide', icon: Bot,
-      nav: translate({id: 'code.b.nav.aide', message: 'Aide', description: 'Short name of a benefit row in the index of rows on the SpecWithCode page'}),
-      title: translate({id: 'code.b.aide.title', message: 'A personal assistant in the same app', description: 'Benefit row on the SpecWithCode page: heading about Aide, the personal assistant. Keep product names in English'}),
-      body: <Translate id="code.b.aide.body" description="Benefit row on the SpecWithCode page: text about Aide, the personal assistant. Keep product names in English">Aide briefs you each morning on the mail that needs a reply and on your day, with drafts ready. It sends only the replies you approve. Talk to it on the desktop, on your iPhone, or through your own Telegram bot.</Translate>,
+      nav: translate({id: 'code.b.nav.aide', message: 'Percy', description: 'Short name of a benefit row in the index of rows on the SpecWithCode page'}),
+      title: translate({id: 'code.b.aide.title', message: 'A personal assistant in the same app', description: 'Benefit row on the SpecWithCode page: heading about Percy, the personal assistant. Keep product names in English'}),
+      body: <Translate id="code.b.aide.body" description="Benefit row on the SpecWithCode page: text about Percy, the personal assistant. Keep product names in English">Percy briefs you each morning on the mail that needs a reply and on your day, with drafts ready. It sends only the replies you approve. Talk to it on the desktop, on your iPhone, or through your own Telegram bot.</Translate>,
       points: [
         <><span className={styles.brands}><Brand name="gmail" /><Brand name="calendar" /><Brand name="drive" /></span><Translate id="code.b.aide.point1" description="Benefit row on the SpecWithCode page: point; Gmail, Calendar and Drive logos sit before it. Keep product names in English">Reads the Gmail, Calendar and Drive accounts you allow</Translate></>,
         <Translate id="code.b.aide.point2" description="Benefit row on the SpecWithCode page: point. Keep product names in English">The phone app also follows your coding threads and lets you answer approvals</Translate>,
       ],
-      fine: <Translate id="code.b.aide.fine" description="Benefit row on the SpecWithCode page: fine print under the Aide row. Keep product names in English">Aide runs on your computer, so it answers while that computer is awake.</Translate>,
+      fine: <Translate id="code.b.aide.fine" description="Benefit row on the SpecWithCode page: fine print under the Percy row. Keep product names in English">Percy runs on your computer, so it answers while that computer is awake.</Translate>,
       link: {to: '/docs/studio/projects', label: translate({id: 'code.b.aide.link', message: 'Personal projects', description: 'Link to the docs about personal projects'})},
       visual: <Aide />,
     },

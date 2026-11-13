@@ -3882,12 +3882,12 @@
     "description": "Benefit row on the SpecWithCode page: heading about projects, the coordinator and threads. Keep product names in English"
   },
   "code.b.nav.aide": {
-    "message": "Aide",
+    "message": "Percy",
     "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
   },
   "code.b.aide.title": {
     "message": "同じアプリで使える個人アシスタント",
-    "description": "Benefit row on the SpecWithCode page: heading about Aide, the personal assistant. Keep product names in English"
+    "description": "Benefit row on the SpecWithCode page: heading about Percy, the personal assistant. Keep product names in English"
   },
   "code.b.aide.link": {
     "message": "個人用プロジェクト",
@@ -3950,8 +3950,8 @@
     "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
   },
   "code.b.aide.body": {
-    "message": "Aideは毎朝、返信が必要なメールと今日の予定をまとめ、下書きまで用意します。送るのは、あなたが承認した返信だけです。デスクトップ、iPhone、またはご自身のTelegramボットから話しかけられます。",
-    "description": "Benefit row on the SpecWithCode page: text about Aide, the personal assistant. Keep product names in English"
+    "message": "Percyは毎朝、返信が必要なメールと今日の予定をまとめ、下書きまで用意します。送るのは、あなたが承認した返信だけです。デスクトップ、iPhone、またはご自身のTelegramボットから話しかけられます。",
+    "description": "Benefit row on the SpecWithCode page: text about Percy, the personal assistant. Keep product names in English"
   },
   "code.b.aide.point1": {
     "message": "許可したGmail、Calendar、Driveのアカウントを読み取ります",
@@ -3962,8 +3962,8 @@
     "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
   },
   "code.b.aide.fine": {
-    "message": "Aideはお使いのコンピューターで動くため、そのコンピューターが起きている間だけ応答します。",
-    "description": "Benefit row on the SpecWithCode page: fine print under the Aide row. Keep product names in English"
+    "message": "Percyはお使いのコンピューターで動くため、そのコンピューターが起きている間だけ応答します。",
+    "description": "Benefit row on the SpecWithCode page: fine print under the Percy row. Keep product names in English"
   },
   "code.b.designs.body": {
     "message": "どのプロジェクトにも「デザイン」タブがあります。あなたとエージェントが同じキャンバスに描き、ファイルは{path}の下のリポジトリに置かれるので、デザインは対応するコードと一緒に動きます。",
@@ -4106,7 +4106,7 @@
     "description": "Benefit diagram on the SpecWithCode page: the three things a project keeps for every thread"
   },
   "code.b.aide.label": {
-    "message": "スマートフォンのAide。8:00のブリーフィングには、返信が必要なメール2通と今日の予定3件が並び、続いて「送信」「送信しない」付きの下書きが表示されます。「送信」を選ぶまで何も送られません。",
+    "message": "スマートフォンのPercy。8:00のブリーフィングには、返信が必要なメール2通と今日の予定3件が並び、続いて「送信」「送信しない」付きの下書きが表示されます。「送信」を選ぶまで何も送られません。",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the personal assistant drawing"
   },
   "code.b.aide.briefing": {

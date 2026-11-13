@@ -3882,12 +3882,12 @@
     "description": "Benefit row on the SpecWithCode page: heading about projects, the coordinator and threads. Keep product names in English"
   },
   "code.b.nav.aide": {
-    "message": "Aide",
+    "message": "Percy",
     "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
   },
   "code.b.aide.title": {
     "message": "同一个应用里的个人助理",
-    "description": "Benefit row on the SpecWithCode page: heading about Aide, the personal assistant. Keep product names in English"
+    "description": "Benefit row on the SpecWithCode page: heading about Percy, the personal assistant. Keep product names in English"
   },
   "code.b.aide.link": {
     "message": "个人项目",
@@ -3950,8 +3950,8 @@
     "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
   },
   "code.b.aide.body": {
-    "message": "Aide 每天早上为你汇总需要回复的邮件和当天安排，并备好草稿。它只发送你批准的回复。你可以在桌面端、iPhone 上，或通过你自己的 Telegram 机器人和它对话。",
-    "description": "Benefit row on the SpecWithCode page: text about Aide, the personal assistant. Keep product names in English"
+    "message": "Percy 每天早上为你汇总需要回复的邮件和当天安排，并备好草稿。它只发送你批准的回复。你可以在桌面端、iPhone 上，或通过你自己的 Telegram 机器人和它对话。",
+    "description": "Benefit row on the SpecWithCode page: text about Percy, the personal assistant. Keep product names in English"
   },
   "code.b.aide.point1": {
     "message": "读取你授权的 Gmail、Calendar 和 Drive 账号",
@@ -3962,8 +3962,8 @@
     "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
   },
   "code.b.aide.fine": {
-    "message": "Aide 在你的电脑上运行，所以电脑处于唤醒状态时它才会响应。",
-    "description": "Benefit row on the SpecWithCode page: fine print under the Aide row. Keep product names in English"
+    "message": "Percy 在你的电脑上运行，所以电脑处于唤醒状态时它才会响应。",
+    "description": "Benefit row on the SpecWithCode page: fine print under the Percy row. Keep product names in English"
   },
   "code.b.designs.body": {
     "message": "每个项目都有“设计”标签页。你和你的智能体在同一块画布上作画，文件保存在仓库的 {path} 下，所以设计会跟着它所属的代码走。",
@@ -4106,7 +4106,7 @@
     "description": "Benefit diagram on the SpecWithCode page: the three things a project keeps for every thread"
   },
   "code.b.aide.label": {
-    "message": "手机上的 Aide。08:00 的简报列出两封需要回复的邮件和今天的三个日程，然后显示一份草稿，带有“发送”和“不发送”。在你选择“发送”之前，什么都不会发出。",
+    "message": "手机上的 Percy。08:00 的简报列出两封需要回复的邮件和今天的三个日程，然后显示一份草稿，带有“发送”和“不发送”。在你选择“发送”之前，什么都不会发出。",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the personal assistant drawing"
   },
   "code.b.aide.briefing": {

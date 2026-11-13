@@ -99,13 +99,13 @@ export function ProjectThreads() {
   </Stage>;
 }
 
-/* ---------- 3. Aide: the morning briefing and its reply card, on the phone ---------- */
+/* ---------- 3. Percy: the morning briefing and its reply card, on the phone ---------- */
 export function Aide() {
   const [ref, step] = useStep<HTMLDivElement>(4, 2, 2400);
   const sent = step === 3;
-  return <Stage ref={ref} className={styles.aideStage} label={translate({id: 'code.b.aide.label', message: 'Aide on a phone. The 08:00 briefing lists two mails that need a reply and today’s three events, then shows a draft with Send and Don’t send. Nothing is sent until you choose Send.', description: 'Benefit diagram on the SpecWithCode page: accessible description of the personal assistant drawing'})}>
+  return <Stage ref={ref} className={styles.aideStage} label={translate({id: 'code.b.aide.label', message: 'Percy on a phone. The 08:00 briefing lists two mails that need a reply and today’s three events, then shows a draft with Send and Don’t send. Nothing is sent until you choose Send.', description: 'Benefit diagram on the SpecWithCode page: accessible description of the personal assistant drawing'})}>
     <div className={styles.phone}>
-      <p className={styles.phoneHead}><b>Aide</b><span>08:00</span></p>
+      <p className={styles.phoneHead}><b>Percy</b><span>08:00</span></p>
       <div className={styles.briefing}>
         <b>{translate({id: 'code.b.aide.briefing', message: 'Proactive briefing', description: 'Benefit diagram on the SpecWithCode page: name of the daily briefing routine, as the app labels it'})}</b>
         <p><Brand name="gmail" size={13} />{translate({id: 'code.b.aide.replies', message: 'Needs your reply · 2', description: 'Benefit diagram on the SpecWithCode page: briefing line: two mails need a reply'})}</p>

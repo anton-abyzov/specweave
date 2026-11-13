@@ -3882,12 +3882,12 @@
     "description": "Benefit row on the SpecWithCode page: heading about projects, the coordinator and threads. Keep product names in English"
   },
   "code.b.nav.aide": {
-    "message": "Aide",
+    "message": "Percy",
     "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
   },
   "code.b.aide.title": {
     "message": "Личный помощник в том же приложении",
-    "description": "Benefit row on the SpecWithCode page: heading about Aide, the personal assistant. Keep product names in English"
+    "description": "Benefit row on the SpecWithCode page: heading about Percy, the personal assistant. Keep product names in English"
   },
   "code.b.aide.link": {
     "message": "Личные проекты",
@@ -3950,8 +3950,8 @@
     "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
   },
   "code.b.aide.body": {
-    "message": "Каждое утро Aide сообщает, на какие письма нужно ответить и что у вас сегодня, и сразу готовит черновики. Он отправляет только те ответы, которые вы одобрили. Общаться с ним можно на компьютере, на iPhone или через собственного бота в Telegram.",
-    "description": "Benefit row on the SpecWithCode page: text about Aide, the personal assistant. Keep product names in English"
+    "message": "Каждое утро Percy сообщает, на какие письма нужно ответить и что у вас сегодня, и сразу готовит черновики. Он отправляет только те ответы, которые вы одобрили. Общаться с ним можно на компьютере, на iPhone или через собственного бота в Telegram.",
+    "description": "Benefit row on the SpecWithCode page: text about Percy, the personal assistant. Keep product names in English"
   },
   "code.b.aide.point1": {
     "message": "Читает аккаунты Gmail, Calendar и Drive, которые вы разрешили",
@@ -3962,8 +3962,8 @@
     "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
   },
   "code.b.aide.fine": {
-    "message": "Aide работает на вашем компьютере, поэтому отвечает, пока компьютер не спит.",
-    "description": "Benefit row on the SpecWithCode page: fine print under the Aide row. Keep product names in English"
+    "message": "Percy работает на вашем компьютере, поэтому отвечает, пока компьютер не спит.",
+    "description": "Benefit row on the SpecWithCode page: fine print under the Percy row. Keep product names in English"
   },
   "code.b.designs.body": {
     "message": "В каждом проекте есть вкладка «Дизайны». Вы и ваши агенты рисуете на одном холсте, а файлы лежат в репозитории в {path}, так что дизайн переезжает вместе с кодом, к которому относится.",
@@ -4106,7 +4106,7 @@
     "description": "Benefit diagram on the SpecWithCode page: the three things a project keeps for every thread"
   },
   "code.b.aide.label": {
-    "message": "Aide на телефоне. Брифинг в 08:00 показывает два письма, на которые нужно ответить, и три события на сегодня, затем черновик с кнопками «Отправить» и «Не отправлять». Пока вы не нажмёте «Отправить», ничего не уходит.",
+    "message": "Percy на телефоне. Брифинг в 08:00 показывает два письма, на которые нужно ответить, и три события на сегодня, затем черновик с кнопками «Отправить» и «Не отправлять». Пока вы не нажмёте «Отправить», ничего не уходит.",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the personal assistant drawing"
   },
   "code.b.aide.briefing": {
