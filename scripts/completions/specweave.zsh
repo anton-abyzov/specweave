@@ -21,7 +21,7 @@ commands=(
     'card:Cards\: add "<text>" | start <id> | done <id> | wait <id> | list. T-NN ids alias `task`; C-NN cards live in .specweave/cards/<branch>.jsonl'
     'cards:Print the card checklist\: a header, a blank line, then one ✓ / ✱ / ○ line per card with its link'
     'verify:'
-    'review:Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md'
+    'review:Review an increment with a model from another family than the author (Codex for Claude-written code), following the spec.md ## Review policy; writes reports/review-<reviewer>.md'
     'skills:List the project'\''s SpecWeave skills, or enable/disable optional ones (glossary, sync, project, jev)'
     'glossary:Check GLOSSARY.md against the code (avoided words used as identifiers, Data/Code names that no longer exist); list prints the terms'
     'create-increment:Create an increment\: metadata.json and spec.md (Problem, Scope, ACs, Approach, Tasks). Short form\: specweave create-increment "Add login form"'
@@ -184,6 +184,10 @@ _specweave() {
                     _arguments \
                         '--brief[Print the review brief only (paste it into any tool or model)]' \
                         '--reviewer[Reviewer to run\: codex, claude or one from review.reviewers (default\: auto)]' \
+                        '--record[Record a review another tool or model wrote, instead of running one (needs --model)]' \
+                        '--model[With --record\: the model that wrote the review, such as gpt-6.1-sol]' \
+                        '--family[With --record\: its family when the model id does not say (openai, claude, google, xai, meta)]' \
+                        '--head[With --record\: the commit the review read (default\: HEAD)]' \
                         '--base[Diff base (default\: merge-base with origin/HEAD)]' \
                         '--timeout[Stop the reviewer after this many minutes (default 30)]' \
                         '--json[Print the result as JSON]' \

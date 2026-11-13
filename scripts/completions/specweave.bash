@@ -74,7 +74,7 @@ _specweave_completions() {
             return 0
             ;;
         review)
-            COMPREPLY=( $(compgen -W "--brief --reviewer --base --timeout --json --workspace --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--brief --reviewer --record --model --family --head --base --timeout --json --workspace --help" -- "${cur}") )
             return 0
             ;;
         skills)
