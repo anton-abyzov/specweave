@@ -7,6 +7,10 @@
 - With a required policy, `specweave complete` (and verify's strict-close check) accepts only a `ship` review by the required family, recorded after verification, whose reviewed commit has the same content as the code being closed in every repository the tasks touch. A squash-merged pull request passes; a same-family review, `fix first` or later changes to the reviewed files do not, and the message names the review it found and the next command.
 - `specweave review` follows the policy's family and model, runs Codex at `xhigh` for a deep review, and names the policy in the brief.
 
+### Changed
+
+- `review.crossModel: true` now needs a recorded review: a hand-written `reports/review-<name>.md` without the `specweave review` record line no longer counts, because it does not say which family wrote it or which commit it read. Run `specweave review`, or record an outside review with `specweave review --record`.
+
 ## [3.1.22] - 2026-11-10
 
 ### Changed
