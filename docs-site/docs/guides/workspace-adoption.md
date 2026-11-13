@@ -14,9 +14,9 @@ SpecWeave never asks you to move a repository. This is how each layout joins a w
 | Layout | Example | How it joins |
 |---|---|---|
 | One repository | `my-app/` holding `.git` | Nothing to add. The folder is the project. |
-| A plain folder of repositories | `my-product/api`, `my-product/services/web` | `specweave init` adds every checkout up to three levels down, whatever the folders are called. |
-| Under `repositories/` | `repositories/acme/api`, `repositories/api` | `init` adds them even when the workspace folder is a Git repository itself. `specweave get owner/repo` clones here. |
-| Elsewhere inside a folder that is a Git repository | `planning/services/api` | `init` does not add these, since they may be fixtures or vendored copies. It prints `specweave get ./services/api` for each. |
+| A plain folder of repositories | `my-product/api`, `my-product/services/web` | `specweave init` adds every checkout up to three levels down, whatever the folders are called, when the folder is not inside a Git repository. |
+| Under `repositories/` | `repositories/acme/api`, `repositories/api` | `init` adds them even when the workspace folder is a Git repository itself, including symlinks to checkouts elsewhere. `specweave get owner/repo` clones here. |
+| Elsewhere in a folder that is, or sits inside, a Git repository | `planning/services/api` | `init` does not add these, since they may be fixtures or vendored copies. It prints `specweave get ./services/api` for each. |
 | Siblings or anywhere on disk | `~/code/api` beside `~/code/planning` | `specweave get ../api`. Never guessed. |
 | Git submodules | `libs/ui` holding a `.git` file | Part of the parent repository. |
 

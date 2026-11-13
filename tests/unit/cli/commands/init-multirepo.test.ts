@@ -756,10 +756,11 @@ describe('NextStepsContext type cleanup', () => {
   });
 
   it('showNextSteps names unregistered checkouts with the command that adds each in place', () => {
-    showNextSteps('test', 'claude', 'en', true, { pluginAutoInstalled: true }, { unregisteredCheckouts: ['services/api'] });
+    showNextSteps('test', 'claude', 'en', true, { pluginAutoInstalled: true }, { unregisteredCheckouts: ['services/api', 'my repo'] });
 
     const output = consoleLogSpy.mock.calls.map(c => c[0]).join('\n');
     expect(output).toContain('specweave get ./services/api');
+    expect(output).toContain('specweave get "./my repo"');
     expect(output).not.toContain('mv ');
     expect(output).not.toContain('Non-standard');
   });

@@ -211,7 +211,8 @@ export function showNextSteps(
     console.log(chalk.cyan.bold('   Other Git checkouts in this folder'));
     console.log(chalk.gray('   Not added to workspace.repos. Add the ones you work on where they are:'));
     for (const relative of shown) {
-      console.log(chalk.white(`     specweave get ./${relative}`));
+      const arg = /\s/.test(relative) ? `"./${relative}"` : `./${relative}`;
+      console.log(chalk.white(`     specweave get ${arg}`));
     }
     if (unregistered.length > shown.length) {
       console.log(chalk.gray(`     and ${unregistered.length - shown.length} more`));

@@ -143,7 +143,7 @@ Multi-repo workspaces: the repositories one planning folder covers, wherever the
 |-------|-------|
 | `name` | Workspace name. |
 | `rootRepo` | Sync target for the umbrella repo itself. |
-| `repos[].id` | Must match the repository name. |
+| `repos[].id` | The repository name. When two repositories share a name, `init` adds the parent folder (`services-api`). |
 | `repos[].path` | Relative or absolute path. |
 | `repos[].prefix`, `repos[].role`, `repos[].techStack` | Routing hints. |
 | `repos[].sync` | Per-repo `github`, `jira` or `ado` target. |

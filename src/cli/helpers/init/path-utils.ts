@@ -288,25 +288,52 @@ export function detectSuspiciousPath(targetDir: string): SuspiciousPathResult | 
   return null;
 }
 
-/** A `.git` file pointing into another repository's `worktrees/` folder: a linked worktree, not a repository. */
-function isLinkedWorktree(dir: string): boolean {
-  try {
-    const marker = path.join(dir, '.git');
-    if (!nativeFs.lstatSync(marker).isFile()) return false;
-    return /[\\/]worktrees[\\/]/.test(nativeFs.readFileSync(marker, 'utf8'));
-  } catch {
-    return false;
-  }
-}
-
 const canonicalOr = (p: string): string => {
   try { return canonicalPath(p); } catch { return p; }
 };
 
+/** The folder is a Git checkout or sits inside one (a package folder of a monorepo). */
+function insideCheckout(targetDir: string): boolean {
+  let dir = path.resolve(targetDir);
+  for (;;) {
+    if (fs.existsSync(path.join(dir, '.git'))) return true;
+    const parent = path.dirname(dir);
+    if (parent === dir) return false;
+    dir = parent;
+  }
+}
+
 /**
- * Checkouts nested in a folder, as paths relative to it: the walk `specweave handoff --all`
- * and SpecWithCode use (up to three levels down, any folder names, dot and dependency
- * folders skipped, each real path once). Linked worktrees belong to another repository.
+ * `repositories/<repo>` and `repositories/<org>/<repo>`, read directly as init always has, so
+ * no walk budget hides them and a symlink to a checkout elsewhere on disk still counts.
+ */
+function conventionalCheckouts(targetDir: string): string[] {
+  const reposDir = path.join(targetDir, 'repositories');
+  const children = (dir: string): string[] => {
+    try { return fs.readdirSync(dir).filter((name: string) => !name.startsWith('.')).sort(); } catch { return []; }
+  };
+  const isCheckoutDir = (dir: string) => {
+    try { return fs.statSync(dir).isDirectory() && fs.existsSync(path.join(dir, '.git')); } catch { return false; }
+  };
+  const isDir = (dir: string) => {
+    try { return fs.statSync(dir).isDirectory(); } catch { return false; }
+  };
+  const found: string[] = [];
+  for (const first of children(reposDir)) {
+    const level1 = path.join(reposDir, first);
+    if (isCheckoutDir(level1)) { found.push(path.join('repositories', first)); continue; }
+    if (!isDir(level1)) continue;
+    for (const second of children(level1)) {
+      if (isCheckoutDir(path.join(level1, second))) found.push(path.join('repositories', first, second));
+    }
+  }
+  return found;
+}
+
+/**
+ * Checkouts nested anywhere in a folder, as paths relative to it: the walk `specweave handoff --all`
+ * and SpecWithCode use (up to three levels down, any folder names, dot and dependency folders
+ * skipped, symlinks only inside the folder, each real path once).
  */
 function nestedCheckouts(targetDir: string): string[] {
   const root = path.resolve(targetDir);
@@ -323,19 +350,18 @@ function nestedCheckouts(targetDir: string): string[] {
       const relative = path.relative(root, found);
       return relative.startsWith('..') || path.isAbsolute(relative) ? path.relative(canonicalRoot, found) : relative;
     })
-    .filter((relative) => relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative))
-    .filter((relative) => !isLinkedWorktree(path.join(root, relative)));
+    .filter((relative) => relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative));
 }
 
 /**
  * Discover the repositories a workspace folder holds. No layout is required:
  *
  * - `repositories/<org>/<repo>` (where `specweave get` clones) and `repositories/<repo>` always count.
- * - A folder that is not a Git checkout itself can only be a folder of repositories, so any
- *   checkout up to three levels down counts too, whatever its folders are called
- *   (`api`, `services/web`).
- * - In a folder that is a checkout, other nested checkouts may be fixtures or vendored copies,
- *   so they are not added; {@link scanUnregisteredCheckouts} names them for `specweave get ./<path>`.
+ * - A folder outside any Git checkout can only be a folder of repositories, so any checkout up
+ *   to three levels down counts too, whatever its folders are called (`api`, `services/web`).
+ * - In a checkout, or a folder inside one, other nested checkouts may be fixtures or vendored
+ *   copies, so they are not added; {@link scanUnregisteredCheckouts} names them for
+ *   `specweave get ./<path>`.
  *
  * Sibling and external repositories are never guessed: `specweave get ../<path>` registers them.
  *
@@ -343,26 +369,31 @@ function nestedCheckouts(targetDir: string): string[] {
  * @returns UmbrellaDiscoveryResult if repos found, null otherwise
  */
 export function scanUmbrellaRepos(targetDir: string): UmbrellaDiscoveryResult | null {
-  let rootIsCheckout: boolean;
   try {
     if (!fs.existsSync(targetDir) || !fs.statSync(targetDir).isDirectory()) return null;
-    rootIsCheckout = fs.existsSync(path.join(targetDir, '.git'));
   } catch {
     return null;
   }
+  const root = path.resolve(targetDir);
 
-  const repos: DiscoveredRepo[] = [];
-  for (const relative of nestedCheckouts(targetDir)) {
+  // One entry per real path; the conventional path wins over another route to the same checkout.
+  const byReal = new Map<string, string>();
+  const add = (relative: string) => {
+    const key = canonicalOr(path.join(root, relative));
+    if (!byReal.has(key)) byReal.set(key, relative);
+  };
+  conventionalCheckouts(root).forEach(add);
+  if (!insideCheckout(root)) nestedCheckouts(root).forEach(add);
+
+  const repos: DiscoveredRepo[] = [...byReal.values()].sort().map((relative) => {
     const parts = relative.split(path.sep);
-    const conventional = parts[0] === 'repositories' && (parts.length === 2 || parts.length === 3);
-    if (rootIsCheckout && !conventional) continue;
-    repos.push({
-      org: conventional && parts.length === 3 ? parts[1] : '',
+    return {
+      org: parts[0] === 'repositories' && parts.length === 3 ? parts[1] : '',
       name: parts[parts.length - 1],
       path: relative,
       hasGit: true,
-    });
-  }
+    };
+  });
 
   if (repos.length === 0) return null;
 
@@ -404,8 +435,8 @@ export function scanWorkspaceRepos(targetDir: string): UmbrellaDiscoveryResult |
 }
 
 /**
- * Separate clones (a `.git` folder) nested in a workspace folder that is itself a Git
- * checkout and not listed by the scan, as POSIX paths relative to it. Init names each
+ * Separate clones (a `.git` folder) nested in a workspace folder that is, or sits inside,
+ * a Git checkout and not listed by the scan, as POSIX paths relative to it. Init names each
  * with the command that adds it in place. Submodules and linked worktrees (a `.git`
  * file) belong to the folder's own repository and are left out.
  *
@@ -415,7 +446,7 @@ export function scanWorkspaceRepos(targetDir: string): UmbrellaDiscoveryResult |
  */
 export function scanUnregisteredCheckouts(targetDir: string, discovery: UmbrellaDiscoveryResult | null): string[] {
   try {
-    if (!fs.existsSync(path.join(targetDir, '.git'))) return [];
+    if (!fs.existsSync(targetDir) || !insideCheckout(targetDir)) return [];
   } catch {
     return [];
   }
@@ -483,8 +514,18 @@ export function buildWorkspaceConfig(
   repository: { umbrellaRepo: true };
 } {
   const usedPrefixes = new Set<string>();
+  const usedIds = new Set(discovery.repos.flatMap(r => (r.registered ? [r.registered.id] : [])));
   const repos: WorkspaceRepo[] = discovery.repos.map(r => {
     if (r.registered) { usedPrefixes.add(r.registered.prefix); return r.registered; }
+    // Two repositories with one name (`apps/api`, `services/api`) get the parent folder in the id.
+    let id = r.name;
+    if (usedIds.has(id)) {
+      const parent = path.basename(path.dirname(r.path));
+      const base = parent && parent !== '.' && parent !== 'repositories' ? `${parent}-${r.name}` : r.name;
+      id = base;
+      for (let n = 2; usedIds.has(id); n++) id = `${base}-${n}`;
+    }
+    usedIds.add(id);
     let prefix = r.name.substring(0, 3).toUpperCase();
     if (usedPrefixes.has(prefix)) {
       let suffix = 2;
@@ -492,7 +533,7 @@ export function buildWorkspaceConfig(
       prefix = prefix.substring(0, 2) + suffix;
     }
     usedPrefixes.add(prefix);
-    return { id: r.name, path: r.path, name: r.name, prefix, sync: {} };
+    return { id, path: r.path, name: r.name, prefix, sync: {} };
   });
 
   return {

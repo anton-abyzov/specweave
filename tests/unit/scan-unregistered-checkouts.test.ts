@@ -48,6 +48,14 @@ describe('scanUnregisteredCheckouts', () => {
     expect(unregistered()).toEqual(['services/api']);
   });
 
+  it('names clones below a folder that sits inside a checkout', () => {
+    clone();
+    clone('packages', 'tool', 'fixtures', 'repo-a');
+    const tool = path.join(root, 'packages', 'tool');
+    expect(scanWorkspaceRepos(tool)).toBeNull();
+    expect(scanUnregisteredCheckouts(tool, null)).toEqual(['fixtures/repo-a']);
+  });
+
   it('returns nothing for an empty or missing folder', () => {
     expect(scanUnregisteredCheckouts(root, null)).toEqual([]);
     expect(scanUnregisteredCheckouts(path.join(root, 'missing'), null)).toEqual([]);
