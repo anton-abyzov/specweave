@@ -29,7 +29,7 @@ import {
   detectSuspiciousPath,
   detectProvider,
   scanWorkspaceRepos,
-  scanMisplacedRepos,
+  scanUnregisteredCheckouts,
   buildWorkspaceConfig,
   promptSmartReinit,
   promptLanguageSelection,
@@ -387,13 +387,12 @@ export async function initCommand(
     // Provider auto-detection from .git/config (silent, no prompts)
     const providerInfo = detectProvider(targetDir);
 
-    // Umbrella auto-detection: scan repositories/ subdirectory
+    // Workspace auto-detection: registered repos plus nested checkouts in any layout
     // Mutable — may be updated after repo cloning in post-scaffold step
     let umbrellaDiscovery = scanWorkspaceRepos(targetDir);
 
-    // Detect repos in non-standard layout (repositories/{repo}/.git instead of {org}/{repo}/.git)
-    // Only called when standard detection failed — the two cases are mutually exclusive
-    const misplacedRepos = !umbrellaDiscovery ? scanMisplacedRepos(targetDir) : [];
+    // Clones nested in a checkout folder outside repositories/ are named, never moved or added
+    const unregisteredCheckouts = scanUnregisteredCheckouts(targetDir, umbrellaDiscovery);
 
     // Write minimal config.json BEFORE creating directory structure so that
     // findProjectRoot() can resolve this project during the init window (AD-3).
@@ -516,7 +515,7 @@ export async function initCommand(
         // Smart defaults
         applySmartDefaults(config, { adapter: toolName, isGitRepo });
 
-        // Always write workspace section — every workspace uses repositories/ structure
+        // Always write the workspace section; repos may sit anywhere (workspace.repos holds their paths)
         if (umbrellaDiscovery) {
           const wsFragment = buildWorkspaceConfig(umbrellaDiscovery, finalProjectName);
           config.workspace = wsFragment.workspace;
@@ -633,7 +632,7 @@ export async function initCommand(
       language,
       usedDotNotation,
       toolName === 'claude' ? { pluginAutoInstalled: skillsInstalled, marketplaceOnly: false } : undefined,
-      { misplacedRepos }
+      { unregisteredCheckouts }
     );
   } catch (error) {
     spinner.fail('Failed to create project');

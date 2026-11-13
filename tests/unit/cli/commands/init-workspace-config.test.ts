@@ -13,7 +13,7 @@ import os from 'os';
 // Mock all external deps to isolate config-writing behavior
 const mockScanWorkspaceRepos = vi.fn();
 const mockBuildWorkspaceConfig = vi.fn();
-const mockScanMisplacedRepos = vi.fn().mockReturnValue([]);
+const mockScanUnregisteredCheckouts = vi.fn().mockReturnValue([]);
 const mockDetectProvider = vi.fn().mockReturnValue(null);
 const mockDetectNestedSpecweave = vi.fn().mockReturnValue(null);
 const mockDetectUmbrellaParent = vi.fn().mockReturnValue(null);
@@ -40,7 +40,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectSuspiciousPath: mockDetectSuspiciousPath,
   detectProvider: mockDetectProvider,
   scanWorkspaceRepos: mockScanWorkspaceRepos,
-  scanMisplacedRepos: mockScanMisplacedRepos,
+  scanUnregisteredCheckouts: mockScanUnregisteredCheckouts,
   buildWorkspaceConfig: mockBuildWorkspaceConfig,
   promptSmartReinit: mockPromptSmartReinit,
   installAllPlugins: mockInstallAllPlugins,

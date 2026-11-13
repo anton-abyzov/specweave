@@ -7,6 +7,23 @@ sidebar_position: 18
 
 Keep your repositories where they are. A SpecWeave workspace has one planning root containing `.specweave/config.json`; its `workspace.repos` inventory can point to nested, sibling or external checkouts. The familiar `repositories/<owner>/<repo>` layout remains the default for new clones, not a requirement for existing work.
 
+## Repository layouts
+
+SpecWeave never asks you to move a repository. This is how each layout joins a workspace:
+
+| Layout | Example | How it joins |
+|---|---|---|
+| One repository | `my-app/` holding `.git` | Nothing to add. The folder is the project. |
+| A plain folder of repositories | `my-product/api`, `my-product/services/web` | `specweave init` adds every checkout up to three levels down, whatever the folders are called. |
+| Under `repositories/` | `repositories/acme/api`, `repositories/api` | `init` adds them even when the workspace folder is a Git repository itself. `specweave get owner/repo` clones here. |
+| Elsewhere inside a folder that is a Git repository | `planning/services/api` | `init` does not add these, since they may be fixtures or vendored copies. It prints `specweave get ./services/api` for each. |
+| Siblings or anywhere on disk | `~/code/api` beside `~/code/planning` | `specweave get ../api`. Never guessed. |
+| Git submodules | `libs/ui` holding a `.git` file | Part of the parent repository. |
+
+`specweave handoff --all` walks the same three levels and reports local-only work in every nested checkout and submodule, registered or not. SpecWithCode lists nested checkouts on its own too; add a sibling repository on the project's Environment page.
+
+Starting a new multi-repo product? Let `specweave get` clone into `repositories/<owner>/<repo>`. Everything then sits under one folder: one folder to approve in SpecWithCode, one copy to move to another machine, and task `Files` paths that name their repository. That is the whole case for it; repositories you already have can stay where they are.
+
 ## Preview and register
 
 Run this from any directory. A relative source path is resolved from the directory where you invoked the command, even when `--workspace` selects another planning root.

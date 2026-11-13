@@ -69,7 +69,7 @@ const mocks = vi.hoisted(() => ({
   execFileNoThrowSync: vi.fn(),
   detectProvider: vi.fn(),
   scanWorkspaceRepos: vi.fn(),
-  scanMisplacedRepos: vi.fn(),
+  scanUnregisteredCheckouts: vi.fn(),
   buildWorkspaceConfig: vi.fn(),
   promptSmartReinit: vi.fn(),
   installAllPlugins: vi.fn(),
@@ -173,7 +173,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectSuspiciousPath: mocks.detectSuspiciousPath,
   detectProvider: mocks.detectProvider,
   scanWorkspaceRepos: mocks.scanWorkspaceRepos,
-  scanMisplacedRepos: mocks.scanMisplacedRepos,
+  scanUnregisteredCheckouts: mocks.scanUnregisteredCheckouts,
   buildWorkspaceConfig: mocks.buildWorkspaceConfig,
   promptSmartReinit: mocks.promptSmartReinit,
   installAllPlugins: mocks.installAllPlugins,
@@ -341,7 +341,7 @@ function setupDefaultMocks() {
   // Provider, workspace
   mocks.detectProvider.mockReturnValue(null);
   mocks.scanWorkspaceRepos.mockReturnValue(null);
-  mocks.scanMisplacedRepos.mockReturnValue([]);
+  mocks.scanUnregisteredCheckouts.mockReturnValue([]);
 
   // Scaffold
   mocks.createMinimalConfig.mockReturnValue(undefined);

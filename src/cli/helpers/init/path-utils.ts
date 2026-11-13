@@ -8,6 +8,7 @@ import * as nativeFs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { isWithin, readWorkspaceConfig, canonicalPath } from '../../../core/workspace/context.js';
+import { findNestedCheckouts } from '../../../core/session/nested-repos.js';
 import type { ParentSpecweaveFolder, UmbrellaParentResult, SuspiciousPathResult, DiscoveredRepo, UmbrellaDiscoveryResult } from './types.js';
 import type { WorkspaceRepo, WorkspaceConfig } from '../../../core/config/types.js';
 
@@ -287,71 +288,96 @@ export function detectSuspiciousPath(targetDir: string): SuspiciousPathResult | 
   return null;
 }
 
+/** A `.git` file pointing into another repository's `worktrees/` folder: a linked worktree, not a repository. */
+function isLinkedWorktree(dir: string): boolean {
+  try {
+    const marker = path.join(dir, '.git');
+    if (!nativeFs.lstatSync(marker).isFile()) return false;
+    return /[\\/]worktrees[\\/]/.test(nativeFs.readFileSync(marker, 'utf8'));
+  } catch {
+    return false;
+  }
+}
+
+const canonicalOr = (p: string): string => {
+  try { return canonicalPath(p); } catch { return p; }
+};
+
 /**
- * Scan the repositories/ subdirectory to discover child repos in an umbrella structure.
- * Looks for repositories/{org}/{repo}/.git at exactly 2 levels deep.
+ * Checkouts nested in a folder, as paths relative to it: the walk `specweave handoff --all`
+ * and SpecWithCode use (up to three levels down, any folder names, dot and dependency
+ * folders skipped, each real path once). Linked worktrees belong to another repository.
+ */
+function nestedCheckouts(targetDir: string): string[] {
+  const root = path.resolve(targetDir);
+  const canonicalRoot = canonicalOr(root);
+  let found: string[];
+  try {
+    found = findNestedCheckouts(root);
+  } catch {
+    return []; // an unreadable workspace config; scanWorkspaceRepos reports it
+  }
+  return found
+    // Registered entries come back canonical (symlinks resolved), walked ones under `root`.
+    .map((found) => {
+      const relative = path.relative(root, found);
+      return relative.startsWith('..') || path.isAbsolute(relative) ? path.relative(canonicalRoot, found) : relative;
+    })
+    .filter((relative) => relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative))
+    .filter((relative) => !isLinkedWorktree(path.join(root, relative)));
+}
+
+/**
+ * Discover the repositories a workspace folder holds. No layout is required:
+ *
+ * - `repositories/<org>/<repo>` (where `specweave get` clones) and `repositories/<repo>` always count.
+ * - A folder that is not a Git checkout itself can only be a folder of repositories, so any
+ *   checkout up to three levels down counts too, whatever its folders are called
+ *   (`api`, `services/web`).
+ * - In a folder that is a checkout, other nested checkouts may be fixtures or vendored copies,
+ *   so they are not added; {@link scanUnregisteredCheckouts} names them for `specweave get ./<path>`.
+ *
+ * Sibling and external repositories are never guessed: `specweave get ../<path>` registers them.
  *
  * @param targetDir - The project root directory to scan
  * @returns UmbrellaDiscoveryResult if repos found, null otherwise
  */
 export function scanUmbrellaRepos(targetDir: string): UmbrellaDiscoveryResult | null {
-  const reposDir = path.join(targetDir, 'repositories');
+  let rootIsCheckout: boolean;
   try {
-    if (!fs.existsSync(reposDir) || !fs.statSync(reposDir).isDirectory()) {
-      return null;
-    }
+    if (!fs.existsSync(targetDir) || !fs.statSync(targetDir).isDirectory()) return null;
+    rootIsCheckout = fs.existsSync(path.join(targetDir, '.git'));
   } catch {
     return null;
   }
 
   const repos: DiscoveredRepo[] = [];
-  const orgs = new Set<string>();
-
-  let orgNames: string[];
-  try {
-    orgNames = fs.readdirSync(reposDir).filter((name: string) => !name.startsWith('.'));
-  } catch {
-    return null;
-  }
-
-  for (const orgName of orgNames) {
-    const orgPath = path.join(reposDir, orgName);
-    try {
-      if (!fs.statSync(orgPath).isDirectory()) continue;
-      const repoNames = fs.readdirSync(orgPath).filter((name: string) => !name.startsWith('.'));
-
-      for (const repoName of repoNames) {
-        const repoPath = path.join(orgPath, repoName);
-        if (!fs.statSync(repoPath).isDirectory()) continue;
-        if (fs.existsSync(path.join(repoPath, '.git'))) {
-          orgs.add(orgName);
-          repos.push({
-            org: orgName,
-            name: repoName,
-            path: path.relative(targetDir, repoPath),
-            hasGit: true,
-          });
-        }
-      }
-    } catch {
-      continue; // skip unreadable org dir
-    }
+  for (const relative of nestedCheckouts(targetDir)) {
+    const parts = relative.split(path.sep);
+    const conventional = parts[0] === 'repositories' && (parts.length === 2 || parts.length === 3);
+    if (rootIsCheckout && !conventional) continue;
+    repos.push({
+      org: conventional && parts.length === 3 ? parts[1] : '',
+      name: parts[parts.length - 1],
+      path: relative,
+      hasGit: true,
+    });
   }
 
   if (repos.length === 0) return null;
 
   return {
     isUmbrella: true,
-    repositoriesDir: reposDir,
-    orgs: Array.from(orgs),
+    repositoriesDir: path.join(targetDir, 'repositories'),
+    orgs: [...new Set(repos.map((repo) => repo.org).filter(Boolean))],
     repos,
     totalRepoCount: repos.length,
   };
 }
 
 /**
- * Scan the repositories/ subdirectory to discover workspace repos.
- * Alias for scanUmbrellaRepos — new canonical name per workspace config rework.
+ * Discover workspace repos: the registered `workspace.repos` entries, then the
+ * nested checkouts scanUmbrellaRepos finds that are not registered yet.
  *
  * @param targetDir - The project root directory to scan
  * @returns UmbrellaDiscoveryResult if repos found, null otherwise
@@ -378,46 +404,33 @@ export function scanWorkspaceRepos(targetDir: string): UmbrellaDiscoveryResult |
 }
 
 /**
- * Scan for repositories placed directly under repositories/ without an org subfolder.
- *
- * The standard umbrella layout is repositories/{org}/{repo}/.git (2 levels).
- * This function detects the non-standard 1-level pattern: repositories/{repo}/.git.
- * It is called only when scanUmbrellaRepos() returns null (mutually exclusive).
+ * Separate clones (a `.git` folder) nested in a workspace folder that is itself a Git
+ * checkout and not listed by the scan, as POSIX paths relative to it. Init names each
+ * with the command that adds it in place. Submodules and linked worktrees (a `.git`
+ * file) belong to the folder's own repository and are left out.
  *
  * @param targetDir - The project root directory to scan
- * @returns Array of misplaced repo names, or empty array if none found
+ * @param discovery - Result of scanWorkspaceRepos(), whose repositories are already listed
+ * @returns Relative paths of the unlisted clones, sorted
  */
-export function scanMisplacedRepos(targetDir: string): string[] {
-  const reposDir = path.join(targetDir, 'repositories');
+export function scanUnregisteredCheckouts(targetDir: string, discovery: UmbrellaDiscoveryResult | null): string[] {
   try {
-    if (!fs.existsSync(reposDir) || !fs.statSync(reposDir).isDirectory()) {
-      return [];
-    }
+    if (!fs.existsSync(path.join(targetDir, '.git'))) return [];
   } catch {
     return [];
   }
-
-  const misplaced: string[] = [];
-  let entries: string[];
-  try {
-    entries = fs.readdirSync(reposDir).filter((name: string) => !name.startsWith('.'));
-  } catch {
-    return [];
-  }
-
-  for (const name of entries) {
-    const entryPath = path.join(reposDir, name);
-    try {
-      if (!fs.statSync(entryPath).isDirectory()) continue;
-      if (fs.existsSync(path.join(entryPath, '.git'))) {
-        misplaced.push(name);
+  const root = path.resolve(targetDir);
+  const listed = new Set((discovery?.repos ?? []).map((repo) => canonicalOr(path.resolve(root, repo.path))));
+  return nestedCheckouts(root)
+    .filter((relative) => {
+      try {
+        if (!nativeFs.lstatSync(path.join(root, relative, '.git')).isDirectory()) return false;
+      } catch {
+        return false;
       }
-    } catch {
-      continue;
-    }
-  }
-
-  return misplaced;
+      return !listed.has(canonicalOr(path.join(root, relative)));
+    })
+    .map((relative) => relative.split(path.sep).join('/'));
 }
 
 /**

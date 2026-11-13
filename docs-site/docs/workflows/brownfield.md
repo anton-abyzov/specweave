@@ -62,7 +62,7 @@ When the code you need to change has no tests, make the first task a characteriz
 
 ## Several repositories
 
-For a product split across repositories, create an umbrella folder and add each repository to it:
+For a product split across repositories, create a workspace folder and add each repository to it:
 
 ```bash
 mkdir my-product && cd my-product
@@ -71,7 +71,7 @@ specweave get my-org/api
 specweave get my-org/web
 ```
 
-Repositories live under `repositories/<org>/<repo>/`. Commit inside each repository, then in the umbrella. `specweave get "my-org/*" --pattern "service-*"` adds many at once.
+`specweave get` clones into `repositories/<org>/<repo>/`, and `specweave get "my-org/*" --pattern "service-*"` adds many at once. Repositories you already have can stay where they are: run `specweave init` in the folder that holds them, or add each with `specweave get ../path`. See [Repository layouts](/docs/guides/workspace-adoption#repository-layouts). Commit inside each repository, then in the workspace folder.
 
 ## Trackers you already use
 

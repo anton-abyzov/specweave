@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs/promises';
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, mkdirSync, symlinkSync } from 'fs';
 import path from 'path';
 import os from 'os';
 import {
@@ -232,6 +232,54 @@ describe('path-utils', () => {
 
       const result = scanUmbrellaRepos(dir);
       expect(result!.repos[0].path).toBe(path.join('repositories', 'acme', 'my-app'));
+    });
+
+    it('counts a repository directly under repositories/, with no org folder', () => {
+      mkdirSync(path.join(dir, 'repositories', 'my-app', '.git'), { recursive: true });
+
+      const result = scanUmbrellaRepos(dir)!;
+      expect(result.repos.map((r) => [r.org, r.name, r.path])).toEqual([['', 'my-app', path.join('repositories', 'my-app')]]);
+      expect(result.orgs).toEqual([]);
+    });
+
+    it('counts checkouts under any folder names, up to three levels, in a folder that is not a checkout', () => {
+      mkdirSync(path.join(dir, 'api', '.git'), { recursive: true });
+      mkdirSync(path.join(dir, 'services', 'web', '.git'), { recursive: true });
+      mkdirSync(path.join(dir, 'node_modules', 'dep', '.git'), { recursive: true });
+      mkdirSync(path.join(dir, 'a', 'b', 'c', 'too-deep', '.git'), { recursive: true });
+
+      const result = scanUmbrellaRepos(dir)!;
+      expect(result.repos.map((r) => r.path)).toEqual(['api', path.join('services', 'web')]);
+      expect(result.repos.map((r) => r.org)).toEqual(['', '']);
+    });
+
+    it('in a folder that is a checkout, counts only repositories/ and leaves other nested clones out', () => {
+      mkdirSync(path.join(dir, '.git'));
+      mkdirSync(path.join(dir, 'repositories', 'acme', 'api', '.git'), { recursive: true });
+      mkdirSync(path.join(dir, 'fixtures', 'sample', '.git'), { recursive: true });
+
+      const result = scanUmbrellaRepos(dir)!;
+      expect(result.repos.map((r) => r.path)).toEqual([path.join('repositories', 'acme', 'api')]);
+    });
+
+    it('leaves out linked worktrees', () => {
+      mkdirSync(path.join(dir, 'repositories', 'acme', 'api', '.git'), { recursive: true });
+      mkdirSync(path.join(dir, 'repositories', 'acme', 'api-feature'), { recursive: true });
+      writeFileSync(
+        path.join(dir, 'repositories', 'acme', 'api-feature', '.git'),
+        `gitdir: ${path.join(dir, 'repositories', 'acme', 'api', '.git', 'worktrees', 'api-feature')}\n`,
+      );
+
+      const result = scanUmbrellaRepos(dir)!;
+      expect(result.repos.map((r) => r.path)).toEqual([path.join('repositories', 'acme', 'api')]);
+    });
+
+    it.skipIf(process.platform === 'win32')('lists a checkout reached through a symlink once', () => {
+      mkdirSync(path.join(dir, 'repositories', 'acme', 'api', '.git'), { recursive: true });
+      symlinkSync(path.join(dir, 'repositories', 'acme', 'api'), path.join(dir, 'repositories', 'acme', 'api-alias'));
+
+      const result = scanUmbrellaRepos(dir)!;
+      expect(result.repos.map((r) => r.path)).toEqual([path.join('repositories', 'acme', 'api')]);
     });
   });
 });

@@ -152,7 +152,7 @@ describe('applyInstructionTemplate', () => {
   });
 
   it('emits the umbrella section only for a workspace with repos, and drops it when it empties', () => {
-    const UMBRELLA = 'Umbrella project: nested repos live under';
+    const UMBRELLA = 'Multi-repo workspace: each repository in `workspace.repos`';
     const plain = apply('AGENTS.md');
     expect(plain.content).not.toContain(UMBRELLA);
 

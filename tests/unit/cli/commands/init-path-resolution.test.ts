@@ -78,7 +78,7 @@ const {
   mockShowNextSteps,
   mockInstallGitHooks,
   mockEnsureSkillCreator,
-  mockScanMisplacedRepos,
+  mockScanUnregisteredCheckouts,
 } = vi.hoisted(() => ({
   mockFindSourceDir: vi.fn().mockReturnValue('/mock/templates'),
   mockFindPackageRoot: vi.fn().mockReturnValue('/mock/package-root'),
@@ -87,7 +87,7 @@ const {
   mockDetectSuspiciousPath: vi.fn().mockReturnValue(null),
   mockDetectProvider: vi.fn().mockReturnValue(null),
   mockScanUmbrellaRepos: vi.fn().mockReturnValue(null),
-  mockScanMisplacedRepos: vi.fn().mockReturnValue([]),
+  mockScanUnregisteredCheckouts: vi.fn().mockReturnValue([]),
   mockBuildUmbrellaConfig: vi.fn().mockReturnValue({ workspace: { enabled: true, projectName: 'test', childRepos: [] }, repository: { umbrellaRepo: true } }),
   mockPromptSmartReinit: vi.fn(),
   mockInstallAllPlugins: vi.fn().mockResolvedValue({ success: true, marketplaceOnly: false }),
@@ -208,7 +208,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectProvider: mockDetectProvider,
   scanUmbrellaRepos: mockScanUmbrellaRepos,
   scanWorkspaceRepos: mockScanUmbrellaRepos,
-  scanMisplacedRepos: mockScanMisplacedRepos,
+  scanUnregisteredCheckouts: mockScanUnregisteredCheckouts,
   buildUmbrellaConfig: mockBuildUmbrellaConfig,
   buildWorkspaceConfig: mockBuildUmbrellaConfig,
   promptSmartReinit: mockPromptSmartReinit,
@@ -321,7 +321,7 @@ describe('init path resolution', () => {
     mockScanUmbrellaRepos.mockReturnValue(null);
     mockInstallAllPlugins.mockResolvedValue({ success: true, marketplaceOnly: false });
     mockEnsureSkillCreator.mockResolvedValue(undefined);
-    mockScanMisplacedRepos.mockReturnValue([]);
+    mockScanUnregisteredCheckouts.mockReturnValue([]);
     mockPromptLanguageSelection.mockResolvedValue({ language: 'en', keepEnglishOriginals: false });
     mockGetDefaultLanguageSelection.mockReturnValue({ language: 'en', keepEnglishOriginals: false });
     mockIsLanguageSupported.mockReturnValue(true);

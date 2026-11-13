@@ -565,7 +565,7 @@ export interface TestingConfig {
   commands?: string[];
   /** Require terminal tasks, a passing review after verify, and configured checks for nested owners. */
   strictClose?: boolean;
-  /** Strict verification commands, keyed by repositories/<organization>/<repository>. */
+  /** Strict verification commands, keyed by a registered repository's path or id, or by repositories/<organization>/<repository>. */
   ownerCommands?: Record<string, string[]>;
   coverage?: CoverageTargets;
 }
