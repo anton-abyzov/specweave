@@ -204,20 +204,19 @@ export function showNextSteps(
   console.log(chalk.gray(locale.t('cli', 'init.nextSteps.githubLink')));
   console.log('');
 
-  // Warn about repos found in non-standard layout (repositories/{name} instead of {org}/{name})
-  if (context.misplacedRepos && context.misplacedRepos.length > 0) {
-    const example = context.misplacedRepos[0];
-    console.log(chalk.yellow.bold('   ⚠  Non-standard repository layout detected'));
-    console.log(chalk.gray('   The following repos were found directly under repositories/'));
-    console.log(chalk.gray('   (expected: repositories/{org}/{repo}/, got: repositories/{repo}/):'));
-    for (const repoName of context.misplacedRepos) {
-      console.log(chalk.gray(`     repositories/${repoName}/`));
+  // Clones nested in this checkout that workspace.repos does not list: add any in place, never move them
+  const unregistered = context.unregisteredCheckouts ?? [];
+  if (unregistered.length > 0) {
+    const shown = unregistered.slice(0, 10);
+    console.log(chalk.cyan.bold('   Other Git checkouts in this folder'));
+    console.log(chalk.gray('   Not added to workspace.repos. Add the ones you work on where they are:'));
+    for (const relative of shown) {
+      const arg = /\s/.test(relative) ? `"./${relative}"` : `./${relative}`;
+      console.log(chalk.white(`     specweave get ${arg}`));
     }
-    console.log('');
-    console.log(chalk.cyan('   To fix, move repos into an org subfolder and re-init:'));
-    console.log(chalk.white(`     mkdir -p repositories/my-org`));
-    console.log(chalk.white(`     mv repositories/${example} repositories/my-org/${example}`));
-    console.log(chalk.white(`     specweave init .`));
+    if (unregistered.length > shown.length) {
+      console.log(chalk.gray(`     and ${unregistered.length - shown.length} more`));
+    }
     console.log('');
   }
 }

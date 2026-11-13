@@ -481,9 +481,9 @@ describe('mergeInstructionFile — conditional (when=) sections', () => {
     const on = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS, flags: { umbrella: true } });
     const off = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
     expect(on.content).toContain('<!-- SW:SECTION:umbrella');
-    expect(on.content).toContain('Umbrella project: nested repos live under');
+    expect(on.content).toContain('Multi-repo workspace: each repository in `workspace.repos`');
     expect(off.content).not.toContain('SW:SECTION:umbrella');
-    expect(off.content).not.toContain('Umbrella project: nested repos live under');
+    expect(off.content).not.toContain('Multi-repo workspace: each repository in `workspace.repos`');
     // CLAUDE.md imports AGENTS.md and carries no umbrella section of its own
     const claudeOn = mergeInstructionFile(null, claudeTemplate(), 'claude', V, NAME, { commands: CMDS, flags: { umbrella: true } });
     expect(claudeOn.content).not.toContain('SW:SECTION:umbrella');

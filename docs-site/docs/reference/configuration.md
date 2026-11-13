@@ -58,7 +58,7 @@ The single most useful edit is filling in `testing.commands`.
 |-------|---------|-------|
 | `commands` | `[]` | The commands `specweave verify` runs, in order. Empty means auto-detect: `package.json` scripts `test`, `lint`, `build`, then Cargo, pytest or Go. |
 | `strictClose` | `false` | Require terminal tasks, current acceptance criteria, strict verification and a passing review written after verification. Closure overrides do not bypass these checks. |
-| `ownerCommands` | not set | Map `repositories/<organization>/<repository>` to arrays of verification commands. With strict closure enabled, every such repository referenced by a task's `Files` needs a mapping. |
+| `ownerCommands` | not set | Map a repository to arrays of verification commands, keyed by its `workspace.repos` path or id, or by `repositories/<organization>/<repository>`. With strict closure enabled, every such repository referenced by a task's `Files` needs a mapping. |
 | `mode` | not set | Optional: `TDD`, `test-after`, `manual` or `none`. Unset means no test-order rule; TDD is never assumed. `TDD` adds "all tests must pass" to `specweave auto`, and `none` skips the coverage check. `init` writes it only when you choose one. |
 | `coverage.unit`, `coverage.integration` | not set | Line coverage targets in percent. Unset means no coverage check at close and no coverage criterion in `generate-rubric`. Below target is a warning, not a block. Written only when you set a target. |
 | `coverage.e2e` | not set | Share of written end-to-end tests that must pass. Not line coverage. |
@@ -125,7 +125,7 @@ These are the only `auto` keys 3.0 reads. Projects created with 2.x may also hav
 
 ### `workspace`
 
-Multi-repo workspaces: an umbrella folder with child repos under `repositories/`. `init` fills this in when it finds child repos.
+Multi-repo workspaces: the repositories one planning folder covers, wherever they sit. `init` fills this in from the checkouts it finds, and `specweave get` adds more. See [Repository layouts](/docs/guides/workspace-adoption#repository-layouts).
 
 ```json
 {
@@ -143,7 +143,7 @@ Multi-repo workspaces: an umbrella folder with child repos under `repositories/`
 |-------|-------|
 | `name` | Workspace name. |
 | `rootRepo` | Sync target for the umbrella repo itself. |
-| `repos[].id` | Must match the repository name. |
+| `repos[].id` | The repository name. When two repositories share a name, `init` adds the parent folder (`services-api`). |
 | `repos[].path` | Relative or absolute path. |
 | `repos[].prefix`, `repos[].role`, `repos[].techStack` | Routing hints. |
 | `repos[].sync` | Per-repo `github`, `jira` or `ado` target. |

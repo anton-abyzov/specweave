@@ -29,7 +29,7 @@ Tasks in spec.md: `### T-01 Title`, then `- AC: AC-01 | Files: src/a.ts, tests/e
 <!-- /SECTION -->
 
 <!-- SECTION:umbrella when="umbrella" -->
-Umbrella project: nested repos live under `repositories/<org>/<repo>/`; commit inside each nested repo, then the umbrella.
+Multi-repo workspace: each repository in `workspace.repos` of `.specweave/config.json` is its own Git checkout, wherever it sits; commit inside it, then in the workspace root.
 <!-- /SECTION -->
 
 <!-- SECTION:glossary when="glossary" -->

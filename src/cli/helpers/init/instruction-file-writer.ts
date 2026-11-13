@@ -68,8 +68,8 @@ export function backupFilePath(projectPath: string, filename: string, now: Date 
  *
  * `umbrella` is on when `config.workspace.repos` is non-empty. During `init` the
  * instruction files are written before the workspace section exists, so a config
- * without a `workspace` key falls back to the same `repositories/<org>/<repo>`
- * scan that init uses to build it.
+ * without a `workspace` key falls back to the same nested-checkout scan that
+ * init uses to build it.
  *
  * `jev` is on only when `config.jev.enabled` is literally `true` — the Jev
  * section is opt-in guidance for a paid external model, so a missing or

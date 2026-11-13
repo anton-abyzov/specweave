@@ -78,7 +78,7 @@ const {
   mockDetectSuspiciousPath,
   mockDetectProvider,
   mockScanUmbrellaRepos,
-  mockScanMisplacedRepos,
+  mockScanUnregisteredCheckouts,
   mockBuildUmbrellaConfig,
   mockPromptSmartReinit,
   mockInstallAllPlugins,
@@ -98,7 +98,7 @@ const {
   mockDetectSuspiciousPath: vi.fn().mockReturnValue(null),
   mockDetectProvider: vi.fn().mockReturnValue(null),
   mockScanUmbrellaRepos: vi.fn().mockReturnValue(null),
-  mockScanMisplacedRepos: vi.fn().mockReturnValue([]),
+  mockScanUnregisteredCheckouts: vi.fn().mockReturnValue([]),
   mockBuildUmbrellaConfig: vi.fn().mockReturnValue({ workspace: { enabled: true, projectName: 'test', childRepos: [] }, repository: { umbrellaRepo: true } }),
   mockPromptSmartReinit: vi.fn(),
   mockInstallAllPlugins: vi.fn().mockResolvedValue({ success: true, marketplaceOnly: false }),
@@ -218,7 +218,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   detectProvider: mockDetectProvider,
   scanUmbrellaRepos: mockScanUmbrellaRepos,
   scanWorkspaceRepos: mockScanUmbrellaRepos,
-  scanMisplacedRepos: mockScanMisplacedRepos,
+  scanUnregisteredCheckouts: mockScanUnregisteredCheckouts,
   buildUmbrellaConfig: mockBuildUmbrellaConfig,
   buildWorkspaceConfig: mockBuildUmbrellaConfig,
   promptSmartReinit: mockPromptSmartReinit,
@@ -755,10 +755,13 @@ describe('NextStepsContext type cleanup', () => {
     }).not.toThrow();
   });
 
-  it('showNextSteps warns about misplaced repos', () => {
-    showNextSteps('test', 'claude', 'en', true, { pluginAutoInstalled: true }, { misplacedRepos: ['orphan-repo'] });
+  it('showNextSteps names unregistered checkouts with the command that adds each in place', () => {
+    showNextSteps('test', 'claude', 'en', true, { pluginAutoInstalled: true }, { unregisteredCheckouts: ['services/api', 'my repo'] });
 
     const output = consoleLogSpy.mock.calls.map(c => c[0]).join('\n');
-    expect(output).toContain('orphan-repo');
+    expect(output).toContain('specweave get ./services/api');
+    expect(output).toContain('specweave get "./my repo"');
+    expect(output).not.toContain('mv ');
+    expect(output).not.toContain('Non-standard');
   });
 });

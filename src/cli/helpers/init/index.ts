@@ -29,7 +29,7 @@ export {
   detectSuspiciousPath,
   scanUmbrellaRepos,
   scanWorkspaceRepos,
-  scanMisplacedRepos,
+  scanUnregisteredCheckouts,
   buildUmbrellaConfig,
   buildWorkspaceConfig,
   isSystemTempDir,

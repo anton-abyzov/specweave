@@ -197,7 +197,7 @@ export interface UmbrellaParentResult {
 }
 
 /**
- * A discovered child repository inside repositories/{org}/{name}
+ * A discovered child repository: `repositories/<org>/<repo>` or any nested checkout
  */
 export interface DiscoveredRepo {
   registered?: import('../../../core/config/types.js').WorkspaceRepo;
@@ -208,7 +208,7 @@ export interface DiscoveredRepo {
 }
 
 /**
- * Result of scanning the repositories/ directory for umbrella detection
+ * Result of scanning a folder for the repositories it holds
  */
 export interface UmbrellaDiscoveryResult {
   isUmbrella: boolean;
@@ -222,8 +222,8 @@ export interface UmbrellaDiscoveryResult {
  * Context for conditional next steps display
  */
 export interface NextStepsContext {
-  /** Repo names found at repositories/{name}/.git (1-level, missing org subfolder) */
-  misplacedRepos?: string[];
+  /** Separate clones nested in a checkout folder and not in workspace.repos (POSIX paths relative to it) */
+  unregisteredCheckouts?: string[];
 }
 
 /**
