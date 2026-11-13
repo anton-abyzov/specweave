@@ -7,7 +7,7 @@ import { reviewCommand } from '../../../src/cli/commands/review.js';
 import { checkClosureGate, reviewPolicyErrors } from '../../../src/core/tasks/closure-gate.js';
 import { formatRecordHeader, incrementRepoPaths, parseRecordHeader, readReviewRecords, type ReviewRecordFields } from '../../../src/core/review/record.js';
 import { pickReviewer, reviewersFrom } from '../../../src/core/review/reviewer.js';
-import { policyAccepts } from '../../../src/core/review/policy.js';
+import { parseReviewer, policyAccepts } from '../../../src/core/review/policy.js';
 
 const ID = '0001-demo';
 const APP = 'repositories/acme/app';
@@ -197,6 +197,35 @@ describe('review policy evidence (Sol review, November 13, 2026)', () => {
     expect(header).toContain('repo=repositories/acme/My%20App');
     expect(header.indexOf('-->')).toBe(header.length - 3);
     expect(parseRecordHeader(header)).toMatchObject({ repo: 'repositories/acme/My App', author: 'x --> y' });
+  });
+
+  it('checks wildcard task Files and takes a path starting with a colon literally', async () => {
+    const withFiles = (files: string) => {
+      const text = fs.readFileSync(path.join(inc, 'spec.md'), 'utf8').replace(/Files: [^|]+\|/, `Files: ${files} |`);
+      fs.writeFileSync(path.join(inc, 'spec.md'), text);
+    };
+    withFiles(`${APP}/src/*.ts`);
+    expect(await record({ record: answer('ship'), model: 'gpt-6.1-sol' })).toBe(0);
+    expect(reviewPolicyErrors(root, inc, undefined)).toEqual([]);
+    write(path.join(app, 'src/total.ts'), 'export const total = 3;\n');
+    gitIn(app, 'commit', '-qam', 'change after review');
+    expect(reviewPolicyErrors(root, inc, undefined)[0]).toContain('src/total.ts');
+    withFiles(`${APP}/:(invalid)src/total.ts`);
+    expect(reviewPolicyErrors(root, inc, undefined)).toEqual([]);
+  });
+
+  it('keeps underscores inside a model id and strips only the marks around it', () => {
+    expect(parseReviewer('openai (gpt_6_1_sol)')).toEqual({ family: 'openai', model: 'gpt_6_1_sol' });
+    expect(parseReviewer('**openai** (`gpt-6.1-sol`)')).toEqual({ family: 'openai', model: 'gpt-6.1-sol' });
+    expect(policyAccepts({ family: 'openai', model: 'gpt_6_1_sol' }, { family: 'openai', model: 'gpt-6.1-sol' }, 'claude')).toBe(true);
+  });
+
+  it('with a required policy, an older same-family fix first does not block a newer matching ship', () => {
+    const at = (iso: string) => ({ at: iso });
+    stamp('review-claude-1.md', { reviewer: 'claude', model: 'claude-opus-5-5', family: 'claude', ...at('2026-11-13T08:00:00Z') }, 'fix first', checkout);
+    stamp('review-gpt-6.1-sol-1.md', at('2026-11-13T09:00:00Z'), 'ship', checkout);
+    expect(reviewPolicyErrors(root, inc, undefined)).toEqual([]);
+    expect(checkClosureGate(inc, ID).notices.join('\n')).not.toContain('says fix first');
   });
 
   it('review.reviewer yields to an increment policy; an explicit --reviewer runs with a warning', () => {

@@ -75,18 +75,23 @@ export function sameModel(a: string, b: string): boolean {
 }
 
 /** `openai (gpt-6.1-sol)`, `openai`, `gpt-6.1-sol`, `cross-family`, `any other family`. */
+/** Markdown emphasis or code marks around a value (`**openai**`, `` `gpt_6_1_sol` ``), never inside it. */
+function unwrap(value: string): string {
+  return value.trim().replace(/^[`*_]+|[`*_]+$/g, '').trim();
+}
+
 export function parseReviewer(value: string): { family?: string; model?: string } {
-  const v = value.trim().replace(/[`*_]/g, '');
+  const v = unwrap(value);
   if (!v) return {};
   const paren = v.match(/^([^()]+?)\s*\(([^()]+)\)\s*$/);
-  const head = (paren ? paren[1] : v).trim().toLowerCase();
-  const model = paren ? paren[2].trim() : undefined;
+  const head = unwrap(paren ? paren[1] : v).toLowerCase();
+  const model = paren ? unwrap(paren[2]) || undefined : undefined;
   if (/^(cross[- ]?family|cross[- ]?model|any other family|other family|auto)$/.test(head)) {
     return { family: 'cross-family', ...(model ? { model } : {}) };
   }
   if ((REVIEW_FAMILIES as readonly string[]).includes(head)) return { family: head, ...(model ? { model } : {}) };
   // A bare model id: its family comes from the id.
-  return { family: familyOfModel(head), model: paren ? model : v.trim() };
+  return { family: familyOfModel(head), model: paren ? model : v };
 }
 
 function parseDepth(value: string): ReviewDepth | undefined {

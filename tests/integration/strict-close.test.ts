@@ -71,7 +71,7 @@ it('requires real owning product checks and a fresh ship review only under stric
     const crossReview = path.join(inc, 'reports/review-other.md');
     fs.writeFileSync(crossReview, 'Verdict: fix first\n');
     fs.utimesSync(crossReview, 1, 1);
-    expect(run('complete', id)).toMatchObject({ code: 1, text: expect.stringContaining('latest cross-model review') });
+    expect(run('complete', id)).toMatchObject({ code: 1, text: expect.stringContaining('Review policy (review.crossModel)') });
     // review.crossModel requires a recorded review by another family, at the code being closed.
     fs.writeFileSync(crossReview, 'Verdict: ship\n');
     expect(run('complete', id)).toMatchObject({ code: 1, text: expect.stringContaining('review.crossModel') });

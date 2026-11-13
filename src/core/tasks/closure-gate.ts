@@ -14,7 +14,6 @@ import { readVerifyReport, describeUncheckedAcs, specDeclaresAcs, deriveAcStatus
 import { readStrictClose, resolveOwnerChecks } from './strict-close.js';
 import { deriveAcAcceptance, acCloses } from './accepted-skip.js';
 import { loadTaskBoard } from './task-board.js';
-import { parseVerdict } from '../review/reviewer.js';
 import { authorFamilies, git } from '../review/brief.js';
 import { canonicalFamily, describePolicy, FAMILY_LABEL, policyAccepts, resolveReviewPolicy } from '../review/policy.js';
 import { incrementRepoPaths, readReviewRecords, sameRepo, type ReviewRecord } from '../review/record.js';
@@ -113,7 +112,7 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
     if (strict) errors.push('Unable to read the task board for strict closure');
   }
 
-  (strict ? errors : notices).push(...reviewNotices(incrementDir, strict ? verify?.ranAt ?? '' : undefined));
+  (strict ? errors : notices).push(...reviewNotices(root, incrementDir, strict ? verify?.ranAt ?? '' : undefined));
 
   // A review policy that requires a review (spec.md `## Review`, review.policy,
   // review.crossModel) is checked by family, verdict and reviewed code.
@@ -127,44 +126,27 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
 }
 
 /**
- * Review notices: none on file, a `fix first` verdict in the newest
- * `reports/review*.md`, or no cross-model review while `review.crossModel` is on.
+ * Review notices without a required policy: none on file, or the newest review
+ * (by its recorded time) says fix first, has no verdict, or predates verify.
+ * With a required policy (spec.md `## Review`, review.policy, review.crossModel)
+ * reviewPolicyErrors is the one judge, so nothing here contradicts it.
  */
-function reviewNotices(incrementDir: string, verifiedAt?: string): string[] {
-  const reportsDir = path.join(incrementDir, 'reports');
-  const reviews = fs.existsSync(reportsDir)
-    ? fs.readdirSync(reportsDir)
-        .filter((f) => /^review(-[A-Za-z0-9._-]+)?\.md$/.test(f))
-        .map((f) => ({ f, mtime: fs.statSync(path.join(reportsDir, f)).mtimeMs }))
-        .sort((a, b) => b.mtime - a.mtime)
-    : [];
+function reviewNotices(root: string, incrementDir: string, verifiedAt?: string): string[] {
+  try {
+    if (resolveReviewPolicy(root, incrementDir).required) return [];
+  } catch {
+    // an unreadable config leaves the plain notices
+  }
+  const reviews = readReviewRecords(incrementDir);
   if (!reviews.length) return ['no reports/review.md or review-<reviewer>.md — run sw-review (or `specweave review` for another model) before shipping user-facing work'];
   const notices: string[] = [];
-  const newest = fs.readFileSync(path.join(reportsDir, reviews[0].f), 'utf8');
-  if (verifiedAt !== undefined && (!Number.isFinite(Date.parse(verifiedAt)) || reviews[0].mtime < Date.parse(verifiedAt))) {
+  const newest = reviews[0];
+  if (verifiedAt !== undefined && (!Number.isFinite(Date.parse(verifiedAt)) || newest.atMs < Date.parse(verifiedAt))) {
     notices.push('The newest review predates verification — review again after verify');
   }
-  if (verifiedAt !== undefined && !parseVerdict(newest)) notices.push('The newest review needs an explicit Verdict: ship');
-  if (parseVerdict(newest) === 'fix first') notices.push(`reports/${reviews[0].f} says fix first — fix its critical and high findings and review again`);
-  if (crossModelRequired(incrementDir)) {
-    const crossModel = reviews.find((r) => r.f.startsWith('review-'));
-    if (!crossModel) {
-      notices.push('review.crossModel is on but no cross-model review is on file — run `specweave review`');
-    } else if (verifiedAt !== undefined && (crossModel.mtime < Date.parse(verifiedAt) ||
-      parseVerdict(fs.readFileSync(path.join(reportsDir, crossModel.f), 'utf8')) !== 'ship')) {
-      notices.push('The latest cross-model review must say ship and follow verification — run `specweave review`');
-    }
-  }
+  if (verifiedAt !== undefined && !newest.verdict) notices.push('The newest review needs an explicit Verdict: ship');
+  if (newest.verdict === 'fix first') notices.push(`reports/${newest.file} says fix first — fix its critical and high findings and review again`);
   return notices;
-}
-
-function crossModelRequired(incrementDir: string): boolean {
-  try {
-    const cfg = JSON.parse(fs.readFileSync(path.resolve(incrementDir, '..', '..', 'config.json'), 'utf-8')) as { review?: { crossModel?: unknown } };
-    return cfg.review?.crossModel === true;
-  } catch {
-    return false;
-  }
 }
 
 function describeRecord(r: ReviewRecord): string {
@@ -232,8 +214,10 @@ export function reviewPolicyErrors(root: string, incrementDir: string, verifiedA
       errors.push(`The reviewed commit ${match.head.slice(0, 12)} is not in ${repo === '.' ? 'the project' : repo} — fetch it (git fetch origin) and close again`);
       continue;
     }
-    // Literal pathspecs: a task File is a path, never Git pathspec magic.
-    const diff = git(repoDir, ['--literal-pathspecs', 'diff', '--name-only', match.head, 'HEAD', '--', ...paths]);
+    // Task Files may be globs (`src/**/*.ts`), so pathspecs keep wildcards; a
+    // leading `:` would read as pathspec magic, so such a path is taken literally.
+    const pathspecs = paths.map((p) => (p.startsWith(':') ? `:(literal)${p}` : p));
+    const diff = git(repoDir, ['diff', '--name-only', match.head, 'HEAD', '--', ...pathspecs]);
     if (diff === null) {
       errors.push(`Could not compare the reviewed commit ${match.head.slice(0, 12)} with HEAD${where} (git diff failed) — check the task Files and the checkout, then close again`);
       continue;

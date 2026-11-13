@@ -183,7 +183,7 @@ describe('specweave review', () => {
   it('exit 3 on fix first and when the answer has no verdict; the close gate notes fix first', async () => {
     configure({ reviewer: 'fake', reviewers: { fake: { command: fakeReviewer('# Review\nVerdict: fix first\n## [high] src/total.ts:1 starts at 1'), family: 'openai' } } });
     expect(await reviewCommand(ID, { cwd: root })).toBe(3);
-    expect(checkClosureGate(incDir, ID).notices.join('\n')).toContain('reports/review-fake.md says fix first');
+    expect(checkClosureGate(incDir, ID).notices.join('\n')).toMatch(/reports\/reviews\/review-fake-\d+\.md says fix first/);
 
     configure({ reviewer: 'fake', reviewers: { fake: { command: fakeReviewer('Looks fine to me.'), family: 'openai' } } });
     expect(await reviewCommand(ID, { cwd: root })).toBe(3);
