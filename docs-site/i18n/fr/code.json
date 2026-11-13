@@ -3882,12 +3882,12 @@
     "description": "Benefit row on the SpecWithCode page: heading about projects, the coordinator and threads. Keep product names in English"
   },
   "code.b.nav.aide": {
-    "message": "Aide",
+    "message": "Percy",
     "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
   },
   "code.b.aide.title": {
     "message": "Un assistant personnel dans la même app",
-    "description": "Benefit row on the SpecWithCode page: heading about Aide, the personal assistant. Keep product names in English"
+    "description": "Benefit row on the SpecWithCode page: heading about Percy, the personal assistant. Keep product names in English"
   },
   "code.b.aide.link": {
     "message": "Projets personnels",
@@ -3950,8 +3950,8 @@
     "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
   },
   "code.b.aide.body": {
-    "message": "Aide vous résume chaque matin les e-mails qui attendent une réponse et votre journée, brouillons prêts. Il n’envoie que les réponses que vous approuvez. Parlez-lui sur l’ordinateur, sur votre iPhone ou via votre propre bot Telegram.",
-    "description": "Benefit row on the SpecWithCode page: text about Aide, the personal assistant. Keep product names in English"
+    "message": "Percy vous résume chaque matin les e-mails qui attendent une réponse et votre journée, brouillons prêts. Il n’envoie que les réponses que vous approuvez. Parlez-lui sur l’ordinateur, sur votre iPhone ou via votre propre bot Telegram.",
+    "description": "Benefit row on the SpecWithCode page: text about Percy, the personal assistant. Keep product names in English"
   },
   "code.b.aide.point1": {
     "message": "Lit les comptes Gmail, Calendar et Drive que vous autorisez",
@@ -3962,8 +3962,8 @@
     "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
   },
   "code.b.aide.fine": {
-    "message": "Aide tourne sur votre ordinateur, donc il répond tant que cet ordinateur est allumé.",
-    "description": "Benefit row on the SpecWithCode page: fine print under the Aide row. Keep product names in English"
+    "message": "Percy tourne sur votre ordinateur, donc il répond tant que cet ordinateur est allumé.",
+    "description": "Benefit row on the SpecWithCode page: fine print under the Percy row. Keep product names in English"
   },
   "code.b.designs.body": {
     "message": "Chaque projet a un onglet Designs. Vous et vos agents dessinez sur le même canevas, et les fichiers sont dans le dépôt sous {path}, donc un design suit le code auquel il appartient.",
@@ -4106,7 +4106,7 @@
     "description": "Benefit diagram on the SpecWithCode page: the three things a project keeps for every thread"
   },
   "code.b.aide.label": {
-    "message": "Aide sur un téléphone. Le point de 08:00 liste deux e-mails qui attendent une réponse et les trois événements du jour, puis montre un brouillon avec Envoyer et Ne pas envoyer. Rien n’est envoyé tant que vous n’avez pas choisi Envoyer.",
+    "message": "Percy sur un téléphone. Le point de 08:00 liste deux e-mails qui attendent une réponse et les trois événements du jour, puis montre un brouillon avec Envoyer et Ne pas envoyer. Rien n’est envoyé tant que vous n’avez pas choisi Envoyer.",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the personal assistant drawing"
   },
   "code.b.aide.briefing": {

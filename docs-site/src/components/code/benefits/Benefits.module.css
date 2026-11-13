@@ -112,7 +112,7 @@
 @keyframes beadDown { to { background-position-y: 9px; } }
 @keyframes beadRight { to { background-position-x: 9px; } }
 
-/* ---------- 3. Aide ---------- */
+/* ---------- 3. Percy ---------- */
 .aideStage .stageInner { flex-direction: row; align-items: center; justify-content: center; gap: 28px; min-height: 340px; }
 .phone { display: flex; flex-direction: column; gap: 8px; width: 236px; min-height: 316px; padding: 14px 12px; border: 6px solid var(--wv-ink); border-radius: 30px; background: var(--wv-canvas); }
 .phoneHead { display: flex; justify-content: space-between; align-items: baseline; padding: 0 2px; }

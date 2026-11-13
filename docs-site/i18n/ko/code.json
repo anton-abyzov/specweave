@@ -3882,12 +3882,12 @@
     "description": "Benefit row on the SpecWithCode page: heading about projects, the coordinator and threads. Keep product names in English"
   },
   "code.b.nav.aide": {
-    "message": "Aide",
+    "message": "Percy",
     "description": "Short name of a benefit row in the index of rows on the SpecWithCode page"
   },
   "code.b.aide.title": {
     "message": "같은 앱 안의 개인 비서",
-    "description": "Benefit row on the SpecWithCode page: heading about Aide, the personal assistant. Keep product names in English"
+    "description": "Benefit row on the SpecWithCode page: heading about Percy, the personal assistant. Keep product names in English"
   },
   "code.b.aide.link": {
     "message": "개인 프로젝트",
@@ -3950,8 +3950,8 @@
     "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
   },
   "code.b.aide.body": {
-    "message": "Aide가 매일 아침 답장이 필요한 메일과 오늘 일정을 정리하고 초안까지 준비해요. 승인한 답장만 보내요. 데스크톱, iPhone, 또는 내 Telegram 봇으로 말을 걸 수 있어요.",
-    "description": "Benefit row on the SpecWithCode page: text about Aide, the personal assistant. Keep product names in English"
+    "message": "Percy가 매일 아침 답장이 필요한 메일과 오늘 일정을 정리하고 초안까지 준비해요. 승인한 답장만 보내요. 데스크톱, iPhone, 또는 내 Telegram 봇으로 말을 걸 수 있어요.",
+    "description": "Benefit row on the SpecWithCode page: text about Percy, the personal assistant. Keep product names in English"
   },
   "code.b.aide.point1": {
     "message": "허용한 Gmail, Calendar, Drive 계정을 읽어요",
@@ -3962,8 +3962,8 @@
     "description": "Benefit row on the SpecWithCode page: point. Keep product names in English"
   },
   "code.b.aide.fine": {
-    "message": "Aide는 내 컴퓨터에서 실행되므로 그 컴퓨터가 켜져 있는 동안에만 답해요.",
-    "description": "Benefit row on the SpecWithCode page: fine print under the Aide row. Keep product names in English"
+    "message": "Percy는 내 컴퓨터에서 실행되므로 그 컴퓨터가 켜져 있는 동안에만 답해요.",
+    "description": "Benefit row on the SpecWithCode page: fine print under the Percy row. Keep product names in English"
   },
   "code.b.designs.body": {
     "message": "모든 프로젝트에 디자인 탭이 있어요. 나와 에이전트가 같은 캔버스에 그리고, 파일은 저장소의 {path} 아래에 있어서 디자인이 해당 코드와 함께 움직여요.",
@@ -4106,7 +4106,7 @@
     "description": "Benefit diagram on the SpecWithCode page: the three things a project keeps for every thread"
   },
   "code.b.aide.label": {
-    "message": "휴대폰의 Aide예요. 오전 8시 브리핑에 답장이 필요한 메일 2통과 오늘 일정 3개가 나오고, 이어서 보내기와 보내지 않기 버튼이 있는 초안이 보여요. 보내기를 고르기 전에는 아무것도 전송되지 않아요.",
+    "message": "휴대폰의 Percy예요. 오전 8시 브리핑에 답장이 필요한 메일 2통과 오늘 일정 3개가 나오고, 이어서 보내기와 보내지 않기 버튼이 있는 초안이 보여요. 보내기를 고르기 전에는 아무것도 전송되지 않아요.",
     "description": "Benefit diagram on the SpecWithCode page: accessible description of the personal assistant drawing"
   },
   "code.b.aide.briefing": {
