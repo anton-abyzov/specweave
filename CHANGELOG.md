@@ -1,3 +1,12 @@
+## [Unreleased]
+
+### Added
+
+- Review policy. An increment's spec.md can say who reviews it, how deep and whether closure waits for it: `## Review` with `- Reviewer: openai (gpt-6.1-sol)`, `- Depth: deep`, `- Required: yes`. `review.policy` in `.specweave/config.json` sets the project default, and `review.crossModel: true` still means a required review by another family.
+- `specweave review --record <file> --model <id> [--head <sha>]` records a review written in any tool (a SpecWithCode review thread, Codex, Claude Code) with its model, family, author, repository and reviewed commit, and says whether it satisfies the policy.
+- With a required policy, `specweave complete` (and verify's strict-close check) accepts only a `ship` review by the required family, recorded after verification, whose reviewed commit has the same content as the code being closed in every repository the tasks touch. A squash-merged pull request passes; a same-family review, `fix first` or later changes to the reviewed files do not, and the message names the review it found and the next command.
+- `specweave review` follows the policy's family and model, runs Codex at `xhigh` for a deep review, and names the policy in the brief.
+
 ## [3.1.22] - 2026-11-10
 
 ### Changed

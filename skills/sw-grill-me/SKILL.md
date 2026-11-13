@@ -2,7 +2,7 @@
 description: Interview the user relentlessly, in rounds, until every decision in a plan is settled; facts are your job, decisions are theirs. Use for "grill me", "interview me", "stress-test this plan".
 argument-hint: "[topic or increment-id]"
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # sw-grill-me: settle every decision before building
@@ -22,7 +22,8 @@ or whenever the user asks to be grilled. A clear, small request does not need it
    things users forget: scope and non-goals; users and flows; the data and the words
    for it; integrations, installs, accounts and keys; failures and edge cases;
    security and privacy; performance and scale; rollout and migration; how a machine
-   will check that it works.
+   will check that it works; and who reviews it (for complex work, recommend a deep
+   review by another model family, recorded as `## Review` with `Required: yes`).
 3. **Facts are yours.** Anything the code, docs, config or a quick command can answer,
    look up (in a subagent if your tool has them). Never ask the user what you could
    find. A lookup still running blocks only the questions that depend on it.

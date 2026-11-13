@@ -68,7 +68,7 @@ export interface ReviewerChoice {
 export function pickReviewer(
   reviewers: Reviewer[],
   authorFamily: string | undefined,
-  opts: { explicit?: string; configured?: string; available?: (r: Reviewer) => boolean } = {},
+  opts: { explicit?: string; configured?: string; available?: (r: Reviewer) => boolean; policyFamily?: string } = {},
 ): ReviewerChoice {
   const available = opts.available ?? ((r: Reviewer) => onPath(commandBinary(r.command)));
   const named = opts.explicit || (opts.configured && opts.configured !== 'auto' ? opts.configured : undefined);
@@ -78,13 +78,33 @@ export function pickReviewer(
     return { reviewer: r, why: opts.explicit ? '--reviewer' : 'review.reviewer' };
   }
   const order = [...reviewers].sort((a, b) => Number(b.name === 'codex') - Number(a.name === 'codex'));
-  const other = order.filter((r) => r.family !== authorFamily);
+  // A policy that names a family (spec.md `## Review`, review.policy) narrows the
+  // choice to it; it never falls back to another family.
+  const family = opts.policyFamily && opts.policyFamily !== 'cross-family' ? opts.policyFamily : undefined;
+  const other = family ? order.filter((r) => r.family === family) : order.filter((r) => r.family !== authorFamily);
   const pick = other.find(available);
   if (pick) {
+    if (family) return { reviewer: pick, why: `the review policy asks for ${family}` };
     return { reviewer: pick, why: authorFamily ? `another family than the author (${authorFamily})` : 'author unknown' };
   }
   const missing = other.map((r) => commandBinary(r.command)).join(', ') || 'none configured';
+  if (family) return { why: `the review policy asks for ${family}, and no ${family} reviewer is installed (${missing})` };
   return { why: `no reviewer from another family than ${authorFamily ?? 'the author'} is installed (${missing})` };
+}
+
+/**
+ * A built-in reviewer's command for the policy: the model it pins and, for a
+ * deep review, Codex at `xhigh`. Commands from `review.reviewers` run as written.
+ */
+export function commandForPolicy(reviewer: Reviewer, policy: { model?: string; depth?: string }): string {
+  let command = reviewer.command;
+  if (BUILTIN_REVIEWERS[reviewer.name]?.command !== command) return command;
+  // The model comes from spec.md and lands in a shell command: plain ids only.
+  if (policy.model && /^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(policy.model)) command = command.replace(/(^|\s)(-m|--model)(\s+)\S+/, `$1$2$3${policy.model}`);
+  if (policy.depth === 'deep' && reviewer.name === 'codex') {
+    command = command.replace(/model_reasoning_effort="[a-z]+"/, 'model_reasoning_effort="xhigh"');
+  }
+  return command;
 }
 
 /** Env var holding the answer file; `{out}` becomes a quoted reference to it, never the path itself. */

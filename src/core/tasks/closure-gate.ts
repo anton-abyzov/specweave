@@ -15,6 +15,9 @@ import { readStrictClose, resolveOwnerChecks } from './strict-close.js';
 import { deriveAcAcceptance, acCloses } from './accepted-skip.js';
 import { loadTaskBoard } from './task-board.js';
 import { parseVerdict } from '../review/reviewer.js';
+import { authorFamilies, git } from '../review/brief.js';
+import { describePolicy, FAMILY_LABEL, policyAccepts, resolveReviewPolicy } from '../review/policy.js';
+import { incrementRepoPaths, readReviewRecords, sameRepo, type ReviewRecord } from '../review/record.js';
 
 export interface ClosureGateResult {
   ok: boolean;
@@ -112,6 +115,14 @@ export function checkClosureGate(incrementDir: string, incrementId: string, opts
 
   (strict ? errors : notices).push(...reviewNotices(incrementDir, strict ? verify?.ranAt ?? '' : undefined));
 
+  // A review policy that requires a review (spec.md `## Review`, review.policy,
+  // review.crossModel) is checked by family, verdict and reviewed code.
+  const policyProblems = reviewPolicyErrors(root, incrementDir, verify?.ranAt);
+  if (policyProblems.length) {
+    if (!reason) errors.push(...policyProblems);
+    else notices.push(...policyProblems.map((p) => `${p} — closing anyway, reason: ${reason}`));
+  }
+
   return { ok: errors.length === 0, errors, notices, info };
 }
 
@@ -154,4 +165,70 @@ function crossModelRequired(incrementDir: string): boolean {
   } catch {
     return false;
   }
+}
+
+function describeRecord(r: ReviewRecord): string {
+  const who = r.model ?? r.reviewer;
+  const family = r.family === 'unknown' ? 'family not recorded' : FAMILY_LABEL[r.family] ?? r.family;
+  return `${who} (${family})${r.head ? ` at ${r.head.slice(0, 12)}` : ''}, ${r.verdict ?? 'no verdict'}, reports/${r.file}`;
+}
+
+/**
+ * With a required review policy: for every repository holding the increment's
+ * task Files, the newest review matching the policy must say ship, follow
+ * verification, and have read the code that is there now (the reviewed commit
+ * and HEAD agree on the task Files, so a squash-merged pull request passes).
+ */
+export function reviewPolicyErrors(root: string, incrementDir: string, verifiedAt: string | undefined): string[] {
+  let policy;
+  try {
+    policy = resolveReviewPolicy(root, incrementDir);
+  } catch {
+    return [];
+  }
+  if (!policy.required) return [];
+  const author = authorFamilies(incrementDir).primary;
+  const records = readReviewRecords(incrementDir);
+  const wanted = describePolicy(policy, author);
+  const from = policy.sources.required === 'spec' ? 'spec.md ## Review' : policy.sources.required === 'crossModel' ? 'review.crossModel' : 'review.policy';
+  const howTo = policy.family === 'cross-family' || policy.family === 'openai'
+    ? 'run `specweave review`, or have that model review and record it with `specweave review --record <file> --model <id>`'
+    : 'have that model review and record it with `specweave review --record <file> --model <id>`';
+  const errors: string[] = [];
+  const groups = incrementRepoPaths(root, incrementDir);
+  const repos: Array<[string, string[]]> = groups.size ? [...groups] : [['', []]];
+  for (const [repo, paths] of repos) {
+    const inRepo = repo === '' ? records : records.filter((r) => sameRepo(r.repo, repo));
+    const where = repo === '' ? '' : ` for ${repo === '.' ? 'the project root' : repo}`;
+    const match = inRepo.find((r) => policyAccepts(policy, r, r.author ?? author));
+    if (!match) {
+      const newest = inRepo[0] ?? records[0];
+      errors.push(`Review policy (${from}) requires ${wanted}${where}; ${newest ? `the newest review is ${describeRecord(newest)}` : 'no review is on file'} — ${howTo}`);
+      continue;
+    }
+    if (match.verdict !== 'ship') {
+      errors.push(`The required review${where} says ${match.verdict ?? 'no verdict'}: ${describeRecord(match)} — fix its critical and high findings and review again`);
+      continue;
+    }
+    if (verifiedAt !== undefined && Number.isFinite(Date.parse(verifiedAt)) && match.mtime < Date.parse(verifiedAt)) {
+      errors.push(`The required review${where} predates verification: ${describeRecord(match)} — record or run it again after \`specweave verify\``);
+      continue;
+    }
+    if (repo === '') continue;
+    if (!match.head) {
+      errors.push(`The required review${where} does not name the commit it read: ${describeRecord(match)} — record it with \`specweave review --record <file> --model <id> --head <sha>\``);
+      continue;
+    }
+    const repoDir = path.resolve(root, repo);
+    if (git(repoDir, ['cat-file', '-e', `${match.head}^{commit}`]) === null) {
+      errors.push(`The reviewed commit ${match.head.slice(0, 12)} is not in ${repo === '.' ? 'the project' : repo} — fetch it (git fetch origin) and close again`);
+      continue;
+    }
+    const changed = (git(repoDir, ['diff', '--name-only', match.head, 'HEAD', '--', ...paths]) ?? '').trim().split('\n').filter(Boolean);
+    if (changed.length) {
+      const head = git(repoDir, ['rev-parse', '--short=12', 'HEAD'])?.trim() ?? 'HEAD';
+      errors.push(`The code${where} changed since the review at ${match.head.slice(0, 12)}: ${changed.length} file(s) differ at ${head} (${changed.slice(0, 5).join(', ')}${changed.length > 5 ? ', …' : ''}) — update the checkout to the shipped code, or review again`);
+    }
+  }
+  return errors;
 }

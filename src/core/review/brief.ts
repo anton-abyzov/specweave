@@ -13,6 +13,7 @@ import { readLedger, ledgerPath } from '../tasks/ledger.js';
 import { readSpecAcs } from '../tasks/verify-runner.js';
 import { loadTaskBoard } from '../tasks/task-board.js';
 import { readGlossary } from '../glossary/parse.js';
+import { describePolicy, type ReviewPolicy } from './policy.js';
 
 /** Diff text above this many characters is left out; the reviewer runs git itself. */
 export const MAX_DIFF_CHARS = 150_000;
@@ -100,6 +101,8 @@ export interface BuildBriefOptions {
   incrementId: string;
   incrementDir: string;
   base: string;
+  /** The increment's review policy, named in the brief so a reviewer knows the depth asked for. */
+  policy?: ReviewPolicy;
 }
 
 export function buildBrief(opts: BuildBriefOptions): ReviewBrief {
@@ -148,6 +151,7 @@ export function buildBrief(opts: BuildBriefOptions): ReviewBrief {
     `Repository: ${repoRoot}`,
     `Written by: ${authorLine}`,
     `Diff: ${diffCmd} (base ${base}, head ${head})`,
+    ...(opts.policy ? [`Review policy: ${describePolicy(opts.policy, author.primary)}${opts.policy.depth === 'deep' ? '; read every changed line and its callers' : ''}`] : []),
     '',
     'Order: correctness (logic, error paths, races, off-by-one), security (injection, path',
     'traversal, secrets, unsafe exec), spec compliance (ACs below; tests that assert nothing',
