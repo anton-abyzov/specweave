@@ -40,8 +40,8 @@ export const BUILT_DOWNLOADS: SpecWithCodeDownloads = {
   desktop: SPECWITHCODE_WINDOWS_LINUX,
 };
 
-/** Five releases back is enough: the installers follow each release within the hour. */
-export const LIVE_RELEASES_URL = `https://api.github.com/repos/${SPECWITHCODE_REPO}/releases?per_page=5`;
+/** Thirty releases back: from 1.1 most releases are Insiders pre-releases, which the page skips, and a stable one can sit a day of them back. */
+export const LIVE_RELEASES_URL = `https://api.github.com/repos/${SPECWITHCODE_REPO}/releases?per_page=30`;
 /** One read per visitor in this time, also after a failed one (GitHub allows 60 an hour per address). */
 export const LIVE_TTL_MS = 5 * 60_000;
 const CACHE_KEY = 'specwithcode:live-release:v1';
