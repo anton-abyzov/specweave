@@ -621,9 +621,21 @@ export interface ReviewerConfiguration {
   family?: string;
 }
 
+/** Project review policy; an increment's spec.md `## Review` section overrides each field. */
+export interface ReviewPolicyConfiguration {
+  /** `cross-family` (default), a family (`openai`, `claude`, `google`, `xai`, `meta`), `openai (gpt-6.1-sol)` or a model id. */
+  reviewer?: string;
+  /** `standard` (default) or `deep`. */
+  depth?: string;
+  /** `specweave complete` waits for a matching ship review. Default false. */
+  required?: boolean;
+}
+
 export interface ReviewConfiguration {
-  /** sw-review and sw-done run `specweave review` (another model family) for every increment. Default false. */
+  /** sw-review and sw-done run `specweave review` (another model family) for every increment; closure requires it. Default false. */
   crossModel?: boolean;
+  /** Who reviews, how deep, and whether closure waits for it. */
+  policy?: ReviewPolicyConfiguration;
   /** Reviewer name to use, or 'auto' (default): the first available one from a family other than the author's. */
   reviewer?: string;
   /** Extra or overriding reviewers by name (built in: codex, claude). */

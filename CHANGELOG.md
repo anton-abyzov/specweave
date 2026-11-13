@@ -1,3 +1,18 @@
+## [Unreleased]
+
+### Added
+
+- Review policy. An increment's spec.md can say who reviews it, how deep and whether closure waits for it: `## Review` with `- Reviewer: openai (gpt-6.1-sol)`, `- Depth: deep`, `- Required: yes`. `review.policy` in `.specweave/config.json` sets the project default, and `review.crossModel: true` still means a required review by another family.
+- `specweave review --record <file> --model <id> [--head <sha>]` records a review written in any tool (a SpecWithCode review thread, Codex, Claude Code) with its model, family, author, repository and reviewed commit, and says whether it satisfies the policy.
+- With a required policy, `specweave complete` (and verify's strict-close check) accepts only a `ship` review by the required family, recorded after verification, whose reviewed commit has the same content as the code being closed in every repository the tasks touch. A squash-merged pull request passes; a same-family review, `fix first` or later changes to the reviewed files do not, and the message names the review it found and the next command.
+- `specweave review` follows the policy's family and model, runs Codex at `xhigh` for a deep review, and names the policy in the brief.
+- The policy check compares families canonically (a Fable author is Claude; an unrecorded or unrecognized reviewer family never counts), matches a pinned model across provider spellings (`claude-opus-5.5` is `claude-opus-5-5`), needs a deep review for a deep policy, orders reviews by their recorded time rather than file times, and refuses when Git cannot compare the reviewed commit. An increment's policy outranks `review.reviewer`; an explicit `--reviewer` that breaks it runs with a warning.
+- With a required policy, the closure gate's review check is the only judge of reviews: the older newest-file notices no longer contradict it. Task Files globs (`src/**/*.ts`) take part in the reviewed-content check, and a model id keeps its underscores (`gpt_6_1_sol`).
+
+### Changed
+
+- `review.crossModel: true` now needs a recorded review: a hand-written `reports/review-<name>.md` without the `specweave review` record line no longer counts, because it does not say which family wrote it or which commit it read. Run `specweave review`, or record an outside review with `specweave review --record`.
+
 ## [3.1.22] - 2026-11-10
 
 ### Changed

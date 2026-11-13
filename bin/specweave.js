@@ -222,9 +222,13 @@ program
 // Review command - cross-model adversarial review of an increment's diff
 program
   .command('review [incrementId]')
-  .description('Review an increment with a model from another family than the author (Codex for Claude-written code); writes reports/review-<reviewer>.md')
+  .description('Review an increment with a model from another family than the author (Codex for Claude-written code), following the spec.md ## Review policy; writes reports/review-<reviewer>.md')
   .option('--brief', 'Print the review brief only (paste it into any tool or model)')
   .option('--reviewer <name>', 'Reviewer to run: codex, claude or one from review.reviewers (default: auto)')
+  .option('--record <file>', 'Record a review another tool or model wrote, instead of running one (needs --model)')
+  .option('--model <id>', 'With --record: the model that wrote the review, such as gpt-6.1-sol')
+  .option('--family <family>', 'With --record: its family when the model id does not say (openai, claude, google, xai, meta)')
+  .option('--head <sha>', 'With --record: the commit the review read (default: HEAD)')
   .option('--base <ref>', 'Diff base (default: merge-base with origin/HEAD)')
   .option('--timeout <minutes>', 'Stop the reviewer after this many minutes (default 30)')
   .option('--json', 'Print the result as JSON')

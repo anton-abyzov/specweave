@@ -2,7 +2,7 @@
 description: Plan work as a SpecWeave increment - one spec.md with Problem, Scope, numbered ACs, Approach and Tasks - before writing code. Use for "plan a feature", "new increment", "let's build X".
 argument-hint: "\"<title>\" [--supersedes NNNN]"
 metadata:
-  version: "3.1.0"
+  version: "3.1.1"
 ---
 <!-- Generated from skills/sw-increment/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
@@ -109,6 +109,12 @@ Files that change and in what order, decisions, rejected alternatives, risks.
 - An AC is met when every task covering it is done. Nobody ticks the boxes; never
   write state into spec.md.
 - `plan.md` is optional overflow for a genuinely large design.
+- `## Review` is optional, after `## Decisions`. For complex work (auth, payments, data
+  migrations, several repositories, over ~1k changed lines) add a deep review by another
+  family than the one building it, required to close:
+  `## Review` / `- Reviewer: openai (gpt-6.1-sol)` / `- Depth: deep` / `- Required: yes`.
+  Without it the project default applies (`review.policy`, else cross-family, not
+  required). sw-review has the format.
 
 ## Then
 

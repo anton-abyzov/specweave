@@ -2,7 +2,7 @@
 description: Adversarial review of an increment before it ships, by a fresh context or another model family; every finding cites path:line and is re-verified. Use for "review", "qa", "critique this".
 argument-hint: "[increment-id] [--full]"
 metadata:
-  version: "3.1.0"
+  version: "3.1.1"
 ---
 <!-- Generated from skills/sw-review/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
@@ -55,14 +55,45 @@ on Claude-written code (Claude Opus on OpenAI-written code), and writes
 `reports/review-codex.md` in the shape below plus a ledger note. Exit 0: ship; 3: fix
 first, or no verdict; 1: no reviewer installed, or it failed.
 
-- Run it when `review.crossModel` is true in `.specweave/config.json`, when the user
-  asks for another model, or when you wrote the code and have no fresh context.
+- Run it when the review policy asks for it (below), when `review.crossModel` is true
+  in `.specweave/config.json`, when the user asks for another model, or when you wrote
+  the code and have no fresh context.
 - `--brief` prints the brief (ACs, tasks and their Files, the diff) to paste into any
   model by hand; `--reviewer claude`, `--base origin/main` and `--timeout 45` override.
 - `review.reviewer` pins one reviewer; `review.reviewers.<name>.command` adds a CLI that
   reads the brief on stdin and answers on stdout, or into `{out}` when it names one.
 
 Its findings get the same treatment as yours: re-open each line before acting on it.
+
+## Review policy
+
+spec.md may say who reviews it, how deep, and whether closure waits:
+
+```markdown
+## Review
+- Reviewer: openai (gpt-6.1-sol)   # or cross-family, claude, google, xai, meta, a model id
+- Depth: deep                      # or standard
+- Required: yes                    # specweave complete refuses until a matching ship review
+```
+
+`review.policy` in `.specweave/config.json` sets the project default; the spec wins
+field by field. `specweave review` follows it (a deep policy runs Codex at `xhigh`).
+With `Required: yes`, closure accepts only a `ship` review by that family, recorded
+after verification, whose commit has the same content as the code being closed in each
+repository the tasks touch. A same-family review never satisfies a cross-family policy.
+
+**Record every review**, whoever runs it (a SpecWithCode review thread, Codex, Claude
+Code, a pasted brief): write the report in the shape below, then
+
+```bash
+specweave review --record reports/answer.md --model gpt-6.1-sol --head <reviewed sha>
+```
+
+from the repository you reviewed. `--model` is the model that wrote the review, never
+the author's; `--head` defaults to HEAD. It stamps reviewer, model, family, author,
+repository and commit into `reports/reviews/` and the ledger, and says whether the
+review satisfies the policy. When the policy's family has no quota anywhere you can
+reach, say so to the user; never substitute another family silently.
 
 ## reports/review.md
 

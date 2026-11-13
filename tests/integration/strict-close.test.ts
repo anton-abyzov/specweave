@@ -71,8 +71,19 @@ it('requires real owning product checks and a fresh ship review only under stric
     const crossReview = path.join(inc, 'reports/review-other.md');
     fs.writeFileSync(crossReview, 'Verdict: fix first\n');
     fs.utimesSync(crossReview, 1, 1);
-    expect(run('complete', id)).toMatchObject({ code: 1, text: expect.stringContaining('latest cross-model review') });
+    expect(run('complete', id)).toMatchObject({ code: 1, text: expect.stringContaining('Review policy (review.crossModel)') });
+    // review.crossModel requires a recorded review by another family, at the code being closed.
     fs.writeFileSync(crossReview, 'Verdict: ship\n');
+    expect(run('complete', id)).toMatchObject({ code: 1, text: expect.stringContaining('review.crossModel') });
+    const product = path.join(root, owner);
+    const git = (...args: string[]) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.com', '-c', 'commit.gpgsign=false', ...args], { cwd: product, encoding: 'utf8' });
+    fs.mkdirSync(path.join(product, 'src'), { recursive: true });
+    fs.writeFileSync(path.join(product, 'src/file.ts'), 'export {};\n');
+    git('init', '-q', '-b', 'main');
+    git('add', '-A');
+    git('commit', '-qm', 'product');
+    const head = git('rev-parse', 'HEAD').stdout.trim();
+    fs.writeFileSync(crossReview, `<!-- specweave review: reviewer=gpt-6.1-sol model=gpt-6.1-sol family=openai repo=${owner} head=${head} at=${new Date().toISOString()} -->\n# Review\nVerdict: ship\n`);
     expect(run('complete', id)).toMatchObject({ code: 0 });
     expect(JSON.parse(fs.readFileSync(path.join(inc, 'metadata.json'), 'utf8')).status).toBe('completed');
 
