@@ -83,7 +83,7 @@ it('requires real owning product checks and a fresh ship review only under stric
     git('add', '-A');
     git('commit', '-qm', 'product');
     const head = git('rev-parse', 'HEAD').stdout.trim();
-    fs.writeFileSync(crossReview, `<!-- specweave review: reviewer=gpt-6.1-sol model=gpt-6.1-sol family=openai repo=${owner} head=${head} -->\n# Review\nVerdict: ship\n`);
+    fs.writeFileSync(crossReview, `<!-- specweave review: reviewer=gpt-6.1-sol model=gpt-6.1-sol family=openai repo=${owner} head=${head} at=${new Date().toISOString()} -->\n# Review\nVerdict: ship\n`);
     expect(run('complete', id)).toMatchObject({ code: 0 });
     expect(JSON.parse(fs.readFileSync(path.join(inc, 'metadata.json'), 'utf8')).status).toBe('completed');
 
