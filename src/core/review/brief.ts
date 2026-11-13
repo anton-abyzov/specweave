@@ -13,19 +13,14 @@ import { readLedger, ledgerPath } from '../tasks/ledger.js';
 import { readSpecAcs } from '../tasks/verify-runner.js';
 import { loadTaskBoard } from '../tasks/task-board.js';
 import { readGlossary } from '../glossary/parse.js';
-import { describePolicy, type ReviewPolicy } from './policy.js';
+import { describePolicy, familyOfModel, type ReviewPolicy } from './policy.js';
 
 /** Diff text above this many characters is left out; the reviewer runs git itself. */
 export const MAX_DIFF_CHARS = 150_000;
 
 /** Model family of a tool name as the ledger records it (`claude@mbp` → claude). */
 export function familyOfTool(tool: string): string {
-  const t = tool.toLowerCase();
-  if (/^(claude|anthropic|opus|sonnet|haiku)/.test(t)) return 'claude';
-  if (/^(codex|openai|gpt|chatgpt)/.test(t)) return 'openai';
-  if (/^(grok|xai)/.test(t)) return 'xai';
-  if (/^(gemini|google)/.test(t)) return 'google';
-  return t;
+  return familyOfModel(tool);
 }
 
 export interface AuthorFamilies {

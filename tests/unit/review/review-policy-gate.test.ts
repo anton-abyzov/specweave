@@ -5,7 +5,9 @@ import * as os from 'os';
 import * as path from 'path';
 import { reviewCommand } from '../../../src/cli/commands/review.js';
 import { checkClosureGate, reviewPolicyErrors } from '../../../src/core/tasks/closure-gate.js';
-import { formatRecordHeader, incrementRepoPaths, parseRecordHeader, readReviewRecords } from '../../../src/core/review/record.js';
+import { formatRecordHeader, incrementRepoPaths, parseRecordHeader, readReviewRecords, type ReviewRecordFields } from '../../../src/core/review/record.js';
+import { pickReviewer, reviewersFrom } from '../../../src/core/review/reviewer.js';
+import { policyAccepts } from '../../../src/core/review/policy.js';
 
 const ID = '0001-demo';
 const APP = 'repositories/acme/app';
@@ -100,17 +102,17 @@ describe('closure with a required review policy', () => {
   it('refuses with no review, naming the policy and the next command', () => {
     const errors = reviewPolicyErrors(root, inc, undefined);
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain('Review policy (spec.md ## Review) requires a OpenAI review with gpt-6.1-sol, deep depth for repositories/acme/app');
+    expect(errors[0]).toContain('Review policy (spec.md ## Review) requires an OpenAI review with gpt-6.1-sol, deep depth for repositories/acme/app');
     expect(errors[0]).toContain('no review is on file');
     expect(checkClosureGate(inc, ID, { reason: 'x' }).notices.join('\n')).toContain('closing anyway');
-    expect(checkClosureGate(inc, ID).errors.join('\n')).toContain('requires a OpenAI review');
+    expect(checkClosureGate(inc, ID).errors.join('\n')).toContain('requires an OpenAI review');
   });
 
   it('refuses a same-family review and names it', async () => {
     expect(await record({ record: answer('ship'), model: 'claude-sonnet-5-5' })).toBe(0);
     expect(out.join('')).toContain('does NOT satisfy the review policy');
     const [error] = reviewPolicyErrors(root, inc, undefined);
-    expect(error).toMatch(/the newest review is claude-sonnet-5-5 \(Claude\) at [0-9a-f]{12}, ship/);
+    expect(error).toMatch(/the newest review is claude-sonnet-5-5 \(Claude, deep\) at [0-9a-f]{12}, ship/);
   });
 
   it('refuses a fix first verdict and a review older than verification', async () => {
@@ -150,5 +152,61 @@ describe('closure with a required review policy', () => {
     spec('');
     fs.rmSync(path.join(inc, 'reports'), { recursive: true, force: true });
     expect(reviewPolicyErrors(root, inc, undefined)).toEqual([]);
+  });
+});
+
+describe('review policy evidence (Sol review, November 13, 2026)', () => {
+  const headOf = () => gitIn(app, 'rev-parse', 'HEAD');
+  const stamp = (name: string, fields: Partial<ReviewRecordFields>, verdict: string, mtime: Date) => {
+    const file = path.join(inc, 'reports', 'reviews', name);
+    write(file, `${formatRecordHeader({ reviewer: 'gpt-6.1-sol', model: 'gpt-6.1-sol', family: 'openai', author: 'claude', depth: 'deep', repo: APP, head: headOf(), ...fields })}\n# Review: 0001\nVerdict: ${verdict}\n`);
+    fs.utimesSync(file, mtime, mtime);
+  };
+  const checkout = new Date('2026-11-13T12:00:00Z');
+
+  it('orders by the recorded time, not checkout file times', () => {
+    stamp('review-gpt-6.1-sol-1.md', { at: '2026-11-13T09:00:00Z' }, 'ship', checkout);
+    stamp('review-gpt-6.1-sol-2.md', { at: '2026-11-13T10:00:00Z' }, 'fix first', checkout);
+    expect(reviewPolicyErrors(root, inc, undefined)[0]).toContain('says fix first');
+  });
+
+  it('a review recorded before verify fails even when its file is newer', () => {
+    stamp('review-gpt-6.1-sol-1.md', { at: '2026-11-13T09:00:00Z' }, 'ship', checkout);
+    expect(reviewPolicyErrors(root, inc, '2026-11-13T11:00:00Z')[0]).toContain('predates verification');
+    stamp('review-gpt-6.1-sol-1.md', {}, 'ship', checkout);
+    expect(reviewPolicyErrors(root, inc, '2026-11-13T11:00:00Z')[0]).toContain('does not say when it was recorded');
+  });
+
+  it('an unclassified family or a Fable author never makes a review cross-family', () => {
+    spec('- Required: yes');
+    stamp('review-x-1.md', { reviewer: 'x', model: 'x', family: 'unknown', at: '2026-11-13T09:00:00Z' }, 'ship', checkout);
+    expect(reviewPolicyErrors(root, inc, undefined)[0]).toContain('family not recorded');
+    write(path.join(inc, 'ledger.jsonl'), '{"t":"T-01","e":"done","by":"fable@mbp","at":"2026-10-17T10:30:00Z","evidence":"abc123"}\n');
+    stamp('review-x-1.md', { reviewer: 'claude', model: 'claude-sonnet-5-5', family: 'claude', author: undefined, at: '2026-11-13T09:00:00Z' }, 'ship', checkout);
+    expect(reviewPolicyErrors(root, inc, undefined)[0]).toContain('another family than the author (claude)');
+  });
+
+  it('a deep policy refuses a standard review; a pinned model matches across provider spellings', () => {
+    stamp('review-gpt-6.1-sol-1.md', { depth: 'standard', at: '2026-11-13T09:00:00Z' }, 'ship', checkout);
+    expect(reviewPolicyErrors(root, inc, undefined)[0]).toContain('(OpenAI, standard)');
+    expect(policyAccepts({ family: 'claude', model: 'claude-opus-5-5' }, { family: 'claude', model: 'claude-opus-5.5' }, 'openai')).toBe(true);
+  });
+
+  it('keeps a repository path with spaces and cannot be cut short by a value', () => {
+    const header = formatRecordHeader({ reviewer: 'sol', family: 'openai', repo: 'repositories/acme/My App', head: 'abc1234', at: '2026-11-13T00:00:00Z', author: 'x --> y' });
+    expect(header).toContain('repo=repositories/acme/My%20App');
+    expect(header.indexOf('-->')).toBe(header.length - 3);
+    expect(parseRecordHeader(header)).toMatchObject({ repo: 'repositories/acme/My App', author: 'x --> y' });
+  });
+
+  it('review.reviewer yields to an increment policy; an explicit --reviewer runs with a warning', () => {
+    const reviewers = reviewersFrom({});
+    const all = () => true;
+    const configured = pickReviewer(reviewers, 'claude', { configured: 'claude', policyFamily: 'openai', available: all });
+    expect(configured.reviewer?.name).toBe('codex');
+    expect(configured.why).toContain('review.reviewer "claude" set aside');
+    const explicit = pickReviewer(reviewers, 'claude', { explicit: 'claude', policyFamily: 'openai', available: all });
+    expect(explicit.reviewer?.name).toBe('claude');
+    expect(explicit.conflict).toContain('will not satisfy it');
   });
 });

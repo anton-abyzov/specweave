@@ -48,12 +48,30 @@ export interface ReviewSection {
  */
 export function familyOfModel(id: string): string {
   const t = id.trim().toLowerCase();
+  return canonicalFamily(t) ?? t;
+}
+
+/**
+ * One of REVIEW_FAMILIES for a family name, model id or tool name (`openai`,
+ * `gpt-6.1-sol`, `codex`, `fable`, `claude-code`), or undefined when it names
+ * none. An unclassified family is never evidence of a cross-family review.
+ */
+export function canonicalFamily(value: string | undefined): string | undefined {
+  const t = (value ?? '').trim().toLowerCase();
+  if (!t || t === 'unknown') return undefined;
+  if ((REVIEW_FAMILIES as readonly string[]).includes(t)) return t;
   if (/^(claude|anthropic|opus|sonnet|haiku|fable)/.test(t)) return 'claude';
   if (/^(codex|openai|gpt|chatgpt|o[0-9])/.test(t)) return 'openai';
   if (/^(grok|xai)/.test(t)) return 'xai';
-  if (/^(gemini|google)/.test(t)) return 'google';
+  if (/^(gemini|google|gemma)/.test(t)) return 'google';
   if (/^(muse|meta|llama)/.test(t)) return 'meta';
-  return t;
+  return undefined;
+}
+
+/** Model ids every provider spells alike: Copilot's `claude-opus-5.5` is `claude-opus-5-5`. */
+export function sameModel(a: string, b: string): boolean {
+  const key = (v: string) => v.trim().toLowerCase().replace(/[\s._]+/g, '-').replace(/-+/g, '-');
+  return key(a) === key(b);
 }
 
 /** `openai (gpt-6.1-sol)`, `openai`, `gpt-6.1-sol`, `cross-family`, `any other family`. */
@@ -171,23 +189,39 @@ export function resolveReviewPolicy(projectRoot: string, incrementDir: string, c
   };
 }
 
-/** Whether a reviewer of `family` (and `model`) satisfies the policy for work `authorFamily` wrote. */
-export function policyAccepts(policy: Pick<ReviewPolicy, 'family' | 'model'>, reviewer: { family: string; model?: string }, authorFamily: string | undefined): boolean {
+/**
+ * Whether a reviewer satisfies the policy for work `authorFamily` wrote:
+ * families compared canonically (an unclassified reviewer family never
+ * counts, nor a record whose model is of another family than it claims), a
+ * pinned model compared across provider spellings, and a deep policy met
+ * only by a deep review.
+ */
+export function policyAccepts(
+  policy: Pick<ReviewPolicy, 'family' | 'model'> & { depth?: ReviewDepth },
+  reviewer: { family: string; model?: string; depth?: string },
+  authorFamily: string | undefined,
+): boolean {
   if (policy.model) {
-    if (!reviewer.model || reviewer.model.toLowerCase() !== policy.model.toLowerCase()) return false;
+    if (!reviewer.model || !sameModel(reviewer.model, policy.model)) return false;
   }
+  if (policy.depth === 'deep' && reviewer.depth !== 'deep') return false;
+  const family = canonicalFamily(reviewer.family);
+  if (!family) return false;
+  const modelFamily = reviewer.model ? canonicalFamily(reviewer.model) : undefined;
+  if (modelFamily && modelFamily !== family) return false;
   if (policy.family === 'cross-family') {
-    // An unknown author cannot be compared; any recorded family other than "unknown" counts.
-    return authorFamily === undefined ? reviewer.family !== 'unknown' : reviewer.family !== authorFamily;
+    // An author no family names cannot be compared; a classified reviewer counts.
+    const author = canonicalFamily(authorFamily);
+    return author === undefined || family !== author;
   }
-  return reviewer.family === policy.family;
+  return family === policy.family;
 }
 
 /** `OpenAI review (gpt-6.1-sol, deep)`, `cross-family review (standard)`. */
 export function describePolicy(policy: ReviewPolicy, authorFamily?: string): string {
   const who = policy.family === 'cross-family'
     ? `a review by another family than the author${authorFamily ? ` (${authorFamily})` : ''}`
-    : `a ${FAMILY_LABEL[policy.family] ?? policy.family} review`;
+    : `${/^[aeiou]/i.test(FAMILY_LABEL[policy.family] ?? policy.family) ? 'an' : 'a'} ${FAMILY_LABEL[policy.family] ?? policy.family} review`;
   return `${who}${policy.model ? ` with ${policy.model}` : ''}, ${policy.depth} depth`;
 }
 

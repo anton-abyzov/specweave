@@ -90,7 +90,7 @@ describe('resolveReviewPolicy', () => {
 
   it('describes the policy in words', () => {
     expect(describePolicy({ family: 'openai', model: 'gpt-6.1-sol', depth: 'deep', required: true, sources: { reviewer: 'spec', depth: 'spec', required: 'spec' } }))
-      .toBe('a OpenAI review with gpt-6.1-sol, deep depth');
+      .toBe('an OpenAI review with gpt-6.1-sol, deep depth');
     expect(describePolicy({ family: 'cross-family', depth: 'standard', required: false, sources: { reviewer: 'default', depth: 'default', required: 'default' } }, 'claude'))
       .toBe('a review by another family than the author (claude), standard depth');
   });

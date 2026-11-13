@@ -58,6 +58,8 @@ export interface ReviewerChoice {
   reviewer?: Reviewer;
   /** Why this one, or why none. */
   why: string;
+  /** Set when an explicit `--reviewer` runs against the review policy: say so before running. */
+  conflict?: string;
 }
 
 /**
@@ -68,28 +70,52 @@ export interface ReviewerChoice {
 export function pickReviewer(
   reviewers: Reviewer[],
   authorFamily: string | undefined,
-  opts: { explicit?: string; configured?: string; available?: (r: Reviewer) => boolean; policyFamily?: string } = {},
+  opts: {
+    explicit?: string;
+    configured?: string;
+    available?: (r: Reviewer) => boolean;
+    policyFamily?: string;
+    /** A required cross-family policy also sets aside a configured reviewer of the author's family. */
+    policyRequired?: boolean;
+  } = {},
 ): ReviewerChoice {
   const available = opts.available ?? ((r: Reviewer) => onPath(commandBinary(r.command)));
-  const named = opts.explicit || (opts.configured && opts.configured !== 'auto' ? opts.configured : undefined);
-  if (named) {
-    const r = reviewers.find((x) => x.name === named);
-    if (!r) return { why: `no reviewer "${named}"; known: ${reviewers.map((x) => x.name).join(', ')}` };
-    return { reviewer: r, why: opts.explicit ? '--reviewer' : 'review.reviewer' };
-  }
-  const order = [...reviewers].sort((a, b) => Number(b.name === 'codex') - Number(a.name === 'codex'));
   // A policy that names a family (spec.md `## Review`, review.policy) narrows the
   // choice to it; it never falls back to another family.
   const family = opts.policyFamily && opts.policyFamily !== 'cross-family' ? opts.policyFamily : undefined;
+  const offPolicy = (r: Reviewer): string | undefined => {
+    if (family && r.family !== family) return `the review policy asks for ${family}, and ${r.name} is ${r.family}`;
+    if (!family && opts.policyFamily === 'cross-family' && opts.policyRequired && authorFamily && r.family === authorFamily) {
+      return `the review policy asks for another family than the author (${authorFamily}), and ${r.name} is ${r.family}`;
+    }
+    return undefined;
+  };
+  let setAside: string | undefined;
+  if (opts.explicit) {
+    const r = reviewers.find((x) => x.name === opts.explicit);
+    if (!r) return { why: `no reviewer "${opts.explicit}"; known: ${reviewers.map((x) => x.name).join(', ')}` };
+    const conflict = offPolicy(r);
+    return { reviewer: r, why: '--reviewer', ...(conflict ? { conflict: `${conflict}; this review will not satisfy it` } : {}) };
+  }
+  if (opts.configured && opts.configured !== 'auto') {
+    const r = reviewers.find((x) => x.name === opts.configured);
+    if (!r) return { why: `no reviewer "${opts.configured}"; known: ${reviewers.map((x) => x.name).join(', ')}` };
+    // review.reviewer is the older, project-wide choice: the increment's policy outranks it.
+    const conflict = offPolicy(r);
+    if (!conflict) return { reviewer: r, why: 'review.reviewer' };
+    setAside = `review.reviewer "${r.name}" set aside: ${conflict}`;
+  }
+  const order = [...reviewers].sort((a, b) => Number(b.name === 'codex') - Number(a.name === 'codex'));
   const other = family ? order.filter((r) => r.family === family) : order.filter((r) => r.family !== authorFamily);
   const pick = other.find(available);
+  const note = setAside ? `; ${setAside}` : '';
   if (pick) {
-    if (family) return { reviewer: pick, why: `the review policy asks for ${family}` };
-    return { reviewer: pick, why: authorFamily ? `another family than the author (${authorFamily})` : 'author unknown' };
+    if (family) return { reviewer: pick, why: `the review policy asks for ${family}${note}` };
+    return { reviewer: pick, why: `${authorFamily ? `another family than the author (${authorFamily})` : 'author unknown'}${note}` };
   }
   const missing = other.map((r) => commandBinary(r.command)).join(', ') || 'none configured';
-  if (family) return { why: `the review policy asks for ${family}, and no ${family} reviewer is installed (${missing})` };
-  return { why: `no reviewer from another family than ${authorFamily ?? 'the author'} is installed (${missing})` };
+  if (family) return { why: `the review policy asks for ${family}, and no ${family} reviewer is installed (${missing})${note}` };
+  return { why: `no reviewer from another family than ${authorFamily ?? 'the author'} is installed (${missing})${note}` };
 }
 
 /**

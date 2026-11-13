@@ -99,6 +99,7 @@ export async function reviewCommand(incrementId?: string, opts: ReviewCommandOpt
     configured: config.reviewer,
     available: opts.available,
     policyFamily: policy.family,
+    policyRequired: policy.required,
   });
   if (!opts.json) out(`Review policy: ${describePolicy(policy, brief.author.primary)}${policy.required ? ', required to close' : ''} (from ${policy.sources.reviewer}).`);
   if (!choice.reviewer) {
@@ -106,6 +107,7 @@ export async function reviewCommand(incrementId?: string, opts: ReviewCommandOpt
     return 1;
   }
   const reviewer = choice.reviewer;
+  if (choice.conflict) err(`Warning: ${choice.conflict}.`);
   // The policy's model only applies to a reviewer of that model's family.
   const policyModel = policy.model && familyOfModel(policy.model) === reviewer.family ? policy.model : undefined;
   const command = commandForPolicy(reviewer, { model: policyModel, depth: policy.depth });
@@ -239,7 +241,7 @@ function recordReview(opts: ReviewCommandOptions, c: RecordContext): number {
   fs.writeFileSync(runPath, `${formatRecordHeader(fields)}\n${text}\n`);
   fs.copyFileSync(runPath, path.join(reportsDir, `review-${safeName}.md`));
   const rel = path.relative(c.inc.dir, runPath).split(path.sep).join('/');
-  const accepted = policyAccepts(c.policy, { family, model }, c.author);
+  const accepted = policyAccepts(c.policy, { family, model, depth: fields.depth }, c.author);
   appendEvent(ledgerPath(c.inc.dir), {
     t: INCREMENT_EVENT_TASK,
     e: 'note',

@@ -36,20 +36,41 @@ export interface ReviewRecord extends ReviewRecordFields {
   verdict?: Verdict;
   /** File modification time, ms. */
   mtime: number;
+  /**
+   * When the review was recorded, ms: the record's own `at`. A report without
+   * one (hand-written) falls back to its file time, which a checkout resets,
+   * so it only orders reports and never proves a review followed verify.
+   */
+  atMs: number;
+  /** Whether `atMs` comes from the record's `at`. */
+  timed: boolean;
 }
 
 const HEADER = /^<!--\s*specweave review:([^>]*)-->\s*$/m;
 const FIELD_ORDER: Array<keyof ReviewRecordFields> = ['reviewer', 'model', 'family', 'author', 'depth', 'repo', 'base', 'head', 'at'];
 
-/** Values never hold spaces or `-->`; anything else is replaced. */
-function clean(value: string): string {
-  return value.replace(/-->/g, '').replace(/\s+/g, '_');
+/**
+ * Values percent-encode `%`, whitespace, `<`, `>`, `=` and `"`, so a repository
+ * path with spaces survives and no value can end the comment or add a field.
+ * Older plain values read as is.
+ */
+function encodeField(value: string): string {
+  // Only what could split a field or end the comment; ids, paths and times stay readable.
+  return value.replace(/[%\s<>="]/g, (c) => encodeURIComponent(c));
+}
+
+function decodeField(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 export function formatRecordHeader(fields: ReviewRecordFields): string {
   const parts = FIELD_ORDER
     .filter((k) => fields[k] !== undefined && fields[k] !== '')
-    .map((k) => `${k}=${clean(String(fields[k]))}`);
+    .map((k) => `${k}=${encodeField(String(fields[k]))}`);
   return `<!-- specweave review: ${parts.join(' ')} -->`;
 }
 
@@ -59,7 +80,7 @@ export function parseRecordHeader(text: string): ReviewRecordFields | undefined 
   const fields: Record<string, string> = {};
   for (const pair of m[1].trim().split(/\s+/)) {
     const eq = pair.indexOf('=');
-    if (eq > 0) fields[pair.slice(0, eq)] = pair.slice(eq + 1);
+    if (eq > 0) fields[pair.slice(0, eq)] = decodeField(pair.slice(eq + 1));
   }
   if (!fields.reviewer && !fields.model) return undefined;
   return {
@@ -71,7 +92,7 @@ export function parseRecordHeader(text: string): ReviewRecordFields | undefined 
     ...(fields.repo ? { repo: fields.repo } : {}),
     ...(fields.base ? { base: fields.base } : {}),
     ...(fields.head && fields.head !== 'HEAD' ? { head: fields.head } : {}),
-    ...(fields.at ? { at: fields.at } : {}),
+    ...(fields.at && Number.isFinite(Date.parse(fields.at)) ? { at: fields.at } : {}),
   };
 }
 
@@ -106,15 +127,24 @@ export function readReviewRecords(incrementDir: string): ReviewRecord[] {
     }
     const header = parseRecordHeader(text);
     const verdict = parseVerdict(stripRecordHeader(text));
+    const at = header?.at ? Date.parse(header.at) : NaN;
     records.push({
       ...(header ?? { reviewer: file.replace(/^reviews\//, '').replace(/\.md$/, ''), family: 'unknown' }),
       file,
       ...(verdict ? { verdict } : {}),
       mtime,
+      atMs: Number.isFinite(at) ? at : mtime,
+      timed: Number.isFinite(at),
     });
   }
-  // Newest first; at equal times a numbered run beats the latest-copy it was copied to.
-  return records.sort((a, b) => b.mtime - a.mtime || Number(b.file.startsWith('reviews/')) - Number(a.file.startsWith('reviews/')));
+  // Newest first by the record's own time; at equal times a numbered run beats
+  // the latest-copy it was copied to, and a later run number beats an earlier one.
+  const runNumber = (file: string) => Number(/-(\d+)\.md$/.exec(file)?.[1] ?? -1);
+  return records.sort((a, b) =>
+    b.atMs - a.atMs ||
+    Number(b.file.startsWith('reviews/')) - Number(a.file.startsWith('reviews/')) ||
+    runNumber(b.file) - runNumber(a.file) ||
+    b.file.localeCompare(a.file));
 }
 
 /** Task Files that are bookkeeping, not code: `none`, the increment folders. */

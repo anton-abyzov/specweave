@@ -16,7 +16,7 @@ import { deriveAcAcceptance, acCloses } from './accepted-skip.js';
 import { loadTaskBoard } from './task-board.js';
 import { parseVerdict } from '../review/reviewer.js';
 import { authorFamilies, git } from '../review/brief.js';
-import { describePolicy, FAMILY_LABEL, policyAccepts, resolveReviewPolicy } from '../review/policy.js';
+import { canonicalFamily, describePolicy, FAMILY_LABEL, policyAccepts, resolveReviewPolicy } from '../review/policy.js';
 import { incrementRepoPaths, readReviewRecords, sameRepo, type ReviewRecord } from '../review/record.js';
 
 export interface ClosureGateResult {
@@ -169,8 +169,9 @@ function crossModelRequired(incrementDir: string): boolean {
 
 function describeRecord(r: ReviewRecord): string {
   const who = r.model ?? r.reviewer;
-  const family = r.family === 'unknown' ? 'family not recorded' : FAMILY_LABEL[r.family] ?? r.family;
-  return `${who} (${family})${r.head ? ` at ${r.head.slice(0, 12)}` : ''}, ${r.verdict ?? 'no verdict'}, reports/${r.file}`;
+  const known = canonicalFamily(r.family);
+  const family = known ? FAMILY_LABEL[known] ?? known : r.family === 'unknown' ? 'family not recorded' : `unrecognized family "${r.family}"`;
+  return `${who} (${family}${r.depth ? `, ${r.depth}` : ''})${r.head ? ` at ${r.head.slice(0, 12)}` : ''}, ${r.verdict ?? 'no verdict'}, reports/${r.file}`;
 }
 
 /**
@@ -210,9 +211,16 @@ export function reviewPolicyErrors(root: string, incrementDir: string, verifiedA
       errors.push(`The required review${where} says ${match.verdict ?? 'no verdict'}: ${describeRecord(match)} — fix its critical and high findings and review again`);
       continue;
     }
-    if (verifiedAt !== undefined && Number.isFinite(Date.parse(verifiedAt)) && match.mtime < Date.parse(verifiedAt)) {
-      errors.push(`The required review${where} predates verification: ${describeRecord(match)} — record or run it again after \`specweave verify\``);
-      continue;
+    // The record's own time decides; a checkout resets file times.
+    if (verifiedAt !== undefined && Number.isFinite(Date.parse(verifiedAt))) {
+      if (!match.timed) {
+        errors.push(`The required review${where} does not say when it was recorded: ${describeRecord(match)} — record it with \`specweave review --record <file> --model <id> --head <sha>\``);
+        continue;
+      }
+      if (match.atMs < Date.parse(verifiedAt)) {
+        errors.push(`The required review${where} predates verification: ${describeRecord(match)} — record or run it again after \`specweave verify\``);
+        continue;
+      }
     }
     if (repo === '') continue;
     if (!match.head) {
@@ -224,7 +232,13 @@ export function reviewPolicyErrors(root: string, incrementDir: string, verifiedA
       errors.push(`The reviewed commit ${match.head.slice(0, 12)} is not in ${repo === '.' ? 'the project' : repo} — fetch it (git fetch origin) and close again`);
       continue;
     }
-    const changed = (git(repoDir, ['diff', '--name-only', match.head, 'HEAD', '--', ...paths]) ?? '').trim().split('\n').filter(Boolean);
+    // Literal pathspecs: a task File is a path, never Git pathspec magic.
+    const diff = git(repoDir, ['--literal-pathspecs', 'diff', '--name-only', match.head, 'HEAD', '--', ...paths]);
+    if (diff === null) {
+      errors.push(`Could not compare the reviewed commit ${match.head.slice(0, 12)} with HEAD${where} (git diff failed) — check the task Files and the checkout, then close again`);
+      continue;
+    }
+    const changed = diff.trim().split('\n').filter(Boolean);
     if (changed.length) {
       const head = git(repoDir, ['rev-parse', '--short=12', 'HEAD'])?.trim() ?? 'HEAD';
       errors.push(`The code${where} changed since the review at ${match.head.slice(0, 12)}: ${changed.length} file(s) differ at ${head} (${changed.slice(0, 5).join(', ')}${changed.length > 5 ? ', …' : ''}) — update the checkout to the shipped code, or review again`);
