@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-10T18:01:53.312Z",
+  "timestamp": "2026-11-14T18:01:35.972Z",
   "metrics": {
     "deploymentFrequency": {
       "value": 100,
@@ -11,7 +11,7 @@
       "value": 2.1,
       "unit": "days",
       "tier": "High",
-      "p50": 31.5,
+      "p50": 25.7,
       "p90": 138.6
     },
     "changeFailureRate": {
@@ -19,7 +19,7 @@
       "unit": "percentage",
       "tier": "Elite",
       "failedReleases": 0,
-      "totalReleases": 32
+      "totalReleases": 30
     },
     "mttr": {
       "value": 0,
