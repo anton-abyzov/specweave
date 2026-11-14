@@ -111,7 +111,7 @@ describe('Marketplace Routes', () => {
   }
 
   beforeAll(async () => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mkt-routes-test-'));
+    tempDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'mkt-routes-test-')));
     stateDir = path.join(tempDir, '.specweave', 'state');
     fs.mkdirSync(stateDir, { recursive: true });
     // Create config.json so project is recognized

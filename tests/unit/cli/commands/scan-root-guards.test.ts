@@ -25,7 +25,7 @@ describe('CLI scan root guards', () => {
   let root: string;
   let oldExit: typeof process.exitCode;
   beforeEach(() => {
-    root = fs.mkdtempSync(path.join(os.tmpdir(), 'scan-root-'));
+    root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'scan-root-')));
     fs.mkdirSync(path.join(root, '.specweave'));
     vi.spyOn(process, 'cwd').mockReturnValue(root);
     vi.spyOn(console, 'log').mockImplementation(() => {});
