@@ -94,6 +94,19 @@ repository and commit into `reports/reviews/` and the ledger, and says whether t
 review satisfies the policy. When the policy's family has no quota anywhere you can
 reach, say so to the user; never substitute another family silently.
 
+**A review thread in SpecWithCode** (one you started for another model to review a PR):
+
+- Use one thread per pull request. Send round 2 and later to the same thread with
+  `studio_thread_send`, giving the new head, what changed and which findings were
+  answered. Start a fresh thread only when the old one failed or ran out of context,
+  and archive the old one first.
+- Ask the reviewer to clone into a scratch folder on the fast work disk (in
+  SpecWithCode, `~/.specwithcode/<machine>/scratch/review-<repo>-pr<N>/`), not `/tmp`,
+  and to delete the clone when the review ends.
+- Once the final verdict is recorded with `--record` (ship, or the pull request merged
+  or closed), archive the thread with `studio_thread_organize` (action `archive`).
+  After a `fix` verdict, keep the thread open for the next round.
+
 ## reports/review.md
 
 ```markdown
