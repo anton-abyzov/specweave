@@ -26,6 +26,13 @@ vi.mock('../../../../src/core/increment/metadata-manager.js', () => ({
   },
 }));
 
+// A strict-close setting in the project that hosts this checkout (an
+// umbrella with testing.strictClose) must not reach these mocked closures.
+vi.mock('../../../../src/core/tasks/strict-close.js', async (importActual) => ({
+  ...(await importActual<typeof import('../../../../src/core/tasks/strict-close.js')>()),
+  readStrictClose: () => undefined,
+}));
+
 // Advisory WIP limit is fixed for the display test; buildWipNote stays real.
 vi.mock('../../../../src/core/increment/discipline-checker.js', async (importActual) => {
   const actual = await importActual<typeof import('../../../../src/core/increment/discipline-checker.js')>();
