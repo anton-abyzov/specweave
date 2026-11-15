@@ -2,7 +2,7 @@
 description: Work a SpecWeave increment task by task - claim, implement inside its Files, test, commit, done with evidence - alone, unattended or in lanes, then close. Use for "implement", "next task".
 argument-hint: "[increment-id] [--auto] [--lanes]"
 metadata:
-  version: "3.1.0"
+  version: "3.1.1"
 ---
 <!-- Generated from skills/sw-do/SKILL.md by scripts/build/generate-skills.mjs. Edit the source, then npm run build. -->
 
@@ -127,3 +127,7 @@ the same steps by hand: there is no hook and no session file.
   `ledger.jsonl` keep every line from both sides.
 - Never widen a task's `Files` or weaken a test to keep a loop moving.
 - Never edit `.specweave/state/auto-mode.json` by hand; `specweave auto --reset` clears it.
+- In a multi-repo workspace each repository in `workspace.repos` of
+  `.specweave/config.json` is its own Git checkout: commit inside it, then in the
+  workspace root.
+- Check that a secret exists without printing it; never commit `.env*`.

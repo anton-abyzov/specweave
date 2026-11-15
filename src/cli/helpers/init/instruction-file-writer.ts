@@ -4,7 +4,6 @@
  * (via update-instructions) and the adapters that ship AGENTS.md.
  *
  * - detects the project's build/test/lint commands for the Commands table
- * - resolves the conditional `umbrella` section from config.workspace.repos
  * - never writes when the merge result is byte-identical
  * - backs up the previous file to .specweave/backups/<file>.<timestamp>.bak
  */
@@ -19,7 +18,6 @@ import {
   type TemplateType,
 } from './instruction-file-merger.js';
 import { detectStackCommands, type StackCommands } from './stack-detector.js';
-import { scanWorkspaceRepos } from './path-utils.js';
 
 export type InstructionFileName = 'CLAUDE.md' | 'AGENTS.md';
 
@@ -33,9 +31,8 @@ export interface ApplyInstructionOptions {
   /** Defaults to stack detection on projectPath. */
   commands?: StackCommands;
   /**
-   * Condition flags for `when="…"` template sections. Defaults to
-   * `{ umbrella: <config.workspace.repos is non-empty> }` read from
-   * `.specweave/config.json`.
+   * Condition flags for `when="…"` template sections. The shipped templates
+   * have none, so this defaults to no flags.
    */
   flags?: Record<string, boolean>;
   /** Compute the result without touching the disk. */
@@ -63,40 +60,6 @@ export function backupFilePath(projectPath: string, filename: string, now: Date 
   return path.join(projectPath, BACKUP_DIR, `${filename}.${stamp}.bak`);
 }
 
-/**
- * Condition flags for the templates' `when="…"` sections.
- *
- * `umbrella` is on when `config.workspace.repos` is non-empty. During `init` the
- * instruction files are written before the workspace section exists, so a config
- * without a `workspace` key falls back to the same nested-checkout scan that
- * init uses to build it.
- *
- * `jev` is on only when `config.jev.enabled` is literally `true` — the Jev
- * section is opt-in guidance for a paid external model, so a missing or
- * unreadable config must never render it.
- *
- * `hub` is on when `.specweave/project/hub.json` exists.
- */
-export function detectTemplateFlags(projectPath: string): Record<string, boolean> {
-  let config: { workspace?: unknown; jev?: { enabled?: unknown } } | undefined;
-  try {
-    const raw = fs.readFileSync(path.join(projectPath, '.specweave', 'config.json'), 'utf-8');
-    config = JSON.parse(raw) ?? undefined;
-  } catch {
-    // no config yet, or unreadable: fall through to the filesystem scan
-  }
-  const jev = config?.jev?.enabled === true;
-  const hub = fs.existsSync(path.join(projectPath, '.specweave', 'project', 'hub.json'));
-  const glossary = ['GLOSSARY.md', 'GLOSSARY-MAP.md'].some((f) => fs.existsSync(path.join(projectPath, f)));
-  const repos = (config?.workspace as { repos?: unknown } | undefined)?.repos;
-  if (Array.isArray(repos)) return { umbrella: repos.length > 0, jev, hub, glossary };
-  try {
-    return { umbrella: scanWorkspaceRepos(projectPath) !== null, jev, hub, glossary };
-  } catch {
-    return { umbrella: false, jev, hub, glossary };
-  }
-}
-
 export function applyInstructionTemplate(opts: ApplyInstructionOptions): ApplyInstructionResult {
   const filePath = path.join(opts.projectPath, opts.filename);
   const templatePath = path.join(opts.templatesDir, `${opts.filename}.template`);
@@ -116,7 +79,7 @@ export function applyInstructionTemplate(opts: ApplyInstructionOptions): ApplyIn
     opts.projectName,
     {
       commands: opts.commands ?? detectStackCommands(opts.projectPath),
-      flags: opts.flags ?? detectTemplateFlags(opts.projectPath),
+      flags: opts.flags ?? {},
     }
   );
 
