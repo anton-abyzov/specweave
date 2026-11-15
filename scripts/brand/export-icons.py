@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Write every SpecWeave/SpecWithCode logo file from one master SVG.
 
-Master: scripts/brand/specwithcode-logo.svg (the indigo tile with the spec page and
-prompt, the same file as assets/prod/logo.svg in specweave-studio). Change the master
-and rerun `python3 scripts/brand/export-icons.py`; do not edit the outputs by hand.
+Masters: scripts/brand/specwithcode-logo.svg (the prompt-and-lines mark on its indigo
+gradient tile, the same file as assets/prod/logo.svg in the specwithcode repository) and
+specwithcode-logo-small.svg (the simplified one-line mark used at 32px and below, where the
+two lines merge). They are copies of assets/prod/logo.svg and assets/prod/logo-small.svg,
+which that repository's `vp run brand:rollout` writes; copy them here and rerun
+`python3 scripts/brand/export-icons.py`; do not edit the outputs by hand.
 Needs rsvg-convert and Pillow.
 """
 import hashlib
@@ -18,7 +21,9 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 MASTER = ROOT / "scripts/brand/specwithcode-logo.svg"
-TILE = "#5B6CFF"
+MASTER_SMALL = ROOT / "scripts/brand/specwithcode-logo-small.svg"
+SMALL_MAX_PX = 32
+OG_SOURCE = ROOT / "docs-site/marketing/og-specwithcode.html"
 # Files that link the outputs; each link gets ?v=<master hash> so browsers drop cached icons.
 LINKERS = (
     "docs-site/docusaurus.config.ts",
@@ -32,7 +37,7 @@ ICON_LINK = re.compile(
 
 
 def render(size: int, full_bleed: bool = False) -> Image.Image:
-    svg = MASTER.read_text()
+    svg = (MASTER_SMALL if size <= SMALL_MAX_PX else MASTER).read_text()
     if full_bleed:
         # Apple and Android mask touch icons themselves, so fill the tile's corners.
         svg = re.sub(r'rx="[^"]*"', 'rx="0"', svg, count=1)
@@ -57,7 +62,8 @@ def main() -> None:
     for size in (16, 32, 48):
         save_png(render(size), f"{site}/favicon-{size}x{size}.png")
     ico_sizes = [(16, 16), (32, 32), (48, 48)]
-    render(256).save(ROOT / f"{site}/favicon.ico", sizes=ico_sizes)
+    frames = [render(size) for size, _ in ico_sizes]
+    frames[-1].save(ROOT / f"{site}/favicon.ico", sizes=ico_sizes, append_images=frames[:-1])
     save_png(render(180, full_bleed=True), f"{site}/apple-touch-icon.png")
     save_png(render(192, full_bleed=True), f"{site}/img/favicon-192x192.png")
     save_png(render(512, full_bleed=True), f"{site}/img/favicon-512x512.png")
@@ -73,7 +79,20 @@ def main() -> None:
     )
     dashboard.write_text(html)
 
-    version = hashlib.sha256(MASTER.read_bytes()).hexdigest()[:8]
+    # The share card's tile and mark; render the JPEG from it as its header comment says.
+    master = MASTER.read_text()
+    mark = re.search(r'<path fill="#FFFFFF" d="([^"]+)"', master).group(1)
+    stops = re.findall(r'stop-color="(#[0-9A-Fa-f]{6})"', master)
+    og = OG_SOURCE.read_text()
+    og = re.sub(r"(\.mark\{[^}]*background:)[^;]+;", lambda m: f"{m.group(1)}linear-gradient(180deg,{stops[0]},{stops[1]});", og, count=1)
+    og = re.sub(
+        r'(<div class="mark">)<svg.*?</svg>',
+        lambda m: m.group(1) + f'<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="#FFFFFF" d="{mark}"/></svg>',
+        og, count=1, flags=re.S,
+    )
+    OG_SOURCE.write_text(og)
+
+    version = hashlib.sha256(MASTER.read_bytes() + MASTER_SMALL.read_bytes()).hexdigest()[:8]
     for rel in LINKERS:
         path = ROOT / rel
         path.write_text(ICON_LINK.sub(lambda m: f"{m.group(1)}?v={version}", path.read_text()))

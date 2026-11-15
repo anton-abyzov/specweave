@@ -31,7 +31,7 @@ const config: Config = {
   title: 'SpecWeave',
   tagline: 'Change agents. Keep the thread.',
   // An .ico favicon for broad compatibility (Teams, etc.)
-  favicon: 'favicon.ico?v=079fbdd1',
+  favicon: 'favicon.ico?v=b76c9289',
 
   future: {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
@@ -65,7 +65,7 @@ const config: Config = {
         '@id': 'https://spec-weave.com/#org',
         name: 'SpecWeave',
         url: 'https://spec-weave.com',
-        logo: 'https://spec-weave.com/img/logo.svg?v=079fbdd1',
+        logo: 'https://spec-weave.com/img/logo.svg?v=b76c9289',
         sameAs: [
           'https://github.com/anton-abyzov/specweave',
           'https://www.npmjs.com/package/specweave',
@@ -123,14 +123,14 @@ const config: Config = {
       attributes: {
         rel: 'apple-touch-icon',
         sizes: '180x180',
-        href: '/apple-touch-icon.png?v=079fbdd1',
+        href: '/apple-touch-icon.png?v=b76c9289',
       },
     },
     {
       tagName: 'link',
       attributes: {
         rel: 'manifest',
-        href: '/site.webmanifest?v=079fbdd1',
+        href: '/site.webmanifest?v=b76c9289',
       },
     },
     {
@@ -139,7 +139,7 @@ const config: Config = {
         rel: 'icon',
         type: 'image/png',
         sizes: '32x32',
-        href: '/favicon-32x32.png?v=079fbdd1',
+        href: '/favicon-32x32.png?v=b76c9289',
       },
     },
     {
@@ -148,7 +148,7 @@ const config: Config = {
         rel: 'icon',
         type: 'image/png',
         sizes: '16x16',
-        href: '/favicon-16x16.png?v=079fbdd1',
+        href: '/favicon-16x16.png?v=b76c9289',
       },
     },
   ],
