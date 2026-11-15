@@ -1,3 +1,14 @@
+## [3.1.24] - 2026-11-15
+
+### Changed
+
+- Minify instruction files and templates (#2294)
+- Stop teaching repo-local .worktrees for agent lanes (#2292)
+- sw-review: one review thread per PR, archive on verdict (#2291)
+- Tests use real temp paths so they pass on macOS (#2290)
+- Keep status-commands tests independent of the host project (#2289)
+- Init finds repositories in any layout, never asks to move them (#2287)
+
 ## [3.1.23] - 2026-11-13
 
 ### Added
