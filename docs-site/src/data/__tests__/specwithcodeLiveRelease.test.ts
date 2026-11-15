@@ -118,7 +118,7 @@ describe('SpecWithCode downloads while a page is open', () => {
   });
 
   it('offers an Insiders build only while it is newer than Stable', () => {
-    const withInsiders = applyPicked(built, {mac: null, desktop: null, insiders: {version: '9.1.1', files: ['mac', 'windows-arm64']}});
+    const withInsiders = applyPicked(built, {mac: null, desktop: {version: '9.0.8', readyAt: null, bytes: desktopBytes}, insiders: {version: '9.1.1', files: ['mac', 'windows-arm64']}});
     expect(withInsiders.insiders?.downloads.mac?.url).toBe(`${REPO}/releases/download/v9.1.1/SpecWithCode-9.1.1-arm64.dmg`);
     const mac = chooseInstaller({os: 'mac', arch: 'arm64'}, withInsiders);
     expect(mac.insiders).toEqual({version: '9.1.1', file: 'SpecWithCode-9.1.1-arm64.dmg', url: `${REPO}/releases/download/v9.1.1/SpecWithCode-9.1.1-arm64.dmg`});
@@ -143,14 +143,17 @@ describe('SpecWithCode downloads while a page is open', () => {
   });
 
   it('follows the Insiders build both ways: more files, another build, or none', () => {
-    const first = applyPicked(built, {mac: null, desktop: null, insiders: {version: '9.1.1', files: ['mac']}});
+    const stable = {version: '9.0.8', readyAt: null, bytes: desktopBytes};
+    const first = applyPicked(built, {mac: null, desktop: stable, insiders: {version: '9.1.1', files: ['mac']}});
     expect(chooseInstaller({os: 'windows', arch: 'x64'}, first).insiders).toBeUndefined();
-    const more = applyPicked(first, {mac: null, desktop: null, insiders: {version: '9.1.1', files: ['mac', 'windows-x64']}});
+    const more = applyPicked(first, {mac: null, desktop: stable, insiders: {version: '9.1.1', files: ['mac', 'windows-x64']}});
     expect(chooseInstaller({os: 'windows', arch: 'x64'}, more).insiders?.file).toBe('SpecWithCode-9.1.1-x64.exe');
+    // A read that found no stable release ([] or an error body) keeps the button.
+    expect(applyPicked(more, {mac: null, desktop: null, insiders: null})).toBe(more);
     // A pulled build goes back to the one before it, or to no button at all.
-    const pulled = applyPicked(more, {mac: null, desktop: null, insiders: {version: '9.1.0', files: ['mac']}});
+    const pulled = applyPicked(more, {mac: null, desktop: stable, insiders: {version: '9.1.0', files: ['mac']}});
     expect(pulled.insiders?.version).toBe('9.1.0');
-    expect(applyPicked(pulled, {mac: null, desktop: null, insiders: null}).insiders).toBeNull();
+    expect(applyPicked(pulled, {mac: null, desktop: stable, insiders: null}).insiders).toBeNull();
   });
 
   it('ignores an answer it cannot trust', () => {

@@ -84,7 +84,10 @@ export function applyPicked(shown: SpecWithCodeDownloads, picked: PickedReleases
     }
   }
   // Insiders follows GitHub both ways: a newer build, more files for the same one, or none at all.
-  if (insidersPick === null || insidersPick === undefined) {
+  // Only from a read that found a stable release, as at build time: an empty or error answer changes nothing.
+  if (!mac && !desktopPick) {
+    // Keep what is shown.
+  } else if (insidersPick === null || insidersPick === undefined) {
     insiders = null;
   } else if (
     Array.isArray(insidersPick.files) &&
