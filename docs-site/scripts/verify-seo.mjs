@@ -94,7 +94,7 @@ for (const path of ['/code/', '/code/download/']) {
   assert(doc.querySelector('meta[name="description"]').content.includes('Spec with Code'), `Missing brand alias in description: ${path}`);
   assert(doc.querySelector('meta[name="description"]').content.length <= 160, `Long product description: ${path}`);
   for (const selector of ['meta[property="og:image"]', 'meta[name="twitter:image"]']) {
-    assert.equal(doc.querySelector(selector)?.content, `${origin}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`, `Wrong product share image: ${path}`);
+    assert.equal(doc.querySelector(selector)?.content, `${origin}/img/studio/og-specwithcode.jpg?v=icon-20261115`, `Wrong product share image: ${path}`);
   }
   const nodes = schemaNodes(doc);
   assert(nodes.some(node => node['@type'] === 'WebSite' && node['@id'] === `${origin}/#website`), `Unresolved site entity: ${path}`);

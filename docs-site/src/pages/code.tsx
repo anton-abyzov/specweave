@@ -37,7 +37,7 @@ const APP_STORE_URL = SPECWITHCODE_MOBILE.ios.url;
 const SITE = 'https://spec-weave.com';
 const pageTitle = () => translate({id: 'code.meta.title', message: 'Claude Code and Codex on your own computers, never stuck on a limit: SpecWithCode (Spec with Code)', description: 'Page title of the SpecWithCode landing page. Keep product names in English'});
 const pageDescription = () => translate({id: 'code.meta.description', message: 'SpecWithCode (Spec with Code): Claude Code and Codex on macOS, Windows and Linux. Free mobile companion apps for iPhone and Android.', description: 'Meta description of the SpecWithCode landing page. Keep product names in English'});
-const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
+const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=icon-20261115`;
 
 const getDownloads = ({release, desktop}: SpecWithCodeDownloads): {os: Os; label: string; note: string; url: string}[] => [
   {os: 'mac', label: 'Mac', note: translate({id: 'code.downloads.mac.note', message: 'Apple silicon, macOS 13+', description: 'Requirements note under the Mac download button. Keep product names in English'}), url: release.dmgUrl},

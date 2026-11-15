@@ -25,7 +25,7 @@ const icon = {size: 20, strokeWidth: 1.5, 'aria-hidden': true} as const;
 const btnIcon = {size: 16, strokeWidth: 1.5, 'aria-hidden': true} as const;
 
 const SITE = 'https://spec-weave.com';
-const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
+const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=icon-20261115`;
 const VERIFY_ANCHOR = '#verify-title';
 const VERIFY_DOCS_URL = 'https://github.com/anton-abyzov/specwithcode/blob/main/docs/user/install.md#verify-a-download';
 const RELEASE_KEY_FINGERPRINT = 'B10C BBD0 F489 3ACD 3FF6  F256 563A 3A09 8EE4 C0D7';

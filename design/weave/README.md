@@ -100,7 +100,7 @@ Real examples to copy the tone from:
 
 ## Logos
 
-- SpecWithCode has a mark: the white spec page with a `>_` prompt on the `wv-brand-tile` indigo tile (see Assets, Logos). Use the shipped files; never redraw it.
+- SpecWithCode has a mark: a white prompt chevron whose cursor is two text lines, on an indigo tile with a vertical gradient (`#6E7DFF` to `#4A58E8`; `wv-brand-tile` is its midpoint) (see Assets, Logos). Use the shipped files; never redraw it.
 - SpecWeave and Verified Skill have no mark yet. Set their names as wordmarks in Schibsted Grotesk 700 at `wv-h3` size, in `wv-ink`.
 
 ## Products in the system

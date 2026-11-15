@@ -14,7 +14,7 @@ import styles from '../code.module.css';
 */
 
 const SITE = 'https://spec-weave.com';
-const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=all-platforms-20261027`;
+const OG_IMAGE = `${SITE}/img/studio/og-specwithcode.jpg?v=icon-20261115`;
 
 function pageTitle(): string {
   return translate({id: 'code.get.meta.title', message: 'Get SpecWithCode for iPhone and Android', description: 'Title of the page that sends a phone to its app store. Keep product names in English'});
