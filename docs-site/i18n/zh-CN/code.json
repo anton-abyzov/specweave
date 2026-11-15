@@ -2895,10 +2895,6 @@
     "message": "SpecWithCode {version}，{file}，{size}。",
     "description": "Installer facts under the download button; {version} is the version, {file} the file name, {size} the download size. Keep product names in English"
   },
-  "code.download.hero.macRequirements": {
-    "message": "Apple silicon，macOS 13 或更高版本。",
-    "description": "Mac system requirements. Keep product names in English"
-  },
   "code.download.hero.platformSentence": {
     "message": "{platform}。",
     "description": "Who the installer is for, as a sentence; {platform} is a phrase such as Windows 10 and 11 on x64"
@@ -2918,14 +2914,6 @@
   "code.download.releaseNotes": {
     "message": "发布说明",
     "description": "Link to the release notes"
-  },
-  "code.download.intelMac.title": {
-    "message": "这看起来是一台 Intel Mac。",
-    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
-  },
-  "code.download.intelMac.body": {
-    "message": "macOS 版 SpecWithCode 需要 Apple silicon（M1 或更新），没有 Intel 版本。Linux 或 Windows 机器可以改用，见{link}。",
-    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
   },
   "code.download.intelMac.link": {
     "message": "Windows 和 Linux",
@@ -4264,5 +4252,37 @@
   "code.b.skills.heading": {
     "message": "技能，集中管理",
     "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+  },
+  "code.download.hero.insidersButton": {
+    "message": "Insiders {version}",
+    "description": "Secondary download button for the newest Insiders build; {version} is its version. Keep Insiders in English"
+  },
+  "code.download.hero.macAppleSiliconButton": {
+    "message": "Mac，仅限 Apple silicon（{size}）",
+    "description": "Secondary button for the Mac download shown to Windows and Linux visitors; {size} is the download size. Keep product names in English"
+  },
+  "code.download.hero.macAppleSiliconOnly": {
+    "message": "仅限 Apple silicon（M1 或更新），macOS 13 或更高版本。",
+    "description": "Mac system requirements next to the Mac button. Keep product names in English"
+  },
+  "code.download.hero.insidersNote": {
+    "message": "Insiders {version} 是最新的构建；经过一天测试后进入 Stable。安装后，在 Settings › Update track 中选择 Insiders，即可继续接收 Insiders 更新。",
+    "description": "One line explaining the Insiders download; {version} is its version. Keep Insiders, Stable and the Settings path in English"
+  },
+  "code.download.intelMac.willNotRun": {
+    "message": "SpecWithCode 无法在这台 Mac 上运行。",
+    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
+  },
+  "code.download.intelMac.plainBody": {
+    "message": "你的浏览器报告这是 Intel 芯片，而 Mac 版应用只能在 Apple silicon（M1 或更新）上运行，没有 Intel 版本。可以改用 Windows 或 Linux 电脑运行，参见 {link}。",
+    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
+  },
+  "installer.windowsX64.otherArch": {
+    "message": "x64 版 Windows",
+    "description": "Secondary button for the Windows x64 installer, shown to Windows on Arm visitors. Keep product names in English"
+  },
+  "installer.windowsArm64.otherArch": {
+    "message": "Arm 版 Windows",
+    "description": "Secondary button for the Windows arm64 installer, shown to Windows x64 visitors. Keep product names in English"
   }
 }

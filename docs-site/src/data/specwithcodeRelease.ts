@@ -47,14 +47,19 @@ export const SPECWITHCODE_OPERATING_SYSTEMS =
 
 /*
  * Windows and Linux builds are added to a release by release-windows-linux.yml
- * about twenty minutes after its macOS assets, so GitHub's Latest release often
- * has none yet and a /releases/latest/download/ link would answer 404. They are
- * linked from the newest release that carries all six instead: the one recorded
- * here at build time, replaced in the browser by `useSpecWithCodeRelease` with
- * the newest one on GitHub. `scripts/sync-specwithcode-release.mjs` keeps
- * DESKTOP_VERSION and the byte sizes current before every deploy build.
+ * about twenty minutes after its macOS assets (until the 1.1 release train,
+ * which promotes only releases that already have them). Each one is also
+ * attached under a version-free name (`SpecWithCode-x64.exe`). When the newest
+ * stable release carries those (DESKTOP_LATEST), the buttons use GitHub's
+ * version-free `releases/latest/download/` links, like the Mac one; otherwise
+ * they link the versioned files of the newest release that has all six, so no
+ * button answers 404 in the gap. The release recorded here at build time is
+ * replaced in the browser by `useSpecWithCodeRelease` with the newest one on
+ * GitHub. `scripts/sync-specwithcode-release.mjs` keeps DESKTOP_VERSION,
+ * DESKTOP_LATEST and the byte sizes current before every deploy build.
  */
 const DESKTOP_VERSION = '1.0.248';
+const DESKTOP_LATEST = false;
 const EXE_X64_BYTES = 154_732_560;
 const EXE_ARM64_BYTES = 145_112_208;
 const APPIMAGE_X64_BYTES = 169_939_599;
@@ -71,23 +76,33 @@ export interface SpecWithCodeDesktopBytes {
   DEB_ARM64_BYTES: number;
 }
 
-/** The Windows and Linux installers of one release, as the pages show them. */
-export const buildDesktopRelease = (version: string, bytes: SpecWithCodeDesktopBytes) => {
-  const asset = (name: string, size: number) => ({
-    name,
-    bytes: size,
-    size: `${Math.round(size / 1_000_000)} MB`,
-    url: `${REPO}/releases/download/v${version}/${name}`,
-  });
+/**
+ * The Windows and Linux installers of one release, as the pages show them.
+ * With `latest`, through the version-free `releases/latest/download/` names;
+ * otherwise the versioned files of that release.
+ */
+export const buildDesktopRelease = (version: string, bytes: SpecWithCodeDesktopBytes, latest = false) => {
+  const asset = (suffix: string, size: number) => {
+    const name = latest ? `SpecWithCode-${suffix}` : `SpecWithCode-${version}-${suffix}`;
+    return {
+      name,
+      bytes: size,
+      size: `${Math.round(size / 1_000_000)} MB`,
+      url: latest ? `${REPO}/releases/latest/download/${name}` : `${REPO}/releases/download/v${version}/${name}`,
+    };
+  };
   return {
     version,
-    exe: asset(`SpecWithCode-${version}-x64.exe`, bytes.EXE_X64_BYTES),
-    exeArm64: asset(`SpecWithCode-${version}-arm64.exe`, bytes.EXE_ARM64_BYTES),
-    appImage: asset(`SpecWithCode-${version}-x86_64.AppImage`, bytes.APPIMAGE_X64_BYTES),
-    appImageArm64: asset(`SpecWithCode-${version}-arm64.AppImage`, bytes.APPIMAGE_ARM64_BYTES),
-    deb: asset(`SpecWithCode-${version}-amd64.deb`, bytes.DEB_X64_BYTES),
-    debArm64: asset(`SpecWithCode-${version}-arm64.deb`, bytes.DEB_ARM64_BYTES),
-    sumsUrl: `${REPO}/releases/download/v${version}/SHA256SUMS-windows-linux`,
+    latest,
+    exe: asset('x64.exe', bytes.EXE_X64_BYTES),
+    exeArm64: asset('arm64.exe', bytes.EXE_ARM64_BYTES),
+    appImage: asset('x86_64.AppImage', bytes.APPIMAGE_X64_BYTES),
+    appImageArm64: asset('arm64.AppImage', bytes.APPIMAGE_ARM64_BYTES),
+    deb: asset('amd64.deb', bytes.DEB_X64_BYTES),
+    debArm64: asset('arm64.deb', bytes.DEB_ARM64_BYTES),
+    sumsUrl: latest
+      ? `${REPO}/releases/latest/download/SHA256SUMS-windows-linux`
+      : `${REPO}/releases/download/v${version}/SHA256SUMS-windows-linux`,
     notesUrl: `${REPO}/releases/tag/v${version}`,
   } as const;
 };
@@ -100,4 +115,42 @@ export const SPECWITHCODE_WINDOWS_LINUX: SpecWithCodeDesktopRelease = buildDeskt
   APPIMAGE_ARM64_BYTES,
   DEB_X64_BYTES,
   DEB_ARM64_BYTES,
-});
+}, DESKTOP_LATEST);
+
+/*
+ * The newest Insiders build: from 1.1.0 every release starts as a GitHub
+ * prerelease and the daily train promotes one to stable after a day. The
+ * download page offers it beside the Stable button only while it is newer than
+ * the stable release and carries the visitor's file; INSIDERS_VERSION is empty
+ * when there is none. INSIDERS_FILES lists the installer keys it carries,
+ * comma separated. Written by `scripts/sync-specwithcode-release.mjs`.
+ */
+const INSIDERS_VERSION = '';
+const INSIDERS_FILES = '';
+
+/** An installer key of specwithcodeInstaller.ts. */
+export type SpecWithCodeInstallerKey = 'mac' | 'windows-x64' | 'windows-arm64' | 'linux-x64' | 'linux-arm64';
+
+const INSIDERS_FILE_NAME: Record<SpecWithCodeInstallerKey, (version: string) => string> = {
+  mac: (v) => `SpecWithCode-${v}-arm64.dmg`,
+  'windows-x64': (v) => `SpecWithCode-${v}-x64.exe`,
+  'windows-arm64': (v) => `SpecWithCode-${v}-arm64.exe`,
+  'linux-x64': (v) => `SpecWithCode-${v}-x86_64.AppImage`,
+  'linux-arm64': (v) => `SpecWithCode-${v}-arm64.AppImage`,
+};
+
+/** One Insiders build's downloads, by installer key; only the files it carries. */
+export const buildInsidersRelease = (version: string, files: readonly string[]) => {
+  const downloads: Partial<Record<SpecWithCodeInstallerKey, {file: string; url: string}>> = {};
+  for (const key of files) {
+    const name = INSIDERS_FILE_NAME[key as SpecWithCodeInstallerKey];
+    if (!name) continue;
+    downloads[key as SpecWithCodeInstallerKey] = {file: name(version), url: `${REPO}/releases/download/v${version}/${name(version)}`};
+  }
+  return {version, downloads, notesUrl: `${REPO}/releases/tag/v${version}`} as const;
+};
+export type SpecWithCodeInsidersRelease = ReturnType<typeof buildInsidersRelease>;
+
+export const SPECWITHCODE_INSIDERS: SpecWithCodeInsidersRelease | null = INSIDERS_VERSION
+  ? buildInsidersRelease(INSIDERS_VERSION, INSIDERS_FILES.split(',').filter(Boolean))
+  : null;

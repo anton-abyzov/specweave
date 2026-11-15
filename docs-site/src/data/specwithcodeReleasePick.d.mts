@@ -12,6 +12,8 @@ export type DesktopBytesName =
   | 'DEB_X64_BYTES'
   | 'DEB_ARM64_BYTES';
 export declare const DESKTOP_ASSETS: ReadonlyArray<readonly [DesktopBytesName, (version: string) => string]>;
+export declare const DESKTOP_LATEST_ASSETS: ReadonlyArray<string>;
+export declare const INSIDERS_FILES: ReadonlyArray<readonly [string, (version: string) => string]>;
 
 export interface PickedRelease<Name extends string> {
   version: string;
@@ -19,9 +21,20 @@ export interface PickedRelease<Name extends string> {
   readyAt: string | null;
   bytes: Record<Name, number>;
 }
+export interface PickedDesktopRelease extends PickedRelease<DesktopBytesName> {
+  /** The newest stable release, carrying the version-free installers; absent in older caches. */
+  latest?: boolean;
+}
+export interface PickedInsiders {
+  version: string;
+  /** Installer keys (specwithcodeInstaller.ts) whose file the build carries. */
+  files: string[];
+}
 export interface PickedReleases {
   mac: PickedRelease<'DMG_BYTES'> | null;
-  desktop: PickedRelease<DesktopBytesName> | null;
+  desktop: PickedDesktopRelease | null;
+  /** Absent in answers cached before Insiders were read. */
+  insiders?: PickedInsiders | null;
 }
 
 export declare function parseVersion(text: string | null | undefined): number[] | null;

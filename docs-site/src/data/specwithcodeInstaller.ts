@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {translate} from '@docusaurus/Translate';
 import {SPECWITHCODE_RELEASE, type SpecWithCodeMacRelease} from './specwithcodeRelease';
-import {BUILT_DOWNLOADS, useSpecWithCodeRelease, type SpecWithCodeDownloads} from './specwithcodeLiveRelease';
+import {BUILT_DOWNLOADS, currentInsiders, useSpecWithCodeRelease, type SpecWithCodeDownloads} from './specwithcodeLiveRelease';
 import {detectVisitorPlatform, type VisitorPlatform} from '../lib/visitorPlatform';
 
 /**
@@ -48,9 +48,20 @@ export interface InstallerChoice {
   unsupported?: 'intel-mac' | 'mobile';
   /** Linux with an unknown CPU: x64 is offered, but the visitor should check. */
   archGuessed?: boolean;
+  /** The same platform's other CPU (Windows arm64 next to x64), kept one click away. */
+  otherArch?: {label: string; file: string; url: string; size: string};
+  /** The newest Insiders build of this installer, when one is newer than Stable and carries it. */
+  insiders?: {file: string; url: string; version: string};
 }
 
 export function chooseInstaller(platform: VisitorPlatform | null, downloads: SpecWithCodeDownloads = BUILT_DOWNLOADS): InstallerChoice {
+  const choice = chooseStable(platform, downloads);
+  const insiders = currentInsiders(downloads);
+  const file = choice.unsupported ? undefined : insiders?.downloads[choice.installer.key];
+  return file && insiders ? {...choice, insiders: {...file, version: insiders.version}} : choice;
+}
+
+function chooseStable(platform: VisitorPlatform | null, downloads: SpecWithCodeDownloads): InstallerChoice {
   const {release, desktop} = downloads;
   const mac = release === SPECWITHCODE_RELEASE ? MAC_INSTALLER : macInstaller(release);
   if (!platform) return {installer: mac, detected: false};
@@ -61,7 +72,13 @@ export function chooseInstaller(platform: VisitorPlatform | null, downloads: Spe
   if (os === 'windows') {
     const arm = arch === 'arm64';
     const a = arm ? desktop.exeArm64 : desktop.exe;
-    return {detected: true, installer: {
+    const other = arm ? desktop.exe : desktop.exeArm64;
+    return {detected: true, otherArch: {
+      label: arm
+        ? translate({id: 'installer.windowsX64.otherArch', message: 'Windows on x64', description: 'Secondary button for the Windows x64 installer, shown to Windows on Arm visitors. Keep product names in English'})
+        : translate({id: 'installer.windowsArm64.otherArch', message: 'Windows on Arm', description: 'Secondary button for the Windows arm64 installer, shown to Windows x64 visitors. Keep product names in English'}),
+      file: other.name, url: other.url, size: other.size,
+    }, installer: {
       key: arm ? 'windows-arm64' : 'windows-x64',
       label: arm ? translate({id: 'installer.windowsArm64.label', message: 'Download for Windows on Arm', description: 'Download button for the Windows arm64 installer. Keep product names in English'}) : translate({id: 'installer.windowsX64.label', message: 'Download for Windows', description: 'Download button for the Windows x64 installer. Keep product names in English'}),
       platformName: arm ? translate({id: 'installer.windowsArm64.platformName', message: 'Windows 10 and 11 on arm64', description: 'Who the Windows arm64 installer is for. Keep product names in English'}) : translate({id: 'installer.windowsX64.platformName', message: 'Windows 10 and 11 on x64', description: 'Who the Windows x64 installer is for. Keep product names in English'}),

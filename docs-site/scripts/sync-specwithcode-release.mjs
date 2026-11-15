@@ -50,11 +50,11 @@ const writeConstant = (source, name, value) => {
 const formatBytes = (bytes) => String(bytes).replace(/\B(?=(\d{3})+$)/g, '_');
 
 /**
- * `source` with each picked release written in. A picked release older than
- * the one recorded is ignored, so a release withdrawn from GitHub never moves
- * the page back.
+ * `source` with each picked release written in. A picked stable release older
+ * than the one recorded is ignored, so a release withdrawn from GitHub never
+ * moves the page back. The Insiders build is written as picked, none included.
  */
-export function applyReleases(source, {mac, desktop}) {
+export function applyReleases(source, {mac, desktop, insiders = null}) {
   let next = source;
   for (const [versionName, picked] of [['VERSION', mac], ['DESKTOP_VERSION', desktop]]) {
     if (!picked) continue;
@@ -62,6 +62,14 @@ export function applyReleases(source, {mac, desktop}) {
     if (parseVersion(recorded) && compareVersions(picked.version, recorded) < 0) continue;
     next = writeConstant(next, versionName, `'${picked.version}'`);
     for (const [name, bytes] of Object.entries(picked.bytes)) next = writeConstant(next, name, formatBytes(bytes));
+    // For the same release too: a newer stable one without these files moves the links off latest.
+    if (picked === desktop) next = writeConstant(next, 'DESKTOP_LATEST', picked.latest === true ? 'true' : 'false');
+  }
+  // Insiders follows GitHub both ways, cleared too: a pulled build must not stay a dead button.
+  // Only from a read that found a stable release, so a failed or empty read changes nothing.
+  if (mac || desktop) {
+    next = writeConstant(next, 'INSIDERS_VERSION', `'${insiders?.version ?? ''}'`);
+    next = writeConstant(next, 'INSIDERS_FILES', `'${insiders?.files.join(',') ?? ''}'`);
   }
   return next;
 }
@@ -78,7 +86,10 @@ export function linkedReleases(html) {
     mac:
       version(/"softwareVersion":\s*"(\d+\.\d+\.\d+)"/) ??
       version(/releases\/download\/v(\d+\.\d+\.\d+)\/SpecWithCode-arm64\.dmg/),
-    desktop: version(/releases\/download\/v(\d+\.\d+\.\d+)\/SpecWithCode-\1-x64\.exe/),
+    // The Windows and Linux buttons may be version-free latest links; the section names its release.
+    desktop:
+      version(/data-desktop-version="(\d+\.\d+\.\d+)"/) ??
+      version(/releases\/download\/v(\d+\.\d+\.\d+)\/SpecWithCode-\1-x64\.exe/),
   };
 }
 
@@ -148,7 +159,9 @@ async function main() {
   const source = fs.readFileSync(DATA_FILE, 'utf8');
   const next = applyReleases(source, picked);
   const recorded = (name) => readConstant(next, name).replace(/'/g, '');
-  const summary = `Mac ${recorded('VERSION')}, Windows and Linux ${recorded('DESKTOP_VERSION')}`;
+  const insidersVersion = recorded('INSIDERS_VERSION');
+  const summary = `Mac ${recorded('VERSION')}, Windows and Linux ${recorded('DESKTOP_VERSION')}` +
+    `${recorded('DESKTOP_LATEST') === 'true' ? ' (latest links)' : ''}, Insiders ${insidersVersion || 'none'}`;
   if (next === source) {
     console.log(`SpecWithCode downloads: already current (${summary}).`);
     return;
