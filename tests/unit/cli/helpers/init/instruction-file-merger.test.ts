@@ -47,22 +47,21 @@ function oneX(sections: Array<[string, string]>, user: string[] = [], version = 
 describe('parseTemplate', () => {
   it('splits sections and keeps the user-owned tail', () => {
     const t = agentsTemplate();
-    expect(t.sections.map(s => s.id)).toEqual(['header', 'loop', 'rules', 'umbrella', 'glossary', 'hub', 'jev']);
-    expect(t.sections.filter(s => s.required).map(s => s.id)).toEqual(['header', 'loop', 'rules']);
-    expect(t.sections.filter(s => s.when).map(s => [s.id, s.when])).toEqual([['umbrella', 'umbrella'], ['glossary', 'glossary'], ['hub', 'hub'], ['jev', 'jev']]);
+    expect(t.sections.map(s => s.id)).toEqual(['header']);
+    expect(t.sections.filter(s => s.required).map(s => s.id)).toEqual(['header']);
+    expect(t.sections.filter(s => s.when)).toEqual([]);
     expect(t.tail).toMatch(/^## Commands/);
     expect(t.tail).toContain('## Project notes');
     expect(parseTemplateSections(fs.readFileSync(path.join(TEMPLATES_DIR, 'AGENTS.md.template'), 'utf-8'))).toEqual(t.sections);
   });
 
-  it('parses CLAUDE.md as a thin @AGENTS.md import with a Project notes tail', () => {
+  it('parses CLAUDE.md as the bare @AGENTS.md import', () => {
     const t = claudeTemplate();
-    expect(t.sections.map(s => s.id)).toEqual(['header', 'jev']);
+    expect(t.sections.map(s => s.id)).toEqual(['header']);
     expect(t.sections.filter(s => s.required).map(s => s.id)).toEqual(['header']);
-    expect(t.sections.filter(s => s.when).map(s => [s.id, s.when])).toEqual([['jev', 'jev']]);
-    expect(t.sections[0].content).toMatch(/^@AGENTS\.md\n/);
-    expect(t.tail).toMatch(/^## Project notes/);
-    expect(t.tail).not.toContain('## Commands');
+    expect(t.sections.filter(s => s.when)).toEqual([]);
+    expect(t.sections[0].content.trim()).toBe('@AGENTS.md');
+    expect(t.tail).toBe('');
     expect(parseTemplateSections(fs.readFileSync(path.join(TEMPLATES_DIR, 'CLAUDE.md.template'), 'utf-8'))).toEqual(t.sections);
   });
 });
@@ -71,7 +70,7 @@ describe('mergeInstructionFile — (a) fresh file', () => {
   it('renders META + sections + tail with commands filled', () => {
     const r = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
     expect(r.action).toBe('created');
-    expect(r.content.startsWith(`<!-- SW:META template="agents" version="${V}" sections="header,loop,rules" -->`)).toBe(true);
+    expect(r.content.startsWith(`<!-- SW:META template="agents" version="${V}" sections="header" -->`)).toBe(true);
     expect(r.content).toContain(`# ${NAME}`);
     expect(r.content).toContain('| Build | `npm run build` |');
     expect(r.content).toContain('| Test | `npm test` |');
@@ -296,12 +295,11 @@ describe('mergeInstructionFile — (c) legacy file without markers', () => {
     expect(r.content).toContain('- **2026-02-02**: push then monitor the pipeline');
     expect(r.content).not.toContain('SpecWeave learns from corrections');
     expect(r.content).not.toContain('**Disable**');
-    // managed block first, then the template tail (Project notes; CLAUDE.md has no Commands table), then user content
+    // managed block first (CLAUDE.md is the bare import: no Commands table, no template tail), then user content
     const lastEnd = r.content.lastIndexOf('<!-- SW:END:');
     expect(r.content).not.toMatch(/^## Commands$/m);
-    expect(r.content.match(/^## Project notes$/gm)).toHaveLength(1);
-    expect(r.content.indexOf('## Project notes')).toBeGreaterThan(lastEnd);
-    expect(r.content.indexOf('## Production Credentials')).toBeGreaterThan(r.content.indexOf('## Project notes'));
+    expect(r.content).not.toMatch(/^## Project notes$/m);
+    expect(r.content.indexOf('## Production Credentials')).toBeGreaterThan(lastEnd);
     expect(r.migration).toEqual({ fromVersion: 'legacy (no markers)', removed: [] });
   });
 
@@ -477,36 +475,71 @@ describe('mergeInstructionFile — conditional (when=) sections', () => {
     expect(again.action).toBe('unchanged');
   });
 
-  it('drives the real templates from config.workspace.repos', () => {
-    const on = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS, flags: { umbrella: true } });
-    const off = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
-    expect(on.content).toContain('<!-- SW:SECTION:umbrella');
-    expect(on.content).toContain('Multi-repo workspace: each repository in `workspace.repos`');
-    expect(off.content).not.toContain('SW:SECTION:umbrella');
-    expect(off.content).not.toContain('Multi-repo workspace: each repository in `workspace.repos`');
-    // CLAUDE.md imports AGENTS.md and carries no umbrella section of its own
-    const claudeOn = mergeInstructionFile(null, claudeTemplate(), 'claude', V, NAME, { commands: CMDS, flags: { umbrella: true } });
-    expect(claudeOn.content).not.toContain('SW:SECTION:umbrella');
+  it('the real templates carry no conditional section, whatever the flags say', () => {
+    const flags = { umbrella: true, hub: true, jev: true, glossary: true };
+    const agents = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS, flags });
+    const claude = mergeInstructionFile(null, claudeTemplate(), 'claude', V, NAME, { commands: CMDS, flags });
+    expect(agents.content).toContain('sections="header"');
+    expect(claude.content).toContain('sections="header"');
+    expect(agents.content).not.toMatch(/SW:SECTION:(umbrella|hub|jev|glossary)/);
   });
 
-  it('drops the legacy project-hub block once the managed hub section renders', () => {
+  it('update drops the 3.1 loop, rules and conditional sections from an existing file and keeps user content', () => {
+    const OLD: ParsedTemplate = {
+      sections: [
+        { id: 'header', order: 0, required: true, content: '# {PROJECT_NAME}\n\nOld intro.' },
+        { id: 'loop', order: 1, required: true, content: '## The loop\n\n1. `specweave pickup`' },
+        { id: 'rules', order: 2, required: true, content: '## Rules\n\n- One agent per branch.' },
+        { id: 'hub', order: 3, required: false, when: 'hub', content: '## Project hub\n\nRead hub.json.' },
+        { id: 'jev', order: 4, required: false, when: 'jev', content: '## Jev\n\nGuard.' },
+      ],
+      tail: MINI.tail,
+    };
+    const old = mergeInstructionFile(null, OLD, 'agents', '3.1.23', NAME, { commands: CMDS, flags: { hub: true, jev: true } });
+    const existing = old.content + '\n## Mine\n\nkeep me\n';
+    const r = mergeInstructionFile(existing, agentsTemplate(), 'agents', '3.1.24', NAME, { commands: CMDS, flags: { hub: true, jev: true } });
+    expect(r.action).toBe('merged');
+    expect(r.removed).toEqual(['loop', 'rules', 'hub', 'jev']);
+    expect(r.updated).toEqual(['header']);
+    expect(r.content).toContain('sections="header"');
+    expect(r.content).not.toContain('## The loop');
+    expect(r.content).not.toContain('One agent per branch');
+    expect(r.content).not.toContain('## Project hub');
+    expect(r.content).toContain('This project plans work with SpecWeave');
+    // the user's own Commands table, notes and sections survive
+    expect(r.content).toContain('| Build | `npm run build` |');
+    expect(r.content).toContain('## Mine');
+    expect(r.content).toContain('keep me');
+    const again = mergeInstructionFile(r.content, agentsTemplate(), 'agents', '3.1.24', NAME, { commands: CMDS, flags: { hub: true, jev: true } });
+    expect(again.action).toBe('unchanged');
+  });
+
+  it('drops the legacy project-hub block once a managed hub section renders', () => {
+    const HUB: ParsedTemplate = {
+      sections: [
+        ...MINI.sections,
+        { id: 'hub', order: 3, required: false, when: 'hub', content: '## Project hub\n\nRead `.specweave/project/hub.json` first.' },
+      ],
+      tail: MINI.tail,
+    };
     const legacyHub =
       '<!-- specweave:project-hub -->\n## Shared project context\nRead .specweave/project/hub.json for the project goal.\n<!-- /specweave:project-hub -->\n';
-    const base = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
+    const base = mergeInstructionFile(null, HUB, 'agents', V, NAME, { commands: CMDS });
     const existing = base.content + '\n## Mine\n\nkeep me\n\n' + legacyHub;
 
-    const merged = mergeInstructionFile(existing, agentsTemplate(), 'agents', V, NAME, { commands: CMDS, flags: { hub: true } });
+    const merged = mergeInstructionFile(existing, HUB, 'agents', V, NAME, { commands: CMDS, flags: { hub: true } });
     expect(merged.content.match(/SW:SECTION:hub /g)).toHaveLength(1);
     expect(merged.content).not.toContain('<!-- specweave:project-hub -->');
     expect(merged.content).not.toContain('## Shared project context');
     expect(merged.content.match(/hub\.json/g)?.length).toBe(1);
     expect(merged.content).toContain('keep me');
     expect(merged.warnings.some(w => w.includes('legacy project-hub block'))).toBe(true);
-    const again = mergeInstructionFile(merged.content, agentsTemplate(), 'agents', V, NAME, { commands: CMDS, flags: { hub: true } });
+    const again = mergeInstructionFile(merged.content, HUB, 'agents', V, NAME, { commands: CMDS, flags: { hub: true } });
     expect(again.action).toBe('unchanged');
 
-    // Without hub.json the managed section is off, so the hand-written block stays.
-    const kept = mergeInstructionFile(existing, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
+    // The shipped template has no hub section, so the block `specweave project init` wrote stays.
+    const shipped = mergeInstructionFile(null, agentsTemplate(), 'agents', V, NAME, { commands: CMDS });
+    const kept = mergeInstructionFile(shipped.content + '\n' + legacyHub, agentsTemplate(), 'agents', V, NAME, { commands: CMDS, flags: { hub: true } });
     expect(kept.content).toContain('<!-- specweave:project-hub -->');
   });
 });

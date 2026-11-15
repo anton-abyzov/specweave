@@ -18,7 +18,7 @@ SpecWeave does not depend on Claude Code. Everything that matters is a file in g
 | Cursor, GitHub Copilot | `AGENTS.md` | `.agents/skills/sw-*` or `.claude/skills/sw-*`, invoked as `/sw-do` |
 | Gemini CLI, OpenCode | `AGENTS.md` | their own skill folders; the model picks a skill from its description, or use the CLI directly |
 
-`AGENTS.md` is the single, short instruction file. It tells every agent to start with `specweave pickup` and describes the loop below, so a tool that reads nothing else still knows what to do.
+`AGENTS.md` is the single, short instruction file. It tells every agent to start with `specweave pickup` and points at the sw-* skills in `.agents/skills/` and `.claude/skills/`, which carry the loop below; `pickup` itself prints the next task and its acceptance criteria.
 
 `specweave init` writes `AGENTS.md` and `CLAUDE.md` and installs the seven core skills, plus any optional ones the project turns on (`specweave skills`), twice: as `.claude/skills/sw-<name>/` for Claude Code and `.agents/skills/sw-<name>/` for Codex and other tools that read that folder, so switching tools needs no reinstall. For a tool that looks elsewhere, install the portable skills one at a time:
 

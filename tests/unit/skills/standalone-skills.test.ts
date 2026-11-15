@@ -136,9 +136,10 @@ describe('standalone skills (skills/)', () => {
     expect(lintSkill(skill).join('\n')).not.toMatch(/PowerShell sibling/);
   });
 
-  it('the AGENTS.md template installs standalone skills by their canonical path', () => {
+  it('skills/README.md installs standalone skills by their canonical path, and no template drifts from it', () => {
+    const readme = fs.readFileSync(path.join(REPO_ROOT, 'skills', 'README.md'), 'utf-8');
+    expect(readme).toContain('npx vskill install anton-abyzov/specweave/sw-do');
     const tpl = fs.readFileSync(path.join(REPO_ROOT, 'src', 'templates', 'AGENTS.md.template'), 'utf-8');
-    expect(tpl).toContain('npx vskill install anton-abyzov/specweave/sw-do');
     expect(tpl).not.toMatch(/anton-abyzov\/specweave\/skills\/sw-/);
   });
 

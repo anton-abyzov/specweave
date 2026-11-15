@@ -6,6 +6,7 @@ import { parseTemplate } from '../../../../../src/cli/helpers/init/instruction-f
 const ROOT = process.cwd();
 const TEMPLATES_DIR = path.join(ROOT, 'src/templates');
 const read = (name: string): string => fs.readFileSync(path.join(TEMPLATES_DIR, name), 'utf-8');
+const skill = (name: string): string => fs.readFileSync(path.join(ROOT, 'skills', name, 'SKILL.md'), 'utf-8');
 
 /** Shell constructs that Windows shells and weaker models copy literally. */
 const BASH_ONLY: Array<{ label: string; re: RegExp }> = [
@@ -66,46 +67,44 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
   ];
 
   it('AGENTS.md is the one instruction file and CLAUDE.md imports it', () => {
-    expect(parseTemplate(agents).sections.map(s => `${s.id}${s.required ? '!' : ''}`)).toEqual([
-      'header!', 'loop!', 'rules!', 'umbrella', 'glossary', 'hub', 'jev',
-    ]);
-    expect(parseTemplate(claude).sections.map(s => `${s.id}${s.required ? '!' : ''}`)).toEqual(['header!', 'jev']);
-    expect(claude.split('\n')[1]).toBe('@AGENTS.md');
-    // Claude reads AGENTS.md through the import, so nothing is said twice.
-    expect(claude).not.toContain('## The loop');
-    expect(claude).not.toContain('## Commands');
+    // Only the opening paragraph is managed: `specweave update` has nothing else to overwrite.
+    expect(parseTemplate(agents).sections.map(s => `${s.id}${s.required ? '!' : ''}`)).toEqual(['header!']);
+    expect(parseTemplate(claude).sections.map(s => `${s.id}${s.required ? '!' : ''}`)).toEqual(['header!']);
+    expect(parseTemplate(claude).sections[0].content.trim()).toBe('@AGENTS.md');
+    expect(parseTemplate(claude).tail).toBe('');
+    expect(agents).not.toContain('## The loop');
+    expect(agents).not.toContain('## Rules');
   });
 
-  it.each([['umbrella'], ['hub'], ['jev']])('the %s section of AGENTS.md is conditional on its own flag', (id) => {
-    const section = parseTemplate(agents).sections.find(s => s.id === id);
-    expect(section?.when).toBe(id);
-    expect(section?.required).toBe(false);
-  });
-
-  it('AGENTS.md maps "hand off" and "pick up" to the two commands', () => {
+  it('AGENTS.md points at pickup and the skills, which carry the loop', () => {
     expect(agents).toContain('`specweave pickup`');
-    expect(agents).toContain('`specweave handoff --reason');
-    expect(agents).toMatch(/says "hand off"/);
-    expect(agents).toMatch(/says "pick up"/);
-    // An increment's opener also owns its close, in the same session and without asking.
-    expect(agents).toContain('Close what you open: its plan ends with "Verify and close NNNN"');
-    expect(agents).toMatch(/When the last task is done or skipped, without asking: `specweave verify`.*`specweave complete NNNN`/);
-    expect(agents).toContain('Stopping with tasks left, or switching tools: `specweave handoff');
-    expect(agents).toContain('.specweave/memory/');
+    expect(agents).toContain('`.agents/skills/`');
+    expect(agents).toContain('`.claude/skills/`');
     expect(agents).not.toContain('tasks.md');
+    // The loop the template used to spell out lives in the skill sources.
+    expect(skill('sw-handoff')).toMatch(/says "hand off"/);
+    expect(skill('sw-handoff')).toMatch(/says "pick up"/);
+    expect(skill('sw-handoff')).toContain('specweave handoff --reason');
+    expect(skill('sw-increment')).toContain('"Verify and close 0042"');
+    expect(skill('sw-increment')).toContain('`specweave small-fix "<why>"`');
+    expect(skill('sw-do')).toContain('## Finish without asking');
+    expect(skill('sw-project')).toContain('.specweave/memory/');
   });
 
-  it('AGENTS.md has agents check ACs from the outside, not add unit tests by default', () => {
-    expect(agents).toContain('A Test checks the AC as users would (CLI, HTTP, UI, API)');
-    expect(agents).toContain('add unit tests only when asked');
-    expect(agents).not.toMatch(/Files: src\/a\.ts, src\/a\.test\.ts/);
+  it('the skills have agents check ACs from the outside, not add unit tests by default', () => {
+    expect(skill('sw-increment')).toContain('A `Test` checks the AC from the outside');
+    expect(skill('sw-increment')).toMatch(/new unit or integration tests only when the/);
+    expect(skill('sw-do')).toMatch(/Never widen a task's `Files` or weaken a test/);
   });
 
-  it('step 3 of the loop is work, commit, `task done` (which claims); claim only for parallel agents', () => {
-    const step3 = agents.split('\n').find((l) => l.startsWith('3. ')) ?? '';
-    expect(step3).toMatch(/^3\. Work the task.*commit as `NNNN: what changed`, then `specweave task done T-NN --run "<its Test>"`/);
-    expect(step3).not.toMatch(/^3\. `specweave task claim/);
-    expect(step3).toContain('Parallel agents run `specweave task claim T-NN` first');
+  it('sw-do carries the ledger and workspace rules the template used to hold', () => {
+    const doSkill = skill('sw-do');
+    expect(doSkill).toContain('specweave task done T-03 --run');
+    expect(doSkill).toContain('A claim older than 2 hours');
+    expect(doSkill).toContain('keep every line from both sides');
+    expect(doSkill).toContain('"e":"claim"');
+    expect(doSkill).toContain('`workspace.repos`');
+    expect(doSkill).toContain('never commit `.env*`');
     expect(readme).not.toContain('`specweave task claim T-NN` → implement');
   });
 
@@ -134,23 +133,24 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
   ])('%s uses only the supported placeholders', (_name, content) => {
     const found = new Set(content.match(/\{\{?[A-Z_]+\}?\}/g) ?? []);
     for (const p of found) expect(ALLOWED_PLACEHOLDERS.has(p), `unexpected placeholder ${p}`).toBe(true);
-    expect(found.has('{PROJECT_NAME}')).toBe(true);
+    // CLAUDE.md is the bare import; only AGENTS.md carries the project name.
+    expect(found.has('{PROJECT_NAME}')).toBe(_name === 'AGENTS.md.template');
   });
 
   it.each([
     ['CLAUDE.md.template', claude],
     ['AGENTS.md.template', agents],
-  ])('%s keeps the managed block small and the Project notes outside it', (_name, content) => {
-    // What a project renders by default: `umbrella`, `hub` and `jev` are opt-in.
+  ])('%s keeps the managed block small and unconditional', (_name, content) => {
     const t = parseTemplate(content);
-    const unconditional = t.sections.filter(s => !s.when);
-    const rendered = [...unconditional.map(s => s.content), t.tail].join('\n\n');
-    // About 940 tokens for AGENTS.md (it was 1,860 in 2.x); the Decide line added ~40,
-    // the close trigger in steps 2 and 4 (verify and complete when the last task is done) ~185,
-    // and the increment sizing rule with `specweave small-fix` ~95.
-    expect(rendered.length).toBeLessThanOrEqual(3860);
-    expect(t.tail).toContain('## Project notes');
+    expect(t.sections.filter(s => s.when)).toEqual([]);
+    const rendered = [...t.sections.map(s => s.content), t.tail].join('\n\n');
+    // About 125 tokens for AGENTS.md (it was about 1,270 in 3.1): the loop lives in the skills.
+    expect(rendered.length).toBeLessThanOrEqual(700);
     expect(t.sections.map(s => s.content).join('\n')).not.toContain('## Commands');
+  });
+
+  it('AGENTS.md keeps Project notes outside the managed block', () => {
+    expect(parseTemplate(agents).tail).toContain('## Project notes');
   });
 
   it('AGENTS.md keeps the Commands table outside the managed block', () => {
@@ -171,14 +171,12 @@ describe('CLAUDE.md.template / AGENTS.md.template (2.0)', () => {
     expect(missing).toEqual([]);
   });
 
-  it('CLAUDE.md uses slash commands and AGENTS.md uses the CLI plus the standalone skills', () => {
-    // Project skills are namespaced sw-*; the plugin form /sw:<name> also works.
-    expect(claude).toContain('`/sw-increment "title"`');
-    expect(agents).toContain('`specweave create-increment "title"`');
+  it('AGENTS.md names no plugin slash command; standalone installs are listed in skills/README.md', () => {
     expect(agents).not.toMatch(/`\/sw:/);
     // the sw-* skills are vskill-installed standalone skills, not plugin commands;
-    // the canonical ref carries no `skills/` segment — see lintTemplateInstallRefs
-    expect(agents).toContain('npx vskill install anton-abyzov/specweave/sw-do');
+    // the canonical ref carries no `skills/` segment
+    const skillsReadme = fs.readFileSync(path.join(ROOT, 'skills', 'README.md'), 'utf-8');
+    expect(skillsReadme).toContain('npx vskill install anton-abyzov/specweave/sw-do');
   });
 
   it('README.md.template is short and only needs {{PROJECT_NAME}}', () => {
