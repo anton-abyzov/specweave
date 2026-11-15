@@ -79,7 +79,7 @@ Each claim records who made it as `<tool>@<host>`, for example `codex@laptop`, o
 - The `sw` plugin with `/sw:<name>` commands.
 - The SessionStart hook, which prints a short pickup when a session opens. Other tools run `specweave pickup` because `AGENTS.md` tells them to.
 - The Stop hook that drives [auto mode](/docs/guides/autonomous-execution).
-- The `specweave team` launcher. The team protocol itself (a worktree per agent, claims through the ledger) works with any tool; see [Agent teams](/docs/guides/agent-teams-and-swarms).
+- The `specweave team` launcher. The team protocol itself (one identity per agent, claims through the ledger) works with any tool; see [Agent teams](/docs/guides/agent-teams-and-swarms).
 
 Everything else, including verify, handoff, memory and sync, works the same in every tool.
 

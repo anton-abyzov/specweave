@@ -69,8 +69,9 @@ merge and close; do not implement.
    stage only your lane's files and commit with an explicit path list, for example
    `git add -- src/api.ts && git commit -m "0042: build API" -- src/api.ts`.
    Use the same unique identity for every task command in the lane. Give a lane its own worktree only when the
-   user or the project's settings ask for worktrees (your tool's or app's worktree
-   feature, or `git worktree add .worktrees/0042-api -b inc/0042-api`, never `../`).
+   user or the project's settings ask for worktrees, made by your tool's or app's
+   worktree feature in its own folder. Never create one inside the repository
+   (no `.worktrees/`) or next to it.
    Brief each one: its tasks, this loop, "edit only their Files", and on finish
    `specweave task release --all-mine` plus `specweave note "api: done" 0042`.
 3. Watch with `specweave task list 0042`; `blocked` rows are your queue. A claim older
