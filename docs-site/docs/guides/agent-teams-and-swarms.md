@@ -13,12 +13,13 @@ Use a team when the work splits into three or more lanes whose files do not over
 
 Every agent on the team follows these, whatever tool it runs in.
 
-**1. One worktree and branch per agent.** The branch name contains the increment id.
+**1. One identity per agent, one checkout unless the project uses worktrees.** Agents share the existing checkout and branch, each with its own `SPECWEAVE_AGENT`, and stage and commit only their own files:
 
 ```bash
-git worktree add .worktrees/0042-claude -b inc/0042-claude
-git worktree add .worktrees/0042-codex  -b inc/0042-codex
+SPECWEAVE_AGENT=api git add -- src/api.ts && git commit -m "0042: build API" -- src/api.ts
 ```
+
+Give an agent its own worktree only when the person or the project's settings ask for worktrees, and let the tool or app make it in its own worktree folder. Never add worktrees inside the repository (no `.worktrees/`) or next to it: each one holds a full dependency install, and folders nothing tracks are never cleaned up.
 
 **2. Claim before you edit, and edit only the task's files.**
 
@@ -74,17 +75,18 @@ Blocked tasks are the lead's queue: unblock them (provide the secret, split the 
 
 ## Closing
 
-Only the lead closes. Merge the lane branches into the increment branch, keeping every ledger line, then:
+Only the lead closes. If lanes had their own branches, merge them into the increment branch, keeping every ledger line, then:
 
 ```bash
 specweave verify 0042
 specweave complete 0042
-git worktree remove .worktrees/0042-claude
 ```
+
+Remove any lane worktree the tool or app made once its branch is merged.
 
 ## In Claude Code
 
-In Claude Code, as in any tool with skills, "split this across three agents" starts the "Parallel lanes" section of the `do` skill (`/sw:do`). The session becomes the lead: it plans the lanes, starts one agent per worktree with the rules above, watches `task list`, merges and does the single closure at the end.
+In Claude Code, as in any tool with skills, "split this across three agents" starts the "Parallel lanes" section of the `do` skill (`/sw:do`). The session becomes the lead: it plans the lanes, starts one agent per lane with the rules above, watches `task list`, merges and does the single closure at the end.
 
 `specweave team` launches Claude Code with its experimental agent teams feature turned on:
 
