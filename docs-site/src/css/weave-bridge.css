@@ -8,7 +8,7 @@
  * - `html:root[data-theme]` (0,2,1) outranks brand-tokens.css `:root[data-theme='dark']`
  *   (0,2,0), which several CSS modules re-import later in the cascade.
  * - It also outranks Infima's `html[data-theme='dark']` defaults (0,1,1).
- * src/styles/brand-tokens.css stays untouched: the local dashboard still uses it.
+ * src/styles/brand-tokens.css maps the same names for the local dashboard; keep both in step.
  */
 
 html:root,

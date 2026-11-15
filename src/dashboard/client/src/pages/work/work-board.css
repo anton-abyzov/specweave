@@ -68,7 +68,7 @@
   margin: 0;
   font-family: var(--sw-brand-display);
   font-size: 34px;
-  font-weight: 450;
+  font-weight: 650;
   letter-spacing: -0.8px;
   line-height: 1.1;
 }
@@ -89,8 +89,10 @@
   inset: 0 0 0 auto;
   width: min(700px, 60%);
   background: right 44% / 100% auto no-repeat;
+  /* The photo is warm; grey it so only the weave shows on the Weave canvas. */
+  filter: grayscale(1);
   mix-blend-mode: multiply;
-  opacity: 0.72;
+  opacity: 0.4;
   mask-image: linear-gradient(90deg, transparent, #000 42%), linear-gradient(180deg, transparent, #000 26%, #000 70%, transparent);
   mask-composite: intersect;
   pointer-events: none;
@@ -590,7 +592,7 @@
   border-radius: 50%;
   border: 1.5px solid var(--sw-brand-card);
   background: var(--sw-brand-review);
-  color: #fff;
+  color: var(--sw-brand-card);
   font-size: 10px;
   font-weight: 600;
   line-height: 1;
@@ -632,7 +634,7 @@
   margin: 6px 0 0;
   font-family: var(--sw-brand-display);
   font-size: 22px;
-  font-weight: 450;
+  font-weight: 650;
   color: var(--sw-brand-ink);
 }
 .wb-nothing p { margin: 0 0 8px; font-size: 13px; }
@@ -770,7 +772,7 @@
   margin: 12px 0 0;
   font-family: var(--sw-brand-display);
   font-size: 25px;
-  font-weight: 450;
+  font-weight: 650;
   line-height: 1.22;
   letter-spacing: -0.4px;
   overflow-wrap: anywhere;
@@ -1032,7 +1034,7 @@
   flex: none;
   border: 1.5px solid var(--sw-brand-line-strong);
   border-radius: 5px;
-  color: #fff;
+  color: var(--sw-brand-card);
 }
 .wb-criteria li.is-met .wb-ac-mark {
   border-color: var(--sw-brand-success);
@@ -1102,7 +1104,7 @@
   text-transform: none;
   color: var(--sw-brand-ink);
 }
-.wb-md h2 { font-family: var(--sw-brand-display); font-size: 22px; font-weight: 450; }
+.wb-md h2 { font-family: var(--sw-brand-display); font-size: 22px; font-weight: 650; }
 .wb-md h3 { font-size: 16px; padding-bottom: 5px; border-bottom: 1px solid var(--sw-brand-line-soft); }
 .wb-md h4 { font-size: 14px; }
 .wb-md h5,
