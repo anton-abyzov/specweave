@@ -98,7 +98,7 @@ try {
         })),
       };
     });
-    for (const helper of controls.helpers) assert.equal(helper, 'rgb(101, 105, 94)', `Helper text lacks website contrast on ${route}`);
+    for (const helper of controls.helpers) assert.equal(helper, 'rgb(103, 93, 105)', `Helper text lacks website contrast on ${route}`);
     for (const selected of controls.selected) assert.equal(selected.color, reference.ink, `Low-contrast selected control on ${route}: ${selected.text}`);
     for (const primary of controls.primary) {
       assert.equal(primary.background, reference.button, `Primary action differs on ${route}: ${primary.text}`);
