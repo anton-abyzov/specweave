@@ -2171,10 +2171,6 @@
     "message": "SpecWithCode {version}、{file}、{size}。",
     "description": "Installer facts under the download button; {version} is the version, {file} the file name, {size} the download size. Keep product names in English"
   },
-  "code.download.hero.macRequirements": {
-    "message": "Apple silicon、macOS 13以降。",
-    "description": "Mac system requirements. Keep product names in English"
-  },
   "code.download.hero.platformSentence": {
     "message": "{platform}。",
     "description": "Who the installer is for, as a sentence; {platform} is a phrase such as Windows 10 and 11 on x64"
@@ -2194,14 +2190,6 @@
   "code.download.releaseNotes": {
     "message": "リリースノート",
     "description": "Link to the release notes"
-  },
-  "code.download.intelMac.title": {
-    "message": "Intel Macのようです。",
-    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
-  },
-  "code.download.intelMac.body": {
-    "message": "macOS版のSpecWithCodeにはApple silicon(M1以降)が必要で、Intel向けビルドはありません。代わりにLinuxまたはWindowsのマシンで動かせます。{link}をご覧ください。",
-    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
   },
   "code.download.intelMac.link": {
     "message": "WindowsとLinux",
@@ -4264,5 +4252,29 @@
   "code.b.skills.heading": {
     "message": "スキルを1か所で管理",
     "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+  },
+  "code.download.hero.insidersButton": {
+    "message": "Insiders {version}",
+    "description": "Secondary download button for the newest Insiders build; {version} is its version. Keep Insiders in English"
+  },
+  "code.download.hero.macAppleSiliconButton": {
+    "message": "Mac、Apple silicon のみ ({size})",
+    "description": "Secondary button for the Mac download shown to Windows and Linux visitors; {size} is the download size. Keep product names in English"
+  },
+  "code.download.hero.macAppleSiliconOnly": {
+    "message": "Apple silicon のみ (M1 以降)、macOS 13 以降。",
+    "description": "Mac system requirements next to the Mac button. Keep product names in English"
+  },
+  "code.download.hero.insidersNote": {
+    "message": "Insiders {version} は最新のビルドです。Stable には 1 日のテストの後に届きます。インストール後、Settings › Update track で Insiders を選ぶと、引き続き Insiders の更新を受け取れます。",
+    "description": "One line explaining the Insiders download; {version} is its version. Keep Insiders, Stable and the Settings path in English"
+  },
+  "code.download.intelMac.willNotRun": {
+    "message": "この Mac では SpecWithCode は動きません。",
+    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
+  },
+  "code.download.intelMac.plainBody": {
+    "message": "ブラウザーは Intel チップと報告しています。Mac 版アプリは Apple silicon (M1 以降) でのみ動作し、Intel 版はありません。代わりに Windows または Linux のコンピューターで実行できます。{link} を参照してください。",
+    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
   }
 }

@@ -1,10 +1,13 @@
 import {useEffect, useSyncExternalStore} from 'react';
 import {
+  SPECWITHCODE_INSIDERS,
   SPECWITHCODE_RELEASE,
   SPECWITHCODE_WINDOWS_LINUX,
   buildDesktopRelease,
+  buildInsidersRelease,
   buildMacRelease,
   type SpecWithCodeDesktopRelease,
+  type SpecWithCodeInsidersRelease,
   type SpecWithCodeMacRelease,
 } from './specwithcodeRelease';
 import {
@@ -32,19 +35,22 @@ import {
 export interface SpecWithCodeDownloads {
   readonly release: SpecWithCodeMacRelease;
   readonly desktop: SpecWithCodeDesktopRelease;
+  /** The newest Insiders build; null when there is none. Shown only while newer than `release`. */
+  readonly insiders: SpecWithCodeInsidersRelease | null;
 }
 
 /** What the deploy build recorded: the server render and the fallback. */
 export const BUILT_DOWNLOADS: SpecWithCodeDownloads = {
   release: SPECWITHCODE_RELEASE,
   desktop: SPECWITHCODE_WINDOWS_LINUX,
+  insiders: SPECWITHCODE_INSIDERS,
 };
 
 /** Thirty releases back: from 1.1 most releases are Insiders pre-releases, which the page skips, and a stable one can sit a day of them back. */
 export const LIVE_RELEASES_URL = `https://api.github.com/repos/${SPECWITHCODE_REPO}/releases?per_page=30`;
 /** One read per visitor in this time, also after a failed one (GitHub allows 60 an hour per address). */
 export const LIVE_TTL_MS = 5 * 60_000;
-const CACHE_KEY = 'specwithcode:live-release:v1';
+const CACHE_KEY = 'specwithcode:live-release:v2';
 
 const newer = (candidate: string, shown: string) =>
   parseVersion(candidate) !== null && parseVersion(shown) !== null && compareVersions(candidate, shown) > 0;
@@ -59,19 +65,42 @@ const validBytes = (bytes: unknown, names: readonly string[]): boolean =>
 
 /**
  * `shown` with every newer picked release applied. Returns `shown` itself when
- * nothing is newer, so callers can compare by identity.
+ * nothing is newer, so callers can compare by identity. For the same Windows
+ * and Linux release, the latest-link flag follows GitHub both ways: a newer
+ * stable release without those files yet moves the buttons off the
+ * `releases/latest/download/` names until it has them.
  */
 export function applyPicked(shown: SpecWithCodeDownloads, picked: PickedReleases | null | undefined): SpecWithCodeDownloads {
   if (!picked) return shown;
-  let {release, desktop} = shown;
-  const {mac, desktop: desktopPick} = picked;
+  let {release, desktop, insiders} = shown;
+  const {mac, desktop: desktopPick, insiders: insidersPick} = picked;
   if (mac && newer(mac.version, release.version) && validBytes(mac.bytes, ['DMG_BYTES'])) {
     release = buildMacRelease(mac.version, mac.bytes.DMG_BYTES);
   }
-  if (desktopPick && newer(desktopPick.version, desktop.version) && validBytes(desktopPick.bytes, DESKTOP_ASSETS.map(([name]) => name))) {
-    desktop = buildDesktopRelease(desktopPick.version, desktopPick.bytes);
+  if (desktopPick && validBytes(desktopPick.bytes, DESKTOP_ASSETS.map(([name]) => name))) {
+    const latest = desktopPick.latest === true;
+    if (newer(desktopPick.version, desktop.version) || (desktopPick.version === desktop.version && latest !== desktop.latest)) {
+      desktop = buildDesktopRelease(desktopPick.version, desktopPick.bytes, latest);
+    }
   }
-  return release === shown.release && desktop === shown.desktop ? shown : {release, desktop};
+  if (
+    insidersPick &&
+    Array.isArray(insidersPick.files) &&
+    (insiders === null || newer(insidersPick.version, insiders.version)) &&
+    parseVersion(insidersPick.version) !== null
+  ) {
+    insiders = buildInsidersRelease(insidersPick.version, insidersPick.files);
+  }
+  return release === shown.release && desktop === shown.desktop && insiders === shown.insiders ? shown : {release, desktop, insiders};
+}
+
+/**
+ * The Insiders build to offer beside Stable: only while it is newer than the
+ * stable release shown, so a train that caught up hides the button.
+ */
+export function currentInsiders(downloads: SpecWithCodeDownloads): SpecWithCodeInsidersRelease | null {
+  const {insiders, release} = downloads;
+  return insiders && newer(insiders.version, release.version) ? insiders : null;
 }
 
 interface CachedRead {

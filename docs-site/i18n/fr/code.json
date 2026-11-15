@@ -2895,10 +2895,6 @@
     "message": "SpecWithCode {version}, {file}, {size}.",
     "description": "Installer facts under the download button; {version} is the version, {file} the file name, {size} the download size. Keep product names in English"
   },
-  "code.download.hero.macRequirements": {
-    "message": "Apple silicon, macOS 13 ou version ultérieure.",
-    "description": "Mac system requirements. Keep product names in English"
-  },
   "code.download.hero.platformSentence": {
     "message": "{platform}.",
     "description": "Who the installer is for, as a sentence; {platform} is a phrase such as Windows 10 and 11 on x64"
@@ -2918,14 +2914,6 @@
   "code.download.releaseNotes": {
     "message": "Notes de version",
     "description": "Link to the release notes"
-  },
-  "code.download.intelMac.title": {
-    "message": "Cela ressemble à un Mac Intel.",
-    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
-  },
-  "code.download.intelMac.body": {
-    "message": "SpecWithCode pour macOS nécessite Apple silicon (M1 ou plus récent) ; il n’existe pas de version Intel. Une machine Linux ou Windows peut l’exécuter à la place, voir {link}.",
-    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
   },
   "code.download.intelMac.link": {
     "message": "Windows et Linux",
@@ -4264,5 +4252,29 @@
   "code.b.skills.heading": {
     "message": "Les skills, gérées au même endroit",
     "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+  },
+  "code.download.hero.insidersButton": {
+    "message": "Insiders {version}",
+    "description": "Secondary download button for the newest Insiders build; {version} is its version. Keep Insiders in English"
+  },
+  "code.download.hero.macAppleSiliconButton": {
+    "message": "Mac, Apple silicon uniquement ({size})",
+    "description": "Secondary button for the Mac download shown to Windows and Linux visitors; {size} is the download size. Keep product names in English"
+  },
+  "code.download.hero.macAppleSiliconOnly": {
+    "message": "Apple silicon uniquement (M1 ou plus récent), macOS 13 ou plus récent.",
+    "description": "Mac system requirements next to the Mac button. Keep product names in English"
+  },
+  "code.download.hero.insidersNote": {
+    "message": "Insiders {version} est la version la plus récente ; Stable la reçoit après une journée de tests. Après l'installation, choisissez Insiders dans Settings › Update track pour continuer à recevoir les mises à jour Insiders.",
+    "description": "One line explaining the Insiders download; {version} is its version. Keep Insiders, Stable and the Settings path in English"
+  },
+  "code.download.intelMac.willNotRun": {
+    "message": "SpecWithCode ne fonctionnera pas sur ce Mac.",
+    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
+  },
+  "code.download.intelMac.plainBody": {
+    "message": "Votre navigateur indique une puce Intel, et l'app Mac ne fonctionne que sur Apple silicon (M1 ou plus récent) ; il n'existe pas de version Intel. Un ordinateur Windows ou Linux peut l'exécuter à la place, voir {link}.",
+    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
   }
 }

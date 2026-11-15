@@ -50,7 +50,7 @@ describe('SpecWithCode download sync', () => {
     ]);
     expect(picked.mac?.version).toBe('9.0.8');
     expect(picked.desktop?.version).toBe('9.0.8');
-    expect(pickReleases([])).toEqual({mac: null, desktop: null});
+    expect(pickReleases([])).toEqual({mac: null, desktop: null, insiders: null});
   });
 
   it('writes versions and sizes into the data file and nothing else', () => {
@@ -72,7 +72,52 @@ describe('SpecWithCode download sync', () => {
   it('keeps the recorded release when GitHub offers only an older one, or none', () => {
     const older = pickReleases([release('0.0.1', [...macAssets, ...desktopAssets('0.0.1')])]);
     expect(applyReleases(source, older)).toBe(source);
-    expect(applyReleases(source, {mac: null, desktop: null})).toBe(source);
+    expect(applyReleases(source, {mac: null, desktop: null, insiders: null})).toBe(source);
+  });
+
+  it('uses the latest links only when the newest stable release carries the version-free installers', () => {
+    const versionFree = ['x64.exe', 'arm64.exe', 'x86_64.AppImage', 'arm64.AppImage', 'amd64.deb', 'arm64.deb'].map((suffix) => ({
+      name: `SpecWithCode-${suffix}`,
+      size: BIG,
+      state: 'uploaded',
+    }));
+    const full = (version: string) => [...macAssets, ...desktopAssets(version), ...versionFree];
+    expect(pickReleases([release('9.0.10', full('9.0.10'))]).desktop?.latest).toBe(true);
+    // Older releases have no version-free files.
+    expect(pickReleases([release('9.0.10', [...macAssets, ...desktopAssets('9.0.10')])]).desktop?.latest).toBe(false);
+    // A newer stable release whose Windows and Linux files are not attached yet: latest would 404.
+    const gap = pickReleases([release('9.0.11', macAssets), release('9.0.10', full('9.0.10'))]);
+    expect(gap.desktop).toMatchObject({version: '9.0.10', latest: false});
+    const next = applyReleases(source, pickReleases([release('9.0.10', full('9.0.10'))]));
+    expect(next).toContain('const DESKTOP_LATEST = true;');
+    expect(applyReleases(next, gap)).toContain('const DESKTOP_LATEST = false;');
+  });
+
+  it('picks the newest Insiders prerelease newer than Stable, with the files it carries', () => {
+    const insidersAssets = (version: string, suffixes: string[]) =>
+      suffixes.map((suffix) => ({name: `SpecWithCode-${version}-${suffix}`, size: BIG, state: 'uploaded'}));
+    const picked = pickReleases([
+      release('9.1.2', insidersAssets('9.1.2', ['arm64.dmg']), {prerelease: true}),
+      release('9.1.1', insidersAssets('9.1.1', ['arm64.dmg', 'x64.exe', 'arm64.exe', 'x86_64.AppImage', 'arm64.AppImage']), {prerelease: true}),
+      release('9.1.3-nightly.20261114.1', insidersAssets('9.1.3-nightly.20261114.1', ['arm64.dmg']), {prerelease: true}),
+      release('9.1.0', macAssets),
+    ]);
+    expect(picked.insiders).toEqual({version: '9.1.2', files: ['mac']});
+    // A build still uploading is skipped for the one before it.
+    const uploading = pickReleases([
+      release('9.1.2', insidersAssets('9.1.2', ['arm64.dmg']).map((a) => ({...a, state: 'starter'})), {prerelease: true}),
+      release('9.1.1', insidersAssets('9.1.1', ['arm64.dmg', 'x64.exe']), {prerelease: true}),
+      release('9.1.0', macAssets),
+    ]);
+    expect(uploading.insiders).toEqual({version: '9.1.1', files: ['mac', 'windows-x64']});
+    // None newer than Stable, or none at all (before 1.1.0): no Insiders download.
+    expect(pickReleases([release('9.1.0', macAssets), release('9.0.9', insidersAssets('9.0.9', ['arm64.dmg']), {prerelease: true})]).insiders).toBeNull();
+    expect(pickReleases([release('9.1.0', macAssets)]).insiders).toBeNull();
+    const next = applyReleases(source, picked);
+    expect(next).toContain("const INSIDERS_VERSION = '9.1.2';");
+    expect(next).toContain("const INSIDERS_FILES = 'mac';");
+    // Never back to an older build.
+    expect(applyReleases(next, uploading)).toBe(next);
   });
 
   it('tells when a deployed page links an older release, and since when the newer one was ready', () => {
@@ -87,6 +132,12 @@ describe('SpecWithCode download sync', () => {
       '<a href="https://github.com/anton-abyzov/specwithcode/releases/download/v9.0.7/SpecWithCode-arm64.dmg">Mac</a>' +
       '<a href="https://github.com/anton-abyzov/specwithcode/releases/download/v9.0.7/SpecWithCode-9.0.7-x64.exe">Windows</a>';
     expect(linkedReleases(pinnedPage)).toEqual({mac: '9.0.7', desktop: '9.0.7'});
+    // With version-free latest links the Windows and Linux section names its release.
+    const latestPage =
+      '<script type="application/ld+json">{"softwareVersion":"9.0.10"}</script>' +
+      '<section aria-labelledby="windows-linux-title" data-desktop-version="9.0.9">' +
+      '<a href="https://github.com/anton-abyzov/specwithcode/releases/latest/download/SpecWithCode-x64.exe">Windows</a></section>';
+    expect(linkedReleases(latestPage)).toEqual({mac: '9.0.10', desktop: '9.0.9'});
     const picked = pickReleases([
       release('9.0.10', macAssets.map((asset) => ({...asset, updated_at: '2026-11-12T06:20:00Z'})), {
         published_at: '2026-11-12T06:26:30Z',

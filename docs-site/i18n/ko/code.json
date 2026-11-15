@@ -3051,10 +3051,6 @@
     "message": "SpecWithCode {version}, {file}, {size}.",
     "description": "Installer facts under the download button; {version} is the version, {file} the file name, {size} the download size. Keep product names in English"
   },
-  "code.download.hero.macRequirements": {
-    "message": "Apple silicon, macOS 13 이상.",
-    "description": "Mac system requirements. Keep product names in English"
-  },
   "code.download.hero.platformSentence": {
     "message": "{platform}.",
     "description": "Who the installer is for, as a sentence; {platform} is a phrase such as Windows 10 and 11 on x64"
@@ -3074,14 +3070,6 @@
   "code.download.releaseNotes": {
     "message": "릴리스 노트",
     "description": "Link to the release notes"
-  },
-  "code.download.intelMac.title": {
-    "message": "Intel Mac으로 보여요.",
-    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
-  },
-  "code.download.intelMac.body": {
-    "message": "macOS용 SpecWithCode는 Apple silicon(M1 이후)이 필요하며 Intel 빌드는 없어요. 대신 Linux나 Windows 머신에서 실행할 수 있어요. {link}를 참고하세요.",
-    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
   },
   "code.download.intelMac.link": {
     "message": "Windows 및 Linux",
@@ -4264,5 +4252,29 @@
   "code.b.skills.heading": {
     "message": "스킬을 한곳에서 관리",
     "description": "Benefit row on the SpecWithCode page: heading of the skills row. Keep product names in English"
+  },
+  "code.download.hero.insidersButton": {
+    "message": "Insiders {version}",
+    "description": "Secondary download button for the newest Insiders build; {version} is its version. Keep Insiders in English"
+  },
+  "code.download.hero.macAppleSiliconButton": {
+    "message": "Mac, Apple silicon 전용 ({size})",
+    "description": "Secondary button for the Mac download shown to Windows and Linux visitors; {size} is the download size. Keep product names in English"
+  },
+  "code.download.hero.macAppleSiliconOnly": {
+    "message": "Apple silicon 전용 (M1 이상), macOS 13 이상.",
+    "description": "Mac system requirements next to the Mac button. Keep product names in English"
+  },
+  "code.download.hero.insidersNote": {
+    "message": "Insiders {version}은 가장 새로운 빌드이며, 하루 동안 테스트한 뒤 Stable에 반영됩니다. 설치한 뒤 Settings › Update track에서 Insiders를 선택하면 계속 Insiders 업데이트를 받습니다.",
+    "description": "One line explaining the Insiders download; {version} is its version. Keep Insiders, Stable and the Settings path in English"
+  },
+  "code.download.intelMac.willNotRun": {
+    "message": "이 Mac에서는 SpecWithCode가 실행되지 않습니다.",
+    "description": "Bold lead of the Intel Mac notice. Keep product names in English"
+  },
+  "code.download.intelMac.plainBody": {
+    "message": "브라우저가 Intel 칩으로 보고하며, Mac 앱은 Apple silicon(M1 이상)에서만 실행됩니다. Intel 빌드는 없습니다. 대신 Windows나 Linux 컴퓨터에서 실행할 수 있습니다. {link}을(를) 참고하세요.",
+    "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
   }
 }

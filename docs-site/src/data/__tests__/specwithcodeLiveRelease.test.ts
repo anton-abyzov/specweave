@@ -24,6 +24,7 @@ const desktopBytes = {
 const built: SpecWithCodeDownloads = {
   release: buildMacRelease('9.0.8', BIG),
   desktop: buildDesktopRelease('9.0.8', desktopBytes),
+  insiders: null,
 };
 
 const macAssets = [
@@ -59,7 +60,7 @@ const answering = (body: unknown, ok = true) =>
 
 describe('SpecWithCode downloads while a page is open', () => {
   it('starts from what the build recorded', () => {
-    expect(BUILT_DOWNLOADS).toEqual({release: SPECWITHCODE_RELEASE, desktop: SPECWITHCODE_WINDOWS_LINUX});
+    expect(BUILT_DOWNLOADS).toEqual({release: SPECWITHCODE_RELEASE, desktop: SPECWITHCODE_WINDOWS_LINUX, insiders: null});
     expect(createLiveReleaseStore().get()).toBe(BUILT_DOWNLOADS);
   });
 
@@ -102,8 +103,32 @@ describe('SpecWithCode downloads while a page is open', () => {
       desktop: {version: '9.0.8', readyAt: null, bytes: desktopBytes},
     };
     expect(applyPicked(built, older)).toBe(built);
-    expect(applyPicked(built, {mac: null, desktop: null})).toBe(built);
+    expect(applyPicked(built, {mac: null, desktop: null, insiders: null})).toBe(built);
     expect(applyPicked(built, null)).toBe(built);
+  });
+
+  it('follows the latest-link flag of the same release both ways', () => {
+    const latest = applyPicked(built, {mac: null, desktop: {version: '9.0.8', readyAt: null, bytes: desktopBytes, latest: true}});
+    expect(latest.desktop.latest).toBe(true);
+    expect(latest.desktop.exe.url).toBe(`${REPO}/releases/latest/download/SpecWithCode-x64.exe`);
+    expect(latest.desktop.debArm64.url).toBe(`${REPO}/releases/latest/download/SpecWithCode-arm64.deb`);
+    expect(latest.desktop.sumsUrl).toBe(`${REPO}/releases/latest/download/SHA256SUMS-windows-linux`);
+    const back = applyPicked(latest, {mac: null, desktop: {version: '9.0.8', readyAt: null, bytes: desktopBytes, latest: false}});
+    expect(back.desktop.exe.url).toBe(`${REPO}/releases/download/v9.0.8/SpecWithCode-9.0.8-x64.exe`);
+  });
+
+  it('offers an Insiders build only while it is newer than Stable', () => {
+    const withInsiders = applyPicked(built, {mac: null, desktop: null, insiders: {version: '9.1.1', files: ['mac', 'windows-arm64']}});
+    expect(withInsiders.insiders?.downloads.mac?.url).toBe(`${REPO}/releases/download/v9.1.1/SpecWithCode-9.1.1-arm64.dmg`);
+    const mac = chooseInstaller({os: 'mac', arch: 'arm64'}, withInsiders);
+    expect(mac.insiders).toEqual({version: '9.1.1', file: 'SpecWithCode-9.1.1-arm64.dmg', url: `${REPO}/releases/download/v9.1.1/SpecWithCode-9.1.1-arm64.dmg`});
+    // Not carried for this platform yet, an Intel Mac, or Stable caught up: no button.
+    expect(chooseInstaller({os: 'windows', arch: 'x64'}, withInsiders).insiders).toBeUndefined();
+    expect(chooseInstaller({os: 'windows', arch: 'arm64'}, withInsiders).insiders?.file).toBe('SpecWithCode-9.1.1-arm64.exe');
+    expect(chooseInstaller({os: 'mac', arch: 'x64'}, withInsiders).insiders).toBeUndefined();
+    const caughtUp = applyPicked(withInsiders, {mac: {version: '9.1.1', readyAt: null, bytes: {DMG_BYTES: BIG}}, desktop: null});
+    expect(chooseInstaller({os: 'mac', arch: 'arm64'}, caughtUp).insiders).toBeUndefined();
+    expect(chooseInstaller(null, BUILT_DOWNLOADS).insiders).toBeUndefined();
   });
 
   it('ignores an answer it cannot trust', () => {
