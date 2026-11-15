@@ -83,6 +83,15 @@ describe('SpecWithCode download sync', () => {
     }));
     const full = (version: string) => [...macAssets, ...desktopAssets(version), ...versionFree];
     expect(pickReleases([release('9.0.10', full('9.0.10'))]).desktop?.latest).toBe(true);
+    // Before the 1.1 train a new release is Latest before its Windows and Linux files arrive.
+    expect(pickReleases([release('1.0.309', full('1.0.309'))]).desktop?.latest).toBe(false);
+    expect(pickReleases([release('1.1.0', full('1.1.0'))]).desktop?.latest).toBe(true);
+    // GitHub's Latest is the release created last: an older hotfix created after it takes the links.
+    const hotfix = pickReleases([
+      release('9.2.0', full('9.2.0'), {created_at: '2026-11-10T00:00:00Z'}),
+      release('9.1.1', full('9.1.1'), {created_at: '2026-11-14T00:00:00Z'}),
+    ]);
+    expect(hotfix.desktop).toMatchObject({version: '9.2.0', latest: false});
     // Older releases have no version-free files.
     expect(pickReleases([release('9.0.10', [...macAssets, ...desktopAssets('9.0.10')])]).desktop?.latest).toBe(false);
     // A newer stable release whose Windows and Linux files are not attached yet: latest would 404.
@@ -116,8 +125,29 @@ describe('SpecWithCode download sync', () => {
     const next = applyReleases(source, picked);
     expect(next).toContain("const INSIDERS_VERSION = '9.1.2';");
     expect(next).toContain("const INSIDERS_FILES = 'mac';");
-    // Never back to an older build.
-    expect(applyReleases(next, uploading)).toBe(next);
+    // Follows GitHub both ways: a pulled build goes back to the one before, or to none.
+    const back = applyReleases(next, uploading);
+    expect(back).toContain("const INSIDERS_VERSION = '9.1.1';");
+    expect(back).toContain("const INSIDERS_FILES = 'mac,windows-x64';");
+    const none = applyReleases(back, pickReleases([release('9.1.0', macAssets)]));
+    expect(none).toContain("const INSIDERS_VERSION = '';");
+    expect(none).toContain("const INSIDERS_FILES = '';");
+    // A read that found nothing changes nothing.
+    expect(applyReleases(back, {mac: null, desktop: null, insiders: null})).toBe(back);
+  });
+
+  it('never picks an Insiders build older than either Stable release', () => {
+    const insidersAssets = (version: string) =>
+      ['arm64.dmg', 'x64.exe'].map((suffix) => ({name: `SpecWithCode-${version}-${suffix}`, size: BIG, state: 'uploaded'}));
+    // 9.2.0 has its Windows and Linux files but no DMG yet; the Mac stays on 9.1.0.
+    const picked = pickReleases([
+      release('9.2.0', desktopAssets('9.2.0')),
+      release('9.1.5', insidersAssets('9.1.5'), {prerelease: true}),
+      release('9.1.0', macAssets),
+    ]);
+    expect(picked.mac?.version).toBe('9.1.0');
+    expect(picked.desktop?.version).toBe('9.2.0');
+    expect(picked.insiders).toBeNull();
   });
 
   it('tells when a deployed page links an older release, and since when the newer one was ready', () => {

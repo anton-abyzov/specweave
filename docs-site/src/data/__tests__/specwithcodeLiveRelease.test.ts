@@ -131,6 +131,28 @@ describe('SpecWithCode downloads while a page is open', () => {
     expect(chooseInstaller(null, BUILT_DOWNLOADS).insiders).toBeUndefined();
   });
 
+  it('never offers an Insiders build older than the Windows and Linux Stable beside it', () => {
+    // The Mac stays on 9.0.9 while 9.2.0 has its Windows and Linux files: Insiders 9.1.5 would be a downgrade there.
+    const split = applyPicked(built, {
+      mac: null,
+      desktop: {version: '9.2.0', readyAt: null, bytes: desktopBytes},
+      insiders: {version: '9.1.5', files: ['mac', 'windows-x64']},
+    });
+    expect(chooseInstaller({os: 'windows', arch: 'x64'}, split).insiders).toBeUndefined();
+    expect(chooseInstaller({os: 'mac', arch: 'arm64'}, split).insiders).toBeUndefined();
+  });
+
+  it('follows the Insiders build both ways: more files, another build, or none', () => {
+    const first = applyPicked(built, {mac: null, desktop: null, insiders: {version: '9.1.1', files: ['mac']}});
+    expect(chooseInstaller({os: 'windows', arch: 'x64'}, first).insiders).toBeUndefined();
+    const more = applyPicked(first, {mac: null, desktop: null, insiders: {version: '9.1.1', files: ['mac', 'windows-x64']}});
+    expect(chooseInstaller({os: 'windows', arch: 'x64'}, more).insiders?.file).toBe('SpecWithCode-9.1.1-x64.exe');
+    // A pulled build goes back to the one before it, or to no button at all.
+    const pulled = applyPicked(more, {mac: null, desktop: null, insiders: {version: '9.1.0', files: ['mac']}});
+    expect(pulled.insiders?.version).toBe('9.1.0');
+    expect(applyPicked(pulled, {mac: null, desktop: null, insiders: null}).insiders).toBeNull();
+  });
+
   it('ignores an answer it cannot trust', () => {
     const noSizes = {
       mac: {version: '9.9.9', readyAt: null, bytes: {DMG_BYTES: 12}},

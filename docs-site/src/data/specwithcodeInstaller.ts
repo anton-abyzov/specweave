@@ -74,7 +74,9 @@ function chooseStable(platform: VisitorPlatform | null, downloads: SpecWithCodeD
     const a = arm ? desktop.exeArm64 : desktop.exe;
     const other = arm ? desktop.exe : desktop.exeArm64;
     return {detected: true, otherArch: {
-      label: arm ? 'Windows x64' : 'Windows arm64',
+      label: arm
+        ? translate({id: 'installer.windowsX64.otherArch', message: 'Windows on x64', description: 'Secondary button for the Windows x64 installer, shown to Windows on Arm visitors. Keep product names in English'})
+        : translate({id: 'installer.windowsArm64.otherArch', message: 'Windows on Arm', description: 'Secondary button for the Windows arm64 installer, shown to Windows x64 visitors. Keep product names in English'}),
       file: other.name, url: other.url, size: other.size,
     }, installer: {
       key: arm ? 'windows-arm64' : 'windows-x64',

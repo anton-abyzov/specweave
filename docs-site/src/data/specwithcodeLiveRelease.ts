@@ -83,11 +83,15 @@ export function applyPicked(shown: SpecWithCodeDownloads, picked: PickedReleases
       desktop = buildDesktopRelease(desktopPick.version, desktopPick.bytes, latest);
     }
   }
-  if (
-    insidersPick &&
+  // Insiders follows GitHub both ways: a newer build, more files for the same one, or none at all.
+  if (insidersPick === null || insidersPick === undefined) {
+    insiders = null;
+  } else if (
     Array.isArray(insidersPick.files) &&
-    (insiders === null || newer(insidersPick.version, insiders.version)) &&
-    parseVersion(insidersPick.version) !== null
+    parseVersion(insidersPick.version) !== null &&
+    (insiders === null ||
+      insidersPick.version !== insiders.version ||
+      [...insidersPick.files].sort().join(',') !== Object.keys(insiders.downloads).sort().join(','))
   ) {
     insiders = buildInsidersRelease(insidersPick.version, insidersPick.files);
   }
@@ -95,12 +99,13 @@ export function applyPicked(shown: SpecWithCodeDownloads, picked: PickedReleases
 }
 
 /**
- * The Insiders build to offer beside Stable: only while it is newer than the
- * stable release shown, so a train that caught up hides the button.
+ * The Insiders build to offer beside Stable: only while it is newer than both
+ * stable releases shown (Mac, and Windows and Linux), so it is never a
+ * downgrade from the Stable button beside it and a train that caught up hides it.
  */
 export function currentInsiders(downloads: SpecWithCodeDownloads): SpecWithCodeInsidersRelease | null {
-  const {insiders, release} = downloads;
-  return insiders && newer(insiders.version, release.version) ? insiders : null;
+  const {insiders, release, desktop} = downloads;
+  return insiders && newer(insiders.version, release.version) && newer(insiders.version, desktop.version) ? insiders : null;
 }
 
 interface CachedRead {

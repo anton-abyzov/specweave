@@ -4276,5 +4276,13 @@
   "code.download.intelMac.plainBody": {
     "message": "Votre navigateur indique une puce Intel, et l'app Mac ne fonctionne que sur Apple silicon (M1 ou plus récent) ; il n'existe pas de version Intel. Un ordinateur Windows ou Linux peut l'exécuter à la place, voir {link}.",
     "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
+  },
+  "installer.windowsX64.otherArch": {
+    "message": "Windows sur x64",
+    "description": "Secondary button for the Windows x64 installer, shown to Windows on Arm visitors. Keep product names in English"
+  },
+  "installer.windowsArm64.otherArch": {
+    "message": "Windows sur Arm",
+    "description": "Secondary button for the Windows arm64 installer, shown to Windows x64 visitors. Keep product names in English"
   }
 }

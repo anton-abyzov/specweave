@@ -4276,5 +4276,13 @@
   "code.download.intelMac.plainBody": {
     "message": "Dein Browser meldet einen Intel-Chip, und die Mac-App läuft nur auf Apple silicon (M1 oder neuer); einen Intel-Build gibt es nicht. Ein Windows- oder Linux-Rechner kann sie stattdessen ausführen, siehe {link}.",
     "description": "Intel Mac notice; {link} jumps to the Windows and Linux downloads. Keep product names in English"
+  },
+  "installer.windowsX64.otherArch": {
+    "message": "Windows auf x64",
+    "description": "Secondary button for the Windows x64 installer, shown to Windows on Arm visitors. Keep product names in English"
+  },
+  "installer.windowsArm64.otherArch": {
+    "message": "Windows auf Arm",
+    "description": "Secondary button for the Windows arm64 installer, shown to Windows x64 visitors. Keep product names in English"
   }
 }

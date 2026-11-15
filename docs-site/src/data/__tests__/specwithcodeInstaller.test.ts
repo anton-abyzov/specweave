@@ -79,8 +79,8 @@ describe('chooseInstaller', () => {
     expect(chooseInstaller({os: 'windows', arch: null}).installer.url).toBe(desktop.exe.url);
   });
   it('keeps the other Windows CPU one click away', () => {
-    expect(chooseInstaller({os: 'windows', arch: 'x64'}).otherArch).toMatchObject({label: 'Windows arm64', url: desktop.exeArm64.url});
-    expect(chooseInstaller({os: 'windows', arch: 'arm64'}).otherArch).toMatchObject({label: 'Windows x64', url: desktop.exe.url});
+    expect(chooseInstaller({os: 'windows', arch: 'x64'}).otherArch).toMatchObject({label: 'Windows on Arm', url: desktop.exeArm64.url});
+    expect(chooseInstaller({os: 'windows', arch: 'arm64'}).otherArch).toMatchObject({label: 'Windows on x64', url: desktop.exe.url});
     expect(chooseInstaller({os: 'mac', arch: 'arm64'}).otherArch).toBeUndefined();
   });
   it('leads Linux visitors with the AppImage and offers the .deb for the same CPU', () => {

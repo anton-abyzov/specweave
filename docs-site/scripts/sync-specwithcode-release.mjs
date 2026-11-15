@@ -50,9 +50,9 @@ const writeConstant = (source, name, value) => {
 const formatBytes = (bytes) => String(bytes).replace(/\B(?=(\d{3})+$)/g, '_');
 
 /**
- * `source` with each picked release written in. A picked release older than
- * the one recorded is ignored, so a release withdrawn from GitHub never moves
- * the page back.
+ * `source` with each picked release written in. A picked stable release older
+ * than the one recorded is ignored, so a release withdrawn from GitHub never
+ * moves the page back. The Insiders build is written as picked, none included.
  */
 export function applyReleases(source, {mac, desktop, insiders = null}) {
   let next = source;
@@ -65,12 +65,11 @@ export function applyReleases(source, {mac, desktop, insiders = null}) {
     // For the same release too: a newer stable one without these files moves the links off latest.
     if (picked === desktop) next = writeConstant(next, 'DESKTOP_LATEST', picked.latest === true ? 'true' : 'false');
   }
-  if (insiders) {
-    const recorded = readConstant(next, 'INSIDERS_VERSION').replace(/'/g, '');
-    if (!parseVersion(recorded) || compareVersions(insiders.version, recorded) >= 0) {
-      next = writeConstant(next, 'INSIDERS_VERSION', `'${insiders.version}'`);
-      next = writeConstant(next, 'INSIDERS_FILES', `'${insiders.files.join(',')}'`);
-    }
+  // Insiders follows GitHub both ways, cleared too: a pulled build must not stay a dead button.
+  // Only from a read that found a stable release, so a failed or empty read changes nothing.
+  if (mac || desktop) {
+    next = writeConstant(next, 'INSIDERS_VERSION', `'${insiders?.version ?? ''}'`);
+    next = writeConstant(next, 'INSIDERS_FILES', `'${insiders?.files.join(',') ?? ''}'`);
   }
   return next;
 }
