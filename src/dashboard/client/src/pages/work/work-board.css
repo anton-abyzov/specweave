@@ -120,7 +120,7 @@
   border: 1px solid var(--sw-brand-line);
   border-radius: var(--wb-radius);
   background: var(--sw-brand-card);
-  box-shadow: 0 1px 2px #25282008, var(--sw-brand-shadow);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 10%, transparent), var(--sw-brand-shadow);
 }
 .wb-ring {
   position: relative;
@@ -358,7 +358,7 @@
   inset: 0;
   border-radius: 6px;
   background: var(--sw-brand-card);
-  box-shadow: 0 1px 2px #25282022;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 10%, transparent);
 }
 
 /* Board */
@@ -444,7 +444,7 @@
   border-left: 3px solid var(--tone);
   border-radius: 8px;
   background: var(--sw-brand-card);
-  box-shadow: 0 1px 2px #2528200a;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 10%, transparent);
   cursor: pointer;
   transition: box-shadow 0.16s, transform 0.16s, border-color 0.16s;
 }
@@ -452,7 +452,7 @@
   transform: translateY(-2px);
   border-color: var(--sw-brand-line-strong);
   border-left-color: var(--tone);
-  box-shadow: 0 8px 22px #2528201c;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--sw-brand-ink) 10%, transparent);
 }
 .wb-card:active { transform: translateY(0); }
 .wb-card.is-selected {
@@ -744,7 +744,7 @@
   width: min(780px, 100vw);
   background: var(--sw-brand-card);
   border-left: 1px solid var(--sw-brand-line);
-  box-shadow: -24px 0 60px #25282026;
+  box-shadow: -24px 0 60px color-mix(in srgb, var(--sw-brand-ink) 10%, transparent);
   font-family: var(--sw-brand-sans);
   font-size: 13.5px;
   line-height: 1.5;
