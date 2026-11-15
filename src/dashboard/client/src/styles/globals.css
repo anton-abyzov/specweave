@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../../../../../design/weave/weave.css";
 @import "../../../../styles/brand-tokens.css";
 @import "../../../../styles/brand-fonts.css";
 
@@ -49,7 +50,6 @@
 
 /* Aliases keep existing workspace components on the shared website palette. */
 :root {
-  color-scheme: light;
   --work-bg: var(--sw-brand-paper);
   --work-panel: var(--sw-brand-surface);
   --work-border: var(--sw-brand-line);
@@ -219,7 +219,7 @@
   display: block;
   font-family: var(--sw-brand-display);
   font-size: 22px;
-  font-weight: 400;
+  font-weight: 650;
   margin-top: 12px;
   line-height: 1.3;
   color: var(--sw-brand-ink);
@@ -901,7 +901,7 @@ body {
 .work-heading h1,
 .work-dialog-heading h2 {
   font-family: var(--sw-brand-display);
-  font-weight: 450;
+  font-weight: 650;
 }
 .work-primary {
   background: var(--sw-brand-action);

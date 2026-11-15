@@ -19,7 +19,7 @@
   margin-bottom: 12px;
 }
 .hub-heading h1 {
-  font: 450 clamp(32px, 4vw, 52px)/1.08 var(--sw-brand-display);
+  font: 650 clamp(32px, 4vw, 52px)/1.08 var(--sw-brand-display);
   letter-spacing: -0.035em;
   margin: 0 0 12px;
 }

@@ -61,8 +61,8 @@ try {
       panel: panel.backgroundColor, border: panel.borderTopColor };
   });
   assert.deepEqual(actual, reference, 'Public website and dashboard design differ');
-  assert.equal(await local.evaluate(() => [...document.fonts].filter(f => f.status === 'loaded').some(f => f.family.includes('Newsreader') && f.weight === '450')), true, 'Exact 450 display face must load locally');
-  assert.equal(await local.evaluate(() => [...document.fonts].filter(f => f.status === 'loaded').some(f => f.family.includes('IBM Plex Sans'))), true, 'Body font must load locally');
+  assert.equal(await local.evaluate(() => [...document.fonts].filter(f => f.status === 'loaded').some(f => f.family.includes('JetBrains Mono'))), true, 'Mono font must load locally');
+  assert.equal(await local.evaluate(() => [...document.fonts].filter(f => f.status === 'loaded').some(f => f.family.includes('Schibsted Grotesk'))), true, 'Body font must load locally');
   for (const [name, width, height] of [['desktop', 1440, 1050], ['tablet', 820, 1180], ['mobile', 390, 844]]) {
     await local.setViewportSize({ width, height });
     await local.screenshot({ path: path.join(artifacts, `aligned-hub-${name}.png`), fullPage: true });
@@ -98,7 +98,7 @@ try {
         })),
       };
     });
-    for (const helper of controls.helpers) assert.equal(helper, 'rgb(101, 105, 94)', `Helper text lacks website contrast on ${route}`);
+    for (const helper of controls.helpers) assert.equal(helper, 'rgb(103, 93, 105)', `Helper text lacks website contrast on ${route}`);
     for (const selected of controls.selected) assert.equal(selected.color, reference.ink, `Low-contrast selected control on ${route}: ${selected.text}`);
     for (const primary of controls.primary) {
       assert.equal(primary.background, reference.button, `Primary action differs on ${route}: ${primary.text}`);
