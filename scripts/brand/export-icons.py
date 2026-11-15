@@ -4,8 +4,9 @@
 Masters: scripts/brand/specwithcode-logo.svg (the prompt-and-lines mark on its indigo
 gradient tile, the same file as assets/prod/logo.svg in the specwithcode repository) and
 specwithcode-logo-small.svg (the simplified one-line mark used at 32px and below, where the
-two lines merge). Both are written by that repository's `vp run brand:rollout`; copy them
-here and rerun `python3 scripts/brand/export-icons.py`; do not edit the outputs by hand.
+two lines merge). They are copies of assets/prod/logo.svg and assets/prod/logo-small.svg,
+which that repository's `vp run brand:rollout` writes; copy them here and rerun
+`python3 scripts/brand/export-icons.py`; do not edit the outputs by hand.
 Needs rsvg-convert and Pillow.
 """
 import hashlib
