@@ -1,3 +1,11 @@
+## [3.1.25] - 2026-11-17
+
+### Changed
+
+- Docs site: new SpecWithCode icon (#2297)
+- 1338: local dashboard on the Weave design system (#2293)
+- Download page: latest links, Apple silicon line, Insiders button (#2296)
+
 ## [3.1.24] - 2026-11-15
 
 ### Changed
