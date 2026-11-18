@@ -1,3 +1,9 @@
+## [3.1.27] - 2026-11-18
+
+### Changed
+
+- 1409: readable block and skip reasons (#2304)
+
 ## [3.1.26] - 2026-11-18
 
 ### Changed
