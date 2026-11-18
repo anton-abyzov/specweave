@@ -19,6 +19,7 @@ import { execFileSync } from 'child_process';
 import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
 import { gitCheckoutFor } from '../../utils/main-checkout.js';
 import { clampCardLine, getAgentId, type LedgerEvent } from '../../core/tasks/ledger.js';
+import { checkReason, gluedReasonMessage, longReasonWarning } from '../../core/tasks/reason-text.js';
 import { incrementCards, readOriginUrl, renderChecklist, type Card } from '../../core/tasks/cards.js';
 import { resolveIncrement, readLeaseHours, IncrementResolutionError, type ResolvedIncrement } from '../../core/tasks/resolve-increment.js';
 import { addBranchCard, appendBranchEvent, branchCardIds, branchCards, branchCardsPath, currentBranch, normalizeCardId } from '../../core/tasks/branch-cards.js';
@@ -80,6 +81,13 @@ export async function cardCommand(action: string, a?: string, b?: string, opts: 
     err(`Card ${cardId} not found in ${rel(projectRoot, file)}. Add one with \`specweave card add "<text>"\`.`);
     return 1;
   }
+  let waitReason: string | undefined;
+  if (action === 'wait') {
+    const checked = checkReason(opts.reason ?? opts.note ?? opts.line ?? 'waiting');
+    if (checked.glued.length) { err(gluedReasonMessage(checked.glued)); return 2; }
+    if (checked.long) err(longReasonWarning(checked.text.length));
+    waitReason = checked.text || 'waiting';
+  }
   const event: LedgerEvent = { t: cardId, e: 'claim', by: agent, at: new Date().toISOString() };
   if (opts.line?.trim()) {
     const { line, truncated } = clampCardLine(opts.line);
@@ -93,7 +101,7 @@ export async function cardCommand(action: string, a?: string, b?: string, opts: 
     event.evidence = [opts.evidence?.trim(), opts.link?.trim(), sha ? `HEAD ${sha}` : undefined].filter(Boolean).join('\n') || 'card done';
   } else if (action === 'wait') {
     event.e = 'block';
-    event.note = (opts.reason ?? opts.note ?? opts.line ?? 'waiting').trim();
+    event.note = waitReason;
   }
   appendBranchEvent(file, event);
   const card = branchCards(file, cardOpts(gitRoot)).find((c) => c.id === cardId);

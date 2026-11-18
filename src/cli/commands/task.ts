@@ -10,8 +10,14 @@
  *   task done T-01 [inc] --evidence "…" | --run "<cmd>"   (exit 5 when the command fails;
  *                                       auto-claims when nobody holds a live claim)
  *   task release T-01 [inc] | --all-mine
- *   task block T-01 [inc] --note "…"
+ *   task block T-01 [inc] --reason "…"
  *   task skip T-01 [inc] --reason "…"   (terminal; reason mandatory)
+ *
+ * A block or skip reason is one short plain sentence a person reads on the
+ * board, with normal spaces and code in backticks. Safe spacing is fixed
+ * (whitespace runs, a missing space after `,` or `;`); glued words
+ * (`offline37profileattestation`) are refused with exit 2 and nothing is
+ * appended; a reason over 280 characters is stored with a warning.
  *   task render [inc] [--write]         print the board; --write refreshes a legacy tasks.md
  *   task repos [inc] [--set "a,b"]      metadata.repositories: Files owners plus declared entries
  *
@@ -53,6 +59,7 @@ import { readSpecAcs, deriveAcStatus, type AcEntry } from '../../core/tasks/veri
 import { acJson, deriveAcAcceptance } from '../../core/tasks/accepted-skip.js';
 import { tasksFileName } from '../../core/tasks/tasks-source.js';
 import { readIncrementRepositories, refreshIncrementRepositories, writeIncrementRepositories } from '../../core/tasks/increment-repositories.js';
+import { checkReason, gluedReasonMessage, longReasonWarning } from '../../core/tasks/reason-text.js';
 import { autoCommitIncrement, describeAutoCommit, isAutoCommitSubject, type AutoCommitRequest, type AutoCommitResult } from '../../core/increment/auto-commit.js';
 
 export interface TaskCommandOptions {
@@ -129,6 +136,16 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
   const acsOf = (): AcEntry[] => (specAcs ??= readSpecAcs(inc.dir));
   /** `--reason` is the documented spelling for skip/block; `--note` stays as an alias. */
   const note = (opts.note ?? opts.reason)?.trim() || undefined;
+  /**
+   * Block and skip reasons are read by a person on the board: normalize safe
+   * spacing, refuse glued words (exit 2, nothing appended), warn when long.
+   */
+  const readableReason = (raw: string): string | undefined => {
+    const checked = checkReason(raw);
+    if (checked.glued.length) { err(gluedReasonMessage(checked.glued)); return undefined; }
+    if (checked.long) err(longReasonWarning(checked.text.length));
+    return checked.text;
+  };
   /** `--line` / `--link`, for the events that move a card. */
   const card: Partial<LedgerEvent> = {};
   if (opts.line?.trim()) {
@@ -359,18 +376,22 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
     }
     case 'block': {
       if (!note) { err('block needs --reason "<why it is blocked>"'); return 2; }
+      const reason = readableReason(note);
+      if (!reason) return 2;
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
-      append('block', taskId, { note, ...card });
-      out(`Blocked ${taskId}: ${note}`);
+      append('block', taskId, { note: reason, ...card });
+      out(`Blocked ${taskId}: ${reason}`);
       reportCommit(commitIncrement('block', [taskId]));
       return 0;
     }
     case 'skip': {
       if (!note) { err('skip needs --reason "<why this task is not needed>"'); return 2; }
+      const reason = readableReason(note);
+      if (!reason) return 2;
       if (task.state.status === 'done') { err(`${taskId} is already done by ${task.state.by} — skip is for work that will not happen`); return 1; }
       if (heldByOther(task) && !opts.force) { err(refusal(task, taskId, leaseHours)); return EXIT_LOST_RACE; }
       const wasSkipped = task.state.status === 'skipped';
-      append('skip', taskId, { note });
+      append('skip', taskId, { note: reason });
       const skipState = stateOf(taskId);
       if (skipState.status !== 'skipped') {
         err(`${taskId} was NOT recorded as skipped — ${describeState(skipState)}.`);
@@ -380,7 +401,7 @@ export async function taskCommand(action: string, a?: string, b?: string, opts: 
       // Re-skipping a task that was already skipped finishes nothing new.
       const allDone = !wasSkipped && c.done + c.skipped === c.total && c.total > 0;
       const committed = commitIncrement('skip', [taskId]);
-      out(opts.json ? JSON.stringify({ skipped: taskId, reason: note, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}), ...commitJson(committed) }) : `Skipped ${taskId} (terminal): ${note}`);
+      out(opts.json ? JSON.stringify({ skipped: taskId, reason, counts: c, ...(allDone ? { close: closeChain(inc.id) } : {}), ...commitJson(committed) }) : `Skipped ${taskId} (terminal): ${reason}`);
       reportCommit(committed);
       if (allDone) finishedAll(inc.id);
       return 0;
