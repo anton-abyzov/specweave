@@ -12,13 +12,14 @@
  * @module create-increment
  */
 
+import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 import { createIncrementTemplates } from '../../core/increment/template-creator.js';
 import { LifecycleHookDispatcher } from '../../core/hooks/LifecycleHookDispatcher.js';
 import { readConfig } from '../../core/config/config-manager.js';
 import type { DeepInterviewMode } from '../../core/config/types.js';
-import { resolveEffectiveRoot } from '../../utils/find-project-root.js';
+import { findEffectiveRoot } from '../../utils/find-project-root.js';
 import { slugify } from '../../utils/string-utils.js';
 import { supersedeIncrement, setParentIncrement } from '../../core/tasks/supersede.js';
 import { detectSessionId } from '../../core/tasks/ledger.js';
@@ -71,6 +72,28 @@ export interface CreateIncrementOptions {
   commit?: boolean;
 }
 
+/** Printed when no `.specweave/config.json` is found for the folder. */
+export const NOT_SET_UP_MESSAGE =
+  'This folder is not set up for SpecWeave. Run `specweave init` here first. ' +
+  "In SpecWithCode, press Set up SpecWeave on the project's Board tab.";
+
+/** Thrown after NOT_SET_UP_MESSAGE is printed; the CLI exits non-zero. */
+export class NotSetUpError extends Error {
+  readonly code = 'not-set-up';
+  constructor() {
+    super(NOT_SET_UP_MESSAGE);
+    this.name = 'NotSetUpError';
+  }
+}
+
+function hasConfig(root: string): boolean {
+  try {
+    return fs.statSync(path.join(root, '.specweave', 'config.json')).isFile();
+  } catch {
+    return false;
+  }
+}
+
 export async function createIncrementCommand(options: CreateIncrementOptions): Promise<void> {
   const {
     id,
@@ -106,8 +129,16 @@ export async function createIncrementCommand(options: CreateIncrementOptions): P
     console.error(chalk.yellow('--parallel is deprecated and does nothing: parallel planning was removed. Split tasks by disjoint Files to run them as sw-do lanes.'));
   }
 
-  // Resolve effective root: umbrella root in multi-repo, local root in single-repo
-  const projectRoot = rawProjectRoot || resolveEffectiveRoot(process.cwd());
+  // Resolve effective root: umbrella root in multi-repo, local root in single-repo.
+  // A folder that was never set up is refused: writing increments there leaves a
+  // half-made .specweave that no SpecWeave tool reads (1396 AC-04).
+  const found = rawProjectRoot ? path.resolve(rawProjectRoot) : findEffectiveRoot(process.cwd());
+  if (!found || !hasConfig(found)) {
+    // The CLI's top-level handler prints the message and exits 1.
+    if (json) console.log(JSON.stringify({ success: false, error: NOT_SET_UP_MESSAGE, code: 'not-set-up' }));
+    throw new NotSetUpError();
+  }
+  const projectRoot = found;
 
   // Resolve increment ID: explicit or placeholder (template-creator handles atomic ID when autoId=true)
   const resolvedId = autoId ? '' : id!;
