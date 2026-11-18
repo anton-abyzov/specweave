@@ -1,3 +1,9 @@
+## [3.1.26] - 2026-11-18
+
+### Changed
+
+- Init re-run keeps config; refuse bad adapter and nested repo (#2302)
+
 ## [3.1.25] - 2026-11-17
 
 ### Changed
