@@ -160,4 +160,24 @@ describe('create-increment without .specweave/config.json', () => {
     expect(JSON.parse(run.stdout.trim().split('\n').pop()!)).toMatchObject({ success: false, code: 'not-set-up' });
     expect(listTree(folder)).toEqual([]);
   });
+
+  it('the CLI refuses a --project-root without a config with the same message', () => {
+    const bin = path.resolve(cwd, 'bin/specweave.js');
+    const folder = path.join(tempDir, 'cli-root-flag');
+    const elsewhere = path.join(tempDir, 'cli-elsewhere');
+    fs.mkdirSync(folder);
+    fs.mkdirSync(elsewhere);
+    const env = { ...process.env };
+    delete env.SPECWEAVE_WORKSPACE;
+    const run = spawnSync(
+      process.execPath,
+      [bin, 'create-increment', 'Simple website', '--project-root', folder, '--no-commit'],
+      { cwd: elsewhere, encoding: 'utf8', env },
+    );
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain(MESSAGE);
+    expect(run.stderr).not.toContain('is not a valid SpecWeave project');
+    expect(listTree(folder)).toEqual([]);
+    expect(listTree(elsewhere)).toEqual([]);
+  });
 });
