@@ -166,12 +166,14 @@ describe('specweave init: a re-run keeps the project config', () => {
     expect(after.sync).toBeUndefined();
   });
 
-  it('lets SPECWEAVE_TOOL change the saved tool', () => {
+  it('keeps the saved tool when SPECWEAVE_TOOL names another, and does not claim to use it', () => {
     const { root, env } = scratch('env-tool');
     expect(init(root, env, ['.', '--adapter', 'codex']).status).toBe(0);
-    expect(init(root, { ...env, SPECWEAVE_TOOL: 'cursor' }).status).toBe(0);
+    const run = init(root, { ...env, SPECWEAVE_TOOL: 'cursor' });
+    expect(run.status).toBe(0);
+    expect(run.out).not.toContain('Using cursor');
     const after = JSON.parse(fs.readFileSync(path.join(root, '.specweave', 'config.json'), 'utf-8'));
-    expect(after.adapters.default).toBe('cursor');
+    expect(after.adapters.default).toBe('codex');
   });
 
   it('reads a saved tool in any letter case and names one it does not know', () => {

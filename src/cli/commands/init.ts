@@ -390,23 +390,19 @@ export async function initCommand(
         }
       }
 
-      const detectedTool = await adapterLoader.detectTool();
-      spinner.stop();
-
-      // SPECWEAVE_TOOL names the tool outright, like --adapter; otherwise a
-      // re-run keeps the tool the project was set up with.
-      const envTool = process.env.SPECWEAVE_TOOL?.trim().toLowerCase();
-      const envNamesTool = !!envTool && envTool === detectedTool;
+      // A re-run keeps the tool the project was set up with, without detecting
+      // again: SPECWEAVE_TOOL names the agent running now, not the project's tool.
       const savedLower = existingAdapter?.toLowerCase() ?? null;
       const savedTool = savedLower && (savedLower === 'claude' || adapterLoader.getAdapter(savedLower))
         ? savedLower
         : null;
-      if (existingAdapter && !savedTool && !envNamesTool) {
+      const detectedTool = savedTool ?? await adapterLoader.detectTool();
+      spinner.stop();
+
+      if (existingAdapter && !savedTool) {
         console.log(chalk.yellow(`   ⚠ The saved tool "${existingAdapter}" is not one init knows; using ${detectedTool}.`));
       }
-      if (envNamesTool) {
-        toolName = detectedTool;
-      } else if (savedTool) {
+      if (savedTool) {
         toolName = savedTool;
       } else if (isCI) {
         toolName = detectedTool;
