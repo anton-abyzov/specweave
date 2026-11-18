@@ -36,6 +36,10 @@ hold, and notes left for you. No increment yet? Run sw-increment first.
    `--link` is the PR, report or artifact behind it.
 7. Stuck: `specweave task block T-03 --reason "<what is missing>"`. Not needed:
    `specweave task skip T-03 --reason "<why>"`. Then back to 1.
+   A person reads the reason on the board: write one short plain sentence with normal
+   spaces ("Waiting on the vendor export; 35 of 148 files still fail"), names and code
+   in backticks, details in a report. Glued words (`offline37profileattestation`) are
+   refused with exit 2 and nothing is recorded.
 
 Commands take the increment id last (`specweave task next 0042`) when more than one
 increment is active. `specweave task list` shows the whole board. For a status, print

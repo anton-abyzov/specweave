@@ -14,7 +14,8 @@ Closing is verify, review, complete. The one hard gate is a passing
 ## Steps
 
 1. **Board.** `specweave task list`: every task must be `done` or `skipped`. Anything
-   open goes back to sw-do, or `specweave task skip T-04 --reason "<why>"`.
+   open goes back to sw-do, or `specweave task skip T-04 --reason "<why>"`; the reason is
+   one short plain sentence with normal spaces, code in backticks.
 2. **Verify.** `specweave verify` runs the project's test, lint and build commands
    (config `testing.commands`, else detected), checks every acceptance criterion
    against the ledger (an AC is met when all its tasks are done) and writes
