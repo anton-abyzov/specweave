@@ -24,9 +24,8 @@ import { cloneRepo } from '../helpers/get/clone-repo.js';
 import { registerRepo } from '../helpers/get/register-repo.js';
 import { parseBulkSource, getAuthToken, buildBulkRepoList } from '../helpers/get/bulk-get.js';
 import { launchCloneJob } from '../../core/background/job-launcher.js';
-import { execFileNoThrow } from '../../utils/execFileNoThrow.js';
 import { adoptRepository } from '../../core/workspace/adoption.js';
-import { findEffectiveRoot, hasSpecweaveIncrements } from '../../utils/find-project-root.js';
+import { findEffectiveRoot } from '../../utils/find-project-root.js';
 
 export interface GetOptions {
   dryRun?: boolean;
@@ -36,7 +35,7 @@ export interface GetOptions {
   branch?: string;
   prefix?: string;
   role?: string;
-  /** true by default, false when --no-init is passed */
+  /** Accepted and ignored: `get` no longer runs init (1407). */
   init?: boolean;
   yes?: boolean;
   /** Bulk: clone all repos in org */
@@ -135,10 +134,8 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
     const githubUrl = parsed.type === 'github' ? `https://github.com/${owner}/${repo}` : undefined;
     await _registerAndInit(projectRoot, owner, repo, relPath, targetDir, options, true, githubUrl);
   } else {
-    // Non-umbrella: just run init if requested
-    if (options.init !== false) {
-      await _runInit(targetDir);
-    }
+    // No workspace: the clone sits inside this project, where `specweave init`
+    // refuses to start a second one (1407), so it is not run.
     console.log(chalk.green(`\n  Done! Repository available at ./${repo}/\n`));
   }
 }
@@ -219,20 +216,6 @@ async function _registerAndInit(
     console.log(chalk.dim(`   Path: ${relPath}`));
   }
   console.log(chalk.dim(`   Next: sw:increment to plan work in ${repo}\n`));
-}
-
-async function _runInit(repoDir: string): Promise<void> {
-  if (hasSpecweaveIncrements(repoDir)) {
-    console.log(chalk.dim('   Already initialized with increments, skipping init'));
-    return;
-  }
-  console.log(chalk.dim('   Running specweave init...'));
-  const result = await execFileNoThrow('specweave', ['init', '.'], { cwd: repoDir, env: { SPECWEAVE_WORKSPACE: undefined } });
-  if (result.exitCode === 0) {
-    console.log(chalk.green('   Initialized with specweave'));
-  } else {
-    console.log(chalk.yellow('   specweave init had warnings (you can run it manually)'));
-  }
 }
 
 function _relativeToProject(projectRoot: string, targetPath: string): string {

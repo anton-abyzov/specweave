@@ -316,7 +316,7 @@ complete -c specweave -n "__fish_seen_subcommand_from get" -l expected-fingerpri
 complete -c specweave -n "__fish_seen_subcommand_from get" -l branch -d "Clone a specific branch"
 complete -c specweave -n "__fish_seen_subcommand_from get" -l prefix -d "User story prefix (default: first 3 chars uppercase)"
 complete -c specweave -n "__fish_seen_subcommand_from get" -l role -d "Repository role (frontend, backend, mobile, infra, shared)"
-complete -c specweave -n "__fish_seen_subcommand_from get" -l no-init -d "Skip specweave init in a repository cloned outside a workspace"
+complete -c specweave -n "__fish_seen_subcommand_from get" -l no-init -d "Accepted and ignored: get never runs init"
 complete -c specweave -n "__fish_seen_subcommand_from get" -l yes -d "Skip confirmation prompts"
 complete -c specweave -n "__fish_seen_subcommand_from get" -l all -d "Clone all repositories in an org (source is org name)"
 complete -c specweave -n "__fish_seen_subcommand_from get" -l pattern -d "Filter repos by glob pattern, e.g. \"service-*\" (use with --all or org/* source)"

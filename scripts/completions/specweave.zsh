@@ -396,7 +396,7 @@ _specweave() {
                         '--branch[Clone a specific branch]' \
                         '--prefix[User story prefix (default\: first 3 chars uppercase)]' \
                         '--role[Repository role (frontend, backend, mobile, infra, shared)]' \
-                        '--no-init[Skip specweave init in a repository cloned outside a workspace]' \
+                        '--no-init[Accepted and ignored\: get never runs init]' \
                         '--yes[Skip confirmation prompts]' \
                         '--all[Clone all repositories in an org (source is org name)]' \
                         '--pattern[Filter repos by glob pattern, e.g. "service-*" (use with --all or org/* source)]' \

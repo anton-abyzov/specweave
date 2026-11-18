@@ -87,6 +87,15 @@ describe('getCommand', () => {
 
       expect(mockExecFileNoThrow).not.toHaveBeenCalledWith('specweave', expect.anything(), expect.anything());
     });
+
+    it('runs no init in a clone outside a workspace, where init would refuse (1407)', async () => {
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({ version: '2.0', project: { name: 'p' } }));
+      await getCommand('org/repo');
+
+      expect(mockCloneRepo).toHaveBeenCalled();
+      expect(mockRegisterRepo).not.toHaveBeenCalled();
+      expect(mockExecFileNoThrow).not.toHaveBeenCalledWith('specweave', expect.anything(), expect.anything());
+    });
   });
 
   describe('workspace config flow', () => {

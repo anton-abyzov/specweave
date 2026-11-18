@@ -141,7 +141,7 @@ Flags are in the [`specweave sync` reference](/docs/reference/sync-cli).
 |---------|---------|--------------|
 | `specweave save [message]` | Generate a commit message, commit, sync with the remote and push. | `--dry-run`, `--no-push`, `--sync <rebase\|merge\|none>`, `-i, --interactive` |
 | `specweave lsp <action>` | Code intelligence: `refs`, `def`, `hover`, `symbols`, `search`, `warmup`, `status`, `setup`. See [LSP integration](/docs/guides/lsp-integration). | |
-| `specweave get <source>` | Clone a repository into the workspace and register it. Accepts `owner/repo`, a URL, or an org with `--all`. | `--branch <name>`, `--all`, `--pattern <glob>`, `--no-init` |
+| `specweave get <source>` | Clone a repository into the workspace and register it. Accepts `owner/repo`, a URL, or an org with `--all`. | `--branch <name>`, `--all`, `--pattern <glob>` |
 | `specweave context projects` | Print the project and board values an increment can use. | |
 | `specweave project <action>` | Portable project hub: `init`, `show`, `set`, `brief`, `work-add`, `work-update`, `work-record`, `artifact-add`, `artifact-remove`, `routine-add`, `routine-remove`. See [portable projects](/docs/guides/portable-projects). | `--harness <codex\|claude\|generic>`, `--json` |
 

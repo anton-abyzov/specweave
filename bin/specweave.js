@@ -984,7 +984,7 @@ program
   .option('--branch <branch>', 'Clone a specific branch')
   .option('--prefix <prefix>', 'User story prefix (default: first 3 chars uppercase)')
   .option('--role <role>', 'Repository role (frontend, backend, mobile, infra, shared)')
-  .option('--no-init', 'Skip specweave init in a repository cloned outside a workspace')
+  .option('--no-init', 'Accepted and ignored: get never runs init')
   .option('--yes', 'Skip confirmation prompts')
   .option('--all', 'Clone all repositories in an org (source is org name)')
   .option('--pattern <pattern>', 'Filter repos by glob pattern, e.g. "service-*" (use with --all or org/* source)')
