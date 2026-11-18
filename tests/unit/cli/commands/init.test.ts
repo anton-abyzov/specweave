@@ -226,7 +226,9 @@ vi.mock('../../../../src/adapters/adapter-loader.js', () => {
   const MockAdapterLoader = vi.fn(function(this: any) {
     this.detectTool = mockDetectTool;
     this.getAdapter = mockGetAdapter;
+    this.adapterNames = () => ['aider','amazonq','antigravity','cline','codex','continue','copilot','cursor','gemini','generic','jetbrains','kimi','opencode','tabnine','trae','windsurf','zed'];
     this.checkRequirements = mockCheckRequirements;
+    this.checkClaudeCli = vi.fn();
   });
   return { AdapterLoader: MockAdapterLoader };
 });
@@ -286,6 +288,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   createDirectoryStructure: mockCreateDirectoryStructure,
   copyTemplates: mockCopyTemplates,
   createConfigFile: mockCreateConfigFile,
+  ensureConfigFile: mockCreateConfigFile,
   showNextSteps: mockShowNextSteps,
   installGitHooks: mockInstallGitHooks,
   // Real behaviour: init scaffolds repositories/ only for an actual workspace.

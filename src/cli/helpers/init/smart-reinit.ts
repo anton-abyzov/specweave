@@ -83,7 +83,7 @@ function getSmartReinitStrings(language: SupportedLanguage): {
       creatingBackup: '📦 Creating backup before deletion...',
       backupSaved: '✅ Backup saved:',
       toRestore: 'To restore: mv',
-      backupFailed: '⚠️  Could not create backup (proceeding anyway)',
+      backupFailed: '⛔ Could not create a backup, so nothing was deleted',
       removed: '♻️  Removed .specweave/',
       filesDeleted: 'files deleted',
       startingFresh: '✅ Starting fresh - will create new .specweave/ structure',
@@ -119,7 +119,7 @@ function getSmartReinitStrings(language: SupportedLanguage): {
       creatingBackup: '📦 Создаём резервную копию перед удалением...',
       backupSaved: '✅ Резервная копия сохранена:',
       toRestore: 'Для восстановления: mv',
-      backupFailed: '⚠️  Не удалось создать резервную копию (продолжаем)',
+      backupFailed: '⛔ Не удалось создать резервную копию, поэтому ничего не удалено',
       removed: '♻️  Удалено .specweave/',
       filesDeleted: 'файлов удалено',
       startingFresh: '✅ Начинаем заново - создаём новую структуру .specweave/',
@@ -155,7 +155,7 @@ function getSmartReinitStrings(language: SupportedLanguage): {
       creatingBackup: '📦 Creando respaldo antes de eliminar...',
       backupSaved: '✅ Respaldo guardado:',
       toRestore: 'Para restaurar: mv',
-      backupFailed: '⚠️  No se pudo crear respaldo (continuando de todos modos)',
+      backupFailed: '⛔ No se pudo crear el respaldo, así que no se eliminó nada',
       removed: '♻️  Eliminado .specweave/',
       filesDeleted: 'archivos eliminados',
       startingFresh: '✅ Empezando de nuevo - se creará nueva estructura .specweave/',
@@ -191,7 +191,7 @@ function getSmartReinitStrings(language: SupportedLanguage): {
       creatingBackup: '📦 删除前创建备份...',
       backupSaved: '✅ 备份已保存：',
       toRestore: '恢复方法：mv',
-      backupFailed: '⚠️  无法创建备份（继续执行）',
+      backupFailed: '⛔ 无法创建备份，因此未删除任何内容',
       removed: '♻️  已删除 .specweave/',
       filesDeleted: '个文件已删除',
       startingFresh: '✅ 重新开始 - 将创建新的 .specweave/ 结构',
@@ -227,7 +227,7 @@ function getSmartReinitStrings(language: SupportedLanguage): {
       creatingBackup: '📦 Erstelle Backup vor dem Löschen...',
       backupSaved: '✅ Backup gespeichert:',
       toRestore: 'Zum Wiederherstellen: mv',
-      backupFailed: '⚠️  Konnte kein Backup erstellen (fahre trotzdem fort)',
+      backupFailed: '⛔ Backup konnte nicht erstellt werden, daher wurde nichts gelöscht',
       removed: '♻️  .specweave/ entfernt',
       filesDeleted: 'Dateien gelöscht',
       startingFresh: '✅ Starte neu - erstelle neue .specweave/ Struktur',
@@ -263,7 +263,7 @@ function getSmartReinitStrings(language: SupportedLanguage): {
       creatingBackup: '📦 Création d\'une sauvegarde avant suppression...',
       backupSaved: '✅ Sauvegarde enregistrée :',
       toRestore: 'Pour restaurer : mv',
-      backupFailed: '⚠️  Impossible de créer une sauvegarde (continuation quand même)',
+      backupFailed: '⛔ Impossible de créer une sauvegarde, rien n\'a donc été supprimé',
       removed: '♻️  .specweave/ supprimé',
       filesDeleted: 'fichiers supprimés',
       startingFresh: '✅ Recommence - création d\'une nouvelle structure .specweave/',
@@ -299,7 +299,7 @@ function getSmartReinitStrings(language: SupportedLanguage): {
       creatingBackup: '📦 削除前にバックアップを作成中...',
       backupSaved: '✅ バックアップが保存されました：',
       toRestore: '復元するには：mv',
-      backupFailed: '⚠️  バックアップを作成できませんでした（続行します）',
+      backupFailed: '⛔ バックアップを作成できなかったため、何も削除していません',
       removed: '♻️  .specweave/が削除されました',
       filesDeleted: 'ファイルが削除されました',
       startingFresh: '✅ 最初から始めます - 新しい.specweave/構造を作成します',
@@ -335,7 +335,7 @@ function getSmartReinitStrings(language: SupportedLanguage): {
       creatingBackup: '📦 삭제 전 백업 생성 중...',
       backupSaved: '✅ 백업이 저장되었습니다:',
       toRestore: '복원하려면: mv',
-      backupFailed: '⚠️  백업을 생성할 수 없습니다 (계속 진행합니다)',
+      backupFailed: '⛔ 백업을 만들 수 없어 아무것도 삭제하지 않았습니다',
       removed: '♻️  .specweave/가 제거되었습니다',
       filesDeleted: '파일이 삭제되었습니다',
       startingFresh: '✅ 새로 시작 - 새 .specweave/ 구조를 생성합니다',
@@ -371,7 +371,7 @@ function getSmartReinitStrings(language: SupportedLanguage): {
       creatingBackup: '📦 Criando backup antes da exclusão...',
       backupSaved: '✅ Backup salvo:',
       toRestore: 'Para restaurar: mv',
-      backupFailed: '⚠️  Não foi possível criar backup (prosseguindo mesmo assim)',
+      backupFailed: '⛔ Não foi possível criar o backup, então nada foi excluído',
       removed: '♻️  .specweave/ removido',
       filesDeleted: 'arquivos excluídos',
       startingFresh: '✅ Começando do zero - criará nova estrutura .specweave/',
@@ -396,6 +396,8 @@ export interface SmartReinitOptions {
 export interface SmartReinitResult {
   action: ReinitAction;
   continueExisting: boolean;
+  /** A fresh start that stopped because the backup could not be made. */
+  failed?: boolean;
 }
 
 /**
@@ -477,6 +479,7 @@ export async function promptSmartReinit(options: SmartReinitOptions): Promise<Sm
   if (action === 'fresh') {
     // Handle fresh start
     const freshResult = await handleFreshStart(targetDir, isCI, hasForce, language);
+    if (freshResult === 'backup-failed') return { action: 'cancel', continueExisting: false, failed: true };
     return { action: freshResult ? 'fresh' : 'cancel', continueExisting: false };
   }
 
@@ -494,14 +497,15 @@ export async function promptSmartReinit(options: SmartReinitOptions): Promise<Sm
  * @param isCI - Whether running in CI mode
  * @param hasForce - Whether --force flag was used
  * @param language - Language for translations
- * @returns true if fresh start succeeded, false if cancelled
+ * @returns true if fresh start succeeded, false if cancelled, 'backup-failed'
+ *          when the backup could not be made (nothing is deleted then)
  */
 async function handleFreshStart(
   targetDir: string,
   isCI: boolean,
   hasForce: boolean,
   language: SupportedLanguage = 'en'
-): Promise<boolean> {
+): Promise<boolean | 'backup-failed'> {
   const strings = getSmartReinitStrings(language);
   const specweavePath = path.join(targetDir, '.specweave');
 
@@ -526,8 +530,9 @@ async function handleFreshStart(
     }
   }
 
-  // Create backup before deletion
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+  // Back up before deleting. The name carries the time, so a second fresh
+  // start on the same day never writes over the first backup.
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const backupPath = path.join(targetDir, `.specweave.backup-${timestamp}`);
 
   try {
@@ -536,7 +541,9 @@ async function handleFreshStart(
     console.log(chalk.green(`   ${strings.backupSaved} ${path.relative(targetDir, backupPath)}`));
     console.log(chalk.gray(`      ${strings.toRestore} ${path.basename(backupPath)} .specweave`));
   } catch {
-    console.log(chalk.yellow('   ' + strings.backupFailed));
+    // Without a backup the increments would be gone for good: stop here.
+    console.log(chalk.red('   ' + strings.backupFailed));
+    return 'backup-failed';
   }
 
   // Count files before deletion
