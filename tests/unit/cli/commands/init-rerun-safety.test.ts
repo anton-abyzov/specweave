@@ -63,7 +63,7 @@ function git(cwd: string, env: NodeJS.ProcessEnv, args: string[]): string {
 }
 
 beforeAll(() => {
-  base = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'sw-init-rerun-'));
+  base = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), 'sw-init-rerun-'));
 });
 
 afterAll(() => {
@@ -270,7 +270,7 @@ describe('specweave init: Git', () => {
     expect(init(pkg, env, ['.', '--adapter', 'claude']).status).toBe(0);
 
     expect(fs.existsSync(path.join(pkg, '.git'))).toBe(false);
-    expect(fs.realpathSync(git(pkg, env, ['rev-parse', '--show-toplevel']))).toBe(fs.realpathSync(root));
+    expect(fs.realpathSync.native(git(pkg, env, ['rev-parse', '--show-toplevel']))).toBe(fs.realpathSync.native(root));
     // Nothing was committed to the repository that was already there.
     expect(git(root, env, ['rev-list', '--all', '--count'])).toBe('0');
   });

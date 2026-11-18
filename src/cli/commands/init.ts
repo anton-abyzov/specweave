@@ -49,8 +49,9 @@ function refuse(message: string): never {
   process.exit(1);
 }
 
+/** Real path; `native` also expands Windows 8.3 short names (RUNNER~1), so two spellings compare equal. */
 function real(p: string): string {
-  try { return nativeFs.realpathSync(p); } catch { return path.resolve(p); }
+  try { return nativeFs.realpathSync.native(p); } catch { return path.resolve(p); }
 }
 
 /** Where init runs and the project name a new config gets. */

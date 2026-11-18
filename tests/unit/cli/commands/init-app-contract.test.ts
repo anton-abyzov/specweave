@@ -23,7 +23,7 @@ function project(name: string): { root: string; env: NodeJS.ProcessEnv } {
   const root = path.join(base, name);
   const home = path.join(base, `${name}-home`);
   for (const d of [root, home]) fs.mkdirSync(d, { recursive: true });
-  const tmp = fs.realpathSync(os.tmpdir());
+  const tmp = fs.realpathSync.native(os.tmpdir());
   return {
     root,
     env: {
@@ -40,7 +40,7 @@ function run(cwd: string, env: NodeJS.ProcessEnv, args: string[]): { status: num
 }
 
 beforeAll(() => {
-  base = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'sw-init-app-'));
+  base = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), 'sw-init-app-'));
 });
 
 afterAll(() => {

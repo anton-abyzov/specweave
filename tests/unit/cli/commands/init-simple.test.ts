@@ -30,9 +30,9 @@ function envFor(home: string, extra: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv 
     HOME: home,
     USERPROFILE: home,
     // The real temp folder, so init's walk up for parent projects stops there.
-    TMPDIR: fs.realpathSync(os.tmpdir()),
-    TEMP: fs.realpathSync(os.tmpdir()),
-    TMP: fs.realpathSync(os.tmpdir()),
+    TMPDIR: fs.realpathSync.native(os.tmpdir()),
+    TEMP: fs.realpathSync.native(os.tmpdir()),
+    TMP: fs.realpathSync.native(os.tmpdir()),
     CI: 'true',
     NO_COLOR: '1',
     GIT_AUTHOR_NAME: 'Test',
@@ -86,7 +86,7 @@ beforeAll(() => {
   if (!fs.existsSync(path.join(REPO_ROOT, 'dist', 'src', 'cli', 'commands', 'init.js'))) {
     throw new Error('dist/ is missing: run `npm run build` before this test');
   }
-  base = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'sw-init-simple-'));
+  base = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), 'sw-init-simple-'));
 });
 
 afterAll(() => {
@@ -312,7 +312,7 @@ describe('AC-15: refusals write nothing', () => {
     const wt = path.join(base, 'wt-linked');
     git(root, env, ['worktree', 'add', '-q', wt]);
     expect(fs.existsSync(path.join(wt, '.specweave'))).toBe(false);
-    expect(refused(wt, env).out).toContain(fs.realpathSync(root));
+    expect(refused(wt, env).out).toContain(fs.realpathSync.native(root));
   });
 
   it('refuses a linked worktree of a checkout with no SpecWeave project, naming the checkout', () => {
