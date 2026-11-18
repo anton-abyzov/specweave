@@ -68,7 +68,7 @@ describe('getCommand', () => {
   });
 
   describe('AC-US4-01: umbrella workspace flow', () => {
-    it('clones to repositories/org/repo/, registers, and inits', async () => {
+    it('clones to repositories/org/repo/ and registers it, with no init of its own', async () => {
       await getCommand('org/repo');
 
       expect(mockCloneRepo).toHaveBeenCalledWith(
@@ -77,7 +77,7 @@ describe('getCommand', () => {
         expect.any(Object)
       );
       expect(mockRegisterRepo).toHaveBeenCalled();
-      expect(mockExecFileNoThrow).toHaveBeenCalledWith('specweave', ['init', '.'], expect.any(Object));
+      expect(mockExecFileNoThrow).not.toHaveBeenCalledWith('specweave', expect.anything(), expect.anything());
     });
   });
 
@@ -94,7 +94,7 @@ describe('getCommand', () => {
       mockFs.readFileSync.mockReturnValue(workspaceConfig);
     });
 
-    it('clones to repositories/org/repo/, registers, and inits', async () => {
+    it('clones to repositories/org/repo/ and registers it, with no init of its own', async () => {
       await getCommand('org/repo');
 
       expect(mockCloneRepo).toHaveBeenCalledWith(
@@ -103,7 +103,7 @@ describe('getCommand', () => {
         expect.any(Object)
       );
       expect(mockRegisterRepo).toHaveBeenCalled();
-      expect(mockExecFileNoThrow).toHaveBeenCalledWith('specweave', ['init', '.'], expect.any(Object));
+      expect(mockExecFileNoThrow).not.toHaveBeenCalledWith('specweave', expect.anything(), expect.anything());
     });
 
     it('registers local repos when workspace config is current schema', async () => {

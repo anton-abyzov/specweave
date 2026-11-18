@@ -1,9 +1,15 @@
 /**
- * SpecWeave Init Command
+ * specweave init: one path, no questions, safe to run any number of times (1407).
  *
- * Simplified (v1.0.415): Creates .specweave/ structure + config.json + instruction files.
- * External tool setup moved to `specweave sync setup`.
- * Every workspace uses repositories/ structure from day one.
+ * 1. Checks the place first and writes nothing when it refuses.
+ * 2. `.specweave/` (increments, memory index, config.json: keys already there win).
+ * 3. AGENTS.md and CLAUDE.md (only the managed block), README.md when missing.
+ * 4. SpecWeave's own lines in .gitignore and .gitattributes.
+ * 5. The sw-* skills in .claude/skills/ and .agents/skills/.
+ * 6. The recorded tool's files; for Claude Code the project settings on a first run.
+ *
+ * Init never runs Git. `--git-hooks` is the one write into `.git/`.
+ * Cloning repositories is `specweave get`; connecting a tracker is `specweave sync setup`.
  */
 
 import * as fs from '../../utils/fs-native.js';
@@ -11,881 +17,319 @@ import * as nativeFs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import chalk from 'chalk';
-import ora from 'ora';
-import { input, confirm, select } from '@inquirer/prompts';
-import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
 import { getDirname } from '../../utils/esm-helpers.js';
-import { isLanguageSupported, getSupportedLanguages } from '../../core/i18n/language-manager.js';
-import { getLocaleManager } from '../../core/i18n/locale-manager.js';
-import type { SupportedLanguage } from '../../core/i18n/types.js';
-
-import {
-  type InitOptions,
-  type LanguageSelectionResult,
-  findSourceDir,
-  detectNestedSpecweave,
-  detectUmbrellaParent,
-  detectSuspiciousPath,
-  detectProvider,
-  scanWorkspaceRepos,
-  scanUnregisteredCheckouts,
-  buildWorkspaceConfig,
-  promptSmartReinit,
-  promptLanguageSelection,
-  getDefaultLanguageSelection,
-  createMinimalConfig,
-  createDirectoryStructure,
-  copyTemplates,
-  ensureConfigFile,
-  showNextSteps,
-  installGitHooks,
-  ensureSkillCreator,
-  promptProjectSetup,
-  promptRepoUrlsLoop,
-  shouldScaffoldWorkspaceDir,
-} from '../helpers/init/index.js';
-import {
-  scanWorkspaceContent,
-  promptMigrationChoice,
-  promptStartEmptySubChoice,
-  showRestructureWarnings,
-  restructureIntoRepositories,
-  copyLocalPathIntoRepositories,
-  promptOrgRepo,
-} from '../helpers/init/workspace-setup.js';
-import { promptRootRepoConnection, type RootRepoInfo } from '../helpers/init/root-repo-detection.js';
-import { applySmartDefaults } from '../helpers/init/smart-defaults.js';
-import { displaySummaryBanner } from '../helpers/init/summary-banner.js';
-import { claudeInstallLine } from '../helpers/init/claude-install-line.js';
+import { findEffectiveRoot } from '../../utils/find-project-root.js';
+import { linkedWorktreeRoot, mainCheckoutOf } from '../../utils/main-checkout.js';
+import { canonicalPath, isWithin } from '../../core/workspace/context.js';
 import { installProjectSkills, PROJECT_SKILL_DIRS } from '../../core/skills/project-skills.js';
+import type { InitOptions } from '../helpers/init/types.js';
+import { findSourceDir, detectNestedSpecweave, scanWorkspaceRepos, scanUnregisteredCheckouts, buildWorkspaceConfig } from '../helpers/init/path-utils.js';
+import { createDirectoryStructure, ensureConfigFile, ensureGitattributes } from '../helpers/init/directory-structure.js';
+import { applyInstructionTemplate } from '../helpers/init/instruction-file-writer.js';
+import { detectStackCommands } from '../helpers/init/stack-detector.js';
+import { ensureSpecweaveGitignoreEntries } from '../helpers/init/gitignore-generator.js';
+import { installGitHooks } from '../helpers/init/git-hooks-installer.js';
+import { backupAndClearSpecweave } from '../helpers/init/fresh-start.js';
+import { applyProjectDefault } from './autocompact.js';
 
 const __dirname = getDirname(import.meta.url);
-const PROJECT_NAME_PATTERN = /^[a-z0-9-]+$/;
-const PROJECT_NAME_VALIDATION_MSG = 'Must be lowercase letters, numbers, and hyphens only';
 
 export type { InitOptions };
 
-/** The home directory holds every project; it is never one itself. */
-function refuseHomeDirectory(targetDir: string): void {
-  const real = (p: string): string => {
-    try { return nativeFs.realpathSync(p); } catch { return path.resolve(p); }
-  };
-  if (real(targetDir) !== real(os.homedir())) return;
-  console.log(chalk.red.bold('\n❌ DANGEROUS: Cannot initialize SpecWeave in home directory!\n'));
-  console.log(chalk.yellow('   Your home directory contains ALL your projects.'));
-  console.log(chalk.cyan('\n💡 What to do instead:'));
-  console.log(chalk.gray('   mkdir ~/Projects/my-project && cd ~/Projects/my-project && specweave init .\n'));
+/** Files whose state the summary reports (paths relative to the project). */
+const REPORTED_FILES = [
+  '.specweave/config.json', '.specweave/memory/MEMORY.md', 'AGENTS.md', 'CLAUDE.md', 'README.md',
+  '.gitignore', '.gitattributes', '.claude/settings.json',
+];
+
+/** A refusal: one line on stderr, exit 1, nothing written. */
+function refuse(message: string): never {
+  console.error(chalk.red(`✗ ${message}`));
   process.exit(1);
 }
 
-/** Git sees only the folder it runs in: a GIT_DIR leaked from a hook or runner would point it elsewhere. */
-const GIT_ENV: NodeJS.ProcessEnv = { GIT_DIR: undefined, GIT_WORK_TREE: undefined, GIT_INDEX_FILE: undefined };
-
-/**
- * The top of the Git work tree `dir` sits in, or null outside any (or without git).
- * A home folder kept as a dotfiles repository does not count: it is never a project.
- */
-function enclosingWorkTree(dir: string): string | null {
-  const result = execFileNoThrowSync('git', ['rev-parse', '--show-toplevel'], { cwd: dir, env: GIT_ENV, shell: false });
-  const top = result.success ? result.stdout.trim() : '';
-  if (top === '') return null;
-  const real = (p: string): string => {
-    try { return nativeFs.realpathSync(p); } catch { return path.resolve(p); }
-  };
-  return real(top) === real(os.homedir()) ? null : top;
+function real(p: string): string {
+  try { return nativeFs.realpathSync(p); } catch { return path.resolve(p); }
 }
 
-/** True when `.specweave/config.json` exists but is not a JSON object. */
-function configIsUnreadable(targetDir: string): boolean {
-  const configPath = path.join(targetDir, '.specweave', 'config.json');
-  if (!nativeFs.existsSync(configPath)) return false;
+/** Where init runs and the project name a new config gets. */
+function resolveTarget(projectName?: string): { targetDir: string; name: string } {
+  const targetDir = !projectName || projectName === '.' ? process.cwd() : path.resolve(process.cwd(), projectName);
+  const name = path.basename(path.resolve(targetDir)).toLowerCase().replace(/[^a-z0-9-]/g, '-');
+  return { targetDir, name: name || 'project' };
+}
+
+/** Why init will not run in `targetDir`, or null when it may. Reads only. */
+function placeRefusal(targetDir: string, force: boolean): string | null {
+  const target = real(targetDir);
+  if (target === real(os.homedir())) {
+    return 'The home folder holds every project and is never one itself. Run specweave init in a project folder.';
+  }
+  if (target === real(os.tmpdir())) {
+    return 'The system temp folder is not a project. Run specweave init in a folder inside it (mktemp -d) or elsewhere.';
+  }
+
+  const parent = (detectNestedSpecweave(targetDir) ?? []).find((f) => !f.isUserLevel && !f.isStale);
+  if (parent) {
+    return `This folder is inside the SpecWeave project at ${parent.path}. Run specweave there, or move this folder out.`;
+  }
+
+  const worktree = linkedWorktreeRoot(targetDir);
+  if (worktree) {
+    const refusal = worktreeRefusal(targetDir, worktree);
+    if (refusal) return refusal;
+  }
+
+  if (!force) {
+    const configPath = path.join(targetDir, '.specweave', 'config.json');
+    let link: nativeFs.Stats | undefined;
+    try { link = nativeFs.lstatSync(configPath); } catch { link = undefined; }
+    if (link?.isSymbolicLink()) {
+      return '.specweave/config.json is a symlink and init does not write through one. Replace it with the file, or run specweave init --force to back up .specweave and start over.';
+    }
+    if (link && !isConfigObject(configPath)) {
+      return '.specweave/config.json is not valid JSON and was left as it is. Fix or delete it, or run specweave init --force to back up .specweave and start over.';
+    }
+  }
+  return null;
+}
+
+/**
+ * A linked Git worktree belongs to the project its main checkout resolves to.
+ * Init there is a re-run only when that project is the worktree itself
+ * (a tracked `.specweave`); otherwise it would start a second planning root.
+ */
+function worktreeRefusal(targetDir: string, worktree: string): string | null {
+  const selected = process.env.SPECWEAVE_WORKSPACE;
+  delete process.env.SPECWEAVE_WORKSPACE;
+  let effective: string | null;
+  try {
+    effective = findEffectiveRoot(targetDir);
+  } catch (err) {
+    return `This worktree has no single SpecWeave project (${err instanceof Error ? err.message : String(err)}).`;
+  } finally {
+    if (selected !== undefined) process.env.SPECWEAVE_WORKSPACE = selected;
+  }
+  if (effective) {
+    try {
+      if (isWithin(canonicalPath(worktree), canonicalPath(effective))) return null;
+    } catch { /* fall through to the refusal */ }
+    return `This worktree belongs to the SpecWeave project at ${effective}. Run specweave there; a second project on a branch would split the plan.`;
+  }
+  const main = mainCheckoutOf(targetDir) ?? worktree;
+  return `This is a linked worktree of ${main}. Run specweave init in ${main} instead.`;
+}
+
+function isConfigObject(configPath: string): boolean {
   try {
     const value: unknown = JSON.parse(nativeFs.readFileSync(configPath, 'utf-8'));
-    return typeof value !== 'object' || value === null || Array.isArray(value);
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
   } catch {
-    return true;
+    return false;
   }
 }
 
-const UNREADABLE_CONFIG_MSG = '.specweave/config.json is not valid JSON and was left as it is. Fix or delete it, then run specweave init again.';
-
-/**
- * Unified CI/non-interactive detection.
- */
-export function isNonInteractive(options: Pick<InitOptions, 'quick'>): boolean {
-  return !!(
-    options.quick ||
-    process.env.CI === 'true' ||
-    process.env.GITHUB_ACTIONS === 'true' ||
-    process.env.GITLAB_CI === 'true' ||
-    process.env.CIRCLECI === 'true' ||
-    process.env.JENKINS_URL ||
-    !process.stdin.isTTY
-  );
-}
-
-/**
- * Main init command — scaffolds only what the user needs (3.0):
- * config, AGENTS.md / CLAUDE.md, .gitignore / .gitattributes, the memory
- * index, and the core skills as `sw-<name>` in `.claude/skills/` and
- * `.agents/skills/`. Nothing outside the project is written. The git
- * pre-commit hook is opt-in (`--git-hooks`).
- */
-export async function initCommand(
-  projectName?: string,
-  options: InitOptions = {}
-): Promise<void> {
-  const isCI = isNonInteractive(options);
-
-  // An unknown tool is refused here, before anything is written.
-  if (options.adapter) {
-    const adapter = options.adapter.trim().toLowerCase();
-    const known = ['claude', ...new AdapterLoader().adapterNames()];
-    if (!known.includes(adapter)) {
-      console.error(chalk.red(`\n❌ Unknown --adapter "${options.adapter}". Use one of: ${known.join(', ')}\n`));
-      process.exit(1);
-    }
-    options.adapter = adapter;
-  }
-
-  if (options.quick) {
-    console.log(chalk.cyan('\n⚡ Quick mode: Using sensible defaults'));
-  }
-
-  // STEP 1: Language selection (FIRST!)
-  let languageResult: LanguageSelectionResult;
-  const cliLanguage = options.language?.toLowerCase() as SupportedLanguage | undefined;
-  if (cliLanguage && !isLanguageSupported(cliLanguage)) {
-    console.error(chalk.red('\n❌ Invalid language: ' + options.language));
-    console.error(chalk.yellow('Supported languages: ' + getSupportedLanguages().join(', ') + '\n'));
-    process.exit(1);
-  }
-
-  if (isCI) {
-    languageResult = getDefaultLanguageSelection(cliLanguage || 'en');
-  } else if (cliLanguage) {
-    languageResult = getDefaultLanguageSelection(cliLanguage);
-  } else {
-    languageResult = await promptLanguageSelection(isCI);
-  }
-
-  const language = languageResult.language;
-  const locale = getLocaleManager(language);
-  console.log(chalk.blue.bold('\n' + locale.t('cli', 'init.welcome') + '\n'));
-
-  // STEP 2: Path resolution
-  // No args = init in CWD, same as explicit '.'
-  if (!projectName) projectName = '.';
-
-  let targetDir: string = '';
-  let finalProjectName: string = '';
-  let usedDotNotation = false;
-  let continueExisting = false;
-  let reposClonedInMigration = false;
-
-  // STEP 2a: Path resolution (set targetDir + finalProjectName — NO destructive actions)
-  if (projectName === '.') {
-    // Init in current directory
-    usedDotNotation = true;
-    targetDir = process.cwd();
-    refuseHomeDirectory(targetDir);
-
-    const dirName = path.basename(targetDir);
-    if (!PROJECT_NAME_PATTERN.test(dirName)) {
-      const suggestedName = dirName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-      if (isCI) {
-        finalProjectName = suggestedName;
-      } else {
-        finalProjectName = await input({
-          message: 'Project name (for config):',
-          default: suggestedName,
-          validate: (val: string) => PROJECT_NAME_PATTERN.test(val) || PROJECT_NAME_VALIDATION_MSG,
-        });
-      }
-    } else {
-      finalProjectName = dirName;
-    }
-  } else {
-    // Explicit project name → create subdirectory
-    targetDir = path.resolve(process.cwd(), projectName);
-    refuseHomeDirectory(targetDir);
-    finalProjectName = path.basename(projectName);
-  }
-
-  // STEP 2b: Guard clauses (BEFORE any destructive action like promptSmartReinit)
-  const umbrellaResult = detectUmbrellaParent(targetDir);
-  if (umbrellaResult) {
-    if (options.force) {
-      console.log(chalk.yellow(`\n⚠️  Warning: Inside umbrella project at ${umbrellaResult.umbrellaRoot}. Proceeding with --force.\n`));
-    } else {
-      console.log(chalk.red.bold('\n❌ Cannot initialize here: inside an umbrella project.\n'));
-      console.log(chalk.yellow(`   Umbrella root: ${umbrellaResult.umbrellaRoot}`));
-      console.log(chalk.cyan('\n💡 Run specweave init in the umbrella root instead, or use --force to override.\n'));
-      process.exit(1);
-    }
-  }
-
-  const suspiciousResult = detectSuspiciousPath(targetDir);
-  if (suspiciousResult) {
-    if (options.force) {
-      console.log(chalk.yellow(`\n⚠️  Warning: Path contains suspicious segment "${suspiciousResult.segment}". Proceeding with --force.\n`));
-    } else {
-      console.log(chalk.red.bold(`\n❌ Cannot initialize here: path contains "${suspiciousResult.segment}".\n`));
-      console.log(chalk.yellow(`   Suggested project root: ${suspiciousResult.suggestedRoot}`));
-      process.exit(1);
-    }
-  }
-
-  const parentSpecweaveFolders = detectNestedSpecweave(targetDir);
-  if (parentSpecweaveFolders && parentSpecweaveFolders.length > 0) {
-    const problematicFolders = parentSpecweaveFolders.filter(f => !f.isUserLevel && !f.isStale);
-    const staleFolders = parentSpecweaveFolders.filter(f => f.isStale);
-
-    if (staleFolders.length > 0 && !isCI) {
-      console.log(chalk.yellow('\n⚠️  Found stale .specweave/ folder(s) without config.json:\n'));
-      for (const folder of staleFolders) {
-        console.log(chalk.gray('   ' + path.join(folder.path, '.specweave') + '/'));
-      }
-      const cleanup = await confirm({ message: 'Remove stale .specweave/ folder(s)?', default: true });
-      if (cleanup) {
-        for (const folder of staleFolders) {
-          try { fs.rmSync(path.join(folder.path, '.specweave'), { recursive: true, force: true }); } catch { /* skip */ }
-        }
-      }
-    }
-
-    if (problematicFolders.length > 0) {
-      console.log(chalk.red.bold('\n' + locale.t('cli', 'init.errors.nestedNotSupported') + '\n'));
-      for (const folder of problematicFolders) {
-        console.log(chalk.yellow('   Found .specweave/ at: ' + folder.path));
-      }
-      process.exit(1);
-    }
-  }
-
-  // STEP 2c: Reinit / existence checks (safe now — guards already validated the path)
-  if (usedDotNotation) {
-    if (fs.existsSync(path.join(targetDir, '.specweave'))) {
-      const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-      if (result.action === 'cancel') process.exit(result.failed ? 1 : 0);
-      continueExisting = result.continueExisting;
-    } else {
-      // STEP 2d: Non-empty folder detection (T-009 — 0640)
-      const scan = scanWorkspaceContent(targetDir);
-      if (scan.hasSourceFiles || scan.hasPackageManager || scan.fileCount > 0) {
-        const choice = await promptMigrationChoice(scan, language, isCI);
-
-        try {
-          if (choice === 'start-empty') {
-            const subChoice = await promptStartEmptySubChoice(language);
-            if (subChoice === 'clone-github') {
-              const { foregroundResults, jobIds } = await promptRepoUrlsLoop(targetDir, language);
-              const totalCloned = foregroundResults.reduce((sum: number, r: { totalCloned: number }) => sum + r.totalCloned, 0);
-              if (totalCloned > 0) {
-                console.log(chalk.green(`\n   ✓ Cloned ${totalCloned} repo(s)`));
-              }
-              if (jobIds.length > 0) {
-                console.log(chalk.green(`\n   ✓ ${jobIds.length} background clone job(s) started`));
-                console.log(chalk.gray(`     Logs: .specweave/state/jobs/<job-id>/worker.log`));
-              }
-              reposClonedInMigration = true;
-            } else if (subChoice === 'copy-local') {
-              const sourcePath = await input({
-                message: 'Path to existing repository (absolute or relative):',
-                validate: (v: string) => v.trim().length > 0 || 'Path is required',
-              });
-              const orgRepo = await promptOrgRepo(path.resolve(targetDir, sourcePath));
-              const result = copyLocalPathIntoRepositories(targetDir, sourcePath, orgRepo.org, orgRepo.repoName);
-              if (result.copied.length > 0) {
-                console.log(chalk.green(`   ✓ Copied ${result.copied.length} item(s) to ${result.targetDir}`));
-              }
-              if (result.errors.length > 0) {
-                console.log(chalk.yellow(`   ⚠ Copy errors: ${result.errors.join(', ')}`));
-              }
-              reposClonedInMigration = true;
-            }
-            // 'add-later' — no-op, falls through to post-scaffold prompt if repositories/ is empty
-          } else if (choice === 'restructure') {
-            showRestructureWarnings(scan);
-            const confirmed = await confirm({ message: 'Proceed with restructure?', default: false });
-            if (confirmed) {
-              const orgRepo = await promptOrgRepo(targetDir);
-              const result = restructureIntoRepositories(targetDir, orgRepo.org, orgRepo.repoName);
-              if (result.moved.length > 0) {
-                console.log(chalk.green(`   ✓ Moved ${result.moved.length} item(s) to ${result.targetDir}`));
-              }
-              if (result.errors.length > 0) {
-                console.log(chalk.yellow(`   ⚠ Restructure errors: ${result.errors.join(', ')}`));
-              }
-            }
-          }
-        } catch (err) {
-          if (err instanceof Error && err.name === 'ExitPromptError') throw err;
-          console.log(chalk.red(`   ✗ Workspace setup failed: ${err instanceof Error ? err.message : String(err)}`));
-          console.log(chalk.gray('   Continuing with standard init...'));
-        }
-        // choice === 'continue-in-place' → proceed as current behavior
-      }
-    }
-  } else {
-    if (fs.existsSync(targetDir)) {
-      const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
-      if (hasSpecweave) {
-        const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-        if (result.action === 'cancel') process.exit(result.failed ? 1 : 0);
-        continueExisting = result.continueExisting;
-      } else {
-        const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
-        if (existingFiles.length > 0) {
-          if (!isCI) {
-            const initExisting = await confirm({ message: 'Initialize SpecWeave in existing directory (non-destructive)?', default: false });
-            if (!initExisting) {
-              console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
-              process.exit(0);
-            }
-          }
-        }
-      }
-    } else {
-      fs.mkdirSync(targetDir, { recursive: true });
-    }
-  }
-
-  // A config init cannot read stops the run before anything is written.
-  if (configIsUnreadable(targetDir)) {
-    console.error(chalk.yellow(`\n⚠ ${UNREADABLE_CONFIG_MSG}\n`));
-    process.exit(1);
-  }
-
-  // STEP 2e: Root repo GitHub connection — early position (T-013 — 0640)
-  let rootRepoInfo: RootRepoInfo | null = null;
-  if (!isCI && !continueExisting) {
-    try {
-      rootRepoInfo = await promptRootRepoConnection(targetDir, language, isCI);
-    } catch {
-      // Prompt cancellation — skip silently
-    }
-  }
-
-  // STEP 3: Create project
-  const spinner = ora('Creating SpecWeave project...').start();
-
+/** The tool in a saved config, as written (null when there is none). */
+function savedToolOf(configPath: string): string | null {
   try {
-    // Adapter detection
-    const adapterLoader = new AdapterLoader();
-    let toolName: string;
-
-    if (options.adapter) {
-      toolName = options.adapter;
-    } else {
-      let existingAdapter: string | null = null;
-      if (continueExisting) {
-        const existingConfigPath = path.join(targetDir, '.specweave', 'config.json');
-        if (fs.existsSync(existingConfigPath)) {
-          try {
-            const saved = fs.readJsonSync(existingConfigPath)?.adapters?.default;
-            existingAdapter = typeof saved === 'string' && saved.trim() !== '' ? saved.trim() : null;
-          } catch { /* ignore */ }
-        }
-      }
-
-      // A re-run keeps the tool the project was set up with, without detecting
-      // again: SPECWEAVE_TOOL names the agent running now, not the project's tool.
-      const savedLower = existingAdapter?.toLowerCase() ?? null;
-      const savedTool = savedLower && (savedLower === 'claude' || adapterLoader.getAdapter(savedLower))
-        ? savedLower
-        : null;
-      const detectedTool = savedTool ?? await adapterLoader.detectTool();
-      spinner.stop();
-      if (savedTool === 'claude') adapterLoader.checkClaudeCli();
-
-      if (existingAdapter && !savedTool) {
-        console.log(chalk.yellow(`   ⚠ The saved tool "${existingAdapter}" is not one init knows; using ${detectedTool}.`));
-      }
-      if (savedTool) {
-        toolName = savedTool;
-      } else if (isCI) {
-        toolName = detectedTool;
-      } else {
-        console.log(chalk.cyan('\n🔍 ' + locale.t('cli', 'init.toolDetection.header')));
-        console.log(chalk.gray('   ' + locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })));
-        console.log('');
-
-        const confirmTool = await confirm({
-          message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
-          default: true
-        });
-        if (confirmTool) {
-          toolName = detectedTool;
-        } else {
-          toolName = await select({
-            message: 'Select your AI coding tool:',
-            choices: [
-              { name: 'Antigravity (Google)', value: 'antigravity' },
-              { name: 'Codex (OpenAI)', value: 'codex' },
-              { name: 'OpenCode', value: 'opencode' },
-              { name: 'GitHub Copilot', value: 'copilot' },
-              { name: 'Cursor', value: 'cursor' },
-              { name: 'Windsurf', value: 'windsurf' },
-              { name: 'Cline', value: 'cline' },
-              { name: 'Gemini CLI', value: 'gemini' },
-              { name: 'Amazon Q', value: 'amazonq' },
-              { name: 'JetBrains AI', value: 'jetbrains' },
-              { name: 'Continue', value: 'continue' },
-              { name: 'Aider', value: 'aider' },
-              { name: 'Trae (ByteDance)', value: 'trae' },
-              { name: 'Zed', value: 'zed' },
-              { name: 'Tabnine', value: 'tabnine' },
-              { name: 'Kimi CLI', value: 'kimi' },
-              { name: 'Other / Generic (AGENTS.md for any tool)', value: 'generic' },
-            ],
-          });
-          console.log(chalk.gray(`   → Using ${toolName} adapter`));
-        }
-      }
-
-      spinner.start('Using ' + toolName + '...');
-    }
-
-    // Provider auto-detection from .git/config (silent, no prompts)
-    const providerInfo = detectProvider(targetDir);
-
-    // Workspace auto-detection: registered repos plus nested checkouts in any layout
-    // Mutable — may be updated after repo cloning in post-scaffold step
-    let umbrellaDiscovery = scanWorkspaceRepos(targetDir);
-
-    // Clones nested in a checkout folder outside repositories/ are named, never moved or added
-    const unregisteredCheckouts = scanUnregisteredCheckouts(targetDir, umbrellaDiscovery);
-
-    // Write minimal config.json BEFORE creating directory structure so that
-    // findProjectRoot() can resolve this project during the init window (AD-3).
-    if (!continueExisting) {
-      createMinimalConfig(targetDir, finalProjectName);
-    }
-
-    // Create directory structure
-    if (!continueExisting) {
-      await createDirectoryStructure(targetDir, toolName);
-      spinner.text = 'Directory structure created...';
-    }
-
-    // Copy templates
-    const templatesDir = findSourceDir('templates', __dirname);
-    if (!continueExisting) {
-      await copyTemplates(templatesDir, targetDir, finalProjectName, language, toolName);
-      spinner.text = 'Templates copied...';
-    }
-
-    // Non-Claude adapter install
-    if (toolName === 'claude') {
-      spinner.text = 'Configuring for Claude Code...';
-      console.log('\n' + claudeInstallLine(adapterLoader.claudeCliIssue, locale.t('cli', 'init.claudeNativeComplete')));
-    } else {
-      await installNonClaudeAdapter(adapterLoader, toolName, targetDir, finalProjectName, options, spinner);
-    }
-
-    // Post-scaffold: create repositories/ ONLY for an actual workspace.
-    // A plain single-repo project must not be given umbrella structure it never
-    // asked for (repositories/ is itself an "this is an umbrella" marker).
-    if (shouldScaffoldWorkspaceDir(targetDir)) {
-      fs.mkdirSync(path.join(targetDir, 'repositories'), { recursive: true });
-    }
-
-    // Post-scaffold: Project setup question — ask which repos to connect
-    // Skip if: CI mode, reinit, or repos already cloned via migration sub-menu
-    if (!isCI && !continueExisting && !reposClonedInMigration) {
-      const reposDir = path.join(targetDir, 'repositories');
-      const reposDirEntries = fs.existsSync(reposDir)
-        ? (fs.readdirSync(reposDir) as string[]).filter((name: string) => !name.startsWith('.'))
-        : [];
-      const repositoriesEmpty = reposDirEntries.length === 0;
-
-      if (repositoriesEmpty) {
-        spinner.stop();
-        try {
-          const setupChoice = await promptProjectSetup(language);
-
-          if (setupChoice === 'clone-repos') {
-            const { foregroundResults, jobIds } = await promptRepoUrlsLoop(targetDir, language);
-            const totalCloned = foregroundResults.reduce((sum, r) => sum + r.totalCloned, 0);
-            if (totalCloned > 0) {
-              console.log(chalk.green(`\n   ✓ Cloned ${totalCloned} repo(s)`));
-              umbrellaDiscovery = scanWorkspaceRepos(targetDir);
-            }
-            if (jobIds.length > 0) {
-              console.log(chalk.green(`\n   ✓ ${jobIds.length} background clone job(s) started`));
-              console.log(chalk.gray(`     Logs: .specweave/state/jobs/<job-id>/worker.log`));
-            }
-          }
-          // 'add-later' — repositories/ already created above, nothing more needed
-        } catch (err) {
-          // Prompt cancellation (Ctrl+C) is expected — swallow silently
-          // Unexpected errors (job launcher crash, disk full) — warn so user knows cloning was skipped
-          if (err && typeof err === 'object' && 'name' in err && (err as Error).name !== 'ExitPromptError') {
-            console.log(chalk.yellow(`   ⚠ Repo setup skipped: ${(err as Error).message || 'Unknown error'}`));
-          }
-        }
-        spinner.start('Configuring project...');
-      }
-    }
-
-    // Git init (after post-scaffold so initial commit captures cloned repos)
-    // Only outside any work tree: a folder inside a checkout (a monorepo
-    // package) already has its repository, and a second one would hide it.
-    const gitDir = path.join(targetDir, '.git');
-    const enclosingRepo = fs.existsSync(gitDir) ? null : enclosingWorkTree(targetDir);
-    if (enclosingRepo) {
-      console.log(chalk.gray(`\n   Inside the Git repository at ${enclosingRepo}: no new repository created.`));
-    } else if (!fs.existsSync(gitDir)) {
-      const gitInitResult = execFileNoThrowSync('git', ['init'], { cwd: targetDir, env: GIT_ENV, shell: false });
-      if (gitInitResult.success) {
-        spinner.text = 'Git repository initialized...';
-        execFileNoThrowSync('git', ['add', '.'], { cwd: targetDir, env: GIT_ENV, shell: false });
-        execFileNoThrowSync('git', ['commit', '-m', 'Initial commit with SpecWeave'], { cwd: targetDir, env: GIT_ENV, shell: false });
-      }
-    }
-
-    spinner.succeed('SpecWeave project created successfully!');
-
-    // Post-install for non-Claude adapters
-    if (toolName !== 'claude') {
-      const adapter = adapterLoader.getAdapter(toolName);
-      if (adapter) {
-        await adapter.postInstall({
-          projectPath: targetDir,
-          projectName: finalProjectName,
-          techStack: options.techStack ? { language: options.techStack } : undefined,
-          docsApproach: 'incremental'
-        });
-      }
-    }
-
-    // config.json: defaults fill what is missing; keys already there stay.
-    const configPath = path.join(targetDir, '.specweave', 'config.json');
-    const configState = ensureConfigFile(targetDir, finalProjectName, toolName);
-    if (configState === 'unreadable') {
-      console.log(chalk.yellow(`   ⚠ ${UNREADABLE_CONFIG_MSG}`));
-    }
-    const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
-
-    // Batch config updates: provider + smart defaults + LSP (single read-modify-write)
-    if (configState !== 'unreadable' && fs.existsSync(configPath)) {
-      try {
-        const config = fs.readJsonSync(configPath);
-
-        // Provider info from .git/config fills a new config; a re-run keeps the
-        // repository block the project has, `provider: "local"` included.
-        const keepRepository = continueExisting && !!config.repository?.provider;
-        if (providerInfo && !keepRepository) {
-          const org = providerInfo.owner || providerInfo.organization;
-          config.repository = {
-            provider: providerInfo.provider,
-            ...(org && { organization: org }),
-            ...(providerInfo.repo && { repo: providerInfo.repo }),
-          };
-        }
-
-        // Smart defaults
-        applySmartDefaults(config, { adapter: toolName, isGitRepo });
-
-        // Always write the workspace section; repos may sit anywhere (workspace.repos holds their paths)
-        if (umbrellaDiscovery) {
-          const wsFragment = buildWorkspaceConfig(umbrellaDiscovery, finalProjectName);
-          // Keys the project set on its workspace (name, rootRepo) stay; the repository list is rescanned.
-          config.workspace = { ...wsFragment.workspace, ...config.workspace, repos: wsFragment.workspace.repos };
-          config.repository = { ...wsFragment.repository, ...config.repository };
-        } else if (!config.workspace && !config.umbrella) {
-          // An empty list would hide the repositories a 1.x `umbrella` block still names.
-          config.workspace = { name: finalProjectName, repos: [] };
-        }
-        // 1.x keys (umbrella, multiProject, projectMappings) stay for `specweave update` to migrate.
-
-        // Apply root repo info from early prompt (T-013 — 0640)
-        if (rootRepoInfo && config.workspace) {
-          config.workspace.rootRepo = {
-            github: { owner: rootRepoInfo.owner, repo: rootRepoInfo.repo },
-          };
-        }
-
-        // LSP on for Claude Code, unless the project already chose
-        if (toolName === 'claude' && (config.lsp === undefined || typeof config.lsp === 'object')) {
-          config.lsp = { enabled: true, ...config.lsp };
-        }
-
-        fs.writeJsonSync(configPath, config, { spaces: 2 });
-      } catch (err) {
-        console.log(chalk.yellow('   ⚠ Could not update config defaults (non-critical)'));
-      }
-    }
-
-    spinner.stop();
-
-    // Skills: the core skills (plus any optional ones the project detects) for
-    // every tool, namespaced so they never collide with the user's own, in both
-    // folders tools read. Never touches ~/.claude or any other global settings.
-    let skillsInstalled = false;
-    try {
-      const skills = installProjectSkills(targetDir);
-      skillsInstalled = true;
-      if (skills.written.length > 0) {
-        console.log(chalk.green(`   ✓ ${skills.installed.length} skills installed as sw-* in ${PROJECT_SKILL_DIRS.join('/ and ')}/`));
-        console.log(chalk.gray('     Optional: glossary (shared language). Turn on with `specweave skills enable glossary`.'));
-      }
-    } catch (err) {
-      console.log(chalk.yellow(`   ⚠ Could not install skills: ${err instanceof Error ? err.message : String(err)}`));
-    }
-
-    // Claude Code: compact at 400K so 1M-context turns stay small. Project
-    // file only (it reaches cloud sessions too); never on a re-run, so
-    // `specweave autocompact off --project` sticks.
-    if (!continueExisting) {
-      try {
-        const { applyProjectDefault } = await import('./autocompact.js');
-        const line = applyProjectDefault(targetDir);
-        if (line) console.log(chalk.green(`   ✓ ${line}`));
-      } catch {
-        // Non-critical: Claude Code keeps its own window.
-      }
-    }
-
-    // Anthropic's skill-creator only when the user opted in (SPECWEAVE_INSTALL_SKILL_CREATOR=1).
-    if (toolName === 'claude' && !continueExisting) {
-      ensureSkillCreator(targetDir).catch(() => {});
-    }
-
-    // Git pre-commit hook: opt-in only.
-    let gitHooksInstalled = false;
-    if (options.gitHooks && isGitRepo) {
-      gitHooksInstalled = installGitHooks(targetDir, templatesDir);
-    } else if (options.gitHooks) {
-      console.log(chalk.yellow('   ⚠ --git-hooks: not a git repository, no hook installed'));
-    }
-
-    // Summary banner
-    {
-      let bannerConfig: Record<string, any> | undefined;
-      if (fs.existsSync(configPath)) {
-        try { bannerConfig = fs.readJsonSync(configPath); } catch { /* ignore */ }
-      }
-
-      let bannerProvider: { name: string; owner?: string; repo?: string; organization?: string } | undefined;
-      if (providerInfo) {
-        const providerNames: Record<string, string> = { github: 'GitHub', ado: 'Azure DevOps', bitbucket: 'Bitbucket' };
-        bannerProvider = {
-            name: providerNames[providerInfo.provider] || providerInfo.provider,
-            owner: providerInfo.owner,
-            repo: providerInfo.repo,
-            organization: providerInfo.organization,
-          };
-      } else {
-        bannerProvider = { name: 'Local' };
-      }
-
-      const finalDefaults = {
-        testing: bannerConfig?.testing?.mode,
-        lspEnabled: !!bannerConfig?.lsp?.enabled,
-        gitHooksInstalled,
-        coverage: bannerConfig?.testing?.coverage,
-      };
-
-      displaySummaryBanner({
-        projectName: finalProjectName,
-        provider: bannerProvider,
-        adapter: toolName,
-        language,
-        defaults: finalDefaults,
-        umbrellaDiscovery: umbrellaDiscovery || undefined,
-      });
-    }
-
-    showNextSteps(
-      finalProjectName,
-      toolName,
-      language,
-      usedDotNotation,
-      toolName === 'claude' ? { pluginAutoInstalled: skillsInstalled, marketplaceOnly: false } : undefined,
-      { unregisteredCheckouts }
-    );
-  } catch (error) {
-    spinner.fail('Failed to create project');
-    console.error(chalk.red('\n' + locale.t('cli', 'init.genericError')), error);
-    process.exit(1);
+    const saved: unknown = JSON.parse(nativeFs.readFileSync(configPath, 'utf-8'))?.adapters?.default;
+    return typeof saved === 'string' && saved.trim() !== '' ? saved.trim() : null;
+  } catch {
+    return null;
   }
 }
 
 /**
- * Install non-Claude adapter (Cursor, Generic)
+ * `--adapter`, else the saved tool, else SPECWEAVE_TOOL when it names a known
+ * tool, else Claude Code. SPECWEAVE_TOOL names the agent running now, so it
+ * never overrides a saved tool.
  */
-async function installNonClaudeAdapter(
-  adapterLoader: AdapterLoader,
-  toolName: string,
-  targetDir: string,
-  projectName: string,
-  options: InitOptions,
-  spinner: ReturnType<typeof ora>
-): Promise<void> {
-  spinner.text = 'Installing ' + toolName + ' adapter...';
-
-  const adapter = adapterLoader.getAdapter(toolName);
-  if (!adapter) {
-    throw new Error('Adapter not found: ' + toolName);
+function pickTool(requested: string | undefined, saved: string | null, known: string[], warnings: string[]): string {
+  if (requested) return requested;
+  if (saved) {
+    if (known.includes(saved.toLowerCase())) return saved.toLowerCase();
+    warnings.push(`The saved tool "${saved}" is not one init knows; using the next choice.`);
   }
+  const fromEnv = process.env.SPECWEAVE_TOOL?.trim().toLowerCase();
+  if (fromEnv && known.includes(fromEnv)) return fromEnv;
+  return 'claude';
+}
 
-  await adapterLoader.checkRequirements(toolName);
+/** Register checkouts found in the folder: listed entries stay as they are, new ones are appended. */
+function registerCheckouts(targetDir: string, projectName: string): string[] {
+  const configPath = path.join(targetDir, '.specweave', 'config.json');
+  const config = fs.readJsonSync(configPath);
+  const discovery = scanWorkspaceRepos(targetDir);
+  if (discovery) {
+    const fragment = buildWorkspaceConfig(discovery, projectName);
+    config.workspace = { ...fragment.workspace, ...config.workspace, repos: fragment.workspace.repos };
+    config.repository = { ...fragment.repository, ...config.repository };
+  } else if (!config.workspace && !config.umbrella) {
+    // An empty list would hide the repositories a 1.x `umbrella` block still names.
+    config.workspace = { name: projectName, repos: [] };
+  }
+  fs.writeJsonSync(configPath, config, { spaces: 2 });
+  return scanUnregisteredCheckouts(targetDir, discovery);
+}
 
-  await adapter.install({
+function readmeIfMissing(templatesDir: string, targetDir: string, projectName: string): void {
+  const readme = path.join(targetDir, 'README.md');
+  const template = path.join(templatesDir, 'README.md.template');
+  if (fs.existsSync(readme) || !fs.existsSync(template)) return;
+  fs.writeFileSync(readme, fs.readFileSync(template, 'utf-8').replace(/{{PROJECT_NAME}}/g, projectName));
+}
+
+function hasGitAbove(dir: string): boolean {
+  let current = path.resolve(dir);
+  for (;;) {
+    if (nativeFs.existsSync(path.join(current, '.git'))) return true;
+    const parent = path.dirname(current);
+    if (parent === current) return false;
+    current = parent;
+  }
+}
+
+function snapshot(targetDir: string): Map<string, string | null> {
+  const state = new Map<string, string | null>();
+  for (const rel of REPORTED_FILES) {
+    try { state.set(rel, nativeFs.readFileSync(path.join(targetDir, rel), 'utf-8')); } catch { state.set(rel, null); }
+  }
+  return state;
+}
+
+/** Run `fn` with console output captured, so an adapter's per-file lines do not flood the summary. */
+async function quietly(fn: () => Promise<void>): Promise<{ error?: unknown; log: string[] }> {
+  const log: string[] = [];
+  const saved = { log: console.log, info: console.info, warn: console.warn, error: console.error };
+  const keep = (...args: unknown[]): void => { log.push(args.map(String).join(' ')); };
+  console.log = console.info = console.warn = console.error = keep;
+  try {
+    await fn();
+    return { log };
+  } catch (error) {
+    return { error, log };
+  } finally {
+    Object.assign(console, saved);
+  }
+}
+
+async function installToolFiles(loader: AdapterLoader, tool: string, targetDir: string, projectName: string, options: InitOptions): Promise<string | null> {
+  const adapter = loader.getAdapter(tool);
+  if (!adapter) return `No adapter for ${tool}; only the shared files were written.`;
+  const adapterOptions = {
     projectPath: targetDir,
     projectName,
     techStack: options.techStack ? { language: options.techStack } : undefined,
-    docsApproach: 'incremental'
-  });
-
-  // The SpecWeave skills themselves are installed for every tool by
-  // installProjectSkills (.claude/skills + .agents/skills), not per adapter.
-
-  // Copy marketplace plugin skills from local Claude cache (skill-creator, frontend-design, etc.)
-  if (adapter.supportsPlugins()) {
-    try {
-      spinner.start('Checking for marketplace skills...');
-      const marketplaceSkillsCopied = await copyMarketplaceSkills(targetDir, toolName);
-      if (marketplaceSkillsCopied > 0) {
-        spinner.succeed(`${marketplaceSkillsCopied} marketplace skill(s) copied`);
-      } else {
-        spinner.info('No marketplace skills found in local cache');
-      }
-    } catch {
-      // Non-critical — marketplace skills are optional
-    }
-  }
-}
-
-/**
- * Copy marketplace plugin skills from ~/.claude/plugins/cache/ to the project's skills directory.
- * This enables non-Claude tools to access skills like skill-creator, frontend-design, etc.
- */
-async function copyMarketplaceSkills(targetDir: string, toolName: string): Promise<number> {
-  const homedir = os.homedir();
-  const marketplaceCacheDir = path.join(homedir, '.claude', 'plugins', 'cache', 'claude-plugins-official');
-
-  if (!fs.existsSync(marketplaceCacheDir)) {
-    return 0;
-  }
-
-  // Determine target skills directory based on tool
-  // MUST match each adapter's compilePlugin() target directory
-  const skillsDirMap: Record<string, string> = {
-    antigravity: '.agent/skills',
-    codex: '.agents/skills',
-    opencode: '.opencode/skills',
-    copilot: '.github/skills',
-    cursor: '.cursor/skills',
-    windsurf: '.windsurf/skills',
-    cline: '.cline/skills',
-    gemini: '.gemini',
-    amazonq: '.amazonq/skills',
-    jetbrains: '.junie/skills',
-    continue: '.continue/skills',
-    aider: '.aider/skills',
-    trae: '.trae/skills',
-    zed: '.zed/skills',
-    tabnine: '.tabnine/skills',
-    kimi: '.kimi/skills',
-    generic: '.agents/skills',
+    docsApproach: 'incremental' as const,
   };
-
-  const skillsDir = path.join(targetDir, skillsDirMap[toolName] || '.agents/skills');
-  await fs.ensureDir(skillsDir);
-
-  let copied = 0;
-  let pluginDirs: string[];
-  try {
-    pluginDirs = fs.readdirSync(marketplaceCacheDir).filter(
-      (name: string) => !name.startsWith('.')
-    );
-  } catch {
-    return 0;
-  }
-
-  for (const pluginName of pluginDirs) {
-    // Security: skip directory names with path traversal or separators
-    if (pluginName.includes('..') || pluginName.includes(path.sep) || pluginName.includes('/')) continue;
-
-    try {
-      const pluginDir = path.join(marketplaceCacheDir, pluginName);
-      // Verify it's a real directory (not a symlink to somewhere else)
-      if (!fs.statSync(pluginDir).isDirectory()) continue;
-      // Ensure resolved path stays within the cache directory (symlink safety)
-      const resolvedPluginDir = nativeFs.realpathSync(pluginDir);
-      if (!resolvedPluginDir.startsWith(marketplaceCacheDir)) continue;
-
-      const versions = fs.readdirSync(pluginDir).filter((v: string) => {
-        if (v.startsWith('.') || v.includes('..') || v.includes(path.sep)) return false;
-        const vPath = path.join(pluginDir, v);
-        return fs.statSync(vPath).isDirectory();
-      });
-      if (versions.length === 0) continue;
-
-      // Sort versions to pick deterministically (last alphabetically)
-      versions.sort();
-      const latestVersion = versions[versions.length - 1];
-      const versionDir = path.join(pluginDir, latestVersion);
-
-      const skillsPath = path.join(versionDir, 'skills');
-      if (!fs.existsSync(skillsPath)) continue;
-
-      const skillNames = fs.readdirSync(skillsPath).filter((s: string) => {
-        if (s.includes('..') || s.includes(path.sep) || s.includes('/')) return false;
-        return fs.existsSync(path.join(skillsPath, s, 'SKILL.md'));
-      });
-
-      for (const skillName of skillNames) {
-        const skillMdPath = path.join(skillsPath, skillName, 'SKILL.md');
-        // Flat structure: skills go directly under skillsDir, no plugin namespace
-        const skillSubdir = path.join(skillsDir, skillName);
-        fs.mkdirSync(skillSubdir, { recursive: true });
-        const targetFile = path.join(skillSubdir, 'SKILL.md');
-
-        // Read content and ensure frontmatter has name: field
-        let content = nativeFs.readFileSync(skillMdPath, 'utf-8');
-        content = sanitizeFrontmatter(content, skillName);
-        nativeFs.writeFileSync(targetFile, content, 'utf-8');
-        copied++;
-      }
-    } catch {
-      // Skip individual plugin failures — continue with others
-      continue;
-    }
-  }
-
-  return copied;
+  const requirements = await quietly(() => loader.checkRequirements(tool));
+  const run = await quietly(async () => {
+    await adapter.install(adapterOptions);
+    await adapter.postInstall(adapterOptions);
+  });
+  if (run.error) return `${tool} files: ${run.error instanceof Error ? run.error.message : String(run.error)}`;
+  if (requirements.error) return `${tool} files written, but its requirements are not met: ${requirements.log.filter((l) => l.trim().startsWith('-')).map((l) => l.trim().slice(2)).join(', ') || 'see the tool docs'}`;
+  return null;
 }
 
-/**
- * Sanitize frontmatter for non-Claude tools:
- * 1. Ensure `name:` field is present (required for non-Claude)
- * 2. Strip Claude-specific fields: user-invocable, allowed-tools, model
- */
-function sanitizeFrontmatter(content: string, skillName: string): string {
-  if (!content.startsWith('---')) {
-    return `---\nname: ${skillName}\ndescription: ${skillName}\n---\n${content}`;
+export async function initCommand(projectName?: string, options: InitOptions = {}): Promise<void> {
+  const loader = new AdapterLoader();
+  const known = ['claude', ...loader.adapterNames()];
+  const requested = options.adapter?.trim().toLowerCase();
+  if (options.adapter !== undefined && (!requested || !known.includes(requested))) {
+    refuse(`Unknown --adapter "${options.adapter}". Use one of: ${known.join(', ')}`);
   }
 
-  const endOfFrontmatter = content.indexOf('---', 3);
-  if (endOfFrontmatter === -1) return content;
+  const { targetDir, name } = resolveTarget(projectName);
+  const refusal = placeRefusal(targetDir, !!options.force);
+  if (refusal) refuse(refusal);
 
-  let frontmatterBlock = content.substring(3, endOfFrontmatter);
-  const body = content.substring(endOfFrontmatter + 3);
+  const lines: string[] = [];
+  const warnings: string[] = [];
+  try {
+    if (options.force && fs.existsSync(path.join(targetDir, '.specweave'))) {
+      const backup = backupAndClearSpecweave(targetDir);
+      if (!backup) refuse('Could not back up .specweave, so nothing was removed. Free some space or fix permissions, then run init --force again.');
+      lines.push(`Backed up .specweave to ${path.basename(backup)} and started over`);
+    }
 
-  // Strip Claude-specific fields (both spellings of user-invocable/invokable)
-  frontmatterBlock = frontmatterBlock.replace(/^user-invoc?k?able\s*:.*\n?/gm, '');
-  frontmatterBlock = frontmatterBlock.replace(/^allowed-tools\s*:.*\n?/gm, '');
-  frontmatterBlock = frontmatterBlock.replace(/^model\s*:.*\n?/gm, '');
+    const configPath = path.join(targetDir, '.specweave', 'config.json');
+    const firstRun = !fs.existsSync(configPath);
+    const tool = pickTool(requested, firstRun ? null : savedToolOf(configPath), known, warnings);
 
-  // Ensure name: is present
-  if (!/^name\s*:/m.test(frontmatterBlock)) {
-    frontmatterBlock = `\nname: ${skillName}${frontmatterBlock}`;
+    nativeFs.mkdirSync(targetDir, { recursive: true });
+    const before = snapshot(targetDir);
+
+    // 2. .specweave/ and the config, written first so every later step (and any
+    //    other specweave command started meanwhile) reads this project's config.
+    await createDirectoryStructure(targetDir, tool);
+    ensureConfigFile(targetDir, name, tool);
+    const unregistered = registerCheckouts(targetDir, name);
+
+    // 3. Instruction files and README.
+    const templatesDir = findSourceDir('templates', __dirname);
+    readmeIfMissing(templatesDir, targetDir, name);
+    const commands = detectStackCommands(targetDir);
+    for (const filename of ['CLAUDE.md', 'AGENTS.md'] as const) {
+      const result = applyInstructionTemplate({ projectPath: targetDir, templatesDir, filename, projectName: name, commands });
+      for (const w of result.warnings) warnings.push(`${filename}: ${w}`);
+    }
+
+    // 4. Repository hygiene, SpecWeave's own lines only.
+    ensureSpecweaveGitignoreEntries(targetDir, '# SpecWeave');
+    ensureGitattributes(targetDir, path.join(templatesDir, '.gitattributes.template'));
+
+    // 5. Skills.
+    const skills = installProjectSkills(targetDir);
+
+    // 6. The tool.
+    if (tool === 'claude') {
+      if (firstRun) applyProjectDefault(targetDir);
+      loader.checkClaudeCli();
+      if (loader.claudeCliIssue) warnings.push(`The claude command failed its check (${loader.claudeCliIssue}); the files are written, plugins may need a manual install.`);
+    } else {
+      const problem = await installToolFiles(loader, tool, targetDir, name, options);
+      if (problem) warnings.push(problem);
+    }
+
+    if (options.gitHooks) {
+      if (nativeFs.existsSync(path.join(targetDir, '.git'))) {
+        let installed = false;
+        await quietly(async () => { installed = installGitHooks(targetDir, templatesDir); });
+        if (installed) lines.push('Pre-commit hook installed in .git/hooks/');
+        else warnings.push('--git-hooks: the pre-commit hook could not be installed.');
+      } else {
+        warnings.push('--git-hooks: this folder is not the top of a Git repository, so no hook was installed.');
+      }
+    }
+
+    // Summary: at most 12 lines.
+    const after = snapshot(targetDir);
+    const created: string[] = [];
+    const updated: string[] = [];
+    for (const rel of REPORTED_FILES) {
+      const was = before.get(rel);
+      const now = after.get(rel);
+      if (now == null) continue;
+      if (was == null) created.push(rel);
+      else if (was !== now) updated.push(rel);
+    }
+    const skillsNote = skills.written.length > 0 ? `${skills.installed.length} sw-* skills in ${PROJECT_SKILL_DIRS.join(' and ')}` : null;
+    if (firstRun && skillsNote) created.push(skillsNote);
+    else if (skillsNote) updated.push(skillsNote);
+
+    const where = path.relative(process.cwd(), targetDir) || '.';
+    console.log(chalk.green(`✓ SpecWeave ${firstRun ? 'set up' : 'checked'} in ${where} for ${tool}`));
+    for (const line of lines) console.log(`  ${line}`);
+    if (created.length) console.log(`  Created: ${created.join(', ')}`);
+    if (updated.length) console.log(`  Updated: ${updated.join(', ')}`);
+    if (!created.length && !updated.length) console.log('  Nothing to change');
+    if (unregistered.length) console.log(chalk.yellow(`  ${unregistered.length} checkout(s) not registered (${unregistered.slice(0, 3).join(', ')}): specweave get <path> adds one in place`));
+    for (const w of warnings.slice(0, 4)) console.log(chalk.yellow(`  ⚠ ${w}`));
+    if (!hasGitAbove(targetDir)) console.log(chalk.gray('  No Git repository here. SpecWeave works without one; run git init when you want history.'));
+    console.log(chalk.cyan(`  Next: specweave create-increment "<what to build>"${where === '.' ? '' : ` (in ${where})`}`));
+  } catch (error) {
+    refuse(`specweave init failed: ${error instanceof Error ? error.message : String(error)}`);
   }
-
-  return `---${frontmatterBlock}---${body}`;
 }

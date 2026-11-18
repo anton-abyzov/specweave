@@ -211,9 +211,8 @@ async function _registerAndInit(
     console.log(chalk.green(`   Registered in workspace config (prefix: ${options.prefix || repo.substring(0, 3).toUpperCase()})`));
   }
 
-  if (options.init !== false) {
-    await _runInit(absPath);
-  }
+  // A registered repository belongs to the workspace's plan: no init of its own
+  // (init refuses a folder inside another SpecWeave project).
 
   console.log(chalk.green(`\n  Done!`));
   if (showPath) {

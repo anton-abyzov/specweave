@@ -6,7 +6,7 @@ Source of the `specweave` npm package: a CLI plus a Claude Code plugin. The file
 - CI runs `npm run test:unit` (`tests/unit/**`). Co-located `src/**/*.test.ts` files are not in CI; put new tests under `tests/unit/`.
 - `skills/sw-*` is the one skill source; `npm run generate:skills` writes `plugins/specweave/skills/`. Never edit the copies.
 - After adding or renaming a command or option: `node scripts/completions/generate.mjs`.
-- `init` refuses to run inside the system temp directory; try it in a scratch folder elsewhere.
+- `init` asks nothing and never runs Git; it refuses the home folder and the system temp folder itself (a `mktemp -d` folder works).
 - Default branch is `develop`; PRs target it. Feature PRs merge with `gh pr merge --squash --admin`. Push over HTTPS.
 - Release: `bash scripts/release/release.sh patch|minor|major|X.Y.Z` (6 to 8 minutes; run it in the background).
 - Increment state lives only in `ledger.jsonl`; never write derived state back into markdown.
