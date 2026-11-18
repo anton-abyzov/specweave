@@ -42,10 +42,11 @@ export function applySmartDefaults(
     config.lsp = { enabled: true, ...config.lsp };
   }
 
-  // Sync: on by default once a provider/tracker is configured.
+  // Sync: on by default once a provider/tracker is configured. A project that
+  // already has a sync block keeps it as it is, an explicit `enabled: false` included.
   const hasProvider = config.repository?.provider && config.repository.provider !== 'local';
   const hasTracker = config.issueTracker?.provider && config.issueTracker.provider !== 'none';
-  if (hasProvider || hasTracker) {
+  if ((hasProvider || hasTracker) && config.sync === undefined) {
     config.sync = {
       enabled: true,
       autoSync: true,
@@ -55,9 +56,6 @@ export function applySmartDefaults(
         canUpdateStatus: true,
         autoSyncOnCompletion: true,
       },
-      ...config.sync,
-      // Force enabled if provider/tracker detected (don't let stale false override)
-      ...(config.sync?.enabled === false ? { enabled: true } : {}),
     };
   }
 

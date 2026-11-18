@@ -337,5 +337,46 @@ describe('gitignore-generator', () => {
       const result = await writeGitignore(dir, 'node_modules/\n.env\n');
       expect(result.action).toBe('skipped');
     });
+
+    it('leaves no backup when nothing changes', async () => {
+      writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\n.env\n');
+      await writeGitignore(dir, 'node_modules/\n.env\n', { backup: true });
+      expect(await fs.readdir(dir)).toEqual(['.gitignore']);
+    });
+  });
+
+  // Migrations are source files: ignoring them loses schema history.
+  describe('database migrations stay committed', () => {
+    let dir: string;
+
+    beforeEach(async () => {
+      dir = await fs.mkdtemp(path.join(os.tmpdir(), 'sw-gitignore-db-'));
+    });
+
+    afterEach(async () => {
+      await fs.rm(dir, { recursive: true, force: true });
+    });
+
+    it('writes no rule that ignores Prisma migrations', async () => {
+      mkdirSync(path.join(dir, 'prisma'), { recursive: true });
+      writeFileSync(path.join(dir, 'prisma', 'schema.prisma'), 'datasource db {}\n');
+      const result = generateGitignore(await detectTechStack(dir));
+      expect(result).toContain('prisma/*.db');
+      expect(result).not.toMatch(/migration/);
+    });
+
+    it('writes no rule that ignores the Drizzle folder', async () => {
+      writeFileSync(path.join(dir, 'drizzle.config.ts'), 'export default {};\n');
+      const result = generateGitignore(await detectTechStack(dir));
+      expect(result.split('\n')).not.toContain('drizzle/');
+    });
+
+    it('keeps the template fallback free of migration rules', () => {
+      const template = readFileSync(
+        path.resolve(__dirname, '../../../../../src/templates/.gitignore.template'),
+        'utf-8',
+      );
+      expect(template).not.toMatch(/migration\.sql/);
+    });
   });
 });

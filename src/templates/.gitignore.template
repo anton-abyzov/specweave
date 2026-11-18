@@ -79,8 +79,6 @@ bin/
 *.sqlite3
 *.db-shm
 *.db-wal
-# Prisma (TypeScript)
-prisma/migrations/*/migration.sql
 # Django (Python)
 */migrations/__pycache__/
 

@@ -180,6 +180,7 @@ vi.mock('../../../../src/cli/helpers/init/index.js', () => ({
   createDirectoryStructure: mocks.createDirectoryStructure,
   copyTemplates: mocks.copyTemplates,
   createConfigFile: mocks.createConfigFile,
+  ensureConfigFile: mocks.createConfigFile,
   showNextSteps: mocks.showNextSteps,
   installGitHooks: mocks.installGitHooks,
   // Real behaviour: init scaffolds repositories/ only for an actual workspace.
@@ -325,6 +326,7 @@ function setupDefaultMocks() {
   mocks.AdapterLoader.mockImplementation(function (this: any) {
     this.detectTool = vi.fn().mockResolvedValue('claude');
     this.getAdapter = vi.fn().mockReturnValue(null);
+    this.adapterNames = () => ['aider','amazonq','antigravity','cline','codex','continue','copilot','cursor','gemini','generic','jetbrains','kimi','opencode','tabnine','trae','windsurf','zed'];
     this.checkRequirements = vi.fn();
   });
   mocks.confirm.mockResolvedValue(true);

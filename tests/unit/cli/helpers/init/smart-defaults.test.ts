@@ -96,6 +96,14 @@ describe('smart-defaults', () => {
       expect(config.sync.settings.autoSyncOnCompletion).toBe(true);
     });
 
+    it('keeps sync off when the project turned it off', () => {
+      const config = applySmartDefaults(
+        { repository: { provider: 'github' }, sync: { enabled: false } },
+        makeOptions(),
+      );
+      expect(config.sync).toEqual({ enabled: false });
+    });
+
     it('should not write a hooks block (2.0: closure flags come from sync setup)', () => {
       const config = applySmartDefaults({ repository: { provider: 'github' } }, makeOptions());
       expect(config.hooks).toBeUndefined();

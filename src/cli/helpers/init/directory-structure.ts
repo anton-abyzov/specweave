@@ -273,7 +273,65 @@ export function createConfigFile(
   coverageTarget?: number,
 ): void {
   const configPath = path.join(targetDir, '.specweave', 'config.json');
+  fs.writeJsonSync(configPath, defaultConfig(projectName, adapter, testMode, coverageTarget), { spaces: 2 });
+}
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Write `.specweave/config.json` so that it has every default, without
+ * replacing anything the project already set: keys in the file win, defaults
+ * only fill what is missing (one level deep, so `testing.commands` survives
+ * while a missing `testing` block is added). `adapters.default` is the one
+ * key set outright, to the tool this run settled on.
+ *
+ * A file that is not a JSON object is left untouched ('unreadable'): the
+ * person's settings may still be recoverable from it.
+ */
+export function ensureConfigFile(
+  targetDir: string,
+  projectName: string,
+  adapter: string,
+): 'created' | 'kept' | 'unreadable' {
+  const configPath = path.join(targetDir, '.specweave', 'config.json');
+  const defaults = defaultConfig(projectName, adapter);
+
+  if (!fs.existsSync(configPath)) {
+    fs.mkdirSync(path.dirname(configPath), { recursive: true });
+    fs.writeJsonSync(configPath, defaults, { spaces: 2 });
+    return 'created';
+  }
+
+  let existing: unknown;
+  try {
+    existing = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  } catch {
+    return 'unreadable';
+  }
+  if (!isPlainObject(existing)) return 'unreadable';
+
+  const merged: Record<string, unknown> = { ...defaults, ...existing };
+  for (const [key, fallback] of Object.entries(defaults)) {
+    const current = existing[key];
+    if (isPlainObject(fallback) && isPlainObject(current)) {
+      merged[key] = { ...fallback, ...current };
+    }
+  }
+  merged.adapters = { ...(isPlainObject(merged.adapters) ? merged.adapters : {}), default: adapter };
+
+  fs.writeJsonSync(configPath, merged, { spaces: 2 });
+  return 'kept';
+}
+
+/** The config a new project starts with. */
+function defaultConfig(
+  projectName: string,
+  adapter: string,
+  testMode?: TestMode,
+  coverageTarget?: number,
+): Record<string, unknown> {
   const config: Record<string, unknown> = {
     version: '2.0',
     project: {
@@ -324,5 +382,5 @@ export function createConfigFile(
     },
   };
 
-  fs.writeJsonSync(configPath, config, { spaces: 2 });
+  return config;
 }

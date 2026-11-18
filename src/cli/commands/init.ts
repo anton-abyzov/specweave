@@ -37,7 +37,7 @@ import {
   createMinimalConfig,
   createDirectoryStructure,
   copyTemplates,
-  createConfigFile,
+  ensureConfigFile,
   showNextSteps,
   installGitHooks,
   ensureSkillCreator,
@@ -66,6 +66,26 @@ const PROJECT_NAME_VALIDATION_MSG = 'Must be lowercase letters, numbers, and hyp
 
 export type { InitOptions };
 
+/** The home directory holds every project; it is never one itself. */
+function refuseHomeDirectory(targetDir: string): void {
+  const real = (p: string): string => {
+    try { return nativeFs.realpathSync(p); } catch { return path.resolve(p); }
+  };
+  if (real(targetDir) !== real(os.homedir())) return;
+  console.log(chalk.red.bold('\n❌ DANGEROUS: Cannot initialize SpecWeave in home directory!\n'));
+  console.log(chalk.yellow('   Your home directory contains ALL your projects.'));
+  console.log(chalk.cyan('\n💡 What to do instead:'));
+  console.log(chalk.gray('   mkdir ~/Projects/my-project && cd ~/Projects/my-project && specweave init .\n'));
+  process.exit(1);
+}
+
+/** The top of the Git work tree `dir` sits in, or null outside any (or without git). */
+function enclosingWorkTree(dir: string): string | null {
+  const result = execFileNoThrowSync('git', ['rev-parse', '--show-toplevel'], { cwd: dir, shell: false });
+  const top = result.success ? result.stdout.trim() : '';
+  return top === '' ? null : top;
+}
+
 /**
  * Unified CI/non-interactive detection.
  */
@@ -93,6 +113,17 @@ export async function initCommand(
   options: InitOptions = {}
 ): Promise<void> {
   const isCI = isNonInteractive(options);
+
+  // An unknown tool is refused here, before anything is written.
+  if (options.adapter) {
+    const adapter = options.adapter.trim().toLowerCase();
+    const known = ['claude', ...new AdapterLoader().adapterNames()];
+    if (!known.includes(adapter)) {
+      console.error(chalk.red(`\n❌ Unknown --adapter "${options.adapter}". Use one of: ${known.join(', ')}\n`));
+      process.exit(1);
+    }
+    options.adapter = adapter;
+  }
 
   if (options.quick) {
     console.log(chalk.cyan('\n⚡ Quick mode: Using sensible defaults'));
@@ -134,14 +165,7 @@ export async function initCommand(
     // Init in current directory
     usedDotNotation = true;
     targetDir = process.cwd();
-
-    if (path.resolve(targetDir) === path.resolve(os.homedir())) {
-      console.log(chalk.red.bold('\n❌ DANGEROUS: Cannot initialize SpecWeave in home directory!\n'));
-      console.log(chalk.yellow('   Your home directory contains ALL your projects.'));
-      console.log(chalk.cyan('\n💡 What to do instead:'));
-      console.log(chalk.gray('   mkdir ~/Projects/my-project && cd ~/Projects/my-project && specweave init .\n'));
-      process.exit(1);
-    }
+    refuseHomeDirectory(targetDir);
 
     const dirName = path.basename(targetDir);
     if (!PROJECT_NAME_PATTERN.test(dirName)) {
@@ -161,6 +185,7 @@ export async function initCommand(
   } else {
     // Explicit project name → create subdirectory
     targetDir = path.resolve(process.cwd(), projectName);
+    refuseHomeDirectory(targetDir);
     finalProjectName = path.basename(projectName);
   }
 
@@ -219,7 +244,7 @@ export async function initCommand(
   if (usedDotNotation) {
     if (fs.existsSync(path.join(targetDir, '.specweave'))) {
       const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-      if (result.action === 'cancel') process.exit(0);
+      if (result.action === 'cancel') process.exit(result.failed ? 1 : 0);
       continueExisting = result.continueExisting;
     } else {
       // STEP 2d: Non-empty folder detection (T-009 — 0640)
@@ -284,7 +309,7 @@ export async function initCommand(
       const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
       if (hasSpecweave) {
         const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
-        if (result.action === 'cancel') process.exit(0);
+        if (result.action === 'cancel') process.exit(result.failed ? 1 : 0);
         continueExisting = result.continueExisting;
       } else {
         const existingFiles = fs.readdirSync(targetDir).filter(f => !f.startsWith('.'));
@@ -337,15 +362,17 @@ export async function initCommand(
       const detectedTool = await adapterLoader.detectTool();
       spinner.stop();
 
-      if (isCI) {
+      // A re-run keeps the tool the project was set up with.
+      const savedTool = existingAdapter && (existingAdapter === 'claude' || adapterLoader.getAdapter(existingAdapter))
+        ? existingAdapter
+        : null;
+      if (savedTool) {
+        toolName = savedTool;
+      } else if (isCI) {
         toolName = detectedTool;
       } else {
         console.log(chalk.cyan('\n🔍 ' + locale.t('cli', 'init.toolDetection.header')));
-        if (existingAdapter) {
-          console.log(chalk.blue('   📋 Current adapter: ' + existingAdapter));
-        } else {
-          console.log(chalk.gray('   ' + locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })));
-        }
+        console.log(chalk.gray('   ' + locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })));
         console.log('');
 
         const confirmTool = await confirm({
@@ -467,8 +494,13 @@ export async function initCommand(
     }
 
     // Git init (after post-scaffold so initial commit captures cloned repos)
+    // Only outside any work tree: a folder inside a checkout (a monorepo
+    // package) already has its repository, and a second one would hide it.
     const gitDir = path.join(targetDir, '.git');
-    if (!fs.existsSync(gitDir)) {
+    const enclosingRepo = fs.existsSync(gitDir) ? null : enclosingWorkTree(targetDir);
+    if (enclosingRepo) {
+      console.log(chalk.gray(`\n   Inside the Git repository at ${enclosingRepo}: no new repository created.`));
+    } else if (!fs.existsSync(gitDir)) {
       const gitInitResult = execFileNoThrowSync('git', ['init'], { cwd: targetDir, shell: false });
       if (gitInitResult.success) {
         spinner.text = 'Git repository initialized...';
@@ -492,18 +524,22 @@ export async function initCommand(
       }
     }
 
-    // Create config.json (simplified — no maturity, no structureDeferred)
-    createConfigFile(targetDir, finalProjectName, toolName);
+    // config.json: defaults fill what is missing; keys already there stay.
     const configPath = path.join(targetDir, '.specweave', 'config.json');
+    const configState = ensureConfigFile(targetDir, finalProjectName, toolName);
+    if (configState === 'unreadable') {
+      console.log(chalk.yellow('   ⚠ .specweave/config.json is not valid JSON and was left as it is. Fix or delete it, then run specweave init again.'));
+    }
     const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
 
     // Batch config updates: provider + smart defaults + LSP (single read-modify-write)
-    if (fs.existsSync(configPath)) {
+    if (configState !== 'unreadable' && fs.existsSync(configPath)) {
       try {
         const config = fs.readJsonSync(configPath);
 
-        // Provider info from .git/config
-        if (providerInfo) {
+        // Provider info from .git/config, unless the project already names one
+        const hasProvider = config.repository?.provider && config.repository.provider !== 'local';
+        if (providerInfo && !hasProvider) {
           const org = providerInfo.owner || providerInfo.organization;
           config.repository = {
             provider: providerInfo.provider,
@@ -518,15 +554,14 @@ export async function initCommand(
         // Always write the workspace section; repos may sit anywhere (workspace.repos holds their paths)
         if (umbrellaDiscovery) {
           const wsFragment = buildWorkspaceConfig(umbrellaDiscovery, finalProjectName);
-          config.workspace = wsFragment.workspace;
-          config.repository = { ...config.repository, ...wsFragment.repository };
-        } else if (!config.workspace) {
+          // Keys the project set on its workspace (name, rootRepo) stay; the repository list is rescanned.
+          config.workspace = { ...wsFragment.workspace, ...config.workspace, repos: wsFragment.workspace.repos };
+          config.repository = { ...wsFragment.repository, ...config.repository };
+        } else if (!config.workspace && !config.umbrella) {
+          // An empty list would hide the repositories a 1.x `umbrella` block still names.
           config.workspace = { name: finalProjectName, repos: [] };
         }
-        // Clean up legacy keys — workspace replaces umbrella/multiProject/projectMappings
-        delete config.umbrella;
-        delete config.multiProject;
-        delete config.projectMappings;
+        // 1.x keys (umbrella, multiProject, projectMappings) stay for `specweave update` to migrate.
 
         // Apply root repo info from early prompt (T-013 — 0640)
         if (rootRepoInfo && config.workspace) {
@@ -535,9 +570,9 @@ export async function initCommand(
           };
         }
 
-        // LSP auto-enable (Claude only)
+        // LSP on for Claude Code, unless the project already chose
         if (toolName === 'claude') {
-          config.lsp = { enabled: true };
+          config.lsp = { enabled: true, ...config.lsp };
         }
 
         fs.writeJsonSync(configPath, config, { spaces: 2 });

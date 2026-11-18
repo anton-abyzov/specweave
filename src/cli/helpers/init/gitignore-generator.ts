@@ -282,15 +282,11 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
   ],
 
   // === Databases ===
+  // Migrations are source: Prisma and Drizzle both need them committed.
   prisma: [
     '# Prisma',
-    'prisma/migrations/*/migration.sql',
     'prisma/*.db',
     'prisma/*.db-journal',
-  ],
-  drizzle: [
-    '# Drizzle',
-    'drizzle/',
   ],
   sqlite: [
     '# SQLite',
@@ -757,11 +753,6 @@ export async function writeGitignore(
 
     const existing = fs.readFileSync(gitignorePath, 'utf-8');
 
-    // Backup existing
-    if (backup) {
-      fs.writeFileSync(`${gitignorePath}.backup`, existing);
-    }
-
     // Merge: add new entries that don't exist
     const existingLines = new Set(
       existing.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'))
@@ -778,6 +769,11 @@ export async function writeGitignore(
     if (newLines.filter(l => l.trim() && !l.startsWith('#')).length === 0) {
       // No new entries to add
       return { action: 'skipped', path: gitignorePath };
+    }
+
+    // Back up only a file that is about to change
+    if (backup) {
+      fs.writeFileSync(`${gitignorePath}.backup`, existing);
     }
 
     // Append new entries

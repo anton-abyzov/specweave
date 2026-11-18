@@ -123,6 +123,11 @@ export class AdapterLoader {
     return this.adapters.get(name);
   }
 
+  /** Every tool `--adapter` accepts besides `claude`, which needs no adapter. */
+  adapterNames(): string[] {
+    return [...this.adapters.keys()];
+  }
+
   /**
    * Auto-detect which tool is being used
    *
