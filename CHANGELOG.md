@@ -1,3 +1,9 @@
+## [3.2.0] - 2026-11-18
+
+### Changed
+
+- Init asks nothing, never runs Git, safe to re-run (1407) (#2306)
+
 ## [3.1.27] - 2026-11-18
 
 ### Changed
