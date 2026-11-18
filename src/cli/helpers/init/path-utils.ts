@@ -533,7 +533,8 @@ export function buildWorkspaceConfig(
       prefix = prefix.substring(0, 2) + suffix;
     }
     usedPrefixes.add(prefix);
-    return { id, path: r.path, name: r.name, prefix, sync: {} };
+    // config.json is shared across machines: always forward slashes.
+    return { id, path: r.path.split(path.sep).join('/'), name: r.name, prefix, sync: {} };
   });
 
   return {

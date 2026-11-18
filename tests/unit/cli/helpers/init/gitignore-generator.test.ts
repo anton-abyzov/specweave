@@ -105,8 +105,8 @@ describe('gitignore-generator', () => {
       const headers = lines.map((l, i) => [l, lines[i + 1] ?? ''] as const).filter(([l]) => l.startsWith('#'));
       expect(headers.filter(([, next]) => next.trim() === '')).toEqual([]);
       // The framework dirs SpecWeave installs stay ignored.
-      expect(lines).toContain('plugins/');
-      expect(lines).toContain('.claude-plugin/');
+      expect(lines).toContain('/plugins/');
+      expect(lines).toContain('/.claude-plugin/');
     });
 
     it('should exclude common when includeCommon=false', () => {

@@ -4,6 +4,12 @@
 
 - `create-increment` refuses a folder with no `.specweave/config.json` at or above it, exits 1, writes nothing and says to run `specweave init` first (1396)
 
+## [3.2.0] - 2026-11-18
+
+### Changed
+
+- Init asks nothing, never runs Git, safe to re-run (1407) (#2306)
+
 ## [3.1.27] - 2026-11-18
 
 ### Changed

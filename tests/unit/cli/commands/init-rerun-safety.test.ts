@@ -4,7 +4,7 @@
  * Runs the real CLI in scratch projects (needs `npm run build` first):
  * - a re-run keeps every key already in .specweave/config.json;
  * - an unknown --adapter writes nothing;
- * - a subfolder of a Git repository gets no nested repository;
+ * - init never creates a repository, in or outside a Git work tree;
  * - an explicit path to the home directory is refused like `.` is.
  */
 
@@ -63,7 +63,7 @@ function git(cwd: string, env: NodeJS.ProcessEnv, args: string[]): string {
 }
 
 beforeAll(() => {
-  base = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'sw-init-rerun-'));
+  base = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), 'sw-init-rerun-'));
 });
 
 afterAll(() => {
@@ -141,7 +141,7 @@ describe('specweave init: a re-run keeps the project config', () => {
       fs.writeFileSync(configPath, content);
       const run = init(root, env, ['.', '--adapter', 'claude']);
       expect(run.status).toBe(1);
-      expect(run.out).toContain('is not valid JSON');
+      expect(run.out).toContain('is not a valid JSON object');
       expect(run.out).not.toMatch(/\n\s+at /);
       expect(fs.readFileSync(configPath, 'utf-8')).toBe(content);
     }
@@ -154,8 +154,9 @@ describe('specweave init: a re-run keeps the project config', () => {
     expect(init(root, env, ['.', '--adapter', 'claude']).status).toBe(0);
     const configPath = path.join(root, '.specweave', 'config.json');
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    // A first run takes the provider from the remote.
-    expect(config.repository.provider).toBe('github');
+    // A first run no longer fills the provider from the remote (`sync setup` does).
+    expect(config.repository.provider).toBe('local');
+    expect(config.sync).toBeUndefined();
     config.repository = { provider: 'local', customKey: 'keepme' };
     delete config.sync;
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -186,7 +187,7 @@ describe('specweave init: a re-run keeps the project config', () => {
     expect(init(root, withBroken, ['.', '--adapter', 'claude']).status).toBe(0);
     const run = init(root, withBroken);
     expect(run.status).toBe(0);
-    expect(run.out).not.toContain('native installation complete');
+    expect(run.out).toContain('claude command failed its check');
   });
 
   it('reads a saved tool in any letter case and names one it does not know', () => {
@@ -215,7 +216,7 @@ describe('specweave init: a re-run keeps the project config', () => {
     config.lsp = false;
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     expect(init(root, env, ['.', '--adapter', 'claude']).status).toBe(0);
-    expect(JSON.parse(fs.readFileSync(configPath, 'utf-8')).lsp).toEqual({ enabled: false });
+    expect(JSON.parse(fs.readFileSync(configPath, 'utf-8')).lsp).toBe(false);
   });
 });
 
@@ -269,33 +270,29 @@ describe('specweave init: Git', () => {
     expect(init(pkg, env, ['.', '--adapter', 'claude']).status).toBe(0);
 
     expect(fs.existsSync(path.join(pkg, '.git'))).toBe(false);
-    expect(fs.realpathSync(git(pkg, env, ['rev-parse', '--show-toplevel']))).toBe(fs.realpathSync(root));
+    expect(fs.realpathSync.native(git(pkg, env, ['rev-parse', '--show-toplevel']))).toBe(fs.realpathSync.native(root));
     // Nothing was committed to the repository that was already there.
     expect(git(root, env, ['rev-list', '--all', '--count'])).toBe('0');
   });
 
-  it('ignores a GIT_DIR leaked from the caller', () => {
+  it('a GIT_DIR leaked from the caller changes nothing', () => {
     const { root, env } = scratch('leaked-gitdir');
     const other = path.join(base, 'leaked-gitdir-other');
     fs.mkdirSync(other, { recursive: true });
     git(other, env, ['init', '-q']);
     const run = init(root, { ...env, GIT_DIR: path.join(other, '.git') }, ['.', '--adapter', 'claude']);
     expect(run.status).toBe(0);
-    expect(fs.existsSync(path.join(root, '.git'))).toBe(true);
+    expect(fs.existsSync(path.join(root, '.git'))).toBe(false);
+    expect(git(other, env, ['rev-list', '--all', '--count'])).toBe('0');
   });
 
-  it('starts a repository under a home folder that is itself a repository', () => {
+  it('sets up a project under a home folder that is itself a repository', () => {
     const { home, env } = scratch('home-repo');
     git(home, env, ['init', '-q']);
     const proj = path.join(home, 'proj');
     fs.mkdirSync(proj, { recursive: true });
     expect(init(proj, env, ['.', '--adapter', 'claude']).status).toBe(0);
-    expect(fs.existsSync(path.join(proj, '.git'))).toBe(true);
-  });
-
-  it('still starts a repository in a folder outside any work tree', () => {
-    const { root, env } = scratch('fresh');
-    expect(init(root, env, ['.', '--adapter', 'claude']).status).toBe(0);
-    expect(fs.existsSync(path.join(root, '.git'))).toBe(true);
+    expect(fs.existsSync(path.join(proj, '.specweave', 'config.json'))).toBe(true);
+    expect(fs.existsSync(path.join(proj, '.git'))).toBe(false);
   });
 });

@@ -8,7 +8,7 @@
 
 local -a commands
 commands=(
-    'init:Initialize a new SpecWeave project'
+    'init:Set up SpecWeave in a folder\: no questions, never runs Git, safe to run again'
     'uninstall:Remove SpecWeave from the current project'
     'pause:Pause an active increment'
     'start:Start a planned/backlog/paused increment (status -> active)'
@@ -58,17 +58,17 @@ _specweave() {
             case $line[1] in
                 init)
                     _arguments \
-                        '--name[Project name (alternative to positional argument)]' \
-                        '--template[Project template (saas, api, fullstack)]' \
-                        '--adapter[AI tool adapter (claude, cursor, copilot, generic)]' \
-                        '--tech-stack[Technology stack (nodejs, python, etc.)]' \
-                        '--language[Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)]' \
-                        '--force[Force fresh start (non-interactive, removes existing .specweave)]' \
-                        '--force-refresh[Force marketplace refresh (skip cache, always pull latest)]' \
+                        '--name[Project folder (alternative to the positional argument)]' \
+                        '--adapter[AI tool to set up for (claude, codex, cursor, copilot, generic, ...); default\: the saved tool, else Claude Code]' \
+                        '--force[Back up .specweave and start over]' \
                         '--git-hooks[Also install the SpecWeave pre-commit hook (off by default)]' \
-                        '--full[Install all plugins (skip lazy loading, longer init but all skills available immediately)]' \
-                        '--quick[Quick mode\: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)]' \
-                        '--non-interactive[Alias for --quick (skip all prompts)]' \
+                        '--quick[Accepted for older scripts; init never asks]' \
+                        '--non-interactive[Accepted for older scripts; init never asks]' \
+                        '--template[Accepted and ignored (until 4.0)]' \
+                        '--tech-stack[Accepted and ignored (until 4.0)]' \
+                        '--language[Accepted and ignored (until 4.0); output is English]' \
+                        '--force-refresh[Accepted and ignored (until 4.0)]' \
+                        '--full[Accepted and ignored (until 4.0)]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;
@@ -396,7 +396,7 @@ _specweave() {
                         '--branch[Clone a specific branch]' \
                         '--prefix[User story prefix (default\: first 3 chars uppercase)]' \
                         '--role[Repository role (frontend, backend, mobile, infra, shared)]' \
-                        '--no-init[Skip specweave init on cloned repo]' \
+                        '--no-init[Accepted and ignored\: get never runs init]' \
                         '--yes[Skip confirmation prompts]' \
                         '--all[Clone all repositories in an org (source is org name)]' \
                         '--pattern[Filter repos by glob pattern, e.g. "service-*" (use with --all or org/* source)]' \

@@ -29,7 +29,7 @@ cd your-project
 specweave init
 ```
 
-`specweave init --quick` skips the questions and uses defaults. `init` writes:
+`init` asks nothing and never runs Git: no `git init`, no commit. Run it again at any time; it keeps your settings and only restores what is missing. It writes:
 
 | File | What it is |
 |---|---|

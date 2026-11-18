@@ -49,6 +49,7 @@ function runInit(name: string, extra: string[] = []): { proj: string; home: stri
     GIT_COMMITTER_NAME: 'Test',
     GIT_COMMITTER_EMAIL: 'test@example.com',
   };
+  if (extra.includes('--git-hooks')) execFileSync('git', ['init', '-q'], { cwd: proj, env, stdio: 'ignore' });
   execFileSync(process.execPath, [CLI, 'init', '.', '--quick', ...extra], {
     cwd: proj, env, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 120_000,
   });
@@ -123,8 +124,8 @@ describe('specweave init footprint', () => {
     expect(fs.existsSync(path.join(proj, '.specweave', 'state', 'jobs'))).toBe(false);
   });
 
-  it('installs no git pre-commit hook by default', () => {
-    expect(fs.existsSync(path.join(proj, '.git'))).toBe(true);
+  it('installs no git pre-commit hook by default and starts no repository', () => {
+    expect(fs.existsSync(path.join(proj, '.git'))).toBe(false);
     expect(fs.existsSync(path.join(proj, '.git', 'hooks', 'pre-commit'))).toBe(false);
   });
 

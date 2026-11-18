@@ -411,8 +411,9 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '.specweave/increments/*/logs/',
     '.specweave/increments/*/test-results/',
     '.specweave/docs-site-internal/',
-    '.claude-plugin/',
-    'plugins/',
+    // Root only: older versions copied plugins there; a project's own src/plugins/ stays tracked.
+    '/.claude-plugin/',
+    '/plugins/',
     'vskill.lock',
     '# Work handoff (secret-scrubbed, never auto-committed)',
     '.handoff/',
@@ -422,14 +423,15 @@ const GITIGNORE_ENTRIES: Record<string, string[]> = {
     '.specweave/logs/',
     '.specweave/backups/',
     '.specweave/jobs/',
+    '/.specweave.backup-*/',
     '# Binary evidence and agent worktrees (never committed)',
     '.specweave/increments/**/reports/artifacts/',
     '.claude/worktrees/',
     '.worktrees/',
-    '# Binary evidence in reports/ (videos, screenshots)',
-    '**/reports/*.mp4',
-    '**/reports/*.png',
-    '**/reports/*.jpg',
+    '# Binary evidence in increment reports/ (videos, screenshots)',
+    '**/.specweave/**/reports/*.mp4',
+    '**/.specweave/**/reports/*.png',
+    '**/.specweave/**/reports/*.jpg',
   ],
 };
 
@@ -851,6 +853,15 @@ const DROPPED_SPECWEAVE_LINES = new Set([
 
 const UPDATE_HEADER = '# SpecWeave (added by specweave update)';
 
+/** Older, wider forms of a current rule: a file that has one needs nothing added. */
+const LEGACY_FORMS: Record<string, string> = {
+  '/.claude-plugin/': '.claude-plugin/',
+  '/plugins/': 'plugins/',
+  '**/.specweave/**/reports/*.mp4': '**/reports/*.mp4',
+  '**/.specweave/**/reports/*.png': '**/reports/*.png',
+  '**/.specweave/**/reports/*.jpg': '**/reports/*.jpg',
+};
+
 /**
  * Drop an update header whose block (up to the next blank line) has no rule
  * left in it, together with the blank line written above it. Happens when
@@ -882,7 +893,10 @@ function dropOrphanUpdateHeaders(lines: string[]): string[] {
  * without regenerating their whole .gitignore. Idempotent; creates the file
  * when it is missing.
  */
-export function ensureSpecweaveGitignoreEntries(targetDir: string): { added: string[]; path: string } {
+export function ensureSpecweaveGitignoreEntries(
+  targetDir: string,
+  header: string = UPDATE_HEADER,
+): { added: string[]; path: string } {
   const gitignorePath = path.join(targetDir, '.gitignore');
   const wanted = GITIGNORE_ENTRIES.specweave;
   let existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf-8') : '';
@@ -898,10 +912,15 @@ export function ensureSpecweaveGitignoreEntries(targetDir: string): { added: str
   }
   const present = new Set(existing.split('\n').map((l) => l.trim()).filter(Boolean));
 
-  const missing = wanted.filter((line) => !line.startsWith('#') && !present.has(line.trim()));
+  const missing = wanted.filter((line) => {
+    const rule = line.trim();
+    if (rule.startsWith('#')) return false;
+    return !present.has(rule) && !(LEGACY_FORMS[rule] && present.has(LEGACY_FORMS[rule]));
+  });
   if (missing.length === 0) return { added: [], path: gitignorePath };
 
   const prefix = existing && !existing.endsWith('\n') ? '\n' : '';
-  fs.writeFileSync(gitignorePath, `${existing}${prefix}\n${UPDATE_HEADER}\n${missing.join('\n')}\n`);
+  const block = `${header}\n${missing.join('\n')}\n`;
+  fs.writeFileSync(gitignorePath, existing ? `${existing}${prefix}\n${block}` : block);
   return { added: missing, path: gitignorePath };
 }
