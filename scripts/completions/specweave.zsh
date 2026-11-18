@@ -158,7 +158,7 @@ _specweave() {
                         '--link[Card link (PR URL, report path, artifact URL)]' \
                         '--evidence[Evidence for `done`]' \
                         '--run[With `done` on a T-NN card\: run <cmd>, exit 0 required]' \
-                        '--reason[Why the card waits (`wait`)\: one short plain sentence, normal spaces, code in backticks; glued words are refused (exit 2)]' \
+                        '--reason[Why the card waits (`wait`)\: one short plain sentence a person reads on the board, normal spaces, code in backticks; glued words are refused (exit 2)]' \
                         '--force[Override a live claim (T-NN cards)]' \
                         '--no-commit[Skip the git.autoCommitIncrement commit of the increment files (T-NN cards)]' \
                         '--json[Machine-readable output]' \

@@ -126,7 +126,7 @@ complete -c specweave -n "__fish_seen_subcommand_from card" -l line -d "Card tex
 complete -c specweave -n "__fish_seen_subcommand_from card" -l link -d "Card link (PR URL, report path, artifact URL)"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l evidence -s e -d "Evidence for `done`"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l run -d "With `done` on a T-NN card: run <cmd>, exit 0 required"
-complete -c specweave -n "__fish_seen_subcommand_from card" -l reason -d "Why the card waits (`wait`): one short plain sentence, normal spaces, code in backticks; glued words are refused (exit 2)"
+complete -c specweave -n "__fish_seen_subcommand_from card" -l reason -d "Why the card waits (`wait`): one short plain sentence a person reads on the board, normal spaces, code in backticks; glued words are refused (exit 2)"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l force -s f -d "Override a live claim (T-NN cards)"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l no-commit -d "Skip the git.autoCommitIncrement commit of the increment files (T-NN cards)"
 complete -c specweave -n "__fish_seen_subcommand_from card" -l json -d "Machine-readable output"
