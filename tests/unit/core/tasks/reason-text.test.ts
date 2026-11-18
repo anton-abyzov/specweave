@@ -19,6 +19,11 @@ describe('normalizeReason', () => {
     ['see `a,b;c` first', 'see `a,b;c` first'],
     ['waiting on https://github.com/o/r/pull/571,then rerun', 'waiting on https://github.com/o/r/pull/571, then rerun'],
     ['open https://x.test/a,b/c?q=1;2 now', 'open https://x.test/a,b/c?q=1;2 now'],
+    ['waiting on https://x.test/list?fields=name,age now', 'waiting on https://x.test/list?fields=name,age now'],
+    ['waiting on https://x.test/list?sort=name,desc to finish', 'waiting on https://x.test/list?sort=name,desc to finish'],
+    ['open github.com/search?q=a,b now', 'open github.com/search?q=a,b now'],
+    ['see reports/a,b.md for counts', 'see reports/a,b.md for counts'],
+    ['check `a  b` formatting', 'check `a  b` formatting'],
     ['ждём доступ,потом проверим', 'ждём доступ, потом проверим'],
     ['Already fine, nothing to change.', 'Already fine, nothing to change.'],
   ])('%j → %j', (input, expected) => {
@@ -51,6 +56,10 @@ describe('findGluedWords', () => {
     ['PR #524 is open; needs a 2nd reviewer'],
     ['Put `offline37profileattestation` in backticks when it is a real name'],
     ['ESCALATION_REQUIRED by OPS_TEAM, see INC-2041'],
+    [`merged ${'a1b2c3d4'.repeat(16)} and the checksum matched`],
+    ['request 23edcdfd-6c19-491d-a858-8b21b5a2df62 timed out'],
+    ['incomprehensibility and counterintelligence work remains'],
+    ['waiting on https://x.test/list?fields=name,age now'],
   ])('passes %j', (text) => {
     expect(findGluedWords(normalizeReason(text))).toEqual([]);
   });

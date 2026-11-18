@@ -19,8 +19,8 @@
 /** Reasons longer than this get a warning; nothing is cut or refused for length. */
 export const LONG_REASON_CHARS = 280;
 
-/** Backtick code, and URLs up to (not including) trailing punctuation or a `,word` tail. */
-const PROTECTED = /`[^`]*`|\b[a-z][a-z0-9+.-]*:\/\/\S*?(?=[.,;:!?)\]'"]*(?:\s|$)|[,;]\p{L}[^\s/?=&#.]*[.,;:!?)\]'"]*(?:\s|$))/giu;
+/** Backtick code, URLs (scheme or scheme-less), and path-like tokens. Kept linear: no lookahead rescan. */
+const PROTECTED = /`[^`]*`|\b[a-z][a-z0-9+.-]*:\/\/\S+|\b(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}(?:[/?#]\S*)?|\b[^\s()[\]{}"'`,;]*\/[^\s()[\]{}"'`,;]*/gi;
 
 /** A token with any of these is a path, identifier, expression or reference; it is not checked. */
 const CODE_CHARS = /[/\\=_.@#:<>{}|*$&+~`[\]%^]/;
@@ -29,25 +29,48 @@ const CODE_CHARS = /[/\\=_.@#:<>{}|*$&+~`[\]%^]/;
 const LONG_WORDS: ReadonlySet<string> = new Set([
   'internationalization',
   'internationalisation',
+  'internationalizations',
   'institutionalization',
   'institutionalisation',
   'counterrevolutionary',
   'counterrevolutionaries',
+  'counterintelligence',
   'uncharacteristically',
+  'incomprehensibility',
   'incomprehensibilities',
+  'deinstitutionalization',
+  'mischaracterization',
   'electroencephalography',
+  'dehydroepiandrosterone',
+  'anticonstitutionnellement',
 ]);
 
 interface Span { text: string; protectedSpan: boolean }
+
+/** Length of the protected part of a URL/path match; a `,word` sentence tail after a digit is not protected. */
+function protectedLength(raw: string): number {
+  if (raw.startsWith('`')) return raw.length;
+  let end = raw.length;
+  while (end > 0 && /[.;:!?)\]'"]/.test(raw[end - 1])) end--;
+  const core = raw.slice(0, end);
+  // Query/hash URLs keep comma lists whole: `?fields=name,age` is one value list, not a sentence.
+  if (core.includes('?') || core.includes('#')) return end;
+  // `…/pull/571,then rerun`: comma plus a letter-only tail at the end is a sentence tail.
+  const tail = /^(.*\d)(,[A-Za-z]+)$/.exec(core);
+  if (tail) return tail[1].length;
+  return end;
+}
 
 function spans(text: string): Span[] {
   const out: Span[] = [];
   let last = 0;
   for (const m of text.matchAll(PROTECTED)) {
     const at = m.index ?? 0;
+    const keep = protectedLength(m[0]);
+    if (keep === 0) continue;
     if (at > last) out.push({ text: text.slice(last, at), protectedSpan: false });
-    out.push({ text: m[0], protectedSpan: true });
-    last = at + m[0].length;
+    out.push({ text: m[0].slice(0, keep), protectedSpan: true });
+    last = at + keep;
   }
   if (last < text.length) out.push({ text: text.slice(last), protectedSpan: false });
   return out;
@@ -55,18 +78,23 @@ function spans(text: string): Span[] {
 
 /** Collapse whitespace and add the missing space after `,` and `;` outside code and URLs. */
 export function normalizeReason(text: string): string {
-  const flat = text.replace(/\s+/g, ' ').trim();
-  return spans(flat)
-    .map((s, i, all) => s.protectedSpan
-      ? s.text
-      : s.text
+  return spans(text)
+    .map((s, i, all) => {
+      if (s.protectedSpan) return s.text;
+      let t = s.text
+        .replace(/\s+/g, ' ')
         // right after a URL or code span: `…/pull/571,then`
         .replace(/^([,;])(?=[\p{L}(`])/u, (m) => (i > 0 && all[i - 1].protectedSpan ? `${m} ` : m))
         // letter, closing bracket or % before the mark: `valid;113`, `a,b`, `(x),y`
         .replace(/([\p{L})\]%])([,;])(?=[\p{L}\p{N}(])/gu, '$1$2 ')
         // digit before the mark, letter after: `148;next`; never `1,000`
-        .replace(/(\p{N})([,;])(?=\p{L})/gu, '$1$2 '))
-    .join('');
+        .replace(/(\p{N})([,;])(?=\p{L})/gu, '$1$2 ');
+      // mark at the end of this chunk, protected token next: `valid;` + `113/148`
+      if (all[i + 1]?.protectedSpan) t = t.replace(/([\p{L}\p{N})\]%:])([,;])$/u, '$1$2 ');
+      return t;
+    })
+    .join('')
+    .trim();
 }
 
 function isGluedPart(part: string): boolean {
@@ -87,7 +115,8 @@ export function findGluedWords(text: string): string[] {
     for (const raw of s.text.split(/\s+/)) {
       const token = raw.replace(/^[("'[]+/, '').replace(/[)"'\].,;:!?]+$/, '');
       if (!token || CODE_CHARS.test(token)) continue;
-      if (/^[0-9a-f]{7,64}$/i.test(token)) continue; // commit SHAs and hashes
+      if (/^[0-9a-f]{7,}$/i.test(token)) continue; // commit SHAs and hashes, any length
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) continue; // UUIDs
       if (token.split(/[-,;]/).some((part) => part && isGluedPart(part))) found.push(token);
     }
   }

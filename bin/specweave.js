@@ -187,7 +187,7 @@ program
   .option('--link <url>', 'Card link (PR URL, report path, artifact URL)')
   .option('-e, --evidence <text>', 'Evidence for `done`')
   .option('--run <cmd>', 'With `done` on a T-NN card: run <cmd>, exit 0 required')
-  .option('--reason <text>', 'Why the card waits (`wait`): one short plain sentence, normal spaces, code in backticks; glued words are refused (exit 2)')
+  .option('--reason <text>', 'Why the card waits (`wait`): one short plain sentence a person reads on the board, normal spaces, code in backticks; glued words are refused (exit 2)')
   .option('-f, --force', 'Override a live claim (T-NN cards)')
   .option('--no-commit', 'Skip the git.autoCommitIncrement commit of the increment files (T-NN cards)')
   .option('--json', 'Machine-readable output')
