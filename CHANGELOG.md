@@ -1,3 +1,9 @@
+## [3.2.2] - 2026-11-18
+
+### Changed
+
+- Delete init helpers nothing calls (1407) (#2309)
+
 ## [3.2.1] - 2026-11-18
 
 ### Changed
