@@ -25,7 +25,7 @@ import { canonicalPath, isWithin } from '../../core/workspace/context.js';
 import { installProjectSkills, PROJECT_SKILL_DIRS } from '../../core/skills/project-skills.js';
 import type { InitOptions } from '../helpers/init/types.js';
 import { findSourceDir, detectNestedSpecweave, scanWorkspaceRepos, scanUnregisteredCheckouts, buildWorkspaceConfig } from '../helpers/init/path-utils.js';
-import { createDirectoryStructure, ensureConfigFile, ensureGitattributes } from '../helpers/init/directory-structure.js';
+import { createDirectoryStructure, ensureConfigFile, ensureGitattributes, writeJsonIfChanged } from '../helpers/init/directory-structure.js';
 import { applyInstructionTemplate } from '../helpers/init/instruction-file-writer.js';
 import { detectStackCommands } from '../helpers/init/stack-detector.js';
 import { ensureSpecweaveGitignoreEntries } from '../helpers/init/gitignore-generator.js';
@@ -90,7 +90,7 @@ function placeRefusal(targetDir: string, force: boolean): string | null {
       return '.specweave/config.json is a symlink and init does not write through one. Replace it with the file, or run specweave init --force to back up .specweave and start over.';
     }
     if (link && !isConfigObject(configPath)) {
-      return '.specweave/config.json is not valid JSON and was left as it is. Fix or delete it, or run specweave init --force to back up .specweave and start over.';
+      return '.specweave/config.json is not a valid JSON object and was left as it is. Fix or delete it, or run specweave init --force to back up .specweave and start over.';
     }
   }
   return null;
@@ -132,10 +132,12 @@ function isConfigObject(configPath: string): boolean {
 }
 
 /** The tool in a saved config, as written (null when there is none). */
-function savedToolOf(configPath: string): string | null {
+/** A non-empty string at `keys` in the config, or null. */
+function savedString(configPath: string, ...keys: string[]): string | null {
   try {
-    const saved: unknown = JSON.parse(nativeFs.readFileSync(configPath, 'utf-8'))?.adapters?.default;
-    return typeof saved === 'string' && saved.trim() !== '' ? saved.trim() : null;
+    let value: unknown = JSON.parse(nativeFs.readFileSync(configPath, 'utf-8'));
+    for (const key of keys) value = (value as Record<string, unknown> | null)?.[key];
+    return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
   } catch {
     return null;
   }
@@ -170,7 +172,7 @@ function registerCheckouts(targetDir: string, projectName: string): string[] {
     // An empty list would hide the repositories a 1.x `umbrella` block still names.
     config.workspace = { name: projectName, repos: [] };
   }
-  fs.writeJsonSync(configPath, config, { spaces: 2 });
+  writeJsonIfChanged(configPath, config);
   return scanUnregisteredCheckouts(targetDir, discovery);
 }
 
@@ -215,23 +217,24 @@ async function quietly(fn: () => Promise<void>): Promise<{ error?: unknown; log:
   }
 }
 
-async function installToolFiles(loader: AdapterLoader, tool: string, targetDir: string, projectName: string, options: InitOptions): Promise<string | null> {
+async function installToolFiles(loader: AdapterLoader, tool: string, targetDir: string, projectName: string, options: InitOptions): Promise<string[]> {
   const adapter = loader.getAdapter(tool);
-  if (!adapter) return `No adapter for ${tool}; only the shared files were written.`;
+  if (!adapter) return [`No adapter for ${tool}; only the shared files were written.`];
   const adapterOptions = {
     projectPath: targetDir,
     projectName,
     techStack: options.techStack ? { language: options.techStack } : undefined,
     docsApproach: 'incremental' as const,
   };
-  const requirements = await quietly(() => loader.checkRequirements(tool));
+  const requirements = await adapter.checkRequirements().catch(() => ({ met: true, missing: [], warnings: [] }));
   const run = await quietly(async () => {
     await adapter.install(adapterOptions);
     await adapter.postInstall(adapterOptions);
   });
-  if (run.error) return `${tool} files: ${run.error instanceof Error ? run.error.message : String(run.error)}`;
-  if (requirements.error) return `${tool} files written, but its requirements are not met: ${requirements.log.filter((l) => l.trim().startsWith('-')).map((l) => l.trim().slice(2)).join(', ') || 'see the tool docs'}`;
-  return null;
+  const problems = run.error ? [`${tool} files: ${run.error instanceof Error ? run.error.message : String(run.error)}`] : [];
+  if (!requirements.met) problems.push(`${tool} files written, but its requirements are not met: ${requirements.missing.join(', ') || 'see the tool docs'}`);
+  for (const w of requirements.warnings) problems.push(`${tool}: ${w}`);
+  return problems;
 }
 
 export async function initCommand(projectName?: string, options: InitOptions = {}): Promise<void> {
@@ -242,7 +245,7 @@ export async function initCommand(projectName?: string, options: InitOptions = {
     refuse(`Unknown --adapter "${options.adapter}". Use one of: ${known.join(', ')}`);
   }
 
-  const { targetDir, name } = resolveTarget(projectName);
+  const { targetDir, name: folderName } = resolveTarget(projectName);
   const refusal = placeRefusal(targetDir, !!options.force);
   if (refusal) refuse(refusal);
 
@@ -257,7 +260,7 @@ export async function initCommand(projectName?: string, options: InitOptions = {
 
     const configPath = path.join(targetDir, '.specweave', 'config.json');
     const firstRun = !fs.existsSync(configPath);
-    const tool = pickTool(requested, firstRun ? null : savedToolOf(configPath), known, warnings);
+    const tool = pickTool(requested, firstRun ? null : savedString(configPath, 'adapters', 'default'), known, warnings);
 
     nativeFs.mkdirSync(targetDir, { recursive: true });
     const before = snapshot(targetDir);
@@ -265,7 +268,10 @@ export async function initCommand(projectName?: string, options: InitOptions = {
     // 2. .specweave/ and the config, written first so every later step (and any
     //    other specweave command started meanwhile) reads this project's config.
     await createDirectoryStructure(targetDir, tool);
-    ensureConfigFile(targetDir, name, tool);
+    ensureConfigFile(targetDir, folderName, tool);
+    // The saved name wins over the folder name, so a re-run through a linked
+    // worktree or another path to the same project rewrites nothing.
+    const name = savedString(configPath, 'project', 'name') ?? folderName;
     const unregistered = registerCheckouts(targetDir, name);
 
     // 3. Instruction files and README.
@@ -290,8 +296,7 @@ export async function initCommand(projectName?: string, options: InitOptions = {
       loader.checkClaudeCli();
       if (loader.claudeCliIssue) warnings.push(`The claude command failed its check (${loader.claudeCliIssue}); the files are written, plugins may need a manual install.`);
     } else {
-      const problem = await installToolFiles(loader, tool, targetDir, name, options);
-      if (problem) warnings.push(problem);
+      warnings.push(...await installToolFiles(loader, tool, targetDir, name, options));
     }
 
     if (options.gitHooks) {

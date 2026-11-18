@@ -141,7 +141,7 @@ describe('specweave init: a re-run keeps the project config', () => {
       fs.writeFileSync(configPath, content);
       const run = init(root, env, ['.', '--adapter', 'claude']);
       expect(run.status).toBe(1);
-      expect(run.out).toContain('is not valid JSON');
+      expect(run.out).toContain('is not a valid JSON object');
       expect(run.out).not.toMatch(/\n\s+at /);
       expect(fs.readFileSync(configPath, 'utf-8')).toBe(content);
     }

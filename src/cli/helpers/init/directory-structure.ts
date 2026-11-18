@@ -321,8 +321,23 @@ export function ensureConfigFile(
   }
   merged.adapters = { ...(isPlainObject(merged.adapters) ? merged.adapters : {}), default: adapter };
 
-  fs.writeJsonSync(configPath, merged, { spaces: 2 });
+  writeJsonIfChanged(configPath, merged);
   return 'kept';
+}
+
+/**
+ * Write `data` as two-space JSON unless the file already holds exactly that,
+ * so a re-run leaves an unchanged file untouched (no mtime churn for watchers).
+ */
+export function writeJsonIfChanged(filePath: string, data: unknown): boolean {
+  const content = JSON.stringify(data, null, 2);
+  try {
+    if (fs.readFileSync(filePath, 'utf-8') === content) return false;
+  } catch {
+    // Missing or unreadable: write it.
+  }
+  fs.writeFileSync(filePath, content, 'utf-8');
+  return true;
 }
 
 /** The config a new project starts with. */

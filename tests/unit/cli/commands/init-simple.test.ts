@@ -116,27 +116,33 @@ describe('AC-07: a second run right after the first changes no file', () => {
       fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 'x', scripts: { test: 'vitest' } }));
       expect(init(root, env, ['--adapter', tool]).status).toBe(0);
       const first = tree(root);
+      const config = path.join(root, '.specweave', 'config.json');
+      const configTime = fs.statSync(config).mtimeMs;
       const second = init(root, env);
       expect(second.status).toBe(0);
       expect(second.out).toContain('Nothing to change');
       expect(tree(root)).toEqual(first);
+      // Unchanged content is not rewritten, so file watchers see nothing.
+      expect(fs.statSync(config).mtimeMs).toBe(configTime);
     });
   }
 });
 
 describe('AC-08: init never runs Git', () => {
-  it.skipIf(isWindows)('never starts git, creates no .git and says how to add one', () => {
-    const { root, home, env } = scratch('no-git');
-    const bin = path.join(home, 'bin');
-    const marker = path.join(home, 'git-was-run');
-    fs.mkdirSync(bin, { recursive: true });
-    fs.writeFileSync(path.join(bin, 'git'), `#!/bin/sh\ntouch "${marker}"\nexit 1\n`, { mode: 0o755 });
-    const run = init(root, { ...env, PATH: `${bin}${path.delimiter}${env.PATH}` }, ['--adapter', 'claude']);
-    expect(run.status).toBe(0);
-    expect(fs.existsSync(marker)).toBe(false);
-    expect(fs.existsSync(path.join(root, '.git'))).toBe(false);
-    expect(run.out).toContain('No Git repository here');
-  });
+  for (const tool of ['claude', 'codex', 'cursor']) {
+    it.skipIf(isWindows)(`never starts git for ${tool}, creates no .git and says how to add one`, () => {
+      const { root, home, env } = scratch(`no-git-${tool}`);
+      const bin = path.join(home, 'bin');
+      const marker = path.join(home, 'git-was-run');
+      fs.mkdirSync(bin, { recursive: true });
+      fs.writeFileSync(path.join(bin, 'git'), `#!/bin/sh\necho "$@" >> "${marker}"\nexit 1\n`, { mode: 0o755 });
+      const run = init(root, { ...env, PATH: `${bin}${path.delimiter}${env.PATH}` }, ['--adapter', tool]);
+      expect(run.status, run.out).toBe(0);
+      expect(fs.existsSync(marker) ? fs.readFileSync(marker, 'utf-8') : '').toBe('');
+      expect(fs.existsSync(path.join(root, '.git'))).toBe(false);
+      expect(run.out).toContain('No Git repository here');
+    });
+  }
 
   it('adds no commit and stages nothing in a repository', () => {
     const { root, env } = scratch('in-repo');
@@ -334,7 +340,12 @@ describe('AC-15: refusals write nothing', () => {
     git(root, env, ['commit', '-qm', 'specweave']);
     const wt = path.join(base, 'wt-tracked-linked');
     git(root, env, ['worktree', 'add', '-q', wt]);
-    expect(init(wt, env).status).toBe(0);
+    const r = init(wt, env);
+    expect(r.status, r.out).toBe(0);
+    // The saved project name wins over the worktree's folder name: nothing tracked changes.
+    expect(git(wt, env, ['status', '--porcelain'])).toBe('');
+    expect(fs.readFileSync(path.join(wt, 'AGENTS.md'), 'utf-8')).toContain('# wt-tracked');
+    expect(fs.readFileSync(path.join(wt, 'AGENTS.md'), 'utf-8')).not.toContain('wt-tracked-linked');
   });
 
   it.skipIf(isWindows)('refuses a symlinked config.json, and --force starts over', () => {
@@ -353,7 +364,7 @@ describe('AC-15: refusals write nothing', () => {
     const { root, env } = scratch('broken');
     fs.mkdirSync(path.join(root, '.specweave'), { recursive: true });
     fs.writeFileSync(path.join(root, '.specweave', 'config.json'), '[]');
-    expect(refused(root, env).out).toContain('not valid JSON');
+    expect(refused(root, env).out).toContain('not a valid JSON object');
     const run = init(root, env, ['--force']);
     expect(run.status).toBe(0);
     const backup = fs.readdirSync(root).find((n) => n.startsWith('.specweave.backup-'))!;

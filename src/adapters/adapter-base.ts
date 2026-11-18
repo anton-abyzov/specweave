@@ -54,12 +54,8 @@ export abstract class AdapterBase implements IAdapter {
       result.missing.push(`Node.js >= 18.0.0 (current: ${nodeVersion})`);
     }
 
-    // Check Git
-    try {
-      execSync('git --version', { stdio: 'ignore' });
-    } catch (error) {
-      result.warnings.push('Git not found - version control features may not work');
-    }
+    // No Git probe: `specweave init` never runs Git (1407), and no adapter's
+    // files depend on it.
 
     return result;
   }
