@@ -137,9 +137,70 @@ describe('specweave init: a re-run keeps the project config', () => {
     const { root, env } = scratch('corrupt');
     fs.mkdirSync(path.join(root, '.specweave'), { recursive: true });
     const configPath = path.join(root, '.specweave', 'config.json');
-    fs.writeFileSync(configPath, '{ "version": "2.0", "project": ');
-    init(root, env, ['.', '--adapter', 'claude']);
-    expect(fs.readFileSync(configPath, 'utf-8')).toBe('{ "version": "2.0", "project": ');
+    for (const content of ['{ "version": "2.0", "project": ', '[]']) {
+      fs.writeFileSync(configPath, content);
+      const run = init(root, env, ['.', '--adapter', 'claude']);
+      expect(run.status).toBe(1);
+      expect(run.out).toContain('is not valid JSON');
+      expect(run.out).not.toMatch(/\n\s+at /);
+      expect(fs.readFileSync(configPath, 'utf-8')).toBe(content);
+    }
+  });
+
+  it('keeps provider "local" and its other keys when the folder has a remote', () => {
+    const { root, env } = scratch('local-provider');
+    git(root, env, ['init', '-q']);
+    git(root, env, ['remote', 'add', 'origin', 'https://github.com/remoteorg/remoterepo.git']);
+    expect(init(root, env, ['.', '--adapter', 'claude']).status).toBe(0);
+    const configPath = path.join(root, '.specweave', 'config.json');
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    // A first run takes the provider from the remote.
+    expect(config.repository.provider).toBe('github');
+    config.repository = { provider: 'local', customKey: 'keepme' };
+    delete config.sync;
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+    expect(init(root, env, ['.', '--adapter', 'claude']).status).toBe(0);
+    const after = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    expect(after.repository).toEqual({ provider: 'local', customKey: 'keepme' });
+    expect(after.sync).toBeUndefined();
+  });
+
+  it('lets SPECWEAVE_TOOL change the saved tool', () => {
+    const { root, env } = scratch('env-tool');
+    expect(init(root, env, ['.', '--adapter', 'codex']).status).toBe(0);
+    expect(init(root, { ...env, SPECWEAVE_TOOL: 'cursor' }).status).toBe(0);
+    const after = JSON.parse(fs.readFileSync(path.join(root, '.specweave', 'config.json'), 'utf-8'));
+    expect(after.adapters.default).toBe('cursor');
+  });
+
+  it('reads a saved tool in any letter case and names one it does not know', () => {
+    const { root, env } = scratch('saved-case');
+    expect(init(root, env, ['.', '--adapter', 'codex']).status).toBe(0);
+    const configPath = path.join(root, '.specweave', 'config.json');
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    config.adapters.default = 'Codex';
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    expect(init(root, env).status).toBe(0);
+    expect(JSON.parse(fs.readFileSync(configPath, 'utf-8')).adapters.default).toBe('codex');
+
+    const again = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    again.adapters.default = 'nosucholdtool';
+    fs.writeFileSync(configPath, JSON.stringify(again, null, 2));
+    const run = init(root, env);
+    expect(run.status).toBe(0);
+    expect(run.out).toContain('"nosucholdtool"');
+  });
+
+  it('keeps lsp: false', () => {
+    const { root, env } = scratch('lsp-false');
+    expect(init(root, env, ['.', '--adapter', 'claude']).status).toBe(0);
+    const configPath = path.join(root, '.specweave', 'config.json');
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    config.lsp = false;
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    expect(init(root, env, ['.', '--adapter', 'claude']).status).toBe(0);
+    expect(JSON.parse(fs.readFileSync(configPath, 'utf-8')).lsp).toEqual({ enabled: false });
   });
 });
 
@@ -196,6 +257,25 @@ describe('specweave init: Git', () => {
     expect(fs.realpathSync(git(pkg, env, ['rev-parse', '--show-toplevel']))).toBe(fs.realpathSync(root));
     // Nothing was committed to the repository that was already there.
     expect(git(root, env, ['rev-list', '--all', '--count'])).toBe('0');
+  });
+
+  it('ignores a GIT_DIR leaked from the caller', () => {
+    const { root, env } = scratch('leaked-gitdir');
+    const other = path.join(base, 'leaked-gitdir-other');
+    fs.mkdirSync(other, { recursive: true });
+    git(other, env, ['init', '-q']);
+    const run = init(root, { ...env, GIT_DIR: path.join(other, '.git') }, ['.', '--adapter', 'claude']);
+    expect(run.status).toBe(0);
+    expect(fs.existsSync(path.join(root, '.git'))).toBe(true);
+  });
+
+  it('starts a repository under a home folder that is itself a repository', () => {
+    const { home, env } = scratch('home-repo');
+    git(home, env, ['init', '-q']);
+    const proj = path.join(home, 'proj');
+    fs.mkdirSync(proj, { recursive: true });
+    expect(init(proj, env, ['.', '--adapter', 'claude']).status).toBe(0);
+    expect(fs.existsSync(path.join(proj, '.git'))).toBe(true);
   });
 
   it('still starts a repository in a folder outside any work tree', () => {

@@ -283,6 +283,7 @@ vi.mock('chalk', () => {
 
 vi.mock('fs', () => ({
   realpathSync: vi.fn((p: string) => p),
+  existsSync: vi.fn(() => false),
 }));
 
 // ============================================================================

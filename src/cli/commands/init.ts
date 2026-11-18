@@ -79,12 +79,36 @@ function refuseHomeDirectory(targetDir: string): void {
   process.exit(1);
 }
 
-/** The top of the Git work tree `dir` sits in, or null outside any (or without git). */
+/** Git sees only the folder it runs in: a GIT_DIR leaked from a hook or runner would point it elsewhere. */
+const GIT_ENV: NodeJS.ProcessEnv = { GIT_DIR: undefined, GIT_WORK_TREE: undefined, GIT_INDEX_FILE: undefined };
+
+/**
+ * The top of the Git work tree `dir` sits in, or null outside any (or without git).
+ * A home folder kept as a dotfiles repository does not count: it is never a project.
+ */
 function enclosingWorkTree(dir: string): string | null {
-  const result = execFileNoThrowSync('git', ['rev-parse', '--show-toplevel'], { cwd: dir, shell: false });
+  const result = execFileNoThrowSync('git', ['rev-parse', '--show-toplevel'], { cwd: dir, env: GIT_ENV, shell: false });
   const top = result.success ? result.stdout.trim() : '';
-  return top === '' ? null : top;
+  if (top === '') return null;
+  const real = (p: string): string => {
+    try { return nativeFs.realpathSync(p); } catch { return path.resolve(p); }
+  };
+  return real(top) === real(os.homedir()) ? null : top;
 }
+
+/** True when `.specweave/config.json` exists but is not a JSON object. */
+function configIsUnreadable(targetDir: string): boolean {
+  const configPath = path.join(targetDir, '.specweave', 'config.json');
+  if (!nativeFs.existsSync(configPath)) return false;
+  try {
+    const value: unknown = JSON.parse(nativeFs.readFileSync(configPath, 'utf-8'));
+    return typeof value !== 'object' || value === null || Array.isArray(value);
+  } catch {
+    return true;
+  }
+}
+
+const UNREADABLE_CONFIG_MSG = '.specweave/config.json is not valid JSON and was left as it is. Fix or delete it, then run specweave init again.';
 
 /**
  * Unified CI/non-interactive detection.
@@ -328,6 +352,12 @@ export async function initCommand(
     }
   }
 
+  // A config init cannot read stops the run before anything is written.
+  if (configIsUnreadable(targetDir)) {
+    console.error(chalk.yellow(`\n⚠ ${UNREADABLE_CONFIG_MSG}\n`));
+    process.exit(1);
+  }
+
   // STEP 2e: Root repo GitHub connection — early position (T-013 — 0640)
   let rootRepoInfo: RootRepoInfo | null = null;
   if (!isCI && !continueExisting) {
@@ -354,7 +384,8 @@ export async function initCommand(
         const existingConfigPath = path.join(targetDir, '.specweave', 'config.json');
         if (fs.existsSync(existingConfigPath)) {
           try {
-            existingAdapter = fs.readJsonSync(existingConfigPath)?.adapters?.default || null;
+            const saved = fs.readJsonSync(existingConfigPath)?.adapters?.default;
+            existingAdapter = typeof saved === 'string' && saved.trim() !== '' ? saved.trim() : null;
           } catch { /* ignore */ }
         }
       }
@@ -362,11 +393,20 @@ export async function initCommand(
       const detectedTool = await adapterLoader.detectTool();
       spinner.stop();
 
-      // A re-run keeps the tool the project was set up with.
-      const savedTool = existingAdapter && (existingAdapter === 'claude' || adapterLoader.getAdapter(existingAdapter))
-        ? existingAdapter
+      // SPECWEAVE_TOOL names the tool outright, like --adapter; otherwise a
+      // re-run keeps the tool the project was set up with.
+      const envTool = process.env.SPECWEAVE_TOOL?.trim().toLowerCase();
+      const envNamesTool = !!envTool && envTool === detectedTool;
+      const savedLower = existingAdapter?.toLowerCase() ?? null;
+      const savedTool = savedLower && (savedLower === 'claude' || adapterLoader.getAdapter(savedLower))
+        ? savedLower
         : null;
-      if (savedTool) {
+      if (existingAdapter && !savedTool && !envNamesTool) {
+        console.log(chalk.yellow(`   ⚠ The saved tool "${existingAdapter}" is not one init knows; using ${detectedTool}.`));
+      }
+      if (envNamesTool) {
+        toolName = detectedTool;
+      } else if (savedTool) {
         toolName = savedTool;
       } else if (isCI) {
         toolName = detectedTool;
@@ -501,11 +541,11 @@ export async function initCommand(
     if (enclosingRepo) {
       console.log(chalk.gray(`\n   Inside the Git repository at ${enclosingRepo}: no new repository created.`));
     } else if (!fs.existsSync(gitDir)) {
-      const gitInitResult = execFileNoThrowSync('git', ['init'], { cwd: targetDir, shell: false });
+      const gitInitResult = execFileNoThrowSync('git', ['init'], { cwd: targetDir, env: GIT_ENV, shell: false });
       if (gitInitResult.success) {
         spinner.text = 'Git repository initialized...';
-        execFileNoThrowSync('git', ['add', '.'], { cwd: targetDir, shell: false });
-        execFileNoThrowSync('git', ['commit', '-m', 'Initial commit with SpecWeave'], { cwd: targetDir, shell: false });
+        execFileNoThrowSync('git', ['add', '.'], { cwd: targetDir, env: GIT_ENV, shell: false });
+        execFileNoThrowSync('git', ['commit', '-m', 'Initial commit with SpecWeave'], { cwd: targetDir, env: GIT_ENV, shell: false });
       }
     }
 
@@ -528,7 +568,7 @@ export async function initCommand(
     const configPath = path.join(targetDir, '.specweave', 'config.json');
     const configState = ensureConfigFile(targetDir, finalProjectName, toolName);
     if (configState === 'unreadable') {
-      console.log(chalk.yellow('   ⚠ .specweave/config.json is not valid JSON and was left as it is. Fix or delete it, then run specweave init again.'));
+      console.log(chalk.yellow(`   ⚠ ${UNREADABLE_CONFIG_MSG}`));
     }
     const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
 
@@ -537,9 +577,10 @@ export async function initCommand(
       try {
         const config = fs.readJsonSync(configPath);
 
-        // Provider info from .git/config, unless the project already names one
-        const hasProvider = config.repository?.provider && config.repository.provider !== 'local';
-        if (providerInfo && !hasProvider) {
+        // Provider info from .git/config fills a new config; a re-run keeps the
+        // repository block the project has, `provider: "local"` included.
+        const keepRepository = continueExisting && !!config.repository?.provider;
+        if (providerInfo && !keepRepository) {
           const org = providerInfo.owner || providerInfo.organization;
           config.repository = {
             provider: providerInfo.provider,
@@ -571,7 +612,7 @@ export async function initCommand(
         }
 
         // LSP on for Claude Code, unless the project already chose
-        if (toolName === 'claude') {
+        if (toolName === 'claude' && (config.lsp === undefined || typeof config.lsp === 'object')) {
           config.lsp = { enabled: true, ...config.lsp };
         }
 

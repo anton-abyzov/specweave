@@ -39,7 +39,11 @@ export function applySmartDefaults(
 
   // LSP: auto-enable for Claude.
   if (options.adapter === 'claude') {
-    config.lsp = { enabled: true, ...config.lsp };
+    // `lsp: false` (or true) is the shorthand for `{ enabled: ... }`.
+    const lsp = config.lsp;
+    config.lsp = typeof lsp === 'boolean'
+      ? { enabled: lsp }
+      : { enabled: true, ...(lsp && typeof lsp === 'object' ? lsp : {}) };
   }
 
   // Sync: on by default once a provider/tracker is configured. A project that
