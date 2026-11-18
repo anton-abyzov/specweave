@@ -128,7 +128,7 @@ _specweave() {
                         '--evidence[Evidence for `done` (commit sha, test output)]' \
                         '--run[Run <cmd> through the OS shell; exit 0 required, output stored as evidence]' \
                         '--note[Note (alias of --reason)]' \
-                        '--reason[Reason (required for skip / block)]' \
+                        '--reason[Reason (required for skip / block)\: one short plain sentence a person reads on the board, normal spaces, code in backticks; glued words are refused (exit 2)]' \
                         '--all-mine[With `release`\: release every task claimed by this agent]' \
                         '--write[With `render`\: refresh a legacy tasks.md from the ledger]' \
                         '--set[With `repos`\: comma-separated repository paths (relative to the project root) or registered ids]' \
@@ -158,7 +158,7 @@ _specweave() {
                         '--link[Card link (PR URL, report path, artifact URL)]' \
                         '--evidence[Evidence for `done`]' \
                         '--run[With `done` on a T-NN card\: run <cmd>, exit 0 required]' \
-                        '--reason[Why the card waits (`wait`)]' \
+                        '--reason[Why the card waits (`wait`)\: one short plain sentence a person reads on the board, normal spaces, code in backticks; glued words are refused (exit 2)]' \
                         '--force[Override a live claim (T-NN cards)]' \
                         '--no-commit[Skip the git.autoCommitIncrement commit of the increment files (T-NN cards)]' \
                         '--json[Machine-readable output]' \
