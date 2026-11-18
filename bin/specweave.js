@@ -281,15 +281,7 @@ program
   .option('--json', 'Output result as JSON (for programmatic use)')
   .action(async (title, options) => {
     if (title && !options.title) options.title = title;
-    if (options.projectRoot) {
-      const configPath = (await import('path')).join(options.projectRoot, '.specweave', 'config.json');
-      const fs = await import('fs');
-      if (!fs.existsSync(configPath)) {
-        console.error(`Error: ${options.projectRoot} is not a valid SpecWeave project (missing .specweave/config.json)`);
-        process.exit(1);
-      }
-      options.projectRoot = options.projectRoot;
-    }
+    // The command refuses a folder or --project-root without .specweave/config.json itself.
     const { createIncrementCommand } = await import('../dist/src/cli/commands/create-increment.js');
     await createIncrementCommand(options);
   });
