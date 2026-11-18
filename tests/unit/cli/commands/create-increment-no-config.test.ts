@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { spawnSync } from 'child_process';
 
 const MESSAGE =
   'This folder is not set up for SpecWeave. Run `specweave init` here first. ' +
@@ -138,5 +139,25 @@ describe('create-increment without .specweave/config.json', () => {
     await createIncrementCommand({ title: 'Member work', commit: false });
     expect(fs.readdirSync(path.join(umbrella, '.specweave', 'increments'))).toHaveLength(1);
     expect(fs.existsSync(path.join(member, '.specweave', 'increments'))).toBe(false);
+  });
+
+  it('the CLI exits 1 with the message and leaves a plain folder as it was', () => {
+    const bin = path.resolve(cwd, 'bin/specweave.js');
+    if (!fs.existsSync(path.resolve(cwd, 'dist/src/cli/commands/create-increment.js'))) {
+      throw new Error('dist/ is missing: run `npm run build` before this test');
+    }
+    const folder = path.join(tempDir, 'cli-plain');
+    fs.mkdirSync(folder);
+    const env = { ...process.env };
+    delete env.SPECWEAVE_WORKSPACE;
+    const run = spawnSync(
+      process.execPath,
+      [bin, 'create-increment', 'Simple website', '--with-plan', '--no-commit', '--json'],
+      { cwd: folder, encoding: 'utf8', env },
+    );
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain(MESSAGE);
+    expect(JSON.parse(run.stdout.trim().split('\n').pop()!)).toMatchObject({ success: false, code: 'not-set-up' });
+    expect(listTree(folder)).toEqual([]);
   });
 });
