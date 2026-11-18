@@ -454,7 +454,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
       // Non-critical — plugin cache freshness is best-effort
     }
 
-    // NOTE: sw@specweave is enabled at USER level by plugin-installer.ts
+    // NOTE: sw@specweave is a USER-level plugin (init installs project skills, not the plugin).
     // Do NOT enable it at project level — that would make the core framework
     // plugin appear as "Project" scope instead of "User" scope in Claude Code UI.
   }
