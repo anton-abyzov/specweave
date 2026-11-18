@@ -22,7 +22,7 @@ _specweave_completions() {
             return 0
             ;;
         init)
-            COMPREPLY=( $(compgen -W "-n --name -t --template -a --adapter --tech-stack -l --language -f --force --force-refresh --git-hooks --full -q --quick --non-interactive --workspace --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "-n --name -a --adapter -f --force --git-hooks -q --quick --non-interactive -t --template --tech-stack -l --language --force-refresh --full --workspace --help" -- "${cur}") )
             return 0
             ;;
         uninstall)

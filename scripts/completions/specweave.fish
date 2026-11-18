@@ -9,7 +9,7 @@ set -l commands init uninstall pause start resume reopen abandon complete task a
 # Disable file completion for specweave
 complete -c specweave -f
 
-complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a init -d "Initialize a new SpecWeave project"
+complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a init -d "Set up SpecWeave in a folder: no questions, never runs Git, safe to run again"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a uninstall -d "Remove SpecWeave from the current project"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a pause -d "Pause an active increment"
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a start -d "Start a planned/backlog/paused increment (status -> active)"
@@ -46,17 +46,17 @@ complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a context 
 complete -c specweave -n "not __fish_seen_subcommand_from $commands" -a get -d "Clone and register an existing repository into the workspace"
 
 # init
-complete -c specweave -n "__fish_seen_subcommand_from init" -l name -s n -d "Project name (alternative to positional argument)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l template -s t -d "Project template (saas, api, fullstack)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l adapter -s a -d "AI tool adapter (claude, cursor, copilot, generic)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l tech-stack -d "Technology stack (nodejs, python, etc.)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l language -s l -d "Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l force -s f -d "Force fresh start (non-interactive, removes existing .specweave)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l force-refresh -d "Force marketplace refresh (skip cache, always pull latest)"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l name -s n -d "Project folder (alternative to the positional argument)"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l adapter -s a -d "AI tool to set up for (claude, codex, cursor, copilot, generic, ...); default: the saved tool, else Claude Code"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l force -s f -d "Back up .specweave and start over"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l git-hooks -d "Also install the SpecWeave pre-commit hook (off by default)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l full -d "Install all plugins (skip lazy loading, longer init but all skills available immediately)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l quick -s q -d "Quick mode: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)"
-complete -c specweave -n "__fish_seen_subcommand_from init" -l non-interactive -d "Alias for --quick (skip all prompts)"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l quick -s q -d "Accepted for older scripts; init never asks"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l non-interactive -d "Accepted for older scripts; init never asks"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l template -s t -d "Accepted and ignored (until 4.0)"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l tech-stack -d "Accepted and ignored (until 4.0)"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l language -s l -d "Accepted and ignored (until 4.0); output is English"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l force-refresh -d "Accepted and ignored (until 4.0)"
+complete -c specweave -n "__fish_seen_subcommand_from init" -l full -d "Accepted and ignored (until 4.0)"
 complete -c specweave -n "__fish_seen_subcommand_from init" -l workspace -d "Select the planning workspace explicitly"
 
 # uninstall
@@ -316,7 +316,7 @@ complete -c specweave -n "__fish_seen_subcommand_from get" -l expected-fingerpri
 complete -c specweave -n "__fish_seen_subcommand_from get" -l branch -d "Clone a specific branch"
 complete -c specweave -n "__fish_seen_subcommand_from get" -l prefix -d "User story prefix (default: first 3 chars uppercase)"
 complete -c specweave -n "__fish_seen_subcommand_from get" -l role -d "Repository role (frontend, backend, mobile, infra, shared)"
-complete -c specweave -n "__fish_seen_subcommand_from get" -l no-init -d "Skip specweave init on cloned repo"
+complete -c specweave -n "__fish_seen_subcommand_from get" -l no-init -d "Accepted and ignored: get never runs init"
 complete -c specweave -n "__fish_seen_subcommand_from get" -l yes -d "Skip confirmation prompts"
 complete -c specweave -n "__fish_seen_subcommand_from get" -l all -d "Clone all repositories in an org (source is org name)"
 complete -c specweave -n "__fish_seen_subcommand_from get" -l pattern -d "Filter repos by glob pattern, e.g. \"service-*\" (use with --all or org/* source)"

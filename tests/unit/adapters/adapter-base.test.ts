@@ -179,7 +179,7 @@ describe('AdapterBase', () => {
       Object.defineProperty(process, 'version', { value: originalVersion, configurable: true });
     });
 
-    it('should add warning when git is not found', async () => {
+    it('never runs git, even when git is missing', async () => {
       const originalVersion = process.version;
       Object.defineProperty(process, 'version', { value: 'v20.10.0', configurable: true });
       mockExecSync.mockImplementation(() => {
@@ -189,24 +189,8 @@ describe('AdapterBase', () => {
       const result = await adapter.checkRequirements();
 
       expect(result.met).toBe(true);
-      expect(result.warnings).toHaveLength(1);
-      expect(result.warnings[0]).toContain('Git not found');
-
-      Object.defineProperty(process, 'version', { value: originalVersion, configurable: true });
-    });
-
-    it('should report both Node version failure and git warning', async () => {
-      const originalVersion = process.version;
-      Object.defineProperty(process, 'version', { value: 'v14.0.0', configurable: true });
-      mockExecSync.mockImplementation(() => {
-        throw new Error('git not found');
-      });
-
-      const result = await adapter.checkRequirements();
-
-      expect(result.met).toBe(false);
-      expect(result.missing).toHaveLength(1);
-      expect(result.warnings).toHaveLength(1);
+      expect(result.warnings).toHaveLength(0);
+      expect(mockExecSync).not.toHaveBeenCalled();
 
       Object.defineProperty(process, 'version', { value: originalVersion, configurable: true });
     });

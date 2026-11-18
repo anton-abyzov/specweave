@@ -32,7 +32,7 @@ Most commands that take an increment id accept the short number (`0042`) and fal
 
 | Command | Purpose | Useful flags |
 |---------|---------|--------------|
-| `specweave init [project-name]` | Set up `.specweave/`, `AGENTS.md`, `CLAUDE.md` and the skills for your tool. | `-a, --adapter <tool>`, `-q, --quick` (no prompts), `-f, --force` (fresh start), `-l, --language <lang>`, `--tech-stack <language>` (passed to the tool adapter, such as `nodejs` or `python`), `--git-hooks`. `-t, --template` and `--full` are still accepted and change nothing in 3.x. |
+| `specweave init [project-name]` | Set up `.specweave/`, `AGENTS.md`, `CLAUDE.md` and the skills for your tool. Asks nothing, never runs Git, safe to run again: keys in `config.json` stay, missing files come back. Refuses the home folder, a folder inside another SpecWeave project and a linked worktree of another project. | `-a, --adapter <tool>` (default: the saved tool, else Claude Code), `-f, --force` (back up `.specweave`, start over), `--git-hooks`, `--tech-stack <language>` (passed to the tool adapter). `-q`, `--non-interactive`, `-l`, `-t`, `--full` and `--force-refresh` are accepted and change nothing. |
 | `specweave update` | Update the CLI, instruction files, config and plugins in one step. This is the upgrade path from 2.x. | `--check` (dry run), `--no-self`, `--no-plugins`, `-f, --force` |
 | `specweave update-instructions` | Rewrite `AGENTS.md` and `CLAUDE.md` with a merge that keeps your own sections. | `--dry-run`, `-v, --verbose` |
 | `specweave refresh-plugins` | Reinstall the SpecWeave skills for the configured tool. | `--force`, `--plugin <name>`, `-q, --quiet` |
@@ -141,7 +141,7 @@ Flags are in the [`specweave sync` reference](/docs/reference/sync-cli).
 |---------|---------|--------------|
 | `specweave save [message]` | Generate a commit message, commit, sync with the remote and push. | `--dry-run`, `--no-push`, `--sync <rebase\|merge\|none>`, `-i, --interactive` |
 | `specweave lsp <action>` | Code intelligence: `refs`, `def`, `hover`, `symbols`, `search`, `warmup`, `status`, `setup`. See [LSP integration](/docs/guides/lsp-integration). | |
-| `specweave get <source>` | Clone a repository into the workspace and register it. Accepts `owner/repo`, a URL, or an org with `--all`. | `--branch <name>`, `--all`, `--pattern <glob>`, `--no-init` |
+| `specweave get <source>` | Clone a repository into the workspace and register it. Accepts `owner/repo`, a URL, or an org with `--all`. | `--branch <name>`, `--all`, `--pattern <glob>` |
 | `specweave context projects` | Print the project and board values an increment can use. | |
 | `specweave project <action>` | Portable project hub: `init`, `show`, `set`, `brief`, `work-add`, `work-update`, `work-record`, `artifact-add`, `artifact-remove`, `routine-add`, `routine-remove`. See [portable projects](/docs/guides/portable-projects). | `--harness <codex\|claude\|generic>`, `--json` |
 

@@ -43,18 +43,18 @@ program.hook('preAction', async () => {
 // Init command - Create new SpecWeave project
 program
   .command('init [project-name]')
-  .description('Initialize a new SpecWeave project')
-  .option('-n, --name <name>', 'Project name (alternative to positional argument)')
-  .option('-t, --template <type>', 'Project template (saas, api, fullstack)', 'saas')
-  .option('-a, --adapter <tool>', 'AI tool adapter (claude, cursor, copilot, generic)', undefined)
-  .option('--tech-stack <language>', 'Technology stack (nodejs, python, etc.)', undefined)
-  .option('-l, --language <lang>', 'Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)')
-  .option('-f, --force', 'Force fresh start (non-interactive, removes existing .specweave)', false)
-  .option('--force-refresh', 'Force marketplace refresh (skip cache, always pull latest)', false)
+  .description('Set up SpecWeave in a folder: no questions, never runs Git, safe to run again')
+  .option('-n, --name <name>', 'Project folder (alternative to the positional argument)')
+  .option('-a, --adapter <tool>', 'AI tool to set up for (claude, codex, cursor, copilot, generic, ...); default: the saved tool, else Claude Code')
+  .option('-f, --force', 'Back up .specweave and start over', false)
   .option('--git-hooks', 'Also install the SpecWeave pre-commit hook (off by default)')
-  .option('--full', 'Install all plugins (skip lazy loading, longer init but all skills available immediately)')
-  .option('-q, --quick', 'Quick mode: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)')
-  .option('--non-interactive', 'Alias for --quick (skip all prompts)')
+  .option('-q, --quick', 'Accepted for older scripts; init never asks')
+  .option('--non-interactive', 'Accepted for older scripts; init never asks')
+  .option('-t, --template <type>', 'Accepted and ignored (until 4.0)')
+  .option('--tech-stack <language>', 'Accepted and ignored (until 4.0)')
+  .option('-l, --language <lang>', 'Accepted and ignored (until 4.0); output is English')
+  .option('--force-refresh', 'Accepted and ignored (until 4.0)')
+  .option('--full', 'Accepted and ignored (until 4.0)')
   .action(async (projectName, options) => {
     const { initCommand } = await import('../dist/src/cli/commands/init.js');
     // Support --name as alternative to positional argument
@@ -984,7 +984,7 @@ program
   .option('--branch <branch>', 'Clone a specific branch')
   .option('--prefix <prefix>', 'User story prefix (default: first 3 chars uppercase)')
   .option('--role <role>', 'Repository role (frontend, backend, mobile, infra, shared)')
-  .option('--no-init', 'Skip specweave init on cloned repo')
+  .option('--no-init', 'Accepted and ignored: get never runs init')
   .option('--yes', 'Skip confirmation prompts')
   .option('--all', 'Clone all repositories in an org (source is org name)')
   .option('--pattern <pattern>', 'Filter repos by glob pattern, e.g. "service-*" (use with --all or org/* source)')
