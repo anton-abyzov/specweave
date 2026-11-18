@@ -1,7 +1,6 @@
 /**
- * Unit tests for gitignore-generator
- *
- * Tests generateGitignore (pure), detectTechStack, writeGitignore (temp dirs).
+ * Unit tests for gitignore-generator: the lines SpecWeave owns in a
+ * `.gitignore` (1407: init writes only these).
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -9,12 +8,7 @@ import * as fs from 'fs/promises';
 import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import path from 'path';
 import os from 'os';
-import {
-  generateGitignore,
-  detectTechStack,
-  writeGitignore,
-} from '../../../../../src/cli/helpers/init/gitignore-generator.js';
-import type { TechStackDetection } from '../../../../../src/cli/helpers/init/gitignore-generator.js';
+import { ensureSpecweaveGitignoreEntries } from '../../../../../src/cli/helpers/init/gitignore-generator.js';
 
 function tmpPath(name: string): string {
   const suffix = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
@@ -22,361 +16,55 @@ function tmpPath(name: string): string {
 }
 
 describe('gitignore-generator', () => {
-  // ─── generateGitignore (pure) ──────────────────────────────────
+  // ─── SpecWeave's own lines ─────────────────────────────────────
 
-  describe('generateGitignore', () => {
-    it('should include common entries by default', () => {
-      const detection: TechStackDetection = {
-        detected: [],
-        primary: null,
-        categories: new Map(),
-      };
-      const result = generateGitignore(detection);
-      expect(result).toContain('node_modules/');
-      expect(result).toContain('.env');
-      expect(result).toContain('.DS_Store');
+  describe('SpecWeave entries in a new .gitignore', () => {
+    let dir: string;
+    let lines: string[];
+
+    beforeEach(() => {
+      dir = tmpPath('entries');
+      mkdirSync(dir, { recursive: true });
+      ensureSpecweaveGitignoreEntries(dir, '# SpecWeave');
+      lines = readFileSync(path.join(dir, '.gitignore'), 'utf-8').split('\n');
     });
 
-    it('should include SpecWeave entries by default', () => {
-      const detection: TechStackDetection = {
-        detected: [],
-        primary: null,
-        categories: new Map(),
-      };
-      const result = generateGitignore(detection);
-      expect(result).toContain('.specweave/cache/');
+    afterEach(async () => {
+      await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
     });
 
-    it('should include vskill.lock in SpecWeave entries (0644)', () => {
-      const detection: TechStackDetection = {
-        detected: [],
-        primary: null,
-        categories: new Map(),
-      };
-      const result = generateGitignore(detection);
-      expect(result).toContain('vskill.lock');
+    it('holds only SpecWeave lines, no stack or common rules', () => {
+      for (const other of ['node_modules/', '.env', '.DS_Store', 'dist/']) expect(lines).not.toContain(other);
+      expect(lines.join('\n')).not.toMatch(/migration/);
     });
 
-    it('should gitignore work-handoff artifacts (0867 AC-US6-03)', () => {
-      const detection: TechStackDetection = {
-        detected: [],
-        primary: null,
-        categories: new Map(),
-      };
-      const result = generateGitignore(detection);
-      expect(result).toContain('.handoff/');
-      expect(result).toContain('.specweave/state/handoff-latest.*');
+    it('ignores vskill.lock (0644) and work-handoff artifacts (0867 AC-US6-03)', () => {
+      for (const entry of ['vskill.lock', '.handoff/', '.specweave/state/handoff-latest.*']) expect(lines).toContain(entry);
     });
 
-    it('should gitignore runtime state dirs and binary report evidence (2.0)', () => {
-      const detection: TechStackDetection = {
-        detected: [],
-        primary: null,
-        categories: new Map(),
-      };
-      const result = generateGitignore(detection);
+    it('ignores runtime state dirs, fresh-start backups and binary report evidence', () => {
       for (const entry of [
         '.specweave/state/',
         '.specweave/logs/',
         '.specweave/cache/',
         '.specweave/backups/',
         '.specweave/jobs/',
-        '**/reports/*.mp4',
-        '**/reports/*.png',
-        '**/reports/*.jpg',
+        '/.specweave.backup-*/',
+        '**/.specweave/**/reports/*.mp4',
+        '**/.specweave/**/reports/*.png',
+        '**/.specweave/**/reports/*.jpg',
       ]) {
-        expect(result).toContain(entry);
+        expect(lines).toContain(entry);
       }
     });
 
-    it('ships no app-bundle patterns and writes each rule once', () => {
-      const categories = new Map<any, string[]>();
-      categories.set('language', ['javascript', 'typescript']);
-      categories.set('framework', ['react']);
-      const detection: TechStackDetection = { detected: [], primary: null, categories };
-      const lines = generateGitignore(detection).split('\n');
-      for (const gone of ['**/reports/*.aab', '**/reports/*.ipa', '**/reports/*.dSYM/']) {
-        expect(lines).not.toContain(gone);
-      }
-      const rules = lines.map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
-      expect(rules.filter((l) => l === 'node_modules/')).toHaveLength(1);
-      expect(rules.length).toBe(new Set(rules).size);
-      // A header whose rules were all duplicates is dropped, not left dangling.
-      const headers = lines.map((l, i) => [l, lines[i + 1] ?? ''] as const).filter(([l]) => l.startsWith('#'));
-      expect(headers.filter(([, next]) => next.trim() === '')).toEqual([]);
-      // The framework dirs SpecWeave installs stay ignored.
+    it('anchors the framework dirs at the root and writes each rule once', () => {
       expect(lines).toContain('/plugins/');
       expect(lines).toContain('/.claude-plugin/');
-    });
-
-    it('should exclude common when includeCommon=false', () => {
-      const detection: TechStackDetection = {
-        detected: [],
-        primary: null,
-        categories: new Map(),
-      };
-      const result = generateGitignore(detection, { includeCommon: false });
-      // Should not have common entries like .DS_Store unless they appear in specweave
-      expect(result).not.toContain('.DS_Store');
-    });
-
-    it('should exclude SpecWeave when includeSpecweave=false', () => {
-      const detection: TechStackDetection = {
-        detected: [],
-        primary: null,
-        categories: new Map(),
-      };
-      const result = generateGitignore(detection, { includeSpecweave: false });
-      expect(result).not.toContain('.specweave/cache/');
-    });
-
-    it('should include tech-specific entries', () => {
-      const categories = new Map<any, string[]>();
-      categories.set('language', ['typescript']);
-      categories.set('framework', ['nextjs']);
-
-      const detection: TechStackDetection = {
-        detected: [
-          { name: 'typescript', confidence: 'high', source: 'file', category: 'language' },
-          { name: 'nextjs', confidence: 'high', source: 'file', category: 'framework' },
-        ],
-        primary: 'nextjs',
-        categories,
-      };
-
-      const result = generateGitignore(detection);
-      expect(result).toContain('*.tsbuildinfo');
-      expect(result).toContain('.next/');
-    });
-
-    it('should include custom entries', () => {
-      const detection: TechStackDetection = {
-        detected: [],
-        primary: null,
-        categories: new Map(),
-      };
-      const result = generateGitignore(detection, {
-        customEntries: ['my-custom-dir/', 'secret.key'],
-      });
-      expect(result).toContain('my-custom-dir/');
-      expect(result).toContain('secret.key');
-      expect(result).toContain('# Project-specific');
-    });
-
-    it('should not have triple blank lines', () => {
-      const detection: TechStackDetection = {
-        detected: [],
-        primary: null,
-        categories: new Map(),
-      };
-      const result = generateGitignore(detection);
-      expect(result).not.toContain('\n\n\n');
-    });
-
-    it('should end with newline', () => {
-      const detection: TechStackDetection = {
-        detected: [],
-        primary: null,
-        categories: new Map(),
-      };
-      const result = generateGitignore(detection);
-      expect(result.endsWith('\n')).toBe(true);
-    });
-  });
-
-  // ─── .gitignore.template (init fallback copy) ─────────────────
-
-  describe('.gitignore.template', () => {
-    const templatePath = path.join(
-      process.cwd(),
-      'src',
-      'templates',
-      '.gitignore.template'
-    );
-
-    it('has no inline comments (gitignore treats them as part of the pattern)', () => {
-      const lines = readFileSync(templatePath, 'utf-8').split('\n');
-      const offenders = lines.filter(
-        (l) => !l.trimStart().startsWith('#') && l.includes('#')
-      );
-      expect(offenders).toEqual([]);
-    });
-
-    it('ships no app-bundle patterns and lists node_modules/ once', () => {
-      const lines = readFileSync(templatePath, 'utf-8').split('\n').map((l) => l.trim());
+      expect(lines).not.toContain('plugins/');
+      const rules = lines.map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
+      expect(rules.length).toBe(new Set(rules).size);
       for (const gone of ['**/reports/*.aab', '**/reports/*.ipa', '**/reports/*.dSYM/']) expect(lines).not.toContain(gone);
-      expect(lines.filter((l) => l === 'node_modules/')).toHaveLength(1);
-    });
-
-    it('ignores the 2.0 runtime state dirs and binary report evidence', () => {
-      const content = readFileSync(templatePath, 'utf-8');
-      for (const entry of [
-        '.specweave/state/',
-        '.specweave/logs/',
-        '.specweave/cache/',
-        '.specweave/backups/',
-        '.specweave/jobs/',
-        '**/reports/*.mp4',
-        '**/reports/*.png',
-        '**/reports/*.jpg',
-      ]) {
-        expect(content.split('\n')).toContain(entry);
-      }
-    });
-  });
-
-  // ─── detectTechStack ───────────────────────────────────────────
-
-  describe('detectTechStack', () => {
-    let dir: string;
-
-    beforeEach(() => {
-      dir = tmpPath('detect');
-      mkdirSync(dir, { recursive: true });
-    });
-
-    afterEach(async () => {
-      await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
-    });
-
-    it('should detect TypeScript from tsconfig.json', async () => {
-      writeFileSync(path.join(dir, 'tsconfig.json'), '{}');
-      const detection = await detectTechStack(dir);
-      const names = detection.detected.map(d => d.name);
-      expect(names).toContain('typescript');
-    });
-
-    it('should detect JavaScript from package.json', async () => {
-      writeFileSync(path.join(dir, 'package.json'), '{"name":"test"}');
-      const detection = await detectTechStack(dir);
-      const names = detection.detected.map(d => d.name);
-      expect(names).toContain('javascript');
-    });
-
-    it('should detect Next.js from next.config.js', async () => {
-      writeFileSync(path.join(dir, 'next.config.js'), 'module.exports = {}');
-      const detection = await detectTechStack(dir);
-      expect(detection.primary).toBe('nextjs');
-    });
-
-    it('should detect tech from user prompt keywords', async () => {
-      const detection = await detectTechStack(dir, 'building a react app with prisma');
-      const names = detection.detected.map(d => d.name);
-      expect(names).toContain('react');
-      expect(names).toContain('prisma');
-    });
-
-    it('should return empty detection for empty directory', async () => {
-      const detection = await detectTechStack(dir);
-      expect(detection.detected).toEqual([]);
-      expect(detection.primary).toBeNull();
-    });
-
-    it('should prefer framework as primary over language', async () => {
-      writeFileSync(path.join(dir, 'package.json'), '{"name":"test"}');
-      writeFileSync(path.join(dir, 'tsconfig.json'), '{}');
-      writeFileSync(path.join(dir, 'angular.json'), '{}');
-      const detection = await detectTechStack(dir);
-      expect(detection.primary).toBe('angular');
-    });
-
-    it('should organize detected tech by category', async () => {
-      writeFileSync(path.join(dir, 'tsconfig.json'), '{}');
-      writeFileSync(path.join(dir, 'vitest.config.ts'), '{}');
-      const detection = await detectTechStack(dir);
-      expect(detection.categories.get('language')).toContain('typescript');
-      expect(detection.categories.get('testing')).toContain('vitest');
-    });
-  });
-
-  // ─── writeGitignore ────────────────────────────────────────────
-
-  describe('writeGitignore', () => {
-    let dir: string;
-
-    beforeEach(() => {
-      dir = tmpPath('write');
-      mkdirSync(dir, { recursive: true });
-    });
-
-    afterEach(async () => {
-      await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
-    });
-
-    it('should create new .gitignore', async () => {
-      const result = await writeGitignore(dir, 'node_modules/\n.env\n');
-      expect(result.action).toBe('created');
-      const content = readFileSync(path.join(dir, '.gitignore'), 'utf-8');
-      expect(content).toContain('node_modules/');
-    });
-
-    it('should merge with existing .gitignore', async () => {
-      writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\n');
-      const result = await writeGitignore(dir, 'node_modules/\n.env\ndist/\n');
-      expect(result.action).toBe('merged');
-      const content = readFileSync(path.join(dir, '.gitignore'), 'utf-8');
-      expect(content).toContain('node_modules/');
-      expect(content).toContain('.env');
-    });
-
-    it('should skip when merge=false and .gitignore exists', async () => {
-      writeFileSync(path.join(dir, '.gitignore'), 'existing\n');
-      const result = await writeGitignore(dir, 'new content\n', { merge: false });
-      expect(result.action).toBe('skipped');
-    });
-
-    it('should create backup when merging', async () => {
-      writeFileSync(path.join(dir, '.gitignore'), 'original\n');
-      await writeGitignore(dir, 'new-entry/\n', { backup: true });
-      const backup = readFileSync(path.join(dir, '.gitignore.backup'), 'utf-8');
-      expect(backup).toContain('original');
-    });
-
-    it('should skip merge when no new entries', async () => {
-      writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\n.env\n');
-      const result = await writeGitignore(dir, 'node_modules/\n.env\n');
-      expect(result.action).toBe('skipped');
-    });
-
-    it('leaves no backup when nothing changes', async () => {
-      writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\n.env\n');
-      await writeGitignore(dir, 'node_modules/\n.env\n', { backup: true });
-      expect(await fs.readdir(dir)).toEqual(['.gitignore']);
-    });
-  });
-
-  // Migrations are source files: ignoring them loses schema history.
-  describe('database migrations stay committed', () => {
-    let dir: string;
-
-    beforeEach(async () => {
-      dir = await fs.mkdtemp(path.join(os.tmpdir(), 'sw-gitignore-db-'));
-    });
-
-    afterEach(async () => {
-      await fs.rm(dir, { recursive: true, force: true });
-    });
-
-    it('writes no rule that ignores Prisma migrations', async () => {
-      mkdirSync(path.join(dir, 'prisma'), { recursive: true });
-      writeFileSync(path.join(dir, 'prisma', 'schema.prisma'), 'datasource db {}\n');
-      const result = generateGitignore(await detectTechStack(dir));
-      expect(result).toContain('prisma/*.db');
-      expect(result).not.toMatch(/migration/);
-    });
-
-    it('writes no rule that ignores the Drizzle folder', async () => {
-      writeFileSync(path.join(dir, 'drizzle.config.ts'), 'export default {};\n');
-      const result = generateGitignore(await detectTechStack(dir));
-      expect(result.split('\n')).not.toContain('drizzle/');
-    });
-
-    it('keeps the template fallback free of migration rules', () => {
-      const template = readFileSync(
-        path.resolve(__dirname, '../../../../../src/templates/.gitignore.template'),
-        'utf-8',
-      );
-      expect(template).not.toMatch(/migration\.sql/);
     });
   });
 });

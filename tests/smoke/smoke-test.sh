@@ -79,7 +79,7 @@ echo "🔧 Test 5: Templates"
 echo "------------------------"
 test_command "CLAUDE.md.template exists" "test -f $PROJECT_ROOT/src/templates/CLAUDE.md.template"
 test_command "README.md.template exists" "test -f $PROJECT_ROOT/src/templates/README.md.template"
-test_command ".gitignore.template exists" "test -f $PROJECT_ROOT/src/templates/.gitignore.template"
+test_command ".gitattributes.template exists" "test -f $PROJECT_ROOT/src/templates/.gitattributes.template"
 test_command "AGENTS.md.template exists" "test -f $PROJECT_ROOT/src/templates/AGENTS.md.template"
 echo ""
 

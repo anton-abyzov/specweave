@@ -7,7 +7,6 @@
  *
  * These tests exercise the integration between:
  * - refresh-plugins command (src/cli/commands/refresh-plugins.ts)
- * - plugin-installer (src/cli/helpers/init/plugin-installer.ts)
  *
  * All external I/O (filesystem, child_process) is mocked via vi.mock.
  *
@@ -178,7 +177,7 @@ vi.mock('node:crypto', async () => {
   return { ...actual, default: actual };
 });
 
-// Mock fs-native (for plugin-installer)
+// Mock fs-native (for refresh-plugins)
 vi.mock('../../src/utils/fs-native.js', () => ({
   existsSync: mockExistsSync,
   readFileSync: mockReadFileSync,
@@ -188,44 +187,44 @@ vi.mock('../../src/utils/fs-native.js', () => ({
   copyFileSync: vi.fn(),
 }));
 
-// Mock ora (for plugin-installer)
+// Mock ora (for refresh-plugins)
 vi.mock('ora', () => ({ default: mockOra }));
 
-// Mock os (for plugin-installer)
+// Mock os (for refresh-plugins)
 vi.mock('os', () => ({
   default: { homedir: mockHomedir },
   homedir: mockHomedir,
 }));
 
-// Mock Claude CLI detector (for plugin-installer)
+// Mock Claude CLI detector (for refresh-plugins)
 vi.mock('../../src/utils/claude-cli-detector.js', () => ({
   detectClaudeCli: mockDetectClaudeCli,
   getClaudeCliDiagnostic: mockGetClaudeCliDiagnostic,
   getClaudeCliSuggestions: mockGetClaudeCliSuggestions,
 }));
 
-// Mock path-utils (for plugin-installer)
+// Mock path-utils (for refresh-plugins)
 vi.mock('../../src/cli/helpers/init/path-utils.js', () => ({
   findSourceDir: mockFindSourceDir,
 }));
 
-// Mock cleanup-stale-plugins (for plugin-installer)
+// Mock cleanup-stale-plugins (for refresh-plugins)
 vi.mock('../../src/utils/cleanup-stale-plugins.js', () => ({
   cleanupStalePlugins: mockCleanupStalePlugins,
 }));
 
-// Mock plugin-scope (for plugin-installer)
+// Mock plugin-scope (for refresh-plugins)
 vi.mock('../../src/core/types/plugin-scope.js', () => ({
   getPluginScope: mockGetPluginScope,
   getScopeArgs: mockGetScopeArgs,
 }));
 
-// Mock claude-plugin-enabler (for plugin-installer)
+// Mock claude-plugin-enabler (for refresh-plugins)
 vi.mock('../../src/cli/helpers/init/claude-plugin-enabler.js', () => ({
   enablePluginsInSettings: mockEnablePluginsInSettings,
 }));
 
-// Mock plugin-copier (inline copier used by refresh-plugins and plugin-installer)
+// Mock plugin-copier (inline copier used by refresh-plugins)
 vi.mock('../../src/utils/plugin-copier.js', () => ({
   copyPlugin: mockCopyPlugin,
   installPlugin: mockCopyPlugin,
@@ -239,9 +238,10 @@ vi.mock('../../src/utils/plugin-copier.js', () => ({
   fixHookPermissions: vi.fn(),
 }));
 
-// Mock find-project-root (for plugin-installer)
+// Mock find-project-root (refresh-plugins only works inside a project)
 vi.mock('../../src/utils/find-project-root.js', () => ({
   getProjectRoot: mockGetProjectRoot,
+  findProjectRoot: vi.fn(() => '/mock/project'),
 }));
 
 // ---------------------------------------------------------------------------
@@ -249,7 +249,6 @@ vi.mock('../../src/utils/find-project-root.js', () => ({
 // ---------------------------------------------------------------------------
 
 import { refreshPluginsCommand } from '../../src/cli/commands/refresh-plugins.js';
-import { installAllPlugins } from '../../src/cli/helpers/init/plugin-installer.js';
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -401,128 +400,10 @@ describe('vskill plugin pipeline integration', () => {
   });
 
   // =========================================================================
-  // TC-027: Init with inline copier end-to-end
-  // =========================================================================
-  describe('TC-027: Init with inline copier end-to-end', () => {
-    /** Setup mocks for a working init-via-copier flow */
-    function setupInitMocks(plugins: Array<{ name: string }> = [{ name: 'sw' }, { name: 'sw-github' }]) {
-      mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
-      mockExistsSync.mockReturnValue(true);
-      mockReadFileSync.mockReturnValue(JSON.stringify({ plugins }));
-      mockGetPluginScope.mockReturnValue('user');
-      mockGetScopeArgs.mockReturnValue([]);
-      mockEnablePluginsInSettings.mockReturnValue(true);
-      mockFindSpecweaveRoot.mockReturnValue('/mock/specweave-root');
-      mockCopyPlugin.mockReturnValue({ success: true, skipped: false });
-      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, skipped: false });
-      mockGetProjectRoot.mockReturnValue('/mock/project');
-    }
-
-    it('should call copyPluginSkillsToProject (not claude plugin install) during installAllPlugins', async () => {
-      setupInitMocks();
-
-      // When: installAllPlugins runs
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      // Then: success
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBeGreaterThanOrEqual(1);
-
-      // Verify: copyPluginSkillsToProject was called, NOT claude plugin install
-      expect(mockCopyPluginSkillsToProject).toHaveBeenCalled();
-
-      // No calls to execFileNoThrowSync with claude plugin install
-      const claudePluginInstallCalls = mockExecFileNoThrowSync.mock.calls.filter(
-        (call: any[]) => {
-          const cmd = call[0];
-          const args = call[1] || [];
-          return cmd === 'claude' && args[0] === 'plugin' && args[1] === 'install';
-        }
-      );
-      expect(claudePluginInstallCalls).toHaveLength(0);
-    });
-
-    it('should not register or invoke marketplace commands', async () => {
-      setupInitMocks();
-
-      // When: init runs
-      await installAllPlugins({ dirname: '/test' });
-
-      // Then: no marketplace registration calls
-      const allCalls = mockExecFileNoThrowSync.mock.calls;
-      const marketplaceCalls = allCalls.filter(
-        (call: any[]) => {
-          const cmd = call[0];
-          const args = call[1] || [];
-          return cmd === 'claude' && args[0] === 'plugin' && args[1] === 'marketplace';
-        }
-      );
-      expect(marketplaceCalls).toHaveLength(0);
-    });
-
-    it('should install all plugins from marketplace (no lazy mode in v1.0.535+)', async () => {
-      setupInitMocks([{ name: 'sw' }, { name: 'frontend' }, { name: 'sw-github' }]);
-
-      // When: installAllPlugins runs (always installs all plugins)
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      // Then: all 3 plugins installed
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBe(3);
-
-      // Verify: all plugins were installed via copyPluginSkillsToProject
-      const copiedPluginNames = mockCopyPluginSkillsToProject.mock.calls.map((c: unknown[]) => c[0]);
-      expect(copiedPluginNames).toContain('sw');
-      expect(copiedPluginNames).toContain('frontend');
-      expect(copiedPluginNames).toContain('sw-github');
-    });
-
-    it('should install all plugins listed in marketplace.json', async () => {
-      setupInitMocks([{ name: 'sw' }, { name: 'frontend' }, { name: 'sw-github' }]);
-
-      // When: installAllPlugins runs
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      // Then: all plugins installed
-      expect(result.success).toBe(true);
-      expect(result.successCount).toBe(3);
-    });
-
-    it('should use inline copier output (not vskill scan results)', async () => {
-      setupInitMocks();
-      const logSpy = vi.spyOn(console, 'log');
-
-      // When: init runs
-      await installAllPlugins({ dirname: '/test' });
-
-      // Then: log output indicates plugin installation (not vskill scan)
-      const allLogMessages = logSpy.mock.calls.map(call => call.join(' ')).join('\n');
-      expect(allLogMessages).toMatch(/install|plugin|sw/i);
-    });
-
-    it('should preserve the public API return type contract', async () => {
-      setupInitMocks();
-
-      // When
-      const result = await installAllPlugins({ dirname: '/test' });
-
-      // Then: return type matches PluginInstallResult
-      expect(result).toHaveProperty('success');
-      expect(result).toHaveProperty('successCount');
-      expect(result).toHaveProperty('failCount');
-      expect(result).toHaveProperty('failedPlugins');
-      expect(typeof result.success).toBe('boolean');
-      expect(typeof result.successCount).toBe('number');
-      expect(typeof result.failCount).toBe('number');
-      expect(Array.isArray(result.failedPlugins)).toBe(true);
-    });
-  });
-
-  // =========================================================================
   // Cross-component integration: pipeline coherence
   // =========================================================================
   describe('Pipeline coherence', () => {
-    it('both paths (refresh, init) avoid claude plugin install', async () => {
+    it('refresh avoids claude plugin install', async () => {
       // Setup for refresh
       mockExistsSync.mockImplementation((p: string) => {
         if (typeof p === 'string' && p.includes('marketplace.json')) return true;
@@ -534,19 +415,6 @@ describe('vskill plugin pipeline integration', () => {
       });
 
       await refreshPluginsCommand({ all: true });
-
-      // Setup for init
-      mockFindSourceDir.mockReturnValue('/mock/marketplace.json');
-      mockExistsSync.mockReturnValue(true);
-      mockReadFileSync.mockReturnValue(JSON.stringify({ plugins: [{ name: 'sw' }] }));
-      mockGetPluginScope.mockReturnValue('user');
-      mockGetScopeArgs.mockReturnValue([]);
-      mockEnablePluginsInSettings.mockReturnValue(true);
-      mockCopyPlugin.mockReturnValue({ success: true, skipped: false });
-      mockCopyPluginSkillsToProject.mockReturnValue({ success: true, skipped: false });
-      mockGetProjectRoot.mockReturnValue('/mock/project');
-
-      await installAllPlugins({ dirname: '/test' });
 
       // Across ALL calls: ZERO invocations of `claude plugin install`
       const allCalls = mockExecFileNoThrowSync.mock.calls;

@@ -2,7 +2,6 @@
  * Shared types for init command helpers
  */
 
-import type { Logger } from '../../../utils/logger.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 
 /**
@@ -24,28 +23,14 @@ export const REPO_FETCH_LIMITS = {
  * Options passed to the init command
  */
 export interface InitOptions {
-  template?: string;
-  adapter?: string;  // 'claude', 'cursor', 'generic'
-  techStack?: string;
-  language?: string;  // Language for i18n support
-  force?: boolean;    // Force fresh start (non-interactive)
-  forceRefresh?: boolean;  // Force marketplace refresh (skip cache)
-  gitHooks?: boolean;  // Install the SpecWeave pre-commit hook (opt-in)
-  fullInstall?: boolean;  // Install all plugins (skip lazy loading)
-  quick?: boolean;    // Quick mode: skip prompts, use sensible defaults
-  logger?: Logger;    // Logger for debug/error messages
+  adapter?: string;   // Tool files to write: 'claude', 'codex', 'cursor', ...
+  techStack?: string; // Passed to the tool's adapter
+  force?: boolean;    // Back up .specweave and start over
+  gitHooks?: boolean; // Install the SpecWeave pre-commit hook (opt-in)
+  quick?: boolean;    // Accepted; init never asks anyway
+  // -t/--template, -l/--language, --force-refresh and --full are accepted by
+  // the CLI and ignored until 4.0 (1407).
 }
-
-/**
- * Result of smart re-initialization prompt
- */
-export type ReinitAction = 'continue' | 'fresh' | 'cancel';
-
-/**
- * Project maturity — greenfield (new) vs brownfield (existing code)
- * Greenfield projects may defer structure decisions to first increment.
- */
-export type ProjectMaturity = 'greenfield' | 'brownfield';
 
 /**
  * Repository hosting configuration
@@ -219,31 +204,9 @@ export interface UmbrellaDiscoveryResult {
 }
 
 /**
- * Context for conditional next steps display
- */
-export interface NextStepsContext {
-  /** Separate clones nested in a checkout folder and not in workspace.repos (POSIX paths relative to it) */
-  unregisteredCheckouts?: string[];
-}
-
-/**
  * Result of suspicious path detection
  */
 export interface SuspiciousPathResult {
   segment: string;
   suggestedRoot: string;
-}
-
-/**
- * Context passed between init steps
- */
-export interface InitContext {
-  targetDir: string;
-  projectName: string;
-  language: SupportedLanguage;
-  isCI: boolean;
-  continueExisting: boolean;
-  usedDotNotation: boolean;
-  toolName: string;
-  options: InitOptions;
 }

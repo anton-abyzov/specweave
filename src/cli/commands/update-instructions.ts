@@ -20,7 +20,6 @@ import {
 import { detectStackCommands } from '../helpers/init/stack-detector.js';
 import { findSourceDir } from '../helpers/init/path-utils.js';
 import { getDirname } from '../../utils/esm-helpers.js';
-import { ensureSkillCreator } from '../helpers/init/skill-creator-installer.js';
 import { ensureGitattributes } from '../helpers/init/directory-structure.js';
 import { ensureSpecweaveGitignoreEntries } from '../helpers/init/gitignore-generator.js';
 import { migrateConfigFile } from '../../core/config/migrate-config-file.js';
@@ -107,12 +106,6 @@ export async function updateInstructionsCommand(
 
   if (options.dryRun) {
     console.log(chalk.yellow('\n  ⚠ Dry run - no files were modified'));
-  }
-
-  // Auto-install Anthropic's skill-creator if missing (non-blocking)
-  if (!options.dryRun) {
-    // Fire-and-forget — non-blocking, never throws
-    ensureSkillCreator(projectPath).catch(() => {});
   }
 
   console.log('');
