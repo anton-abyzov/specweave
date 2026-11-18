@@ -126,6 +126,22 @@ describe('AC-07: a second run right after the first changes no file', () => {
       expect(fs.statSync(config).mtimeMs).toBe(configTime);
     });
   }
+
+  it('for a workspace with a nested checkout, config.json is not rewritten either', () => {
+    const { root, env } = scratch('twice-umbrella');
+    const api = path.join(root, 'repositories', 'acme', 'api');
+    fs.mkdirSync(api, { recursive: true });
+    git(api, env, ['init', '-q']);
+    expect(init(root, env).status).toBe(0);
+    const first = tree(root);
+    const config = path.join(root, '.specweave', 'config.json');
+    expect(JSON.parse(fs.readFileSync(config, 'utf-8')).workspace.repos).toHaveLength(1);
+    const configTime = fs.statSync(config).mtimeMs;
+    const second = init(root, env);
+    expect(second.status, second.out).toBe(0);
+    expect(tree(root)).toEqual(first);
+    expect(fs.statSync(config).mtimeMs).toBe(configTime);
+  });
 });
 
 describe('AC-08: init never runs Git', () => {

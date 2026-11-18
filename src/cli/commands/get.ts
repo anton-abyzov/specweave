@@ -128,7 +128,7 @@ export async function getCommand(source: string, options: GetOptions = {}): Prom
     return;
   }
 
-  // Register + init
+  // Register in the workspace
   if (usesRepositoriesLayout) {
     const relPath = _relativeToProject(projectRoot, targetDir);
     const githubUrl = parsed.type === 'github' ? `https://github.com/${owner}/${repo}` : undefined;

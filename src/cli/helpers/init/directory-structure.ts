@@ -312,17 +312,30 @@ export function ensureConfigFile(
   }
   if (!isPlainObject(existing)) return 'unreadable';
 
-  const merged: Record<string, unknown> = { ...defaults, ...existing };
+  const merged = fillMissing(existing, defaults);
   for (const [key, fallback] of Object.entries(defaults)) {
     const current = existing[key];
     if (isPlainObject(fallback) && isPlainObject(current)) {
-      merged[key] = { ...fallback, ...current };
+      merged[key] = fillMissing(current, fallback);
     }
   }
   merged.adapters = { ...(isPlainObject(merged.adapters) ? merged.adapters : {}), default: adapter };
 
   writeJsonIfChanged(configPath, merged);
   return 'kept';
+}
+
+/**
+ * `current` with the keys it lacks added from `fallback`. Keys `current` has
+ * win and keep their order, so two writers filling the same object never
+ * reorder each other's work (which would rewrite an unchanged config).
+ */
+export function fillMissing(current: object, fallback: object): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...current };
+  for (const [key, value] of Object.entries(fallback)) {
+    if (!(key in out)) out[key] = value;
+  }
+  return out;
 }
 
 /**

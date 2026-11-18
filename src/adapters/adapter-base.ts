@@ -35,7 +35,7 @@ export abstract class AdapterBase implements IAdapter {
   }
 
   /**
-   * Check common requirements (Node.js, Git)
+   * Check common requirements (Node.js; never Git, see 1407)
    * Concrete adapters can override to add tool-specific checks
    */
   async checkRequirements(): Promise<RequirementsResult> {

@@ -25,7 +25,7 @@ import { canonicalPath, isWithin } from '../../core/workspace/context.js';
 import { installProjectSkills, PROJECT_SKILL_DIRS } from '../../core/skills/project-skills.js';
 import type { InitOptions } from '../helpers/init/types.js';
 import { findSourceDir, detectNestedSpecweave, scanWorkspaceRepos, scanUnregisteredCheckouts, buildWorkspaceConfig } from '../helpers/init/path-utils.js';
-import { createDirectoryStructure, ensureConfigFile, ensureGitattributes, writeJsonIfChanged } from '../helpers/init/directory-structure.js';
+import { createDirectoryStructure, ensureConfigFile, ensureGitattributes, fillMissing, writeJsonIfChanged } from '../helpers/init/directory-structure.js';
 import { applyInstructionTemplate } from '../helpers/init/instruction-file-writer.js';
 import { detectStackCommands } from '../helpers/init/stack-detector.js';
 import { ensureSpecweaveGitignoreEntries } from '../helpers/init/gitignore-generator.js';
@@ -131,7 +131,6 @@ function isConfigObject(configPath: string): boolean {
   }
 }
 
-/** The tool in a saved config, as written (null when there is none). */
 /** A non-empty string at `keys` in the config, or null. */
 function savedString(configPath: string, ...keys: string[]): string | null {
   try {
@@ -159,6 +158,10 @@ function pickTool(requested: string | undefined, saved: string | null, known: st
   return 'claude';
 }
 
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 /** Register checkouts found in the folder: listed entries stay as they are, new ones are appended. */
 function registerCheckouts(targetDir: string, projectName: string): string[] {
   const configPath = path.join(targetDir, '.specweave', 'config.json');
@@ -166,8 +169,9 @@ function registerCheckouts(targetDir: string, projectName: string): string[] {
   const discovery = scanWorkspaceRepos(targetDir);
   if (discovery) {
     const fragment = buildWorkspaceConfig(discovery, projectName);
-    config.workspace = { ...fragment.workspace, ...config.workspace, repos: fragment.workspace.repos };
-    config.repository = { ...fragment.repository, ...config.repository };
+    const workspace = fillMissing(isObject(config.workspace) ? config.workspace : {}, fragment.workspace);
+    config.workspace = { ...workspace, repos: fragment.workspace.repos };
+    config.repository = fillMissing(isObject(config.repository) ? config.repository : {}, fragment.repository);
   } else if (!config.workspace && !config.umbrella) {
     // An empty list would hide the repositories a 1.x `umbrella` block still names.
     config.workspace = { name: projectName, repos: [] };
@@ -226,12 +230,15 @@ async function installToolFiles(loader: AdapterLoader, tool: string, targetDir: 
     techStack: options.techStack ? { language: options.techStack } : undefined,
     docsApproach: 'incremental' as const,
   };
-  const requirements = await adapter.checkRequirements().catch(() => ({ met: true, missing: [], warnings: [] }));
+  const message = (error: unknown): string => (error instanceof Error ? error.message : String(error));
+  let requirements: { met: boolean; missing: string[]; warnings: string[] } = { met: true, missing: [], warnings: [] };
+  const check = await quietly(async () => { requirements = await adapter.checkRequirements(); });
   const run = await quietly(async () => {
     await adapter.install(adapterOptions);
     await adapter.postInstall(adapterOptions);
   });
-  const problems = run.error ? [`${tool} files: ${run.error instanceof Error ? run.error.message : String(run.error)}`] : [];
+  const problems = run.error ? [`${tool} files: ${message(run.error)}`] : [];
+  if (check.error) problems.push(`${tool}: its requirement check failed (${message(check.error)})`);
   if (!requirements.met) problems.push(`${tool} files written, but its requirements are not met: ${requirements.missing.join(', ') || 'see the tool docs'}`);
   for (const w of requirements.warnings) problems.push(`${tool}: ${w}`);
   return problems;
