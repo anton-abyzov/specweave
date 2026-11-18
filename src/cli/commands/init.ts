@@ -398,6 +398,7 @@ export async function initCommand(
         : null;
       const detectedTool = savedTool ?? await adapterLoader.detectTool();
       spinner.stop();
+      if (savedTool === 'claude') adapterLoader.checkClaudeCli();
 
       if (existingAdapter && !savedTool) {
         console.log(chalk.yellow(`   ⚠ The saved tool "${existingAdapter}" is not one init knows; using ${detectedTool}.`));

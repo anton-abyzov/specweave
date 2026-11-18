@@ -228,6 +228,7 @@ vi.mock('../../../../src/adapters/adapter-loader.js', () => {
     this.getAdapter = mockGetAdapter;
     this.adapterNames = () => ['aider','amazonq','antigravity','cline','codex','continue','copilot','cursor','gemini','generic','jetbrains','kimi','opencode','tabnine','trae','windsurf','zed'];
     this.checkRequirements = mockCheckRequirements;
+    this.checkClaudeCli = vi.fn();
   });
   return { AdapterLoader: MockAdapterLoader };
 });

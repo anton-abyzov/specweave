@@ -176,6 +176,19 @@ describe('specweave init: a re-run keeps the project config', () => {
     expect(after.adapters.default).toBe('codex');
   });
 
+  it('still warns about a broken claude command when claude is the saved tool', () => {
+    const { root, home, env } = scratch('broken-claude');
+    const bin = path.join(home, 'bin');
+    fs.mkdirSync(bin, { recursive: true });
+    const fake = path.join(bin, process.platform === 'win32' ? 'claude.cmd' : 'claude');
+    fs.writeFileSync(fake, process.platform === 'win32' ? '@exit /b 1\r\n' : '#!/bin/sh\nexit 1\n', { mode: 0o755 });
+    const withBroken = { ...env, PATH: `${bin}${path.delimiter}${env.PATH}` };
+    expect(init(root, withBroken, ['.', '--adapter', 'claude']).status).toBe(0);
+    const run = init(root, withBroken);
+    expect(run.status).toBe(0);
+    expect(run.out).not.toContain('native installation complete');
+  });
+
   it('reads a saved tool in any letter case and names one it does not know', () => {
     const { root, env } = scratch('saved-case');
     expect(init(root, env, ['.', '--adapter', 'codex']).status).toBe(0);

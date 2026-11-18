@@ -144,6 +144,12 @@ export class AdapterLoader {
    *
    * @returns Promise<string> Detected tool name (not adapter - Claude has no adapter!)
    */
+  /** Check the `claude` command only, so init can warn about a broken install without detecting a tool. */
+  checkClaudeCli(): void {
+    const status = detectClaudeCli();
+    this.claudeCliIssue = status.commandExists && !status.available ? status.error ?? 'not functional' : undefined;
+  }
+
   async detectTool(env: NodeJS.ProcessEnv = process.env): Promise<string> {
     console.log('🔍 Detecting AI coding tool...\n');
     this.claudeCliIssue = undefined;
