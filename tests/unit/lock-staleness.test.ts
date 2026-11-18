@@ -8,8 +8,19 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { spawnSync } from 'child_process';
 import { LockManager } from '../../src/utils/lock-manager.js';
 import { forceEnableLocksForTest, restoreEnvironment, type OriginalEnv } from '../helpers/force-enable-locks.js';
+
+/**
+ * The PID of a process that has already exited. A fixed number such as 99994
+ * can belong to a live process on a busy machine (an iOS Simulator helper did),
+ * and then the "stale" lock is correctly treated as held.
+ */
+function deadPid(): string {
+  const child = spawnSync(process.execPath, ['-e', '']);
+  return String(child.pid);
+}
 
 describe('LockManager - Staleness Detection', () => {
   let testDir: string;
@@ -96,7 +107,7 @@ describe('LockManager - Staleness Detection', () => {
     it('should detect old lock with dead PID as stale', async () => {
       // Create lock with non-existent PID
       fs.mkdirSync(lockDir);
-      fs.writeFileSync(path.join(lockDir, 'pid'), '99999');
+      fs.writeFileSync(path.join(lockDir, 'pid'), deadPid());
 
       // Make lock 6 minutes old (exceeds 5-minute threshold)
       const sixMinutesAgo = new Date(Date.now() - 6 * 60 * 1000);
@@ -144,7 +155,7 @@ describe('LockManager - Staleness Detection', () => {
     it('should NOT consider fresh lock as stale even with dead PID', async () => {
       // Create fresh lock with non-existent PID
       fs.mkdirSync(lockDir);
-      fs.writeFileSync(path.join(lockDir, 'pid'), '99998');
+      fs.writeFileSync(path.join(lockDir, 'pid'), deadPid());
 
       const isStale = await lockManager.isStale();
 
@@ -185,7 +196,7 @@ describe('LockManager - Staleness Detection', () => {
 
       // Create 90-second old lock
       fs.mkdirSync(lockDir);
-      fs.writeFileSync(path.join(lockDir, 'pid'), '99996');
+      fs.writeFileSync(path.join(lockDir, 'pid'), deadPid());
 
       const ninetySecondsAgo = new Date(Date.now() - 90 * 1000);
       fs.utimesSync(lockDir, ninetySecondsAgo, ninetySecondsAgo);
@@ -200,7 +211,7 @@ describe('LockManager - Staleness Detection', () => {
     it('should use default threshold correctly', async () => {
       // Create lock that is 3 minutes old (less than 5-minute default)
       fs.mkdirSync(lockDir);
-      fs.writeFileSync(path.join(lockDir, 'pid'), '99995');
+      fs.writeFileSync(path.join(lockDir, 'pid'), deadPid());
 
       const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000);
       fs.utimesSync(lockDir, threeMinutesAgo, threeMinutesAgo);
@@ -241,7 +252,7 @@ describe('LockManager - Staleness Detection', () => {
     it('should create cleanup log when removing stale lock', async () => {
       // Create stale lock
       fs.mkdirSync(lockDir);
-      fs.writeFileSync(path.join(lockDir, 'pid'), '99994');
+      fs.writeFileSync(path.join(lockDir, 'pid'), deadPid());
 
       const sixMinutesAgo = new Date(Date.now() - 6 * 60 * 1000);
       fs.utimesSync(lockDir, sixMinutesAgo, sixMinutesAgo);
