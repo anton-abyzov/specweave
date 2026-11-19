@@ -112,6 +112,7 @@ function usePlans(): Plan[] {
         translate({id: 'pricing.plan.teams.feature.setup', message: 'Setup for your whole team', description: 'Teams plan feature'}),
         translate({id: 'pricing.plan.teams.feature.engineer', message: 'Named engineer, response times in contract', description: 'Teams plan feature'}),
         translate({id: 'pricing.plan.teams.feature.audit', message: 'Audit export of who ran what, with evidence', description: 'Teams plan feature'}),
+        translate({id: 'pricing.plan.teams.feature.usage', message: 'Team usage view: idle seats and limit hits per seat, shared only by members who opt in', description: 'Teams plan feature'}),
         translate({id: 'pricing.plan.teams.feature.sso', message: 'SSO, policy or self-hosted registry, scoped with you', description: 'Teams plan feature'}),
       ],
       cta: {label: translate({id: 'pricing.plan.teams.cta', message: 'See the team plan', description: 'Teams plan button'}), to: '/docs/enterprise'},
