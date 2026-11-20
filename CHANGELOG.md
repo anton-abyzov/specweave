@@ -1,3 +1,13 @@
+## [3.2.3] - 2026-11-20
+
+### Changed
+
+- chore(deps)(deps-dev): bump @playwright/test (#2298)
+- chore(deps)(deps-dev): bump the development-dependencies group with 2 updates (#2300)
+- 0898: pricing lists the team usage view (#2314)
+- Checkpoint test: give the fake Git time to write its PID (#2313)
+- Lock test: use an exited child's PID, not a fixed one (#2312)
+
 ## [3.2.2] - 2026-11-18
 
 ### Changed
