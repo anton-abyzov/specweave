@@ -36,8 +36,9 @@ const CAPTURE_ROOT = 'video/tutorials';
 const AGENT_SERIES = 'your-agent-in-specwithcode';
 /** Share of a built guide's 5-word phrases that must appear on no other guide page. */
 export const MIN_UNIQUE_SHARE = 0.4;
-/** Studio docs that embed the studio-projects walkthroughs. */
+/** Studio docs that embed the studio-projects and Connect walkthroughs. */
 export const STUDIO_DOCS = {
+  'studio/connect.md': ['connect-devices'],
   'studio/projects.md': ['projects-and-threads', 'personal-and-connections'],
   'studio/plans-and-routines.md': ['plans-and-routines'],
   'studio/memory-and-usage.md': ['memory-and-usage'],
@@ -312,7 +313,11 @@ export function verifyBuilt(siteRoot = defaultSiteRoot, catalogue, origin = 'htt
     assert(unique >= MIN_UNIQUE_SHARE, `${slug}: only ${Math.round(unique * 100)}% of its 5-word phrases are on no other guide page`);
   }
   for (const p of catalogue.planned) {
-    assert(!existsSync(resolve(siteRoot, 'build/tutorials', p.slug, 'index.html')), `planned tutorial has a page: ${p.slug}`);
+    const plannedFile = resolve(siteRoot, 'build/tutorials', p.slug, 'index.html');
+    if (existsSync(plannedFile)) {
+      const plannedHtml = readFileSync(plannedFile, 'utf8');
+      assert(plannedHtml.includes('http-equiv="refresh"'), `planned tutorial has a page: ${p.slug}`);
+    }
   }
   return catalogue.tutorials.length;
 }

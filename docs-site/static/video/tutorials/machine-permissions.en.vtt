@@ -1,0 +1,16 @@
+WEBVTT
+
+00:00.000 --> 00:08.500
+Control which machines can start remote agent workers, which projects they can reach, and how to revoke access immediately in Settings and Machines.
+
+00:09.000 --> 00:20.500
+Every machine card in Settings and Machines displays two named permission lines: one for agents on this machine starting work there, and one for agents on that machine starting work here. Joining is one-way until you click Allow on the reverse direction.
+
+00:21.000 --> 00:32.500
+Open Who can run work here on the receiving computer to label whether it is your own machine, restrict projects to linked or listed checkouts, choose allowed provider sign-ins, and cap the access level at read-only, supervised, or full access.
+
+00:33.000 --> 00:42.500
+Keep the three boundaries distinct: SpecWithCode Connect opens your threads across devices, machine worker grants let agents launch work remotely, and MCP integrations attach external tool servers per project.
+
+00:43.000 --> 00:48.000
+Lowering a permission level or clicking Revoke takes effect right away so remote agents cannot start new runs on that host.

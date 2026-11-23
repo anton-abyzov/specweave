@@ -77,7 +77,7 @@ describe('tutorial catalogue v2', () => {
   });
 
   it('resolves learning paths into published steps and a count of planned ones', () => {
-    expect(PATHS.map(p => p.title)).toEqual(['Run work across agents', 'Run SpecWithCode', 'Ship a skill']);
+    expect(PATHS.map(p => p.title)).toEqual(['Connect your devices', 'Run work across agents', 'Run SpecWithCode', 'Ship a skill']);
     for (const path of PATHS) {
       const {published, planned} = resolvePath(path);
       expect(published.length + planned.length).toBe(path.steps.length);

@@ -12,14 +12,20 @@ Coordinators on your main machine can start workers on your other computers: a s
 
 Machines reach each other through [SpecWithCode Connect](/docs/studio/connect), so it does not matter which network each one is on, and nothing on your router changes. Everything below is in **Settings > Machines**; you never need a terminal on a Mac with the desktop app.
 
-Adding a machine takes four steps:
+Adding a machine with SpecWithCode Connect takes four steps:
 
-1. On the new machine (the **worker**), [link SpecWithCode Connect](#1-link-connect-on-the-worker).
-2. On the worker, [make a join line](#2-make-the-line-on-the-worker). It starts with `swc-machine-`.
-3. On your **main machine**, [paste the line](#add-it-on-the-main-machine) under **Settings > Machines > Add a machine**.
-4. On the worker's row there, choose **Allow** to allow workers.
+1. Sign in to [SpecWithCode Connect](/docs/studio/connect) on both computers. Each machine links automatically.
+2. On the new machine, open **Settings > Machines** and choose **Join one of your machines**, then pick the host you want to join.
+3. Type the one-time six-character code shown on the new machine into the approval prompt on the joined machine (valid for 30 minutes; if you clicked **Later**, reopen it from **Settings > Machines > Show code**).
+4. Press **Allow** on the new machine, then review both named permission lines (`Agents on {here} can start work on {there}` and `Agents on {there} can start work on {here}`) and **Who can run work here**.
 
-Only want to open a machine from your phone, a browser or another computer, without starting workers on it? Step 1 is all you need: see [Connect](/docs/studio/connect).
+Only want to open a machine from your phone, a browser or another computer, without starting workers on it? Sign in to Connect and approve your device code once per machine: see [Connect](/docs/studio/connect).
+
+## Watch the current Connect tutorials
+
+Start with [Connect your devices with SpecWithCode Connect](/tutorials/connect-devices/), then continue with [Set machine permissions and worker access](/tutorials/machine-permissions/) and [Fix offline machines, codes and Connect routes](/tutorials/connect-troubleshooting/) in the [tutorials hub](/tutorials/#path-connect-devices).
+
+<TutorialEmbed slug="connect-devices" />
 
 ## 1. Link Connect on the worker
 

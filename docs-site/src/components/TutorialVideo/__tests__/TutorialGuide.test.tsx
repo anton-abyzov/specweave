@@ -83,7 +83,7 @@ describe('GuideBody', () => {
     const {container} = render(<GuideBody tutorial={guide('how-specwithcode-works')} transcript={sections} />);
     const note = container.querySelector('#t-44')!.parentElement!.querySelector('aside');
     expect(note).toHaveTextContent('machines join over SpecWithCode Connect');
-    expect(note!.querySelector('a')).toHaveAttribute('href', '/tutorials/join-a-mac/');
+    expect(note!.querySelector('a')).toHaveAttribute('href', '/tutorials/connect-devices/');
   });
 
   it('links the SpecWithCode product page from every SpecWithCode guide', () => {
