@@ -12,14 +12,19 @@ Coordinators on your main machine can start workers on your other computers: a s
 
 Machines reach each other through [SpecWithCode Connect](/docs/studio/connect), so it does not matter which network each one is on, and nothing on your router changes. Everything below is in **Settings > Machines**; you never need a terminal on a Mac with the desktop app.
 
-Adding a machine with SpecWithCode Connect takes four steps:
+Adding a machine with SpecWithCode Connect has two routes depending on whether both computers share the same Connect account:
 
-1. Sign in to [SpecWithCode Connect](/docs/studio/connect) on both computers. Each machine links automatically.
-2. On the new machine, open **Settings > Machines** and choose **Join one of your machines**, then pick the host you want to join.
-3. Type the one-time six-character code shown on the new machine into the approval prompt on the joined machine (valid for 30 minutes; if you clicked **Later**, reopen it from **Settings > Machines > Show code**).
-4. Press **Allow** on the new machine, then review both named permission lines (`Agents on {here} can start work on {there}` and `Agents on {there} can start work on {here}`) and **Who can run work here**.
+### Same Connect account (recommended)
 
-Only want to open a machine from your phone, a browser or another computer, without starting workers on it? Sign in to Connect and approve your device code once per machine: see [Connect](/docs/studio/connect).
+1. Sign in to [SpecWithCode Connect](/docs/studio/connect) on both computers. Each machine links automatically over the encrypted relay.
+2. On the new machine (during first-run setup, or under **Settings > Machines > Let another of your machines run work here**), pick your main machine from your account list and press **Allow**. No join line is needed.
+3. Review both named permission lines (`Agents on {here} can start work on {there}` and `Agents on {there} can start work on {here}`) and **Who can run work here**.
+
+### Another account or without Connect
+
+On the joining machine, open **Settings > Machines > Join one of your machines > Make a join line**, then paste that `swc-machine-…` line into **Add a machine > Use a join line** on your main machine (detailed below).
+
+Only want to open a machine from your phone, a browser or another computer, without starting workers on it? Sign in to Connect and approve the one-time six-character device code once per machine (valid for 30 minutes): see [Connect](/docs/studio/connect).
 
 ## Watch the current Connect tutorials
 
@@ -66,9 +71,9 @@ The installer checks the archive against `SHA256SUMS` and brings its own Node.js
 
 For a Linux server or VPS that should keep running after you log out, follow [Linux worker](/docs/studio/linux-worker) instead.
 
-## Watch it
+## Historical walkthrough (SpecWithCode 1.0.47)
 
-Recorded with SpecWithCode 1.0.47: the invitation line on a Mac mini, adding it on the main Mac, and allowing workers. That recording joins the machines over Tailscale; with Connect the steps on screen are the same. In 1.0.47, **Allow workers** also asks for a one-time pairing code; the video shows where it goes.
+This earlier recording from SpecWithCode 1.0.47 shows the manual join-line flow over Tailscale: creating an invitation line on a Mac mini, pasting it on the main Mac, and entering the 1.0.47 pairing code when allowing workers. For the current SpecWithCode Connect flow, watch [Connect your devices with SpecWithCode Connect](/tutorials/connect-devices/) above.
 
 <TutorialEmbed slug="add-a-machine" />
 

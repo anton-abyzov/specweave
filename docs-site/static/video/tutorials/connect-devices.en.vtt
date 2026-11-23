@@ -1,19 +1,19 @@
 WEBVTT
 
 00:00.000 --> 00:09.500
-Connect your Mac, Linux, Windows, and iPhone with SpecWithCode Connect using one account sign-in and a one-time six-character device approval code.
+Connect your Mac, Linux, Windows, and iPhone with SpecWithCode Connect using one account sign-in, same-account machine access, and a one-time six-character device approval code.
 
 00:10.000 --> 00:21.500
-Open Settings, then Account, and sign in to SpecWithCode Connect. Your machine registers over the encrypted relay and appears online automatically with no IP addresses, join lines, or VPN setup.
+Open Settings, then Account, and sign in to SpecWithCode Connect. Your machine registers over the encrypted relay and appears online automatically with no IP addresses or VPN setup.
 
 00:22.000 --> 00:33.500
-On your second computer, open Settings, then Machines, and pick Join one of your machines. Select the online host from your Connect account list and click Continue.
+On your second computer with the same Connect account, open Settings, then Machines, and under Let another of your machines run work here, pick your main machine and press Allow with no join line needed.
 
 00:34.000 --> 00:45.500
-The new machine displays a one-time six-character code valid for thirty minutes. Type that code into the approval prompt on the joined machine, then press Allow on the new machine to finish.
+When you open a machine from a brand-new browser or computer for the first time, it shows a one-time six-character code valid for thirty minutes. Type that code on the machine you are opening to approve it once.
 
 00:46.000 --> 00:55.500
 To reach your computers from your iPhone, open Settings, Machines, and Your phone. Sign in on iPhone with the same Connect account and approve the one-time code on each machine you want to open.
 
 00:56.000 --> 01:00.000
-SpecWithCode Connect is separate from MCP tool servers, and Tailscale remains an optional direct fallback. Continue with the machine permissions and troubleshooting guides next.
+Need to join a machine on another account? Use Settings, Machines, Make a join line. SpecWithCode Connect is separate from MCP tool servers, and Tailscale remains an optional fallback.

@@ -274,21 +274,21 @@ const ConnectSignInScene: React.FC = () => (
 
 const ConnectJoinMachineScene: React.FC = () => (
   <Split
-    note="Settings > Machines lists every machine signed in to your SpecWithCode Connect account."
+    note="Same Connect account: press Allow with no join line. Different account? Use Make a join line in Settings > Machines."
     copy={
       <Copy
         width={540}
-        eyebrow="02 / Join a machine"
-        line1="Pick the machine"
-        line2="you want to join."
-        body="On your second computer, open Settings, then Machines, and choose Join one of your machines. Pick the host from your account list."
+        eyebrow="02 / Allow a machine"
+        line1="Pick your main machine"
+        line2="and press Allow."
+        body="On your second computer with the same Connect account, open Settings, then Machines, and under Let another of your machines run work here, pick your main machine and press Allow."
       />
     }
   >
     <InWindow title="SpecWithCode · Settings · Machines (Studio Mini)">
       <div style={{padding: 36, display: 'flex', flexDirection: 'column', gap: 20}}>
         <div style={{fontFamily: FONT.sans, fontSize: 15, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.olive}}>
-          Join one of your machines
+          Same Connect account · No join line needed
         </div>
         <div style={{fontFamily: FONT.serif, fontSize: 34, color: C.ink}}>
           Let another of your machines run work here
@@ -307,9 +307,9 @@ const ConnectJoinMachineScene: React.FC = () => (
           right={<Pill tone="muted">Available</Pill>}
         />
         <div style={{display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 12}}>
-          <Pill tone="muted">Not now</Pill>
+          <Pill tone="muted">Make a join line</Pill>
           <PulseRing at={70}>
-            <Pill tone="solid">Continue</Pill>
+            <Pill tone="solid">Allow</Pill>
           </PulseRing>
         </div>
       </div>
@@ -326,14 +326,14 @@ const ConnectCodeApproveScene: React.FC = () => {
 
   return (
     <Split
-      note="Codes shown are example placeholders. Each 6-character code is one-time and expires after 30 minutes."
+      note="Codes shown are example placeholders. Each 6-character device code is one-time and expires after 30 minutes."
       copy={
         <Copy
           width={540}
-          eyebrow="03 / Approve once"
-          line1="Type the 6-char code."
-          line2="Then press Allow."
-          body="Type the code shown on the new machine into the approval prompt on the joined machine, then press Allow on the new machine to finish."
+          eyebrow="03 / Approve a new device"
+          line1="Opening from a new"
+          line2="browser or device?"
+          body="The first time you open a machine from a brand-new browser or device, type its one-time 6-character code on the machine you are opening to approve it once."
         />
       }
     >
@@ -341,7 +341,7 @@ const ConnectCodeApproveScene: React.FC = () => {
         <div style={{padding: 32, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, height: '100%', alignItems: 'center'}}>
           <div style={{padding: 26, borderRadius: 14, background: '#ffffff', border: `1.5px solid ${C.line}`, display: 'flex', flexDirection: 'column', gap: 16}}>
             <div style={{fontFamily: FONT.sans, fontWeight: 600, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.rust}}>
-              New machine · Studio Mini
+              New browser or device
             </div>
             <div style={{fontFamily: FONT.sans, fontSize: 19, color: C.ink, fontWeight: 600}}>
               Type this code on Workstation Mac
@@ -363,21 +363,21 @@ const ConnectCodeApproveScene: React.FC = () => {
               K7M-4QP
             </div>
             <div style={{fontFamily: FONT.sans, fontSize: 15, color: C.muted}}>
-              Valid for 30 minutes · needed once per machine
+              Valid for 30 minutes · needed once per device
             </div>
             <div style={{marginTop: 8}}>
               <PulseRing at={170}>
-                <Pill tone={approved ? 'solid' : 'muted'}>{approved ? 'Allow · Confirmed' : 'Waiting for code'}</Pill>
+                <Pill tone={approved ? 'solid' : 'muted'}>{approved ? 'Approved · Connected' : 'Waiting for approval'}</Pill>
               </PulseRing>
             </div>
           </div>
 
           <div style={{padding: 26, borderRadius: 14, background: '#ffffff', border: `1.5px solid ${approved ? C.olive : C.line}`, display: 'flex', flexDirection: 'column', gap: 16}}>
             <div style={{fontFamily: FONT.sans, fontWeight: 600, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.olive}}>
-              Joined machine · Workstation Mac
+              Machine being opened · Workstation Mac
             </div>
             <div style={{fontFamily: FONT.sans, fontSize: 19, color: C.ink, fontWeight: 600}}>
-              Approve Studio Mini
+              Approve new device
             </div>
             <div
               style={{

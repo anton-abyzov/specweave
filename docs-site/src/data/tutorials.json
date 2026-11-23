@@ -14,8 +14,8 @@
       "product": "specwithcode",
       "title": "Connect your devices with SpecWithCode Connect",
       "seoTitle": "Connect Mac, Linux, Windows and iPhone with SpecWithCode",
-      "summary": "Sign in once to SpecWithCode Connect, join another computer from Settings and Machines, approve with the one-time six-character code, and add your iPhone.",
-      "outcome": "Your computers and iPhone appear online under one Connect account with no IP addresses, join lines or VPN setup.",
+      "summary": "Sign in to SpecWithCode Connect, allow your main machine in Settings, approve new devices with a 6-character code, or use a join line across accounts.",
+      "outcome": "Your computers and iPhone appear online under one Connect account with no IP addresses or VPN setup, and no join line needed on the same account.",
       "prerequisites": [
         "SpecWithCode installed on each computer you want to link",
         "One SpecWithCode Connect account"
@@ -57,9 +57,9 @@
       },
       "steps": [
         "Open Settings and Account on your first computer, then sign in to SpecWithCode Connect so the machine registers and comes online automatically.",
-        "On your second computer, open Settings and Machines, choose Join one of your machines, and pick the online host from your account list.",
-        "Read the one-time six-character code displayed on the new machine and type it into the approval prompt on the joined machine within thirty minutes.",
-        "Press Allow on the new machine to complete the one-way join without pasting environment IDs or join lines.",
+        "On your second computer with the same Connect account, open Settings and Machines, go to Let another of your machines run work here, pick your main machine, and press Allow — no join line is needed.",
+        "If the second computer is on another account or not signed in to Connect, choose Join one of your machines and Make a join line, then paste it into Add a machine on your main computer.",
+        "The first time you open a machine from a brand-new browser or device, read the one-time six-character code (valid for 30 minutes) and type it into the approval prompt on that machine.",
         "Open Settings, Machines and Your phone, sign in on your iPhone with the same Connect account, and approve the device code on each machine you want to reach."
       ],
       "transcript": "captions",
