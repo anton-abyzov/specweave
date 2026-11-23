@@ -24,12 +24,12 @@
       "agent": "any",
       "agentsShown": [],
       "video": {
-        "src": "/video/tutorials/connect-devices-v3.mp4",
+        "src": "/video/tutorials/connect-devices-v4.mp4",
         "poster": "/video/tutorials/connect-devices.jpg",
         "captionsVtt": "/video/tutorials/connect-devices.en.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "captionsOn": true,
-        "durationSeconds": 60,
+        "durationSeconds": 71,
         "uploadDate": "2026-11-23",
         "publishedAt": null,
         "chapters": [
@@ -38,19 +38,19 @@
             "title": "Sign in to SpecWithCode Connect"
           },
           {
-            "start": 10,
+            "start": 11,
             "title": "Automatic machine link"
           },
           {
-            "start": 22,
+            "start": 25,
             "title": "Pick your main machine"
           },
           {
-            "start": 34,
+            "start": 40,
             "title": "Approve the six-character code, then Allow"
           },
           {
-            "start": 46,
+            "start": 53,
             "title": "Add your iPhone or another device"
           }
         ]
@@ -63,7 +63,7 @@
         "Open Settings, Machines and Your phone, sign in on your iPhone with the same Connect account, and approve the device code on each machine you want to reach."
       ],
       "transcript": "captions",
-      "note": "Silent captioned walkthrough matching SpecWithCode 1.0.407. Example email, host names and six-character approval codes are redacted placeholders.",
+      "note": "Narrated walkthrough with captions matching SpecWithCode 1.0.407. Example email, host names and six-character approval codes are redacted placeholders.",
       "action": {
         "label": "Read the Connect guide",
         "to": "/docs/studio/connect"
@@ -88,12 +88,12 @@
       "agent": "any",
       "agentsShown": [],
       "video": {
-        "src": "/video/tutorials/machine-permissions-v2.mp4",
+        "src": "/video/tutorials/machine-permissions-v3.mp4",
         "poster": "/video/tutorials/machine-permissions.jpg",
         "captionsVtt": "/video/tutorials/machine-permissions.en.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "captionsOn": true,
-        "durationSeconds": 48,
+        "durationSeconds": 64,
         "uploadDate": "2026-11-23",
         "publishedAt": null,
         "chapters": [
@@ -102,15 +102,15 @@
             "title": "Two named permission lines"
           },
           {
-            "start": 9,
+            "start": 10,
             "title": "Allow work in each direction"
           },
           {
-            "start": 21,
+            "start": 27,
             "title": "Scope projects and sign-ins"
           },
           {
-            "start": 33,
+            "start": 42,
             "title": "Connect, worker grants and MCP"
           }
         ]
@@ -122,7 +122,7 @@
         "Keep SpecWithCode Connect device access, machine worker grants, and project MCP integrations configured as separate layers, and revoke any grant immediately when no longer needed."
       ],
       "transcript": "captions",
-      "note": "Silent captioned walkthrough matching SpecWithCode 1.0.407 Settings and Machines permission controls.",
+      "note": "Narrated walkthrough with captions matching SpecWithCode 1.0.407 Settings and Machines permission controls.",
       "action": {
         "label": "Read Add a machine",
         "to": "/docs/studio/add-a-machine"
@@ -147,12 +147,12 @@
       "agent": "any",
       "agentsShown": [],
       "video": {
-        "src": "/video/tutorials/connect-troubleshooting-v2.mp4",
+        "src": "/video/tutorials/connect-troubleshooting-v3.mp4",
         "poster": "/video/tutorials/connect-troubleshooting.jpg",
         "captionsVtt": "/video/tutorials/connect-troubleshooting.en.vtt",
-        "audio": "silent",
+        "audio": "narrated",
         "captionsOn": true,
-        "durationSeconds": 48,
+        "durationSeconds": 63,
         "uploadDate": "2026-11-23",
         "publishedAt": null,
         "chapters": [
@@ -161,15 +161,15 @@
             "title": "Common Connect issues"
           },
           {
-            "start": 9,
+            "start": 11,
             "title": "Bring back a dismissed code prompt"
           },
           {
-            "start": 21,
+            "start": 26,
             "title": "Diagnose an offline machine"
           },
           {
-            "start": 33,
+            "start": 41,
             "title": "When to use Tailscale fallback"
           }
         ]
@@ -181,7 +181,7 @@
         "Use SpecWithCode Connect as your default route and reserve Tailscale or private QR pairing for direct private-network fallback."
       ],
       "transcript": "captions",
-      "note": "Silent captioned walkthrough matching SpecWithCode 1.0.407 troubleshooting and route choices. Example commands use redacted host names.",
+      "note": "Narrated walkthrough with captions matching SpecWithCode 1.0.407 troubleshooting and route choices. Example commands use redacted host names.",
       "action": {
         "label": "Read Connect troubleshooting",
         "to": "/docs/studio/connect#when-a-machine-shows-as-offline"

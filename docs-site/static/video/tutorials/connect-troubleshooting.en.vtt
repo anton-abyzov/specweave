@@ -1,16 +1,16 @@
 WEBVTT
 
-00:00.000 --> 00:08.500
+00:00.300 --> 00:10.780
 Recover a dismissed device approval prompt, diagnose a machine showing offline, and choose between SpecWithCode Connect and optional Tailscale fallback routes.
 
-00:09.000 --> 00:20.500
-If you clicked Later on a join code prompt, the floating dialog stays quiet for that unchanged request. Open Settings and Machines and click Show code to reopen or issue a fresh six-character code valid for thirty minutes. Remember that device approval applies per machine.
+00:11.300 --> 00:25.620
+If you clicked Later on a join code prompt, the dialog stays quiet for that unchanged request. Open Settings and Machines and click Show code to reopen or issue a fresh six-character code valid for thirty minutes.
 
-00:21.000 --> 00:32.500
-When a computer shows offline, run specwithcode service status and specwithcode connect status on that host. Confirm the local service is running, sign out and back in if the relay reports an expired session, and update both machines to the latest release.
+00:26.300 --> 00:40.140
+When a computer shows offline, run specwithcode service status and specwithcode connect status on that host. Confirm the service is running, sign out and back in if expired, and update both machines.
 
-00:33.000 --> 00:42.500
-SpecWithCode Connect is the default route across Wi-Fi, office networks, and cellular connections. Use Tailscale or private QR pairing only when you specifically want a direct private network route, and keep MCP reserved for external tools.
+00:40.800 --> 00:54.640
+SpecWithCode Connect is the default route across Wi-Fi, office networks, and cellular. Use Tailscale or private QR pairing only when you want a direct private network route, and keep MCP for external tools.
 
-00:43.000 --> 00:48.000
-All current Connect setup, permission, and recovery walkthroughs stay updated in one place on the tutorials hub.
+00:55.300 --> 01:02.100
+All current Connect setup, permission, and recovery guides stay updated in one place on the tutorials hub.

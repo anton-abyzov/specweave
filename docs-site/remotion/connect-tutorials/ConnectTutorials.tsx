@@ -472,11 +472,11 @@ const ConnectPhoneScene: React.FC = () => (
   </Split>
 );
 
-export const CONNECT_DEVICES_FRAMES = 1800; // 60.0s @ 30fps
+export const CONNECT_DEVICES_FRAMES = 2130; // 71.0s @ 30fps
 
 export const ConnectDevicesTutorial: React.FC = () => (
   <TransitionSeries>
-    <TransitionSeries.Sequence durationInFrames={300}>
+    <TransitionSeries.Sequence durationInFrames={345}>
       <TitleCard
         eyebrow="SpecWithCode · Connect"
         line1="Connect your devices"
@@ -485,23 +485,23 @@ export const ConnectDevicesTutorial: React.FC = () => (
       />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={360}>
+    <TransitionSeries.Sequence durationInFrames={420}>
       <ConnectSignInScene />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={360}>
+    <TransitionSeries.Sequence durationInFrames={480}>
       <ConnectJoinMachineScene />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={360}>
+    <TransitionSeries.Sequence durationInFrames={390}>
       <ConnectCodeApproveScene />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={300}>
+    <TransitionSeries.Sequence durationInFrames={270}>
       <ConnectPhoneScene />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={195}>
+    <TransitionSeries.Sequence durationInFrames={300}>
       <ClosingCard
         eyebrow="Next in Connect your devices"
         line1="Set machine permissions"
@@ -658,11 +658,11 @@ const ThreeBoundariesScene: React.FC = () => (
   </Split>
 );
 
-export const MACHINE_PERMISSIONS_FRAMES = 1440; // 48.0s @ 30fps
+export const MACHINE_PERMISSIONS_FRAMES = 1920; // 64.0s @ 30fps
 
 export const MachinePermissionsTutorial: React.FC = () => (
   <TransitionSeries>
-    <TransitionSeries.Sequence durationInFrames={270}>
+    <TransitionSeries.Sequence durationInFrames={315}>
       <TitleCard
         eyebrow="SpecWithCode · Permissions"
         line1="Machine permissions"
@@ -671,19 +671,19 @@ export const MachinePermissionsTutorial: React.FC = () => (
       />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={360}>
+    <TransitionSeries.Sequence durationInFrames={510}>
       <TwoLinesScene />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={360}>
+    <TransitionSeries.Sequence durationInFrames={465}>
       <WhoCanRunScene />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={300}>
+    <TransitionSeries.Sequence durationInFrames={435}>
       <ThreeBoundariesScene />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={210}>
+    <TransitionSeries.Sequence durationInFrames={255}>
       <ClosingCard
         eyebrow="Next in Connect your devices"
         line1="Troubleshoot offline machines"
@@ -838,11 +838,11 @@ const RouteFallbackScene: React.FC = () => (
   </Split>
 );
 
-export const CONNECT_TROUBLESHOOTING_FRAMES = 1440; // 48.0s @ 30fps
+export const CONNECT_TROUBLESHOOTING_FRAMES = 1890; // 63.0s @ 30fps
 
 export const ConnectTroubleshootingTutorial: React.FC = () => (
   <TransitionSeries>
-    <TransitionSeries.Sequence durationInFrames={270}>
+    <TransitionSeries.Sequence durationInFrames={345}>
       <TitleCard
         eyebrow="SpecWithCode · Troubleshooting"
         line1="Fix offline machines,"
@@ -851,19 +851,19 @@ export const ConnectTroubleshootingTutorial: React.FC = () => (
       />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={360}>
+    <TransitionSeries.Sequence durationInFrames={465}>
       <DismissedCodeScene />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={360}>
+    <TransitionSeries.Sequence durationInFrames={450}>
       <OfflineMachineScene />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={300}>
+    <TransitionSeries.Sequence durationInFrames={450}>
       <RouteFallbackScene />
     </TransitionSeries.Sequence>
     <TransitionSeries.Transition presentation={fade()} timing={linearTiming({durationInFrames: 15})} />
-    <TransitionSeries.Sequence durationInFrames={210}>
+    <TransitionSeries.Sequence durationInFrames={240}>
       <ClosingCard
         eyebrow="All Connect tutorials in one place"
         line1="Watch the full hub"

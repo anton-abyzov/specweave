@@ -1,7 +1,7 @@
 ---
 title: "Add a machine to SpecWithCode: link Connect, join the main machine, allow workers"
 sidebar_label: Add a machine
-description: "Let coordinators on your main computer start workers on a second Mac, a Linux box or a VPS. Link SpecWithCode Connect on the new machine, choose Join a main machine in Settings > Machines, paste the line on your main machine and allow workers. Tailscale is an optional fallback. Why we recommend one machine per AI-provider subscription."
+description: "Let coordinators on your main computer start workers on a second Mac, a Linux box or a VPS. Sign in to SpecWithCode Connect on both machines, choose Let another of your machines run work here in Settings > Machines (or Join one of your machines for another account), approve the 6-character code, and allow workers. Tailscale is an optional fallback."
 ---
 
 import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
