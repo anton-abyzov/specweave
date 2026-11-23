@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "guidesUpdatedAt": "2026-10-26",
+  "guidesUpdatedAt": "2026-11-23",
   "guides": {
     "how-specwithcode-works": {
       "chapterNotes": [
         {
           "start": 44.1,
-          "text": "Since this recording, machines join over SpecWithCode Connect with an invite line made in the app, and the other connection routes the video mentions are no longer the setup path.",
-          "to": "/tutorials/join-a-mac/",
-          "label": "Join a Mac with an invite line"
+          "text": "Since this recording, machines join over SpecWithCode Connect using Join one of your machines and a one-time six-character device approval code, without join lines or Tailscale setup.",
+          "to": "/tutorials/connect-devices/",
+          "label": "Connect your devices with SpecWithCode Connect"
         },
         {
           "start": 59.5,

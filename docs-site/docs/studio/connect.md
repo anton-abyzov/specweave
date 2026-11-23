@@ -4,11 +4,19 @@ sidebar_label: Connect
 description: "SpecWithCode Connect links each of your machines to your account through a hosted relay, so your other Macs, a Linux server, a browser or your iPhone reach it from anywhere with no router setup. How to set it up, add a machine, what the plans include, and how to fix a machine that shows as offline."
 ---
 
+import TutorialEmbed from '@site/src/components/TutorialVideo/TutorialEmbed';
+
 # SpecWithCode Connect
 
 Connect is how your devices reach a machine running SpecWithCode from anywhere: another Mac, a Linux server, a browser or your iPhone. Each machine you link gets a private address on a hosted relay. Nothing on your router changes and nothing is exposed to the public internet without your sign-in.
 
-It is the default route. A machine can also be reached on the local network or over SSH, and SpecWithCode switches to the fastest route that answers, but you only need Connect to get started.
+It is the default route. SpecWithCode Connect is separate from MCP tool integrations, and Tailscale remains an optional direct fallback rather than a requirement.
+
+## Watch the walkthrough
+
+All three Connect guides (device pairing, machine permissions, and troubleshooting) live together in the [Connect your devices tutorial hub](/tutorials/#path-connect-devices).
+
+<TutorialEmbed slug="connect-devices" />
 
 ## What you need
 

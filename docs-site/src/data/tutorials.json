@@ -10,6 +10,189 @@
   ],
   "tutorials": [
     {
+      "slug": "connect-devices",
+      "product": "specwithcode",
+      "title": "Connect your devices with SpecWithCode Connect",
+      "seoTitle": "Connect Mac, Linux, Windows and iPhone with SpecWithCode",
+      "summary": "Sign in once to SpecWithCode Connect, join another computer from Settings and Machines, approve with the one-time six-character code, and add your iPhone.",
+      "outcome": "Your computers and iPhone appear online under one Connect account with no IP addresses, join lines or VPN setup.",
+      "prerequisites": [
+        "SpecWithCode installed on each computer you want to link",
+        "One SpecWithCode Connect account"
+      ],
+      "testedOn": "SpecWithCode 1.0.407",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/connect-devices.mp4",
+        "poster": "/video/tutorials/connect-devices.jpg",
+        "captionsVtt": "/video/tutorials/connect-devices.en.vtt",
+        "audio": "silent",
+        "captionsOn": true,
+        "durationSeconds": 60,
+        "uploadDate": "2026-11-23",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Sign in to SpecWithCode Connect"
+          },
+          {
+            "start": 10,
+            "title": "Automatic machine link"
+          },
+          {
+            "start": 22,
+            "title": "Join one of your machines"
+          },
+          {
+            "start": 34,
+            "title": "Approve with the six-character code"
+          },
+          {
+            "start": 46,
+            "title": "Add your iPhone or another device"
+          }
+        ]
+      },
+      "steps": [
+        "Open Settings and Account on your first computer, then sign in to SpecWithCode Connect so the machine registers and comes online automatically.",
+        "On your second computer, open Settings and Machines, choose Join one of your machines, and pick the online host from your account list.",
+        "Read the one-time six-character code displayed on the new machine and type it into the approval prompt on the joined machine within thirty minutes.",
+        "Press Allow on the new machine to complete the one-way join without pasting environment IDs or join lines.",
+        "Open Settings, Machines and Your phone, sign in on your iPhone with the same Connect account, and approve the device code on each machine you want to reach."
+      ],
+      "transcript": "captions",
+      "note": "Silent captioned walkthrough matching SpecWithCode 1.0.407. Example email, host names and six-character approval codes are redacted placeholders.",
+      "action": {
+        "label": "Read the Connect guide",
+        "to": "/docs/studio/connect"
+      },
+      "guide": "/docs/studio/connect",
+      "related": [
+        "machine-permissions",
+        "connect-troubleshooting"
+      ]
+    },
+    {
+      "slug": "machine-permissions",
+      "product": "specwithcode",
+      "title": "Set machine permissions and worker access",
+      "seoTitle": "SpecWithCode machine permissions and worker access grants",
+      "summary": "Read the two named direction lines on every machine card, scope projects and provider sign-ins in Who can run work here, and keep Connect separate from MCP.",
+      "outcome": "You know exactly which machine can launch agents on another, what projects and sign-ins it may touch, and how to revoke access immediately.",
+      "prerequisites": [
+        "Two computers already joined through SpecWithCode Connect"
+      ],
+      "testedOn": "SpecWithCode 1.0.407",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/machine-permissions.mp4",
+        "poster": "/video/tutorials/machine-permissions.jpg",
+        "captionsVtt": "/video/tutorials/machine-permissions.en.vtt",
+        "audio": "silent",
+        "captionsOn": true,
+        "durationSeconds": 48,
+        "uploadDate": "2026-11-23",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Two named permission lines"
+          },
+          {
+            "start": 9,
+            "title": "Allow work in each direction"
+          },
+          {
+            "start": 21,
+            "title": "Scope projects and sign-ins"
+          },
+          {
+            "start": 33,
+            "title": "Connect, worker grants and MCP"
+          }
+        ]
+      },
+      "steps": [
+        "Open Settings and Machines and inspect both named lines on a machine card to see which direction is currently allowed.",
+        "Enable the reverse direction only when you want agents on the other computer to launch workers back on this host.",
+        "Open Who can run work here to restrict remote workers to linked or listed projects, specific provider sign-ins, and a read-only, supervised or full access cap.",
+        "Keep SpecWithCode Connect device access, machine worker grants, and project MCP integrations configured as separate layers, and revoke any grant immediately when no longer needed."
+      ],
+      "transcript": "captions",
+      "note": "Silent captioned walkthrough matching SpecWithCode 1.0.407 Settings and Machines permission controls.",
+      "action": {
+        "label": "Read Add a machine",
+        "to": "/docs/studio/add-a-machine"
+      },
+      "guide": "/docs/studio/add-a-machine",
+      "related": [
+        "connect-devices",
+        "connect-troubleshooting"
+      ]
+    },
+    {
+      "slug": "connect-troubleshooting",
+      "product": "specwithcode",
+      "title": "Fix offline machines, codes and Connect routes",
+      "seoTitle": "Troubleshoot SpecWithCode Connect offline machines and codes",
+      "summary": "Bring back a dismissed approval prompt with Show code, check service and tunnel health on an offline host, and know when Tailscale fallback applies.",
+      "outcome": "You can recover quiet code prompts, diagnose offline machines in seconds, and keep Connect as your default route over optional Tailscale fallback.",
+      "prerequisites": [
+        "SpecWithCode installed on the machine you are troubleshooting"
+      ],
+      "testedOn": "SpecWithCode 1.0.407",
+      "agent": "any",
+      "agentsShown": [],
+      "video": {
+        "src": "/video/tutorials/connect-troubleshooting.mp4",
+        "poster": "/video/tutorials/connect-troubleshooting.jpg",
+        "captionsVtt": "/video/tutorials/connect-troubleshooting.en.vtt",
+        "audio": "silent",
+        "captionsOn": true,
+        "durationSeconds": 48,
+        "uploadDate": "2026-11-23",
+        "publishedAt": null,
+        "chapters": [
+          {
+            "start": 0,
+            "title": "Common Connect issues"
+          },
+          {
+            "start": 9,
+            "title": "Bring back a dismissed code prompt"
+          },
+          {
+            "start": 21,
+            "title": "Diagnose an offline machine"
+          },
+          {
+            "start": 33,
+            "title": "When to use Tailscale fallback"
+          }
+        ]
+      },
+      "steps": [
+        "If you dismissed a join code dialog with Later, open Settings and Machines and click Show code to view or issue a fresh six-character code.",
+        "Remember that device approval is per machine, so approving your phone or laptop on one computer does not automatically approve another.",
+        "On an offline machine, run `specwithcode service status` and `specwithcode connect status`, renew your sign-in on auth errors, and update to the latest release.",
+        "Use SpecWithCode Connect as your default route and reserve Tailscale or private QR pairing for direct private-network fallback."
+      ],
+      "transcript": "captions",
+      "note": "Silent captioned walkthrough matching SpecWithCode 1.0.407 troubleshooting and route choices. Example commands use redacted host names.",
+      "action": {
+        "label": "Read Connect troubleshooting",
+        "to": "/docs/studio/connect#when-a-machine-shows-as-offline"
+      },
+      "guide": "/docs/studio/connect",
+      "related": [
+        "connect-devices",
+        "machine-permissions"
+      ]
+    },
+    {
       "slug": "specweave-workflow",
       "product": "cli",
       "title": "Plan, prove and hand off a task with the CLI",
@@ -684,7 +867,7 @@
       "slug": "add-a-machine",
       "product": "specwithcode",
       "title": "Add a second machine",
-      "seoTitle": "Add a second machine to SpecWithCode with SpecWithCode Connect",
+      "seoTitle": "Add a second machine to SpecWithCode (1.0.47)",
       "summary": "A real run of SpecWithCode 1.0.47 on two Macs on one tailnet. On the Mac mini, Settings, Connections, Invite this machine makes a one-line invitation and publishes the app on the Mac mini's private Tailscale name. On the main Mac, the same page adds the machine from that line, checks it answers, and lists it as reachable. Allow workers then grants Full access for workers there; in 1.0.47 that also needs a one-time pairing code made on the Mac mini.",
       "seoDescription": "Add a second Mac, Linux or Windows machine to SpecWithCode: link Connect on it, invite it with one line, add it on your main machine and allow workers.",
       "outcome": "You end with your second machine listed as reachable and allowed to run workers.",
@@ -1640,6 +1823,17 @@
     }
   ],
   "paths": [
+    {
+      "id": "connect-devices",
+      "product": "specwithcode",
+      "title": "Connect your devices",
+      "summary": "Link your Macs, Linux servers, Windows PCs and iPhone with SpecWithCode Connect, set machine permissions and fix offline routes.",
+      "steps": [
+        "connect-devices",
+        "machine-permissions",
+        "connect-troubleshooting"
+      ]
+    },
     {
       "id": "run-work-across-agents",
       "product": "cli",
