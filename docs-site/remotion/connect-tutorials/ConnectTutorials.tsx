@@ -274,14 +274,14 @@ const ConnectSignInScene: React.FC = () => (
 
 const ConnectJoinMachineScene: React.FC = () => (
   <Split
-    note="Same Connect account: press Allow with no join line. Different account? Use Make a join line in Settings > Machines."
+    note="Same Connect account: pick your main machine here. Main machine on another account or signed out? Link Connect on the worker, then use Join one of your machines > Make a join line."
     copy={
       <Copy
         width={540}
-        eyebrow="02 / Allow a machine"
+        eyebrow="02 / Pick your main machine"
         line1="Pick your main machine"
-        line2="and press Allow."
-        body="On your second computer with the same Connect account, open Settings, then Machines, and under Let another of your machines run work here, pick your main machine and press Allow."
+        line2="to connect."
+        body="On a second computer with the same Connect account, open Settings, Machines, and Let another of your machines run work here, then pick your main machine. On a fresh desktop, approve the device code next so Allow unlocks."
       />
     }
   >
@@ -306,10 +306,12 @@ const ConnectJoinMachineScene: React.FC = () => (
           subtitle="Linux · Online via SpecWithCode Connect"
           right={<Pill tone="muted">Available</Pill>}
         />
-        <div style={{display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 12}}>
-          <Pill tone="muted">Make a join line</Pill>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 12}}>
+          <span style={{fontFamily: FONT.sans, fontSize: 15, color: C.muted}}>
+            Approve device code on Workstation Mac to unlock Allow
+          </span>
           <PulseRing at={70}>
-            <Pill tone="solid">Allow</Pill>
+            <Pill tone="muted">Allow Workstation Mac</Pill>
           </PulseRing>
         </div>
       </div>
@@ -330,10 +332,10 @@ const ConnectCodeApproveScene: React.FC = () => {
       copy={
         <Copy
           width={540}
-          eyebrow="03 / Approve a new device"
-          line1="Opening from a new"
-          line2="browser or device?"
-          body="The first time you open a machine from a brand-new browser or device, type its one-time 6-character code on the machine you are opening to approve it once."
+          eyebrow="03 / Approve code, then Allow"
+          line1="Type the 6-char code,"
+          line2="then press Allow."
+          body="Type the one-time 6-character code on your main machine to approve this new desktop (or browser), unlocking Allow. Press Allow and confirm in Settings to finish."
         />
       }
     >
@@ -341,7 +343,7 @@ const ConnectCodeApproveScene: React.FC = () => {
         <div style={{padding: 32, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, height: '100%', alignItems: 'center'}}>
           <div style={{padding: 26, borderRadius: 14, background: '#ffffff', border: `1.5px solid ${C.line}`, display: 'flex', flexDirection: 'column', gap: 16}}>
             <div style={{fontFamily: FONT.sans, fontWeight: 600, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.rust}}>
-              New browser or device
+              New desktop or browser
             </div>
             <div style={{fontFamily: FONT.sans, fontSize: 19, color: C.ink, fontWeight: 600}}>
               Type this code on Workstation Mac
@@ -363,18 +365,18 @@ const ConnectCodeApproveScene: React.FC = () => {
               K7M-4QP
             </div>
             <div style={{fontFamily: FONT.sans, fontSize: 15, color: C.muted}}>
-              Valid for 30 minutes · needed once per device
+              Valid for 30 minutes · unlocks Allow once approved
             </div>
             <div style={{marginTop: 8}}>
               <PulseRing at={170}>
-                <Pill tone={approved ? 'solid' : 'muted'}>{approved ? 'Approved · Connected' : 'Waiting for approval'}</Pill>
+                <Pill tone={approved ? 'solid' : 'muted'}>{approved ? 'Allow Workstation Mac · Confirmed' : 'Allow (locked until approved)'}</Pill>
               </PulseRing>
             </div>
           </div>
 
           <div style={{padding: 26, borderRadius: 14, background: '#ffffff', border: `1.5px solid ${approved ? C.olive : C.line}`, display: 'flex', flexDirection: 'column', gap: 16}}>
             <div style={{fontFamily: FONT.sans, fontWeight: 600, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.olive}}>
-              Machine being opened · Workstation Mac
+              Main machine · Workstation Mac
             </div>
             <div style={{fontFamily: FONT.sans, fontSize: 19, color: C.ink, fontWeight: 600}}>
               Approve new device

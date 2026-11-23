@@ -24,7 +24,7 @@
       "agent": "any",
       "agentsShown": [],
       "video": {
-        "src": "/video/tutorials/connect-devices.mp4",
+        "src": "/video/tutorials/connect-devices-v2.mp4",
         "poster": "/video/tutorials/connect-devices.jpg",
         "captionsVtt": "/video/tutorials/connect-devices.en.vtt",
         "audio": "silent",
@@ -43,11 +43,11 @@
           },
           {
             "start": 22,
-            "title": "Join one of your machines"
+            "title": "Pick your main machine"
           },
           {
             "start": 34,
-            "title": "Approve with the six-character code"
+            "title": "Approve the six-character code, then Allow"
           },
           {
             "start": 46,
@@ -57,9 +57,9 @@
       },
       "steps": [
         "Open Settings and Account on your first computer, then sign in to SpecWithCode Connect so the machine registers and comes online automatically.",
-        "On your second computer with the same Connect account, open Settings and Machines, go to Let another of your machines run work here, pick your main machine, and press Allow — no join line is needed.",
-        "If the second computer is on another account or not signed in to Connect, choose Join one of your machines and Make a join line, then paste it into Add a machine on your main computer.",
-        "The first time you open a machine from a brand-new browser or device, read the one-time six-character code (valid for 30 minutes) and type it into the approval prompt on that machine.",
+        "On your second computer with the same Connect account, open Settings and Machines, go to Let another of your machines run work here, and pick your main machine.",
+        "If this desktop has not been approved on that main machine yet, type the one-time six-character code (valid for 30 minutes) on the main machine first so Allow unlocks, then press Allow and confirm.",
+        "If your main machine is on another Connect account or signed out, link Connect on the worker first, then open Settings, Machines, Join one of your machines, and Make a join line to paste on the main machine.",
         "Open Settings, Machines and Your phone, sign in on your iPhone with the same Connect account, and approve the device code on each machine you want to reach."
       ],
       "transcript": "captions",
@@ -88,7 +88,7 @@
       "agent": "any",
       "agentsShown": [],
       "video": {
-        "src": "/video/tutorials/machine-permissions.mp4",
+        "src": "/video/tutorials/machine-permissions-v2.mp4",
         "poster": "/video/tutorials/machine-permissions.jpg",
         "captionsVtt": "/video/tutorials/machine-permissions.en.vtt",
         "audio": "silent",
@@ -147,7 +147,7 @@
       "agent": "any",
       "agentsShown": [],
       "video": {
-        "src": "/video/tutorials/connect-troubleshooting.mp4",
+        "src": "/video/tutorials/connect-troubleshooting-v2.mp4",
         "poster": "/video/tutorials/connect-troubleshooting.jpg",
         "captionsVtt": "/video/tutorials/connect-troubleshooting.en.vtt",
         "audio": "silent",

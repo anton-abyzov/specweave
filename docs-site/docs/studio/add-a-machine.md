@@ -17,12 +17,14 @@ Adding a machine with SpecWithCode Connect has two routes depending on whether b
 ### Same Connect account (recommended)
 
 1. Sign in to [SpecWithCode Connect](/docs/studio/connect) on both computers. Each machine links automatically over the encrypted relay.
-2. On the new machine (during first-run setup, or under **Settings > Machines > Let another of your machines run work here**), pick your main machine from your account list and press **Allow**. No join line is needed.
-3. Review both named permission lines (`Agents on {here} can start work on {there}` and `Agents on {there} can start work on {here}`) and **Who can run work here**.
+2. On the new machine (during first-run setup, or under **Settings > Machines > Let another of your machines run work here**), pick your main machine from your account list.
+3. If this desktop has not been approved on that main machine yet, type the one-time six-character code shown on screen into the approval prompt on the main machine (valid for 30 minutes). **Allow** unlocks as soon as the device is approved.
+4. Press **Allow** (and confirm when prompted in Settings; first-run setup skips the extra confirmation). No join line is needed.
+5. Review both named permission lines (`Agents on {here} can start work on {there}` and `Agents on {there} can start work on {here}`) and **Who can run work here**.
 
-### Another account or without Connect
+### Main machine on another account or signed out of Connect
 
-On the joining machine, open **Settings > Machines > Join one of your machines > Make a join line**, then paste that `swc-machine-…` line into **Add a machine > Use a join line** on your main machine (detailed below).
+Link SpecWithCode Connect on the joining (worker) machine first, then open **Settings > Machines > Join one of your machines > Make a join line** and paste that `swc-machine-…` line into **Add a machine > Use a join line** on your main machine (detailed below). The main machine does not need to be signed in to Connect or to the same account.
 
 Only want to open a machine from your phone, a browser or another computer, without starting workers on it? Sign in to Connect and approve the one-time six-character device code once per machine (valid for 30 minutes): see [Connect](/docs/studio/connect).
 
