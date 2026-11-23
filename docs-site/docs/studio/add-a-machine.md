@@ -50,7 +50,7 @@ The line holds a management credential for the worker. Treat it like a password:
 
 **On a new install**, the first screen asks how you will use this machine. Choose **Connect to an existing one**; it skips setting up agents and projects on the worker. **Start as a main machine** sets them up here instead.
 
-**On a machine that is already set up**, open **Settings > Machines** and, next to **Join a main machine**, choose **Make a join line**.
+**On a machine that is already set up**, open **Settings > Machines** and, next to **Join one of your machines**, choose **Make a join line**.
 
 Then:
 

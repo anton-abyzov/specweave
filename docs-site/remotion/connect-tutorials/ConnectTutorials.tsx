@@ -322,9 +322,10 @@ const ConnectJoinMachineScene: React.FC = () => (
 const ConnectCodeApproveScene: React.FC = () => {
   const frame = useCurrentFrame();
   const codeChars = 'K7M-4QP';
-  const typedCount = Math.floor(interpolate(frame, [45, 130], [0, codeChars.length], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}));
+  const typedCount = Math.floor(interpolate(frame, [40, 115], [0, codeChars.length], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}));
   const typed = codeChars.slice(0, typedCount);
-  const approved = frame >= 165;
+  const approved = frame >= 145;
+  const confirmed = frame >= 235;
 
   return (
     <Split
@@ -335,7 +336,7 @@ const ConnectCodeApproveScene: React.FC = () => {
           eyebrow="03 / Approve code, then Allow"
           line1="Type the 6-char code,"
           line2="then press Allow."
-          body="Type the one-time 6-character code on your main machine to approve this new desktop (or browser), unlocking Allow. Press Allow and confirm in Settings to finish."
+          body="Type the one-time 6-character code on your main machine to approve this new desktop, unlocking Allow. Click Allow and confirm in Settings to finish."
         />
       }
     >
@@ -343,7 +344,7 @@ const ConnectCodeApproveScene: React.FC = () => {
         <div style={{padding: 32, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, height: '100%', alignItems: 'center'}}>
           <div style={{padding: 26, borderRadius: 14, background: '#ffffff', border: `1.5px solid ${C.line}`, display: 'flex', flexDirection: 'column', gap: 16}}>
             <div style={{fontFamily: FONT.sans, fontWeight: 600, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.rust}}>
-              New desktop or browser
+              New desktop app
             </div>
             <div style={{fontFamily: FONT.sans, fontSize: 19, color: C.ink, fontWeight: 600}}>
               Type this code on Workstation Mac
@@ -368,8 +369,10 @@ const ConnectCodeApproveScene: React.FC = () => {
               Valid for 30 minutes · unlocks Allow once approved
             </div>
             <div style={{marginTop: 8}}>
-              <PulseRing at={170}>
-                <Pill tone={approved ? 'solid' : 'muted'}>{approved ? 'Allow Workstation Mac · Confirmed' : 'Allow (locked until approved)'}</Pill>
+              <PulseRing at={155}>
+                <Pill tone={approved ? 'solid' : 'muted'}>
+                  {confirmed ? 'Confirmed · Connected' : approved ? 'Allow Workstation Mac' : 'Allow (locked until approved)'}
+                </Pill>
               </PulseRing>
             </div>
           </div>

@@ -24,7 +24,7 @@
       "agent": "any",
       "agentsShown": [],
       "video": {
-        "src": "/video/tutorials/connect-devices-v2.mp4",
+        "src": "/video/tutorials/connect-devices-v3.mp4",
         "poster": "/video/tutorials/connect-devices.jpg",
         "captionsVtt": "/video/tutorials/connect-devices.en.vtt",
         "audio": "silent",

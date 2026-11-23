@@ -12,8 +12,8 @@ On a second computer with the same Connect account, open Settings, Machines, and
 00:34.000 --> 00:45.500
 Type the one-time six-character code shown on the new device into the approval prompt on the main machine within thirty minutes, then press Allow and confirm to finish with no join line needed.
 
-00:46.000 --> 00:55.500
-To reach your computers from your iPhone, open Settings, Machines, and Your phone. Sign in on iPhone with the same Connect account and approve the one-time code on each machine you want to open.
+00:46.000 --> 00:52.500
+To reach your computers from your iPhone, open Settings, Machines, and Your phone, then approve the device code on each machine.
 
-00:56.000 --> 01:00.000
-Main machine on another account or signed out? Link Connect on the worker first, then use Settings, Machines, Join one of your machines, Make a join line. Connect is separate from MCP, and Tailscale stays an optional fallback.
+00:52.800 --> 00:59.800
+Main machine on another account or signed out? Link Connect on the worker, then use Join one of your machines and Make a join line.
