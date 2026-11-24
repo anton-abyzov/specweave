@@ -76,7 +76,7 @@ A `Stop` hook in `~/.codex/hooks.json` runs at the end of each turn and reads th
 
 **Do ChatGPT messages use my Codex allowance?** Regular chat voice, image generation and file uploads in ChatGPT have their own limits. On plans that use shared allowances or credits, ChatGPT Work, ChatGPT for Excel and Workspace Agents share the Codex pool where they are available.
 
-**Can Claude Code continue my Codex session?** Not directly; Claude Code does not read Codex's session files. With SpecWeave the spec, the task state, a handoff note and your uncommitted edits go through git (pushed when a remote is set up), and `specweave pickup` in Claude Code continues from there.
+**Can Claude Code continue my Codex session?** Not directly; Claude Code does not read Codex's session files. With SpecWeave the spec, the task state, a handoff note and your uncommitted edits go through git (pushed when a remote is set up and the push succeeds), and `specweave pickup` in Claude Code continues from there.
 
 **Will OpenAI support reset my limit?** No. The help article says support "does not reset ChatGPT or Codex usage limits".
 
