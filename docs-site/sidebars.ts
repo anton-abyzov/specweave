@@ -69,6 +69,7 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'guides/switch-claude-code-to-opencode', label: 'Switch Claude Code to OpenCode'},
         {type: 'doc', id: 'guides/switch-claude-code-to-cursor', label: 'Switch Claude Code to Cursor'},
         {type: 'doc', id: 'guides/claude-code-usage-limit', label: 'Usage limit reached'},
+        {type: 'doc', id: 'guides/codex-usage-limit', label: 'Codex usage limit'},
         {type: 'doc', id: 'guides/claude-code-auto-compact', label: 'Auto-compact at 400K'},
         {type: 'doc', id: 'guides/claude-code-projects', label: 'Claude Code Projects'},
         {type: 'doc', id: 'integrations/generic-ai-tools', label: 'Codex, Grok and others'},
@@ -83,6 +84,7 @@ const sidebars: SidebarsConfig = {
       link: {type: 'doc', id: 'guides/compare'},
       items: [
         {type: 'doc', id: 'guides/spec-driven-tools-compared', label: 'Spec-driven tools compared'},
+        {type: 'doc', id: 'guides/openspec-vs-spec-kit', label: 'OpenSpec vs Spec Kit'},
         {type: 'doc', id: 'guides/specweave-vs-openspec', label: 'SpecWeave vs OpenSpec'},
         {type: 'doc', id: 'guides/specweave-vs-speckit', label: 'SpecWeave vs Spec Kit'},
         {type: 'doc', id: 'guides/specweave-vs-bmad', label: 'SpecWeave vs BMAD'},

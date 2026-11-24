@@ -1,0 +1,35 @@
+# SpecWithCode
+
+> SpecWithCode (pronounced "Spec with Code") is a free, open-source desktop app under the MIT license for running AI coding agents such as Claude Code, Codex, Grok Build, Cursor, OpenCode and GitHub Copilot side by side. Each project has a coordinator and worker threads, each on its own agent and model, running on machines the user owns (Mac, Windows or Linux) and signed in with the user's own logins and subscriptions. SpecWithCode does not sell or resell model access. When a thread hits a provider's usage limit and another compatible provider is signed in, the thread can continue there if the project allows it. It is independently maintained.
+
+Product page: https://specwithcode.com (it serves https://spec-weave.com/code/). Source: https://github.com/anton-abyzov/specwithcode. The record of the work (specs, task ledger, handoff) comes from SpecWeave, the open-source CLI described at https://spec-weave.com/llms.txt; the app reads it optionally and read-only.
+
+## Start here
+
+- [SpecWithCode](https://spec-weave.com/code/): what the app does, with screenshots
+- [Download SpecWithCode](https://spec-weave.com/code/download/): free notarized .dmg for Apple silicon (macOS 13+), Windows 10 and 11 installers for x64 and arm64, and a Linux AppImage and .deb for x64 and arm64
+- [SpecWithCode overview](https://spec-weave.com/docs/overview/studio/): every AI agent in one workspace on your own machines
+
+## Tutorials
+
+- [How SpecWithCode works](https://spec-weave.com/tutorials/how-specwithcode-works/): machines, subscriptions, limits and threads
+- [Start SpecWithCode](https://spec-weave.com/tutorials/start-specwithcode/): add a project, ask the coordinator, watch two workers report back
+- [Keep working when a provider runs out](https://spec-weave.com/tutorials/provider-runs-out/): a thread at a Claude Code usage limit continues on Codex
+- [All tutorials](https://spec-weave.com/tutorials/)
+
+## Usage limits
+
+- [Claude Code usage limit reached: what to do next](https://spec-weave.com/docs/guides/claude-code-usage-limit/): the five-hour and weekly windows and every way to keep going
+- [Codex usage limit reached: what to do next](https://spec-weave.com/docs/guides/codex-usage-limit/): the same for Codex on a ChatGPT plan
+- [Claude Code vs Codex](https://spec-weave.com/docs/guides/claude-code-vs-codex/): differences that matter day to day
+
+## Compare
+
+- [SpecWithCode vs OpenCode and cloud agents](https://spec-weave.com/docs/compare/specwithcode-vs-opencode/): what runs the agent, where code runs, subscriptions and price
+- [SpecWithCode vs BridgeMind](https://spec-weave.com/docs/compare/specwithcode-vs-bridgemind/): price, platforms and where the record of the work is kept
+
+## Optional
+
+- [Privacy](https://spec-weave.com/privacy/)
+- [Browser extension privacy](https://spec-weave.com/specwithcode/chrome-extension-privacy/)
+- [SpecWeave llms.txt](https://spec-weave.com/llms.txt): the CLI, guides and comparisons

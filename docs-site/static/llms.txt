@@ -34,6 +34,7 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 - [Switch from Claude Code to Cursor mid-task](https://spec-weave.com/docs/guides/switch-claude-code-to-cursor/): Cursor's AGENTS.md, rules and skill folders, and the two commands
 - [Switch from Claude Code to Codex without losing your place](https://spec-weave.com/docs/guides/switch-claude-code-to-codex/): the two commands, what carries over, and switching back
 - [Claude Code usage limit reached: what to do next](https://spec-weave.com/docs/guides/claude-code-usage-limit/): how the five-hour and weekly limits work and every way to keep going
+- [Codex usage limit reached: what to do next](https://spec-weave.com/docs/guides/codex-usage-limit/): how the five-hour and weekly Codex windows work on ChatGPT plans, where to check them, and how to keep working
 - [Claude Code vs Codex](https://spec-weave.com/docs/guides/claude-code-vs-codex/): differences that matter day to day, and switching when a limit hits
 - [AGENTS.md vs CLAUDE.md](https://spec-weave.com/docs/guides/agents-md-vs-claude-md/): one instruction file for every coding agent
 - [SpecWeave 3.0](https://spec-weave.com/docs/guides/specweave-3/): what changed from 2.x and how to upgrade
@@ -49,6 +50,7 @@ Install: `npm install -g specweave`, then `specweave init` in a repository.
 - [FAQ](https://spec-weave.com/docs/faq/)
 - [Compare AI coding tools and spec frameworks](https://spec-weave.com/docs/compare/): every comparison page
 - [SpecWeave vs OpenSpec, Spec Kit, BMAD and Kiro](https://spec-weave.com/docs/compare/spec-driven-development-tools/)
+- [OpenSpec vs Spec Kit](https://spec-weave.com/docs/compare/openspec-vs-spec-kit/): the two most used spec-driven tools compared from their own repositories
 - [SpecWeave vs GitHub Spec Kit](https://spec-weave.com/docs/compare/specweave-vs-github-spec-kit/)
 - [SpecWeave vs OpenSpec](https://spec-weave.com/docs/compare/specweave-vs-openspec/)
 - [SpecWeave vs the BMAD Method](https://spec-weave.com/docs/compare/specweave-vs-bmad-method/)
