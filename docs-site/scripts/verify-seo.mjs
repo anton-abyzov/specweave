@@ -37,7 +37,7 @@ for (const line of readFileSync(`${build}robots.txt`, 'utf8').split('\n')) {
 
 // Guides written for a search query. Add a guide here once its title and description fit.
 const searchGuides = new Set([
-  'agents-md-vs-claude-md', 'auto-handoff', 'claude-code-usage-limit', 'claude-code-vs-codex', 'cross-tool-handoff',
+  'agents-md-vs-claude-md', 'auto-handoff', 'claude-code-usage-limit', 'codex-usage-limit', 'claude-code-vs-codex', 'cross-tool-handoff',
   'handoff-md', 'switch-claude-code-to-codex', 'switch-claude-code-to-cursor', 'switch-claude-code-to-opencode',
 ].map(slug => `/docs/guides/${slug}/`));
 const titles = new Map();
