@@ -133,7 +133,23 @@ describe('verify command timeout', () => {
     }
     setTimeoutMinutes(60);
     expect(readCommandTimeoutMs(root)).toBe(60 * 60_000);
+    setTimeoutMinutes(100_000);
+    expect(readCommandTimeoutMs(root)).toBe(2 ** 31 - 1);
   });
+
+  it.skipIf(process.platform === 'win32')('stops every process a compound command started', async () => {
+    mk();
+    setTimeoutMinutes(0.005); // 300 ms
+    const pidFile = path.join(root, 'grandchild.pid');
+    const grandchild = `node -e "require('fs').writeFileSync(process.argv[1], String(process.pid)); setTimeout(() => {}, 30000)" ${JSON.stringify(pidFile)} && true`;
+    const started = Date.now();
+    const r = await runVerify(root, '0001-demo', incDir, { commands: [grandchild] });
+    expect(Date.now() - started).toBeLessThan(10_000);
+    expect(r.results[0].exit).not.toBe(0);
+    const pid = Number(fs.readFileSync(pidFile, 'utf-8'));
+    await new Promise((res) => setTimeout(res, 200));
+    expect(() => process.kill(pid, 0)).toThrow();
+  }, 20_000);
 
   it('stops a command at testing.commandTimeoutMinutes and fails it', async () => {
     mk();
@@ -155,5 +171,6 @@ describe('verify command timeout', () => {
     expect(await verifyCommand('0001', { cwd: root, cmd: ['true'], timeout: 'abc' })).toBe(1);
     expect(stderr.join('')).toContain('--timeout needs a positive number of minutes');
     expect(await verifyCommand('0001', { cwd: root, cmd: ['true'], timeout: '0' })).toBe(1);
+    expect(await verifyCommand('0001', { cwd: root, cmd: ['true'], timeout: '36000' })).toBe(1);
   }, 20_000);
 });

@@ -12,7 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { runShell } from './run-shell.js';
+import { runShell, MAX_TIMEOUT_MS } from './run-shell.js';
 import { loadTaskBoard, renderBoardTable, type TaskBoard } from './task-board.js';
 import { acCloses, deriveAcAcceptance, type AcAcceptance, type AcAcceptanceEntry, type AcWaiver } from './accepted-skip.js';
 import { readStrictClose, resolveOwnerChecks, type ScopedCheck } from './strict-close.js';
@@ -178,7 +178,8 @@ export const DEFAULT_COMMAND_TIMEOUT_MINUTES = 20;
 
 /**
  * Per-command limit from config `testing.commandTimeoutMinutes`, in
- * milliseconds; the default when unset, not a positive number or unreadable.
+ * milliseconds (at most {@link MAX_TIMEOUT_MS}); the default when unset, not
+ * a positive number or unreadable.
  */
 export function readCommandTimeoutMs(projectRoot: string): number {
   try {
@@ -186,7 +187,7 @@ export function readCommandTimeoutMs(projectRoot: string): number {
       testing?: { commandTimeoutMinutes?: unknown };
     };
     const m = cfg.testing?.commandTimeoutMinutes;
-    if (typeof m === 'number' && Number.isFinite(m) && m > 0) return Math.round(m * 60_000);
+    if (typeof m === 'number' && Number.isFinite(m) && m > 0) return Math.min(Math.round(m * 60_000), MAX_TIMEOUT_MS);
   } catch {
     // no config → default
   }
