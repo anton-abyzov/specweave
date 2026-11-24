@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { runVerify, parseSpecAcs, NO_COMMANDS_MESSAGE } from '../../../../src/core/tasks/verify-runner.js';
+import { runVerify, parseSpecAcs, readCommandTimeoutMs, NO_COMMANDS_MESSAGE } from '../../../../src/core/tasks/verify-runner.js';
 import { checkClosureGate } from '../../../../src/core/tasks/closure-gate.js';
 import { verifyCommand } from '../../../../src/cli/commands/verify.js';
 
@@ -117,4 +117,43 @@ describe('complete refuses a spec without acceptance criteria (0933)', () => {
       { id: 'AC-03', done: true, text: 'third' },
     ]);
   });
+});
+
+describe('verify command timeout', () => {
+  const slow = 'node -e "setTimeout(() => {}, 30000)"';
+  const setTimeoutMinutes = (m: unknown) =>
+    fs.writeFileSync(path.join(root, '.specweave', 'config.json'), JSON.stringify({ testing: { commands: [], commandTimeoutMinutes: m } }));
+
+  it('defaults to 20 minutes and ignores a bad config value', () => {
+    mk();
+    expect(readCommandTimeoutMs(root)).toBe(20 * 60_000);
+    for (const bad of [0, -5, '30', null]) {
+      setTimeoutMinutes(bad);
+      expect(readCommandTimeoutMs(root)).toBe(20 * 60_000);
+    }
+    setTimeoutMinutes(60);
+    expect(readCommandTimeoutMs(root)).toBe(60 * 60_000);
+  });
+
+  it('stops a command at testing.commandTimeoutMinutes and fails it', async () => {
+    mk();
+    setTimeoutMinutes(0.005); // 300 ms
+    const started = Date.now();
+    const r = await runVerify(root, '0001-demo', incDir, { commands: [slow] });
+    expect(Date.now() - started).toBeLessThan(10_000);
+    expect(r.report.ok).toBe(false);
+    expect(r.results[0].exit).not.toBe(0);
+    expect(r.results[0].tail).toContain('[timeout after');
+  }, 20_000);
+
+  it('--timeout overrides the config and rejects a non-positive value', async () => {
+    mk();
+    setTimeoutMinutes(60);
+    const started = Date.now();
+    expect(await verifyCommand('0001', { cwd: root, cmd: [slow], timeout: '0.005' })).toBe(1);
+    expect(Date.now() - started).toBeLessThan(10_000);
+    expect(await verifyCommand('0001', { cwd: root, cmd: ['true'], timeout: 'abc' })).toBe(1);
+    expect(stderr.join('')).toContain('--timeout needs a positive number of minutes');
+    expect(await verifyCommand('0001', { cwd: root, cmd: ['true'], timeout: '0' })).toBe(1);
+  }, 20_000);
 });

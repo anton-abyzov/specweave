@@ -177,6 +177,7 @@ _specweave() {
                         '--cmd[Command to run (repeatable; overrides config/auto-detection)]' \
                         '--json[Print the verify report as JSON]' \
                         '--reason[Pass with no test commands configured; the reason is recorded in verify.json]' \
+                        '--timeout[Stop each command after this many minutes (default\: testing.commandTimeoutMinutes, else 20)]' \
                         '--workspace[Select the planning workspace explicitly]' \
                         '--help[Show help]'
                     ;;

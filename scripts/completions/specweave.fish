@@ -141,6 +141,7 @@ complete -c specweave -n "__fish_seen_subcommand_from cards" -l workspace -d "Se
 complete -c specweave -n "__fish_seen_subcommand_from verify" -l cmd -d "Command to run (repeatable; overrides config/auto-detection)"
 complete -c specweave -n "__fish_seen_subcommand_from verify" -l json -d "Print the verify report as JSON"
 complete -c specweave -n "__fish_seen_subcommand_from verify" -l reason -d "Pass with no test commands configured; the reason is recorded in verify.json"
+complete -c specweave -n "__fish_seen_subcommand_from verify" -l timeout -d "Stop each command after this many minutes (default: testing.commandTimeoutMinutes, else 20)"
 complete -c specweave -n "__fish_seen_subcommand_from verify" -l workspace -d "Select the planning workspace explicitly"
 
 # review

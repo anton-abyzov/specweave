@@ -21,6 +21,8 @@ export interface VerifyCommandOptions {
   cmd?: string[];
   /** Accept an empty command list (recorded in verify.json). */
   reason?: string;
+  /** Minutes each command may run before it is stopped (overrides config). */
+  timeout?: string | number;
 }
 
 export async function verifyCommand(incrementId?: string, opts: VerifyCommandOptions = {}): Promise<number> {
@@ -28,6 +30,16 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
   const err = (s: string) => process.stderr.write(s + '\n');
   const cwd = opts.cwd ?? process.cwd();
   const projectRoot = resolveEffectiveRoot(cwd);
+
+  let timeoutMs: number | undefined;
+  if (opts.timeout !== undefined) {
+    const minutes = Number(opts.timeout);
+    if (!Number.isFinite(minutes) || minutes <= 0) {
+      err(`--timeout needs a positive number of minutes, got "${opts.timeout}"`);
+      return 1;
+    }
+    timeoutMs = Math.round(minutes * 60_000);
+  }
 
   let inc;
   try {
@@ -43,6 +55,7 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
     leaseHours: readLeaseHours(projectRoot),
     onCommand: (cmd) => { if (!opts.json) out(`▶ ${cmd}`); },
     reason: opts.reason,
+    timeoutMs,
   });
   if (result.results.length === 0 && !result.report.reason) {
     err(`${NO_COMMANDS_MESSAGE} (${result.source}). Set testing.commands in .specweave/config.json, pass --cmd "<command>", or --reason "<why nothing runs>".`);
