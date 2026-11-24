@@ -13,7 +13,7 @@ OpenAI changes plans and numbers often. Everything below was checked against Ope
 
 ## How the limits work
 
-- **One allowance for agent work.** "ChatGPT Work and Codex share pricing, credits, and usage limits." On plans that use shared allowances or credits, the same pool also covers ChatGPT for Excel and Workspace Agents where those are available. Regular ChatGPT voice, image generation and file-upload limits are separate, and their banners do not apply to Codex; work you do inside Codex, including building a Site, counts toward Codex usage.
+- **One allowance for agent work.** "ChatGPT Work and Codex share pricing, credits, and usage limits." On plans that use shared allowances or credits, the same pool also covers ChatGPT for Excel and Workspace Agents where those are available. Regular ChatGPT voice, image generation and file-upload limits are separate, and their banners do not apply to Codex; building or editing a Site in Codex counts toward Codex usage, while auto-review safety checks are free when you are signed in with a ChatGPT account.
 - **Local and cloud draw from the same pool.** The CLI, the IDE extension, the desktop app and cloud tasks all count. OpenAI notes that cloud tasks "may use more of your allowance than local messages".
 - **A five-hour window, and sometimes a weekly one.** On Plus and Standard Business, usage is counted per five-hour period, and "weekly limits may also apply". Pro plans "currently have no five-hour limit". Enterprise and Edu with flexible pricing have no fixed rate limits.
 - **The model matters a lot.** OpenAI's estimates for Plus range from 6 to 50 local messages per five hours on GPT-6.2 Astra to 350 to 3,000 on GPT-6 Luna. They are estimates, not fixed caps: a long task with a big context and lots of tool calls uses far more than a short request.
@@ -45,7 +45,7 @@ While a window still has allowance left, a lighter model uses much less of it pe
 
 If you also have Claude Code, Grok Build, Gemini CLI or a second ChatGPT account, you can continue there. None of them can read Codex's session, so a summary copied by hand loses your uncommitted edits, the decisions you made and which tasks were finished.
 
-[SpecWeave](/docs/overview/introduction/) keeps that state in git: `specweave handoff` in Codex writes `handoff.md` and pushes your branch with a snapshot of your edits, and `specweave pickup` in the other tool continues from there. The two commands and what carries over are in [Handoff and pickup](/docs/guides/cross-tool-handoff/); the Claude Code direction is [Switch from Claude Code to Codex](/docs/guides/switch-claude-code-to-codex/).
+[SpecWeave](/docs/overview/introduction/) keeps that state in git: `specweave handoff` in Codex writes `handoff.md` and, when the repository has a remote and the push succeeds, pushes your branch with a snapshot of your edits, and `specweave pickup` in the other tool continues from there. The two commands and what carries over are in [Handoff and pickup](/docs/guides/cross-tool-handoff/); the Claude Code direction is [Switch from Claude Code to Codex](/docs/guides/switch-claude-code-to-codex/).
 
 ## Hand off before the limit
 
@@ -76,7 +76,7 @@ A `Stop` hook in `~/.codex/hooks.json` runs at the end of each turn and reads th
 
 **Do ChatGPT messages use my Codex allowance?** Regular chat voice, image generation and file uploads in ChatGPT have their own limits. On plans that use shared allowances or credits, ChatGPT Work, ChatGPT for Excel and Workspace Agents share the Codex pool where they are available.
 
-**Can Claude Code continue my Codex session?** Not directly; Claude Code does not read Codex's session files. With SpecWeave the spec, the task state, a handoff note and your uncommitted edits go through git, and `specweave pickup` in Claude Code continues from there.
+**Can Claude Code continue my Codex session?** Not directly; Claude Code does not read Codex's session files. With SpecWeave the spec, the task state, a handoff note and your uncommitted edits go through git (pushed when a remote is set up), and `specweave pickup` in Claude Code continues from there.
 
 **Will OpenAI support reset my limit?** No. The help article says support "does not reset ChatGPT or Codex usage limits".
 

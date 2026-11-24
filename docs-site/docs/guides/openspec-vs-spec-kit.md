@@ -19,11 +19,11 @@ This page describes both tools as their repositories document them on November 2
 | **Install** | `curl -fsSL https://openspec.dev/cli/install.sh \| sh`, Homebrew, or `npm install -g @fission-ai/openspec` (Node 22.20+ for npm) | `uv tool install specify-cli` (Python 3.11+ and uv) |
 | **Set up a project** | `openspec init` | `specify init my-project`; it asks which agent to set up, or takes `--integration <key>` (Copilot is the default when it cannot ask) |
 | **Unit of work** | A change: `openspec/changes/<name>/` | A feature: `specs/NNN-feature/`; a branch per feature is optional, through the Git extension |
-| **Files per unit** | `proposal.md`, `specs/`, `design.md`, `tasks.md` | `spec.md`, `plan.md`, `tasks.md`, plus `research.md`, `data-model.md`, `contracts/`, `quickstart.md` |
+| **Files per unit** | `proposal.md`, `specs/`, `tasks.md`, and `design.md` when the change needs one | `spec.md`, `plan.md`, `tasks.md`, plus `research.md`, `data-model.md`, `contracts/`, `quickstart.md` |
 | **Main workflow** | propose, apply, archive | constitution (once), specify, plan, tasks, implement, converge |
 | **After the change** | Archived to `openspec/changes/archive/`; its spec deltas update the lasting specs | The feature folder stays as the record |
 | **Project-wide rules** | `openspec/config.yaml` (schema, context and rules), next to the lasting specs | A constitution in `.specify/memory/constitution.md` |
-| **Agents** | "30+ tools", listed on openspec.dev | GitHub Copilot by default; other agents through integrations |
+| **Agents** | "30+ tools", listed on openspec.dev | Integrations for many agents; interactive setup asks which, non-interactive setup defaults to GitHub Copilot |
 
 ## How OpenSpec works
 
@@ -46,7 +46,7 @@ Spec Kit walks a feature through fixed steps, each writing its own file:
 4. `/speckit-tasks`: the task list.
 5. `/speckit-implement`, then `/speckit-converge`: build, and repeat until converge reports `Converged`.
 
-The README uses the hyphen form, which it credits to GitHub Copilot's skill syntax; other docs and older guides use dots (`/speckit.specify`). Optional extensions add bug-fix and idea-assessment flows. For existing code, Spec Kit's [existing-projects guide](https://github.github.io/spec-kit/how-to/existing-projects.html) says to run `specify init --here --force --integration <key>` in the repository, write a constitution with the rules that matter (for example, keep the public API compatible and run the existing test suites), and specify only the change you intend to make, such as adding CSV export to an existing page. It warns against making "document the entire existing system" your first step.
+The README uses the hyphen form, which it credits to GitHub Copilot's skill syntax; other docs and older guides use dots (`/speckit.specify`). Optional extensions add bug-fix and idea-assessment flows. For existing code, Spec Kit's [existing-projects guide](https://github.github.io/spec-kit/how-to/existing-projects.html) says to commit or stash your work and create a branch first, because `--force` can replace conflicting files Spec Kit manages, then run `specify init --here --force --integration <key>` in the repository, write a constitution with the rules that matter (for example, keep the public API compatible and run the existing test suites), and specify only the change you intend to make, such as adding CSV export to an existing page. It warns against making "document the entire existing system" your first step.
 
 ## Which one to pick
 
@@ -62,7 +62,7 @@ The README uses the hyphen form, which it credits to GitHub Copilot's skill synt
 
 **Can I use OpenSpec or Spec Kit with Claude Code and Codex?** Yes. Both install their commands into the agent you choose; OpenSpec lists more than 30 tools, and Spec Kit has integrations beyond Copilot.
 
-**Which is lighter?** OpenSpec writes fewer files per unit of work and has fewer steps. Spec Kit's steps produce more documents before any code.
+**Which is lighter?** In their default workflows, OpenSpec writes fewer files per unit of work and has fewer steps. Spec Kit's steps produce more documents before any code.
 
 **Do they need an account or API key?** Not for the tools themselves. Your coding agent needs whatever sign-in or key it normally uses.
 
