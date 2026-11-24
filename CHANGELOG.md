@@ -1,3 +1,17 @@
+## [3.2.4] - 2026-11-24
+
+### Changed
+
+- verify: --timeout flag and testing.commandTimeoutMinutes (#2324)
+- 1470: Codex usage limit, OpenSpec vs Spec Kit, SpecWithCode llms.txt
+- 1453: a bare return page forwards nothing (#2322)
+- 1453: Connect sign-in return page (#2321)
+- docs: add ElevenLabs narration to Connect tutorials
+- 1446: scope desktop Allow state, fix join row label, pace captions
+- 1446: version Connect tutorial videos and align v1.0.407 steps
+- 1446: align Connect join steps with 1.0.407 and fix review findings
+- 1446: add SpecWithCode Connect tutorial hub path and videos (#2317)
+
 ## [3.2.3] - 2026-11-20
 
 ### Changed
