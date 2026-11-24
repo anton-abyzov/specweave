@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-VoAc52q4+4TUqrOpwiybJDGLqohKOS65pJzGjAi6tgw='; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-Y8YPhL5JFzaTexJjsx9u2UQcbQDGlapqZtvOWasBEdY='; img-src 'self'; base-uri 'none'; form-action 'none'">
 <title>SpecWithCode sign-in</title>
 <link rel="icon" href="/favicon.ico">
 <style>
@@ -29,29 +29,37 @@
 <body>
 <main>
   <h1 id="title">SpecWithCode sign-in</h1>
-  <p id="lead">This page finishes a sign-in started in the SpecWithCode app. Start signing in from the app.</p>
+  <p id="lead">This page finishes a sign-in started in the SpecWithCode app.</p>
   <a id="open" class="button" href="studio://app/" hidden>Open SpecWithCode</a>
 </main>
 <script>(function () {
   var query = window.location.search;
-  if (!query || query === "?") return;
+  if (query === "?") query = "";
   var title = document.getElementById("title");
   var lead = document.getElementById("lead");
   var open = document.getElementById("open");
+  var params = new URLSearchParams(query);
   // Fixed target: only the scheme, host and path of the SpecWithCode app.
+  // Always forwarded, so a sign-in whose callback carries no Clerk field is
+  // never stranded; the app ignores a link when no sign-in is waiting.
   var target = "studio://app/" + query;
-  var failed = new URLSearchParams(query).get("__clerk_status") === "failed";
-  if (failed) {
+  var status = params.get("__clerk_status");
+  if (status === "failed") {
     title.textContent = "Sign-in did not finish";
     lead.textContent = "Return to SpecWithCode to see why and try again. You can close this tab.";
-  } else {
+  } else if (status !== null || params.has("rotating_token_nonce")) {
     title.textContent = "Signed in. Return to SpecWithCode";
     lead.textContent = "SpecWithCode opens now. If it does not, press Open SpecWithCode. You can close this tab.";
+  } else {
+    title.textContent = "Return to SpecWithCode";
+    lead.textContent = "If you started signing in from the SpecWithCode app, press Open SpecWithCode. You can close this tab.";
   }
   open.href = target;
   open.hidden = false;
   // Keep the one-time sign-in code out of the address bar and history.
-  try { window.history.replaceState(null, "", window.location.pathname); } catch (e) {}
+  if (query) {
+    try { window.history.replaceState(null, "", window.location.pathname); } catch (e) {}
+  }
   window.location.href = target;
 })();
 </script>
