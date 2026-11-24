@@ -70,7 +70,7 @@ _specweave_completions() {
             return 0
             ;;
         verify)
-            COMPREPLY=( $(compgen -W "--cmd --json --reason --workspace --help" -- "${cur}") )
+            COMPREPLY=( $(compgen -W "--cmd --json --reason --timeout --workspace --help" -- "${cur}") )
             return 0
             ;;
         review)

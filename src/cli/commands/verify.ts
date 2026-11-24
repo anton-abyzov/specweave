@@ -11,6 +11,7 @@ import { resolveIncrement, readLeaseHours, IncrementResolutionError } from '../.
 import { detectSessionId } from '../../core/tasks/ledger.js';
 import { recordIncrementWork } from '../../core/tasks/work-session.js';
 import { runVerify, describeUncheckedAcs, NO_COMMANDS_MESSAGE } from '../../core/tasks/verify-runner.js';
+import { MAX_TIMEOUT_MS } from '../../core/tasks/run-shell.js';
 import { acCloses } from '../../core/tasks/accepted-skip.js';
 
 export interface VerifyCommandOptions {
@@ -21,6 +22,8 @@ export interface VerifyCommandOptions {
   cmd?: string[];
   /** Accept an empty command list (recorded in verify.json). */
   reason?: string;
+  /** Minutes each command may run before it is stopped (overrides config). */
+  timeout?: string | number;
 }
 
 export async function verifyCommand(incrementId?: string, opts: VerifyCommandOptions = {}): Promise<number> {
@@ -28,6 +31,17 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
   const err = (s: string) => process.stderr.write(s + '\n');
   const cwd = opts.cwd ?? process.cwd();
   const projectRoot = resolveEffectiveRoot(cwd);
+
+  let timeoutMs: number | undefined;
+  if (opts.timeout !== undefined) {
+    const minutes = Number(opts.timeout);
+    const maxMinutes = Math.floor(MAX_TIMEOUT_MS / 60_000);
+    if (!Number.isFinite(minutes) || minutes <= 0 || minutes > maxMinutes) {
+      err(`--timeout needs a positive number of minutes up to ${maxMinutes}, got "${opts.timeout}"`);
+      return 1;
+    }
+    timeoutMs = Math.round(minutes * 60_000);
+  }
 
   let inc;
   try {
@@ -43,6 +57,7 @@ export async function verifyCommand(incrementId?: string, opts: VerifyCommandOpt
     leaseHours: readLeaseHours(projectRoot),
     onCommand: (cmd) => { if (!opts.json) out(`▶ ${cmd}`); },
     reason: opts.reason,
+    timeoutMs,
   });
   if (result.results.length === 0 && !result.report.reason) {
     err(`${NO_COMMANDS_MESSAGE} (${result.source}). Set testing.commands in .specweave/config.json, pass --cmd "<command>", or --reason "<why nothing runs>".`);

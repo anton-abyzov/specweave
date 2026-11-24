@@ -12,7 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { runShell } from './run-shell.js';
+import { runShell, MAX_TIMEOUT_MS } from './run-shell.js';
 import { loadTaskBoard, renderBoardTable, type TaskBoard } from './task-board.js';
 import { acCloses, deriveAcAcceptance, type AcAcceptance, type AcAcceptanceEntry, type AcWaiver } from './accepted-skip.js';
 import { readStrictClose, resolveOwnerChecks, type ScopedCheck } from './strict-close.js';
@@ -173,9 +173,31 @@ export function detectVerifyCommands(projectRoot: string): { commands: string[];
   return { commands: [], source: 'none detected' };
 }
 
+/** Default limit per verification command when nothing sets one. */
+export const DEFAULT_COMMAND_TIMEOUT_MINUTES = 20;
+
+/**
+ * Per-command limit from config `testing.commandTimeoutMinutes`, in
+ * milliseconds (at most {@link MAX_TIMEOUT_MS}); the default when unset, not
+ * a positive number or unreadable.
+ */
+export function readCommandTimeoutMs(projectRoot: string): number {
+  try {
+    const cfg = JSON.parse(fs.readFileSync(path.join(projectRoot, '.specweave', 'config.json'), 'utf-8')) as {
+      testing?: { commandTimeoutMinutes?: unknown };
+    };
+    const m = cfg.testing?.commandTimeoutMinutes;
+    if (typeof m === 'number' && Number.isFinite(m) && m > 0) return Math.min(Math.round(m * 60_000), MAX_TIMEOUT_MS);
+  } catch {
+    // no config → default
+  }
+  return DEFAULT_COMMAND_TIMEOUT_MINUTES * 60_000;
+}
+
 export interface RunVerifyOptions {
   /** Override the command list (tests). */
   commands?: string[];
+  /** Limit per command; defaults to config `testing.commandTimeoutMinutes`, else 20 minutes. */
   timeoutMs?: number;
   leaseHours?: number;
   onCommand?: (cmd: string) => void;
@@ -200,11 +222,12 @@ export async function runVerify(projectRoot: string, incrementId: string, increm
   const checks: ScopedCheck[] = detected.commands.map((cmd) => ({ cmd, cwd: '.', source: detected.source }));
   checks.push(...(owners?.checks ?? []));
   if (strict) checks.push(...(opts.commands ?? []).map((cmd) => ({ cmd, cwd: '.', source: 'explicit' })));
+  const timeoutMs = opts.timeoutMs ?? readCommandTimeoutMs(projectRoot);
   const results: VerifyCommandResult[] = [];
   for (const { cmd, cwd, source } of checks) {
     opts.onCommand?.(cmd);
     const started = Date.now();
-    const r = await runShell(cmd, path.resolve(projectRoot, cwd), opts.timeoutMs);
+    const r = await runShell(cmd, path.resolve(projectRoot, cwd), timeoutMs);
     results.push({ cmd, ...(strict ? { cwd, source } : {}), exit: r.code, tail: r.tail, ms: Date.now() - started });
   }
 

@@ -567,6 +567,8 @@ export interface TestingConfig {
   strictClose?: boolean;
   /** Strict verification commands, keyed by a registered repository's path or id, or by repositories/<organization>/<repository>. */
   ownerCommands?: Record<string, string[]>;
+  /** Minutes each verification command may run before `specweave verify` stops it (default 20). */
+  commandTimeoutMinutes?: number;
   coverage?: CoverageTargets;
 }
 
