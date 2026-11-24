@@ -14,7 +14,7 @@ Every comparison on this site in one place. Most pages describe the other produc
 Tools that give an AI coding agent a written spec to work from.
 
 - [Spec-driven development tools compared](/docs/compare/spec-driven-development-tools/): OpenSpec, GitHub Spec Kit, the BMAD Method, Kiro and SpecWeave in one table.
-- [OpenSpec vs Spec Kit](/docs/compare/openspec-vs-spec-kit/): the two most used spec tools compared from their own docs.
+- [OpenSpec vs Spec Kit](/docs/compare/openspec-vs-spec-kit/): OpenSpec and GitHub Spec Kit compared from their own docs.
 - [OpenSpec vs SpecWeave](/docs/compare/specweave-vs-openspec/): a lasting record of system behaviour versus task evidence and handoff.
 - [GitHub Spec Kit vs SpecWeave](/docs/compare/specweave-vs-github-spec-kit/): slash commands and plan files versus one spec and a task ledger.
 - [BMAD Method vs SpecWeave](/docs/compare/specweave-vs-bmad-method/): agent roles and planning documents versus one short spec.

@@ -14,7 +14,7 @@ Product page: https://specwithcode.com (it serves https://spec-weave.com/code/).
 
 - [How SpecWithCode works](https://spec-weave.com/tutorials/how-specwithcode-works/): machines, subscriptions, limits and threads
 - [Start SpecWithCode](https://spec-weave.com/tutorials/start-specwithcode/): add a project, ask the coordinator, watch two workers report back
-- [Keep working when a provider runs out](https://spec-weave.com/tutorials/provider-runs-out/): a thread at a Claude Code usage limit continues on Codex
+- [Keep working when a provider runs out](https://spec-weave.com/tutorials/provider-runs-out/): a thread at a Claude Code usage limit continues on Codex, when Codex is signed in and the project allows it
 - [All tutorials](https://spec-weave.com/tutorials/)
 
 ## Usage limits
