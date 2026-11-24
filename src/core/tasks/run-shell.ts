@@ -71,12 +71,21 @@ function killTree(child: ChildProcess, signal: NodeJS.Signals, known: Set<number
   const pid = child.pid;
   if (pid === undefined) return;
   if (process.platform === 'win32') {
+    // taskkill walks the tree from the shell, so the shell must outlive it.
+    const killShell = () => {
+      try {
+        child.kill(signal);
+      } catch {
+        // already gone
+      }
+    };
     try {
-      spawn('taskkill', ['/pid', String(pid), '/t', '/f'], { stdio: 'ignore', windowsHide: true }).on('error', () => {});
+      spawn('taskkill', ['/pid', String(pid), '/t', '/f'], { stdio: 'ignore', windowsHide: true })
+        .on('exit', killShell)
+        .on('error', killShell);
     } catch {
-      // fall through to the shell itself
+      killShell();
     }
-    child.kill(signal);
     return;
   }
   for (const d of descendantPids(pid)) known.add(d);
@@ -105,6 +114,7 @@ export function runShell(cmd: string, cwd: string, timeoutMs = 20 * 60 * 1000): 
     }
     let output = '';
     let done = false;
+    let timedOut = false;
     const push = (d: Buffer) => {
       output += d.toString('utf-8');
       if (output.length > MAX_OUTPUT_BYTES) output = output.slice(output.length - MAX_OUTPUT_BYTES);
@@ -117,6 +127,7 @@ export function runShell(cmd: string, cwd: string, timeoutMs = 20 * 60 * 1000): 
     const timer = setTimeout(() => {
       const label = limit >= 60_000 ? `${Math.round(limit / 60_000)} min` : `${Math.round(limit / 1000)} s`;
       output += `\n[timeout after ${label}]`;
+      timedOut = true;
       killTree(child, 'SIGTERM', killed);
       grace = setTimeout(() => {
         killTree(child, 'SIGKILL', killed);
@@ -125,11 +136,12 @@ export function runShell(cmd: string, cwd: string, timeoutMs = 20 * 60 * 1000): 
         child.stderr?.destroy();
         finish(child.exitCode ?? 137);
       }, KILL_GRACE_MS);
-      grace.unref();
     }, limit);
-    const finish = (code: number) => {
+    const finish = (exit: number) => {
       if (done) return;
       done = true;
+      // A command stopped at the limit never passes, even if its shell exited 0.
+      const code = timedOut && exit === 0 ? 124 : exit;
       clearTimeout(timer);
       if (grace) clearTimeout(grace);
       resolve({ code, tail: tailLines(output), output });

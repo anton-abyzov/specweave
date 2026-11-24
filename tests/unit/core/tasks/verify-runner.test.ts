@@ -139,17 +139,17 @@ describe('verify command timeout', () => {
 
   it.skipIf(process.platform === 'win32')('stops every process a compound command started', async () => {
     mk();
-    setTimeoutMinutes(0.005); // 300 ms
+    setTimeoutMinutes(0.05); // 3 s, so node has started and written its pid
     const pidFile = path.join(root, 'grandchild.pid');
     const grandchild = `node -e "require('fs').writeFileSync(process.argv[1], String(process.pid)); setTimeout(() => {}, 30000)" ${JSON.stringify(pidFile)} && true`;
     const started = Date.now();
     const r = await runVerify(root, '0001-demo', incDir, { commands: [grandchild] });
-    expect(Date.now() - started).toBeLessThan(10_000);
+    expect(Date.now() - started).toBeLessThan(15_000);
     expect(r.results[0].exit).not.toBe(0);
     const pid = Number(fs.readFileSync(pidFile, 'utf-8'));
     await new Promise((res) => setTimeout(res, 200));
     expect(() => process.kill(pid, 0)).toThrow();
-  }, 20_000);
+  }, 30_000);
 
   it('stops a command at testing.commandTimeoutMinutes and fails it', async () => {
     mk();
