@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-Y8YPhL5JFzaTexJjsx9u2UQcbQDGlapqZtvOWasBEdY='; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-dc652kzH4HoIRbxDxHwJpy4smnGFILH6CMxFvyot/oQ='; img-src 'self'; base-uri 'none'; form-action 'none'">
 <title>SpecWithCode sign-in</title>
 <link rel="icon" href="/favicon.ico">
 <style>
@@ -29,19 +29,21 @@
 <body>
 <main>
   <h1 id="title">SpecWithCode sign-in</h1>
-  <p id="lead">This page finishes a sign-in started in the SpecWithCode app.</p>
+  <p id="lead">This page finishes a sign-in started in the SpecWithCode app. Start signing in from the app.</p>
   <a id="open" class="button" href="studio://app/" hidden>Open SpecWithCode</a>
 </main>
 <script>(function () {
   var query = window.location.search;
-  if (query === "?") query = "";
+  // A bare load, or a refresh after the query was removed, forwards nothing:
+  // an empty link could complete a sign-in that is waiting in the app.
+  if (!query || query === "?") return;
   var title = document.getElementById("title");
   var lead = document.getElementById("lead");
   var open = document.getElementById("open");
   var params = new URLSearchParams(query);
   // Fixed target: only the scheme, host and path of the SpecWithCode app.
-  // Always forwarded, so a sign-in whose callback carries no Clerk field is
-  // never stranded; the app ignores a link when no sign-in is waiting.
+  // Every callback query is forwarded, so one that carries no Clerk field
+  // is never stranded; the app ignores a link when no sign-in is waiting.
   var target = "studio://app/" + query;
   var status = params.get("__clerk_status");
   if (status === "failed") {
@@ -57,9 +59,7 @@
   open.href = target;
   open.hidden = false;
   // Keep the one-time sign-in code out of the address bar and history.
-  if (query) {
-    try { window.history.replaceState(null, "", window.location.pathname); } catch (e) {}
-  }
+  try { window.history.replaceState(null, "", window.location.pathname); } catch (e) {}
   window.location.href = target;
 })();
 </script>
