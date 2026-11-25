@@ -54,6 +54,39 @@ describe('validate-skill-versions deprecation keys (1486)', () => {
     expect(versionProblem(skill(valid.replace('deprecated-since: "1.0.5"', 'deprecated-since: "next"')))).toMatch(/deprecated-since/);
   });
 
+  it('refuses deprecation keys at the top level', () => {
+    for (const k of ['deprecated: true', 'deprecated-message: "m"', 'replaced-by: none', 'deprecated-since: "1.0.5"']) {
+      expect(versionProblem(`---\nname: s\n${k}\nmetadata:\n  version: "1.0.5"\n---\n`)).toMatch(/top-level/);
+    }
+  });
+
+  it('refuses deprecation keys nested in a map under metadata', () => {
+    expect(versionProblem(skill('  deprecation:\n    deprecated: true'))).toMatch(/metadata\.deprecation\.deprecated is nested/);
+    expect(versionProblem(skill('  info:\n    more:\n      replaced-by: "none"'))).toMatch(/metadata\.info\.more\.replaced-by is nested/);
+  });
+
+  it('refuses metadata that is an alias of an anchored mapping', () => {
+    const aliased = '---\nname: s\nx-base: &m { version: "1.0.5", deprecated: "true", deprecated-message: "m", replaced-by: "none", deprecated-since: "1.0.5" }\nmetadata: *m\n---\n';
+    expect(versionProblem(aliased)).toMatch(/alias/);
+    const blockAlias = '---\nname: s\nx-base: &m\n  version: "1.0.5"\n  deprecated: "true"\n  deprecated-message: "m"\nmetadata: *m\n---\n';
+    expect(versionProblem(blockAlias)).toMatch(/alias/);
+  });
+
+  it('refuses a deprecated-since that is not strict SemVer 2.0', () => {
+    for (const v of ['01.2.3-foo_bar', '1.02.3', '1.2.3-01', '1.2.3-foo_bar', '1.2']) {
+      expect(versionProblem(skill(valid.replace('deprecated-since: "1.0.5"', `deprecated-since: "${v}"`)))).toMatch(/deprecated-since/);
+    }
+    for (const v of ['1.0.5-rc.1', '2.0.0+build.7', '0.0.1-alpha-1.0']) {
+      expect(versionProblem(skill(valid.replace('deprecated-since: "1.0.5"', `deprecated-since: "${v}"`)))).toBeNull();
+    }
+  });
+
+  it('still accepts the full block-style set with an anchored block metadata mapping', () => {
+    const anchored = `---\nname: s\nmetadata: &meta\n  version: "1.0.5"\n${valid}\n---\n`;
+    expect(versionProblem(anchored)).toBeNull();
+    expect(versionProblem(skill(valid))).toBeNull();
+  });
+
   it('refuses flow-style metadata that carries deprecation keys (only block style is read)', () => {
     const flow = '---\nname: s\nmetadata: { version: "1.0.5", deprecated: "true", deprecated-message: "m" }\n---\n';
     expect(versionProblem(flow)).toMatch(/flow-style/);
