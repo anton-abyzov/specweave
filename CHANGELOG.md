@@ -1,3 +1,10 @@
+## [3.2.5] - 2026-11-25
+
+### Changed
+
+- 1486: catalog deprecated overlay, update notice, validator keys (#2327)
+- 1470: FAQ says handoff pushes only when the push succeeds (#2326)
+
 ## [3.2.4] - 2026-11-24
 
 ### Changed
