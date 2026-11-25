@@ -73,6 +73,26 @@ export function catalogFor(sourceDir: string): SkillCatalog {
   return readSkillCatalog(path.dirname(sourceDir));
 }
 
+/**
+ * One notice per catalog `deprecated` skill this project has installed
+ * (`sw-<name>` in `.claude/skills` or `.agents/skills`). Read-only: deprecation
+ * never removes or overwrites a skill.
+ */
+export function deprecatedSkillNotices(projectRoot: string, catalog: SkillCatalog, options: { skip?: readonly string[] } = {}): string[] {
+  const root = path.resolve(projectRoot);
+  const skip = new Set(options.skip ?? []);
+  const out: string[] = [];
+  for (const d of catalog.deprecated) {
+    const folder = projectSkillName(d.name);
+    const installed = PROJECT_SKILL_DIRS.some((base) => {
+      const rel = path.posix.join(base, folder);
+      return !skip.has(rel) && fs.existsSync(path.join(root, rel, 'SKILL.md'));
+    });
+    if (installed) out.push(`${folder} is deprecated: ${d.message} Replaced by: ${d.replacedBy}. The skill stays installed.`);
+  }
+  return out;
+}
+
 /** Every catalog skill and whether this project has it on. */
 export function projectSkillStates(projectRoot: string, options: { sourceDir?: string } = {}): SkillState[] {
   return resolveSkills(path.resolve(projectRoot), catalogFor(options.sourceDir ?? defaultPluginSkillsDir()));
