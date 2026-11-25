@@ -73,6 +73,25 @@ export function catalogFor(sourceDir: string): SkillCatalog {
   return readSkillCatalog(path.dirname(sourceDir));
 }
 
+/**
+ * One notice per catalog `deprecated` skill this project has installed
+ * (`sw-<name>` in `.claude/skills` or `.agents/skills`). Read-only: deprecation
+ * never removes or overwrites a skill.
+ */
+export function deprecatedSkillNotices(projectRoot: string, catalog: SkillCatalog): string[] {
+  const root = path.resolve(projectRoot);
+  const out: string[] = [];
+  for (const d of catalog.deprecated) {
+    const folder = projectSkillName(d.name);
+    const installed = PROJECT_SKILL_DIRS.some((base) => {
+      const rel = path.posix.join(base, folder);
+      return fs.existsSync(path.join(root, rel, 'SKILL.md'));
+    });
+    if (installed) out.push(`${folder} is deprecated: ${d.message} Replaced by: ${d.replacedBy}. The skill stays installed.`);
+  }
+  return out;
+}
+
 /** Every catalog skill and whether this project has it on. */
 export function projectSkillStates(projectRoot: string, options: { sourceDir?: string } = {}): SkillState[] {
   return resolveSkills(path.resolve(projectRoot), catalogFor(options.sourceDir ?? defaultPluginSkillsDir()));
@@ -143,6 +162,8 @@ export interface InstallProjectSkillsResult {
   removedSkills: string[];
   /** Folders of optional skills that are off but were left alone: changed by hand, or not SpecWeave's copy. */
   keptSkills: string[];
+  /** Installed folders of catalog `deprecated` skills, never rewritten or removed. */
+  keptDeprecated: string[];
 }
 
 /** File SpecWeave writes into every `sw-<name>` folder it installs: the skill and each file's SHA-256. */
@@ -231,6 +252,11 @@ export function skillFolderOwner(
  * everything else is left alone and listed in `keptSkills`. A core skill that
  * used to be optional keeps that protection, so a copy someone edited or wrote
  * while it was opt-in survives the promotion.
+ *
+ * A skill in the catalog's `deprecated` overlay is frozen once installed: any
+ * existing `sw-<name>` folder is left exactly as it is (listed in
+ * `keptDeprecated`), whatever its tier or state. Where the folder is absent, a
+ * deprecated skill that is on is installed like any other.
  */
 /** Core skills that were optional in an earlier release (grill-me became core in 3.1.14). */
 const PROMOTED_FROM_OPTIONAL = new Set(['grill-me']);
@@ -242,8 +268,16 @@ export function installProjectSkills(
   const root = path.resolve(projectRoot);
   const sourceDir = options.sourceDir ?? defaultPluginSkillsDir();
   const optionalDir = path.join(path.dirname(sourceDir), 'skills-optional');
-  const states = resolveSkills(root, catalogFor(sourceDir));
-  const result: InstallProjectSkillsResult = { written: [], unchanged: [], removed: [], installed: [], removedSkills: [], keptSkills: [] };
+  const catalog = catalogFor(sourceDir);
+  const states = resolveSkills(root, catalog);
+  const deprecated = new Set(catalog.deprecated.map((d) => d.name));
+  const result: InstallProjectSkillsResult = { written: [], unchanged: [], removed: [], installed: [], removedSkills: [], keptSkills: [], keptDeprecated: [] };
+  /** A deprecated skill's folder that exists: never touched (any entry, even a symlink, counts). */
+  const frozen = (name: string, rel: string): boolean => {
+    if (!deprecated.has(name) || !fs.lstatSync(path.join(root, rel), { throwIfNoEntry: false })) return false;
+    result.keptDeprecated.push(rel);
+    return true;
+  };
 
   // Plan everything before touching the disk.
   const plan: Array<{ rel: string; bytes: Buffer }> = [];
@@ -254,6 +288,7 @@ export function installProjectSkills(
     const files = shippedCopy(state.tier === 'core' ? sourceDir : optionalDir, name);
     for (const base of PROJECT_SKILL_DIRS) {
       const skillDir = path.posix.join(base, projectSkillName(name));
+      if (frozen(name, skillDir)) continue;
       if ((state.tier === 'optional' || PROMOTED_FROM_OPTIONAL.has(name)) && !hasSymlinkSegment(root, base)) {
         const owner = skillFolderOwner(path.join(root, skillDir), name);
         if (owner === 'edited' || owner === 'foreign') {
@@ -272,6 +307,7 @@ export function installProjectSkills(
     for (const base of PROJECT_SKILL_DIRS) {
       const rel = path.posix.join(base, projectSkillName(state.name));
       if (hasSymlinkSegment(root, base)) continue;
+      if (frozen(state.name, rel)) continue;
       const owner = skillFolderOwner(path.join(root, rel), state.name);
       if (owner === 'absent') continue;
       if (owner !== 'pristine') {

@@ -258,7 +258,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // optional skills now off — only folders whose content identifies them as ours.
   if (isSpecWeaveProject) {
     try {
-      const { installProjectSkills, removeLegacySkillCopies } = await import('../../core/skills/project-skills.js');
+      const { installProjectSkills, removeLegacySkillCopies, deprecatedSkillNotices, catalogFor, defaultPluginSkillsDir } = await import('../../core/skills/project-skills.js');
+      // Read before installing: the installer never touches an installed deprecated skill.
+      const deprecatedNotices = deprecatedSkillNotices(projectPath, catalogFor(defaultPluginSkillsDir()));
       const legacy = removeLegacySkillCopies(projectPath, { dryRun: options.check });
       const skills = installProjectSkills(projectPath, { dryRun: options.check });
       const verb = options.check ? 'Would' : '';
@@ -273,6 +275,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
       }
       if (skills.keptSkills.length > 0) {
         console.log(chalk.gray(`  Kept ${skills.keptSkills.join(', ')}: the skill is off, but the folder was changed or is not SpecWeave's copy`));
+      }
+      for (const notice of deprecatedNotices) {
+        console.log(chalk.yellow(`  \u26a0\ufe0f  ${notice}`));
       }
     } catch (error) {
       result.warnings.push(`Skill install failed: ${error}`);

@@ -10,13 +10,19 @@
  * validators (Claude.ai uploads, the Skills API). Increment 0794 (US-003)
  * added per-skill versions.
  *
+ * A deprecated skill marks itself with flat string keys next to the version
+ * (increment 1486): `deprecated: "true"`, `deprecated-message`, `replaced-by`
+ * (`none`, `mcp:<server>[:tool]` or `<owner>/<repo>/<skill>`) and
+ * `deprecated-since` (SemVer). When any is present they are checked; a skill
+ * without them is checked exactly as before.
+ *
  * Usage:
  *   node scripts/validation/validate-skill-versions.cjs
  *   npm run validate:skill-versions
  *
  * Exit codes:
- *   0 - every SKILL.md has a metadata.version field
- *   1 - one or more SKILL.md files missing it (lists offenders)
+ *   0 - every SKILL.md has a metadata.version field (and valid deprecation keys)
+ *   1 - one or more SKILL.md files fail (lists offenders)
  *   2 - skills directory missing
  */
 
@@ -30,6 +36,7 @@ const skillDirs = [path.join(pluginDir, 'skills'), path.join(pluginDir, 'skills-
 
 const SEMVER_RE = /^\d+\.\d+\.\d+(-[\w.-]+)?(\+[\w.-]+)?$/;
 const FM_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
+const DEPRECATION_KEYS = ['deprecated', 'deprecated-message', 'replaced-by', 'deprecated-since'];
 
 /**
  * Why a SKILL.md's frontmatter fails the rule, or null when it carries a SemVer
@@ -45,10 +52,84 @@ function versionProblem(content) {
   const data = doc.toJS();
   if (!data || typeof data !== 'object' || Array.isArray(data)) return 'frontmatter is not a mapping';
   if (Object.prototype.hasOwnProperty.call(data, 'version')) return 'top-level version: move it under metadata:';
+  const topLevel = DEPRECATION_KEYS.find((k) => Object.prototype.hasOwnProperty.call(data, k));
+  if (topLevel) return `top-level ${topLevel}: move it under metadata:`;
+
   const metadata = data.metadata;
   if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return 'no metadata mapping';
   if (typeof metadata.version !== 'string') return 'no metadata.version string';
   if (!SEMVER_RE.test(metadata.version)) return `non-SemVer metadata.version "${metadata.version}"`;
+  const problem = deprecationProblem(metadata, doc);
+  if (problem) return problem;
+  // Deprecation keys anywhere else (an `x-extra.deprecated`) are never read.
+  for (const [k, v] of Object.entries(data)) {
+    if (k === 'metadata') continue;
+    const outside = nestedDeprecationKey(v, k);
+    if (outside) return `${outside} is outside metadata: put deprecation keys directly under metadata as flat strings`;
+  }
+  return null;
+}
+
+/** SemVer 2.0.0, the regex published at semver.org: no leading zeros, no underscores. */
+const STRICT_SEMVER_RE =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+const ID = '[A-Za-z0-9][A-Za-z0-9._-]*';
+const REPLACED_BY_RE = new RegExp(`^(none|mcp:${ID}(:${ID})?|${ID}/${ID}/${ID})$`);
+
+/**
+ * Dotted path of the first deprecation key nested below `value`, or null.
+ * `seen` stops at a value already visited, so a circular YAML alias ends.
+ */
+function nestedDeprecationKey(value, at, seen = new Set()) {
+  if (value === null || typeof value !== 'object' || seen.has(value)) return null;
+  seen.add(value);
+  for (const [k, v] of Object.entries(value)) {
+    const here = `${at}.${k}`;
+    if (!Array.isArray(value) && DEPRECATION_KEYS.includes(k)) return here;
+    const deeper = nestedDeprecationKey(v, here, seen);
+    if (deeper) return deeper;
+  }
+  return null;
+}
+
+/**
+ * Why the deprecation keys under `metadata` are wrong, or null when none is
+ * present or all are valid flat strings directly under a block-style metadata
+ * mapping. `metadata` is the parsed mapping; `doc` (optional) the YAML document,
+ * whose raw metadata node must be a block YAMLMap, not flow style or an alias:
+ * the vskill and platform line parsers read only that layout (1486 D-04).
+ */
+function deprecationProblem(metadata, doc) {
+  for (const [k, v] of Object.entries(metadata)) {
+    const nested = nestedDeprecationKey(v, `metadata.${k}`);
+    if (nested) return `${nested} is nested: put deprecation keys directly under metadata as flat strings`;
+  }
+  const present = DEPRECATION_KEYS.filter((k) => Object.prototype.hasOwnProperty.call(metadata, k));
+  if (present.length === 0) return null;
+  if (doc) {
+    const node = doc.get('metadata', true);
+    if (YAML.isAlias(node)) return 'metadata is an alias with deprecation keys: write metadata as a block mapping';
+    if (!YAML.isMap(node) || node.flow) return 'flow-style metadata with deprecation keys: write metadata as a block mapping';
+  }
+  for (const k of present) {
+    const v = metadata[k];
+    if (v !== null && typeof v === 'object') return `metadata.${k} is nested: write it as one flat string`;
+    if (typeof v === 'boolean') return `metadata.${k} is a YAML boolean: quote it ("${v}")`;
+    if (typeof v !== 'string') return `metadata.${k} must be a string: quote it`;
+  }
+  const deprecated = metadata.deprecated;
+  if (deprecated !== undefined && deprecated !== 'true' && deprecated !== 'false') {
+    return `metadata.deprecated must be "true" or "false", not "${deprecated}"`;
+  }
+  if (deprecated === 'true' && (metadata['deprecated-message'] ?? '').trim() === '') {
+    return 'metadata.deprecated is "true" but metadata.deprecated-message is missing or empty';
+  }
+  const replacedBy = metadata['replaced-by'];
+  if (replacedBy !== undefined && !REPLACED_BY_RE.test(replacedBy)) {
+    return `metadata.replaced-by "${replacedBy}" is not none, mcp:<server>[:tool] or <owner>/<repo>/<skill>`;
+  }
+  const since = metadata['deprecated-since'];
+  if (since !== undefined && !STRICT_SEMVER_RE.test(since)) return `non-SemVer metadata.deprecated-since "${since}"`;
   return null;
 }
 
@@ -86,6 +167,6 @@ function main() {
   process.exit(1);
 }
 
-module.exports = { versionProblem };
+module.exports = { versionProblem, deprecationProblem };
 
 if (require.main === module) main();

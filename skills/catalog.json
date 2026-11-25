@@ -1,5 +1,5 @@
 {
-  "$comment": "The one list of SpecWeave skills. Core skills ship in the sw plugin and in every project. Optional skills install into a project only when listed under skills.enabled in .specweave/config.json, or when their detect rule matches and they are not under skills.disabled. Retired skills are removed from projects on update. scripts/build/generate-skills.mjs copies this file to plugins/specweave/skills-catalog.json.",
+  "$comment": "The one list of SpecWeave skills. Core skills ship in the sw plugin and in every project. Optional skills install into a project only when listed under skills.enabled in .specweave/config.json, or when their detect rule matches and they are not under skills.disabled. Retired skills are removed from projects on update. Deprecated skills ({name, replacedBy, message}) stay in core or optional and stay installed; update prints the message and the replacement (none, mcp:<server>[:tool] or <owner>/<repo>/<skill>) for each project that has the skill. scripts/build/generate-skills.mjs copies this file to plugins/specweave/skills-catalog.json.",
   "core": [
     "increment",
     "grill-me",
@@ -36,5 +36,6 @@
     "task",
     "brainstorm",
     "team"
-  ]
+  ],
+  "deprecated": []
 }

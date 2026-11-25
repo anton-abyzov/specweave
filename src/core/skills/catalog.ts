@@ -7,6 +7,11 @@
  * on when `.specweave/config.json` lists it under `skills.enabled`, or when its
  * detect rule matches and it is not under `skills.disabled`.
  *
+ * `deprecated` is an overlay, not a tier: each entry names a skill that stays in
+ * `core` or `optional`, so installs keep it, and `update` prints its message and
+ * replacement (`replacedBy`: `none`, `mcp:<server>[:tool]` or
+ * `<owner>/<repo>/<skill>`) for each project that has it installed.
+ *
  * @module core/skills/catalog
  */
 
@@ -21,10 +26,19 @@ export interface OptionalSkill {
   detect?: DetectRule;
 }
 
+/** A skill that still ships but points at its replacement. */
+export interface DeprecatedSkill {
+  name: string;
+  replacedBy: string;
+  message: string;
+}
+
 export interface SkillCatalog {
   core: string[];
   optional: OptionalSkill[];
   retired: string[];
+  /** Overlay on core/optional: still installed, `update` prints the notice. */
+  deprecated: DeprecatedSkill[];
 }
 
 export interface SkillsConfig {
@@ -44,7 +58,22 @@ export function readSkillCatalog(pluginRoot: string): SkillCatalog {
   if (!Array.isArray(raw.core) || !Array.isArray(raw.optional)) {
     throw new Error(`${file}: needs "core" and "optional" arrays`);
   }
-  return { core: raw.core, optional: raw.optional, retired: raw.retired ?? [] };
+  return { core: raw.core, optional: raw.optional, retired: raw.retired ?? [], deprecated: deprecatedEntries(raw.deprecated) };
+}
+
+/** Well-formed `deprecated` entries; anything else (a non-array, a bad entry) is dropped. */
+function deprecatedEntries(list: unknown): DeprecatedSkill[] {
+  if (!Array.isArray(list)) return [];
+  const out: DeprecatedSkill[] = [];
+  for (const e of list) {
+    if (!e || typeof e !== 'object') continue;
+    const { name, replacedBy, message } = e as Record<string, unknown>;
+    if (typeof name !== 'string' || typeof replacedBy !== 'string' || typeof message !== 'string') continue;
+    const short = name.trim().replace(/^sw-/, '');
+    if (short === '' || replacedBy.trim() === '' || message.trim() === '') continue;
+    out.push({ name: short, replacedBy: replacedBy.trim(), message: message.trim() });
+  }
+  return out;
 }
 
 function readConfig(projectRoot: string): Record<string, any> | undefined {
