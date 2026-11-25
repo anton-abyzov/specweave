@@ -65,6 +65,16 @@ describe('validate-skill-versions deprecation keys (1486)', () => {
     expect(versionProblem(skill('  info:\n    more:\n      replaced-by: "none"'))).toMatch(/metadata\.info\.more\.replaced-by is nested/);
   });
 
+  it('refuses deprecation keys nested under any other top-level key', () => {
+    expect(versionProblem('---\nname: s\nx-extra:\n  deprecated: "true"\nmetadata:\n  version: "1.0.5"\n---\n')).toMatch(/x-extra\.deprecated is outside metadata/);
+    expect(versionProblem('---\nname: s\nx-extra:\n  - replaced-by: none\nmetadata:\n  version: "1.0.5"\n---\n')).toMatch(/outside metadata/);
+  });
+
+  it('ends on a circular alias instead of crashing', () => {
+    const circular = '---\nname: s\nx-loop: &a\n  self: *a\nmetadata:\n  version: "1.0.5"\n  info: &b\n    again: *b\n---\n';
+    expect(() => versionProblem(circular)).not.toThrow();
+  });
+
   it('refuses metadata that is an alias of an anchored mapping', () => {
     const aliased = '---\nname: s\nx-base: &m { version: "1.0.5", deprecated: "true", deprecated-message: "m", replaced-by: "none", deprecated-since: "1.0.5" }\nmetadata: *m\n---\n';
     expect(versionProblem(aliased)).toMatch(/alias/);

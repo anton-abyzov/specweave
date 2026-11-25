@@ -54,11 +54,20 @@ function versionProblem(content) {
   if (Object.prototype.hasOwnProperty.call(data, 'version')) return 'top-level version: move it under metadata:';
   const topLevel = DEPRECATION_KEYS.find((k) => Object.prototype.hasOwnProperty.call(data, k));
   if (topLevel) return `top-level ${topLevel}: move it under metadata:`;
+
   const metadata = data.metadata;
   if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return 'no metadata mapping';
   if (typeof metadata.version !== 'string') return 'no metadata.version string';
   if (!SEMVER_RE.test(metadata.version)) return `non-SemVer metadata.version "${metadata.version}"`;
-  return deprecationProblem(metadata, doc);
+  const problem = deprecationProblem(metadata, doc);
+  if (problem) return problem;
+  // Deprecation keys anywhere else (an `x-extra.deprecated`) are never read.
+  for (const [k, v] of Object.entries(data)) {
+    if (k === 'metadata') continue;
+    const outside = nestedDeprecationKey(v, k);
+    if (outside) return `${outside} is outside metadata: put deprecation keys directly under metadata as flat strings`;
+  }
+  return null;
 }
 
 /** SemVer 2.0.0, the regex published at semver.org: no leading zeros, no underscores. */
@@ -67,13 +76,17 @@ const STRICT_SEMVER_RE =
 const ID = '[A-Za-z0-9][A-Za-z0-9._-]*';
 const REPLACED_BY_RE = new RegExp(`^(none|mcp:${ID}(:${ID})?|${ID}/${ID}/${ID})$`);
 
-/** Dotted path of the first deprecation key nested below `value` (a metadata child), or null. */
-function nestedDeprecationKey(value, at) {
-  if (value === null || typeof value !== 'object') return null;
+/**
+ * Dotted path of the first deprecation key nested below `value`, or null.
+ * `seen` stops at a value already visited, so a circular YAML alias ends.
+ */
+function nestedDeprecationKey(value, at, seen = new Set()) {
+  if (value === null || typeof value !== 'object' || seen.has(value)) return null;
+  seen.add(value);
   for (const [k, v] of Object.entries(value)) {
     const here = `${at}.${k}`;
     if (!Array.isArray(value) && DEPRECATION_KEYS.includes(k)) return here;
-    const deeper = nestedDeprecationKey(v, here);
+    const deeper = nestedDeprecationKey(v, here, seen);
     if (deeper) return deeper;
   }
   return null;
