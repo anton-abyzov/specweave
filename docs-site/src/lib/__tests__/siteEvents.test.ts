@@ -144,6 +144,18 @@ describe('referral source', () => {
     stop();
   });
 
+  it('never sends a landing from a marked control', () => {
+    expect(siteEventForElement(link({'data-track': 'referral_landing'}), '/code/')).toBeNull();
+  });
+
+  it('leaves out an invalid page on the landing and sends one landing per start', async () => {
+    const sendBeacon = vi.fn((_url: string, _body: Blob) => true);
+    const stop = startSiteEvents({document, navigator: {sendBeacon, doNotTrack: null}, location: {pathname: '/bad path<>', search: '?utm_source=anymodel'}});
+    expect(sendBeacon).toHaveBeenCalledTimes(1);
+    expect((await sent(sendBeacon, 0)).body).toEqual({v: 1, event: 'referral_landing', platform: 'other', source: 'anymodel'});
+    stop();
+  });
+
   it('sends no landing without a campaign tag, or with Do Not Track on', () => {
     for (const [search, doNotTrack] of [['', null], ['?utm_source=anymodel', '1']] as const) {
       const sendBeacon = vi.fn((_url: string, _body: Blob) => true);

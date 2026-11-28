@@ -114,7 +114,8 @@ interface TrackedElement {
 /** Builds the event for a marked control, or null when its name is not one the relay counts. */
 export function siteEventForElement(element: TrackedElement, page: string): SiteEvent | null {
   const event = element.getAttribute(SITE_EVENT_ATTR) as SiteEventName | null;
-  if (!event || !SITE_EVENT_NAMES.includes(event)) return null;
+  // A landing is sent only by startSiteEvents itself, never by a marked control.
+  if (!event || !SITE_EVENT_NAMES.includes(event) || event === 'referral_landing') return null;
   const asset = event === 'download_click'
     ? token(element.getAttribute('data-asset'), 60) ?? assetFromHref(element.getAttribute('href'))
     : token(element.getAttribute('data-store') ?? element.getAttribute('data-kind'), 60);
