@@ -1,7 +1,7 @@
 import {describe, expect, it, vi} from 'vitest';
 import {SPECWITHCODE_RELEASE} from '@site/src/data/specwithcodeRelease';
 import {SPECWITHCODE_WINDOWS_LINUX as desktop} from '@site/src/data/specwithcodeRelease';
-import {assetFromHref, platformForAsset, sendSiteEvent, siteEventForElement, siteEventsEndpoint, startSiteEvents} from '../siteEvents';
+import {assetFromHref, platformForAsset, referralSource, sendSiteEvent, siteEventForElement, siteEventsEndpoint, startSiteEvents} from '../siteEvents';
 
 function link(attrs: Record<string, string>, inner = '<span>label</span>'): HTMLElement {
   const a = document.createElement('a');
@@ -113,6 +113,44 @@ describe('startSiteEvents', () => {
     a.click();
     expect(sendBeacon).not.toHaveBeenCalled();
     stop();
+  });
+});
+
+describe('referral source', () => {
+  it('reads a valid utm_source only', () => {
+    expect(referralSource('?utm_source=anymodel&utm_medium=site')).toBe('anymodel');
+    expect(referralSource('?utm_source=AnyModel')).toBe('anymodel');
+    expect(referralSource('?utm_source=a%20b')).toBeUndefined();
+    expect(referralSource('?utm_source=' + 'x'.repeat(33))).toBeUndefined();
+    expect(referralSource('?ref=anymodel')).toBeUndefined();
+    expect(referralSource('')).toBeUndefined();
+    expect(referralSource(undefined)).toBeUndefined();
+  });
+
+  it('sends one referral landing and tags later events of the page session', async () => {
+    const sendBeacon = vi.fn((_url: string, _body: Blob) => true);
+    const location = {pathname: '/code/', search: '?utm_source=anymodel&utm_medium=site'};
+    const env = {document, navigator: {sendBeacon, doNotTrack: null}, location};
+    const stop = startSiteEvents(env);
+    expect(sendBeacon).toHaveBeenCalledTimes(1);
+    expect((await sent(sendBeacon, 0)).body).toEqual({v: 1, event: 'referral_landing', platform: 'other', page: '/code/', source: 'anymodel'});
+    // A client-side move to the download page keeps the tag; the query string is gone.
+    location.pathname = '/code/download/';
+    location.search = '';
+    const a = link({'data-track': 'download_click', 'data-placement': 'hero', href: SPECWITHCODE_RELEASE.dmgUrl});
+    a.addEventListener('click', e => e.preventDefault());
+    a.click();
+    expect((await sent(sendBeacon, 1)).body).toEqual({v: 1, event: 'download_click', platform: 'mac', asset: 'arm64.dmg', placement: 'hero', page: '/code/download/', source: 'anymodel'});
+    stop();
+  });
+
+  it('sends no landing without a campaign tag, or with Do Not Track on', () => {
+    for (const [search, doNotTrack] of [['', null], ['?utm_source=anymodel', '1']] as const) {
+      const sendBeacon = vi.fn((_url: string, _body: Blob) => true);
+      const stop = startSiteEvents({document, navigator: {sendBeacon, doNotTrack}, location: {pathname: '/code/', search}});
+      expect(sendBeacon).not.toHaveBeenCalled();
+      stop();
+    }
   });
 });
 

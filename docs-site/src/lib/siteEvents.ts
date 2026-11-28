@@ -5,7 +5,9 @@
  * with `data-track` is sent to the SpecWithCode relay's site-events endpoint
  * with navigator.sendBeacon. The payload carries only the event name, the
  * platform, the asset suffix, the control's placement and the page path: no
- * cookies, no storage, no identifiers. Sending never delays navigation and is
+ * cookies, no storage, no identifiers. A page opened from a link carrying
+ * `utm_source` also sends one `referral_landing`, and that campaign tag rides
+ * on the page session's later events; it is held in memory only. Sending never delays navigation and is
  * skipped when Do Not Track is on.
  *
  * The shapes below mirror the relay's validator (SpecWithCode
@@ -23,6 +25,7 @@ export const SITE_EVENT_NAMES = [
   'chrome_extension_click',
   'github_star_click',
   'feedback_click',
+  'referral_landing',
 ] as const;
 export type SiteEventName = (typeof SITE_EVENT_NAMES)[number];
 
@@ -38,10 +41,25 @@ export interface SiteEvent {
   readonly placement?: string;
   /** Page path, e.g. `/code/download/`. */
   readonly page?: string;
+  /** Campaign tag from the link the visitor followed (`utm_source`), e.g. `anymodel`. */
+  readonly source?: string;
 }
 
 const TOKEN = /^[A-Za-z0-9._:+-]+$/;
 const PAGE = /^\/[A-Za-z0-9/_.-]{0,80}$/;
+const SOURCE = /^[a-z0-9._-]{1,32}$/;
+
+/** The `utm_source` of a query string, lowercased, when it is a valid campaign tag. */
+export function referralSource(search: string | null | undefined): string | undefined {
+  let value: string | null;
+  try {
+    value = new URLSearchParams(search ?? '').get('utm_source');
+  } catch {
+    return undefined;
+  }
+  const lowered = (value ?? '').trim().toLowerCase();
+  return SOURCE.test(lowered) ? lowered : undefined;
+}
 
 function token(value: string | null | undefined, max: number): string | undefined {
   const trimmed = (value ?? '').trim().slice(0, max);
@@ -114,7 +132,7 @@ export function siteEventForElement(element: TrackedElement, page: string): Site
 export interface SiteEventEnvironment {
   readonly document: Pick<Document, 'addEventListener' | 'removeEventListener'>;
   readonly navigator: Pick<Navigator, 'sendBeacon'> & {readonly doNotTrack?: string | null};
-  readonly location: Pick<Location, 'pathname'>;
+  readonly location: Pick<Location, 'pathname'> & {readonly search?: string};
 }
 
 /** Sends one event; never throws and never waits. */
@@ -136,6 +154,12 @@ export function sendSiteEvent(env: Pick<SiteEventEnvironment, 'navigator'>, endp
  */
 export function startSiteEvents(env: SiteEventEnvironment, origin?: string | null): () => void {
   const endpoint = siteEventsEndpoint(origin);
+  // Read once, at the first page of this visit; kept in memory only.
+  const source = referralSource(env.location.search);
+  if (source) {
+    const page = env.location.pathname;
+    sendSiteEvent(env, endpoint, {v: 1, event: 'referral_landing', platform: 'other', ...(PAGE.test(page) ? {page} : {}), source});
+  }
   // Pointer clicks and keyboard activation both fire `click`. Middle clicks
   // (open in a new tab) fire `auxclick`.
   const onClick = (e: Event) => {
@@ -147,7 +171,7 @@ export function startSiteEvents(env: SiteEventEnvironment, origin?: string | nul
     const element = target.closest(`[${SITE_EVENT_ATTR}]`);
     if (!element) return;
     const event = siteEventForElement(element, env.location.pathname);
-    if (event) sendSiteEvent(env, endpoint, event);
+    if (event) sendSiteEvent(env, endpoint, source ? {...event, source} : event);
   };
   const options = {capture: true, passive: true} as const;
   env.document.addEventListener('click', onClick, options);
